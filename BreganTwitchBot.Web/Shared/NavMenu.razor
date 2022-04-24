@@ -1,0 +1,59 @@
+﻿    <MudDrawer @bind-Open="@open" Elevation="1" Width="275px">
+        <MudDrawerHeader>
+            <MudText Typo="Typo.h6" Class="text-white" Style="color: white;">BlocksWOT</MudText>
+        </MudDrawerHeader>
+        <MudNavMenu Color="Color.Tertiary" Bordered="true">
+            <MudNavLink Style="--mud-palette-primary: #cdced1; color: #cdced1;" Icon="@Icons.Filled.QuestionAnswer" IconColor="Color.Warning" Href="/commands" >Commands</MudNavLink>
+            <MudNavGroup Title="Leaderboards" Icon="@Icons.Filled.Leaderboard" IconColor="Color.Warning" Style="color: #66a1ff;">
+                <MudNavLink Style="--mud-palette-primary: #cdced1; color: #cdced1;" Icon="@Icons.Filled.ControlPoint" IconColor="Color.Warning"  Href="/points">Points</MudNavLink>
+                <MudNavLink Style="--mud-palette-primary: #cdced1; color: #cdced1;" Icon="@Icons.Filled.Timer" IconColor="Color.Warning"  Href="/hours">Hours</MudNavLink>
+                <MudNavLink Style="--mud-palette-primary: #cdced1; color: #cdced1;" Icon="@Icons.Filled.Chat" IconColor="Color.Warning"  Href="/messages">Messages</MudNavLink>
+                <MudNavLink Style="--mud-palette-primary: #cdced1; color: #cdced1;" Icon="@Icons.Filled.ReplayCircleFilled" IconColor="Color.Warning"  Href="/pointsgambled">Points Gambled</MudNavLink>
+                <MudNavLink Style="--mud-palette-primary: #cdced1; color: #cdced1;" Icon="@Icons.Filled.TrendingUp" IconColor="Color.Warning"  Href="/pointswon">Points Won</MudNavLink>
+                <MudNavLink Style="--mud-palette-primary: #cdced1; color: #cdced1;" Icon="@Icons.Filled.TrendingDown" IconColor="Color.Warning"  Href="/pointslost">Points Lost</MudNavLink>
+                <MudNavLink Style="--mud-palette-primary: #cdced1; color: #cdced1;" Icon="@Icons.Filled.ChangeCircle" IconColor="Color.Warning"  Href="/totalspins">Total Spins</MudNavLink>
+                <MudNavLink Style="--mud-palette-primary: #cdced1; color: #cdced1;" Icon="@Icons.Filled.AlarmAdd" IconColor="Color.Warning"  Href="/currentstreak">Current Streak</MudNavLink>
+                <MudNavLink Style="--mud-palette-primary: #cdced1; color: #cdced1;" Icon="@Icons.Filled.ExposurePlus1" IconColor="Color.Warning"  Href="/totalclaims">Total Claims</MudNavLink>
+                <MudNavLink Style="--mud-palette-primary: #cdced1; color: #cdced1;" Icon="@Icons.Filled.ExposurePlus1" IconColor="Color.Warning"  Href="/discordtotalclaims">Discord Daily Total Claims</MudNavLink>
+                <MudNavLink Style="--mud-palette-primary: #cdced1; color: #cdced1;" Icon="@Icons.Filled.Message" IconColor="Color.Warning"  Href="/discordlevel">Discord Level</MudNavLink>
+                <MudNavLink Style="--mud-palette-primary: #cdced1; color: #cdced1;" Icon="@Icons.Filled.ExposurePlus1" IconColor="Color.Warning"  Href="/discordxp">Discord XP</MudNavLink>
+                <MudNavLink Style="--mud-palette-primary: #cdced1; color: #cdced1;" Icon="@Icons.Filled.Timelapse" IconColor="Color.Warning"  Href="/minutesthisstream">Minutes Watched This Stream</MudNavLink>
+                <MudNavLink Style="--mud-palette-primary: #cdced1; color: #cdced1;" Icon="@Icons.Filled.Timelapse" IconColor="Color.Warning"  Href="/minutesthisweek">Minutes Watched This Week</MudNavLink>
+                <MudNavLink Style="--mud-palette-primary: #cdced1; color: #cdced1;" Icon="@Icons.Filled.Timelapse" IconColor="Color.Warning"  Href="/minutesthismonth">Minutes Watched This Month</MudNavLink>
+                <MudNavLink Style="--mud-palette-primary: #cdced1; color: #cdced1;" Icon="@Icons.Filled.Adb" IconColor="Color.Warning"  Href="/twitchbosses">Twitch Bosses Completed</MudNavLink>
+            </MudNavGroup>
+            <MudNavGroup Title="Stats" Icon="@Icons.Filled.InsertChartOutlined" IconColor="Color.Warning" Style="color: #66a1ff;" >
+                <MudNavLink Style="--mud-palette-primary: #cdced1; color: #cdced1;" Icon="@Icons.Filled.ChangeCircle" IconColor="Color.Warning" Href="/spinstats">Twitch Spin Stats</MudNavLink>
+            </MudNavGroup>
+            <MudNavLink Style="--mud-palette-primary: #cdced1; color: #cdced1;" Icon="@Icons.Filled.PersonSearch" IconColor="Color.Warning" Href="/usersearch">User Search</MudNavLink>
+            <MudNavLink Style="--mud-palette-primary: #cdced1; color: #cdced1;" Icon="@Icons.Filled.CreditCard" IconColor="Color.Warning" Href="/subathon">Subathon</MudNavLink>
+        </MudNavMenu>
+    </MudDrawer>
+
+    <MudAppBar Fixed="true">
+        <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@ToggleDrawer" />
+        <MudSpacer></MudSpacer>
+        <MudText Style="color: white;">Made by Guinea</MudText>
+        <MudIconButton Icon="@Icons.Custom.Brands.GitHub" Color="Color.Inherit" Link="https://github.com/Bregann/"></MudIconButton>
+        <MudIconButton Icon="@Icons.Custom.Brands.Twitter" Color="Color.Inherit" Link="https://twitter.com/B_Regan_"></MudIconButton>
+        <MudIconButton Icon="@Icons.Custom.Brands.Steam" Color="Color.Inherit" Link="https://steamcommunity.com/id/guineaa"></MudIconButton>
+        <MudIconButton Icon="@Icons.Custom.Brands.Instagram" Color="Color.Inherit" Link="https://www.instagram.com/bregan.photography/"></MudIconButton>
+        <MudIconButton Icon="@Icons.Filled.Coffee" Color="Color.Inherit" Link="https://ko-fi.com/bregan"></MudIconButton>
+        <MudIconButton Icon="@Icons.Filled.CameraAlt" Color="Color.Inherit" Link="https://www.flickr.com/people/breganphotography/"></MudIconButton>
+        <MudIconButton Icon="@Icons.Custom.Uncategorized.Fish" Color="Color.Inherit" Link="https://www.twitch.tv/guinea"></MudIconButton>
+    </MudAppBar>
+
+
+
+@code{
+    bool open = true;
+
+    void ToggleDrawer()
+    {
+        open = !open;
+    }
+}
+
+
+
+
