@@ -43,9 +43,16 @@ namespace BreganTwitchBot.Services
                 return;
             }
 
-            if (arg.Channel.Id != 713365310408884236 && command.CommandName == "socks") //socks channel   713365310408884236
+            if (arg.Channel.Id != Config.DiscordSocksChannelID && command.CommandName == "socks") //socks channel   713365310408884236
             {
                 await arg.RespondAsync("Please use the socks maker channel!", ephemeral: true);
+                return;
+            }
+
+            if (command.CommandName == "socks" && arg.Channel.Id == Config.DiscordSocksChannelID)
+            {
+                var contextSocks = new SocketInteractionContext(DiscordClient, arg);
+                await _interactionService.ExecuteCommandAsync(contextSocks, _services);
                 return;
             }
 

@@ -1,5 +1,6 @@
 ﻿using BreganTwitchBot.Core.Twitch.Commands;
 using BreganTwitchBot.Core.Twitch.Commands.Modules.DiceRoll;
+using BreganTwitchBot.Core.Twitch.Commands.Modules.WordBlacklist;
 using BreganTwitchBot.Core.Twitch.Helpers;
 using BreganTwitchBot.Core.Twitch.Services;
 using BreganTwitchBot.Core.Twitch.Services.Stats.Enums;
@@ -10,6 +11,7 @@ using BreganTwitchBot.Twitch.Helpers;
 using Serilog;
 using TwitchLib.Client.Events;
 using TwitchLib.PubSub.Events;
+using Subathon = BreganTwitchBot.Core.Twitch.Commands.Modules.Subathon;
 
 namespace BreganTwitchBot.Events
 {
@@ -63,6 +65,8 @@ namespace BreganTwitchBot.Events
 
         private static void BitsReceived(object? sender, OnBitsReceivedV2Args e)
         {
+            Subathon.Subathon.AddSubathonBitsTime(e.BitsUsed, e.UserName.ToLower());
+
             using(var context = new DatabaseContext())
             {
                 var user = context.Users.Where(x => x.TwitchUserId == e.UserId).FirstOrDefault();
@@ -86,12 +90,24 @@ namespace BreganTwitchBot.Events
 
         private static void UserLeft(object? sender, OnUserLeftArgs e)
         {
+            using(var context = new DatabaseContext())
+            {
+                var user = context.Users.Where(x => x.Username == e.Username).FirstOrDefault();
 
+                if (user != null)
+                {
+                    user.InStream = false;
+                    context.Users.Update(user);
+                    context.SaveChanges();
+                }
+            }
+
+            Log.Information($"[User Left] {e.Username} left the stream");
         }
 
         private static void UserJoined(object? sender, OnUserJoinedArgs e)
         {
-
+            Log.Information($"[User Joined] {e.Username} joined the stream");
         }
 
         private static async void RaidNotification(object? sender, OnRaidNotificationArgs e)
@@ -111,6 +127,8 @@ namespace BreganTwitchBot.Events
             var subName = "";
             int.TryParse(e.ReSubscriber.MsgParamCumulativeMonths, out var months);
             int.TryParse(e.ReSubscriber.MsgParamStreakMonths, out var streakMonths);
+
+            Subathon.Subathon.AddSubathonSubTime(e.ReSubscriber.SubscriptionPlan, e.ReSubscriber.DisplayName.ToLower());
 
             var sharedStreakMessage = streakMonths == 0 ? "they did not share their sub streak :(" : $"They are on a {streakMonths} month sub streak <3 PogChamp blocksGuinea1 blocksGuinea2 blocksGuinea3 blocksW blocksOK blocksGuinea blocksMarge blocksBitrate blocksSWIRL blocksFail blocksWOT blocksEcho blocksEcho";
 
@@ -146,6 +164,8 @@ namespace BreganTwitchBot.Events
         {
             var subName = "";
 
+            Subathon.Subathon.AddSubathonSubTime(e.Subscriber.SubscriptionPlan, e.Subscriber.DisplayName.ToLower());
+
             switch (e.Subscriber.SubscriptionPlan)
             {
                 case TwitchLib.Client.Enums.SubscriptionPlan.NotSet:
@@ -171,12 +191,15 @@ namespace BreganTwitchBot.Events
                     break;
             }
 
+            StreamStatsService.UpdateStreamStat(1, StatTypes.NewSubscriber);
             TwitchHelper.SendMessage($"Welcome {e.Subscriber.DisplayName}to the {Config.BroadcasterName} squad with a {subName}");
         }
 
         private static void GiftedSubscription(object? sender, OnGiftedSubscriptionArgs e)
         {
             var subName = "";
+
+            Subathon.Subathon.AddSubathonSubTime(e.GiftedSubscription.MsgParamSubPlan, e.GiftedSubscription.DisplayName.ToLower());
 
             switch (e.GiftedSubscription.MsgParamSubPlan)
             {
@@ -247,7 +270,16 @@ namespace BreganTwitchBot.Events
 
         private static void MessageReceived(object? sender, OnMessageReceivedArgs e)
         {
-            CommandHandler.HandleCustomCommand(e);
+            try
+            {
+                CommandHandler.HandleCustomCommand(e);
+            }
+            catch (Exception ex)
+            {
+                Log.Information($"[Commands] {ex}");
+            }
+
+            WordBlacklist.OnMessageReceived(e);
 
             using (var context = new DatabaseContext())
             {
@@ -322,7 +354,14 @@ namespace BreganTwitchBot.Events
 
         private static async void ChatCommandReceived(object? sender, OnChatCommandReceivedArgs e)
         {
-            await CommandHandler.HandleCommand(e);
+            try
+            {
+                await CommandHandler.HandleCommand(e);
+            }
+            catch (Exception ex)
+            {
+                Log.Information($"[Twitch Commands] {ex}");
+            }
         }
     }
 }

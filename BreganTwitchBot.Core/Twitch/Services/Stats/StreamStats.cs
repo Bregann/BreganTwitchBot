@@ -1,7 +1,6 @@
-﻿using BreganTwitchbot.Data.Models;
+﻿using BreganTwitchBot.Data.Models;
 using BreganTwitchBot.Core.Twitch.Services.Stats.Enums;
 using BreganTwitchBot.Data;
-using BreganTwitchBot.Data.Models;
 using BreganTwitchBot.DiscordBot.Helpers;
 using BreganTwitchBot.Services;
 using Microsoft.EntityFrameworkCore;
@@ -95,6 +94,9 @@ namespace BreganTwitchBot.Core.Twitch.Services
                     case StatTypes.AmountOfDiscordUsersJoined:
                         context.StreamStats.OrderBy(x => x.StreamId).Last().AmountOfDiscordUsersJoined += amount;
                         break;
+                    case StatTypes.NewSubscriber:
+                        context.StreamStats.OrderBy(x => x.StreamId).Last().NewSubscribers += amount;
+                        break;
                 }
 
                 context.SaveChanges();
@@ -125,6 +127,12 @@ namespace BreganTwitchBot.Core.Twitch.Services
             using (var context = new DatabaseContext())
             {
                 var streamId = context.StreamStats.OrderBy(x => x.StreamId).Last().StreamId;
+                Log.Information("stats debug " + streamId.ToString());
+
+                var newStreamId = streamId + 1;
+
+                Log.Information("stats debug " + newStreamId.ToString());
+
 
                 //Clear out the tables
                 context.UniqueViewers.FromSqlRaw("DELETE from UniqueViewers");
@@ -133,6 +141,7 @@ namespace BreganTwitchBot.Core.Twitch.Services
                 //Add in a new stream stats
                 context.StreamStats.Add(new StreamStats
                 {
+                    StreamId = newStreamId,
                     AmountOfDiscordUsersJoined = 0,
                     AmountOfRewardsRedeemed = 0,
                     AmountOfUsersReset = 0,
@@ -165,7 +174,6 @@ namespace BreganTwitchBot.Core.Twitch.Services
                     StartingFollowerCount = followerCount,
                     StartingSubscriberCount = subCount,
                     StreamEnded = new DateTime(0),
-                    StreamId = streamId++,
                     StreamStarted = DateTime.Now,
                     TotalBans = 0,
                     TotalPointsClaimed = 0,
@@ -249,7 +257,7 @@ namespace BreganTwitchBot.Core.Twitch.Services
             using (var context = new DatabaseContext())
             {
                 var averageViewers = context.StreamViewCount.ToList().Average(x => x.ViewCount);
-                var peakViewCount = context.StreamViewCount.OrderBy(x => x.ViewCount).First();
+                var peakViewCount = context.StreamViewCount.OrderByDescending(x => x.ViewCount).First();
 
                 //Set the end stream stuff
                 var streamStats = context.StreamStats.OrderBy(x => x.StreamId).Last();
@@ -259,6 +267,7 @@ namespace BreganTwitchBot.Core.Twitch.Services
                 streamStats.PeakViewerCount = peakViewCount.ViewCount;
                 streamStats.EndingFollowerCount = followerCount;
                 streamStats.EndingSubscriberCount = subCount;
+                streamStats.NewFollowers = streamStats.StartingFollowerCount - followerCount;
 
                 context.StreamStats.Update(streamStats);
                 context.SaveChanges();

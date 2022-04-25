@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace BreganTwitchbot.Data.Models
+namespace BreganTwitchBot.Data.Models
 {
     public class StreamViewCount
     {

@@ -26,6 +26,8 @@ namespace BreganTwitchBot
         public static bool DailyPointsCollectingAllowed { get; private set; } = false;
         public static bool StreamAnnounced { get; private set; } = false;
         public static bool StreamerLive { get; private set; } = true;
+        public static TimeSpan SubathonTime { get; private set; }
+
 
         //Discord - private Discord
         public static readonly string DiscordAPIKey = "";
@@ -57,6 +59,7 @@ namespace BreganTwitchBot
         public static bool DailyPointsCollectingAllowed { get; private set; } = false;
         public static bool StreamAnnounced { get; private set; } = false;
         public static bool StreamerLive { get; private set; } = false;
+        public static TimeSpan SubathonTime { get; private set; }
 
         //Discord
         public static readonly string DiscordAPIKey = "";
@@ -74,6 +77,7 @@ namespace BreganTwitchBot
 #endif
 
         private static bool _doublePingJobStarted = false;
+        public static readonly bool SubathonActive = true;
 
         public static async Task LoadConfigAndInsertDatabaseFieldsIfNeeded()
         {
@@ -176,8 +180,10 @@ namespace BreganTwitchBot
                     using (var context = new DatabaseContext())
                     {
                         context.Config.First().StreamAnnounced = true;
+                        context.SaveChanges();
                     }
 
+                    StreamAnnounced = true;
                     await StreamStatsService.AddNewStream();
                     await DiscordHelper.AnnounceStream();
                     await JobScheduler.StartTwitchBossStreamAnnounceJob();
@@ -211,6 +217,20 @@ namespace BreganTwitchBot
                 context.Config.First().StreamAnnounced = false;
                 context.SaveChanges();
             }
+        }
+
+        public static void AddSubathonTime(TimeSpan tsToAdd)
+        {
+            SubathonTime += tsToAdd;
+            Log.Information($"[Subathon Time] {SubathonTime}");
+
+            using (var context = new DatabaseContext())
+            {
+                context.Config.First().SubathonTime = SubathonTime;
+                context.SaveChanges();
+            }
+
+            Log.Information($"[Subathon Time] {tsToAdd} added");
         }
     }
 }

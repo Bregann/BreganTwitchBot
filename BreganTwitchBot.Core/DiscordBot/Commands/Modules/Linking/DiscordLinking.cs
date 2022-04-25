@@ -124,14 +124,23 @@ namespace BreganTwitchBot.Core.DiscordBot.Commands.Modules.Linking
             //insert into db
             using (var context = new DatabaseContext())
             {
+                //Check if there is already a link request for the user
+                var existingRequest = context.DiscordLinkRequests.Where(x => x.DiscordID == discordId || x.TwitchName == twitchName).FirstOrDefault();
+
+                if (existingRequest != null)
+                {
+                    context.DiscordLinkRequests.Remove(existingRequest);
+                }
+
                 var linkRequest = new DiscordLinkRequests
                 {
                     DiscordID = discordId,
                     TwitchName = twitchName
                 };
 
-                context.DiscordLinkRequests.Update(linkRequest);
+                context.DiscordLinkRequests.Add(linkRequest);
                 context.SaveChanges();
+
             }
 
             return "Head over to https://twitch.tv/blocksssssss and type in !link in the Twitch chat to link your account!";

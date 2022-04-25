@@ -75,6 +75,7 @@ namespace BreganTwitchBot.Core.Twitch.Commands.Modules.CustomCommands
 
             //does it exist
             var commandExists = false;
+            var cmdText = "";
 
             using (var context = new DatabaseContext())
             {
@@ -83,6 +84,7 @@ namespace BreganTwitchBot.Core.Twitch.Commands.Modules.CustomCommands
                 if (cmd != null)
                 {
                     commandExists = true;
+                    cmdText = cmd.CommandText;
                 }
             }
 
@@ -95,14 +97,13 @@ namespace BreganTwitchBot.Core.Twitch.Commands.Modules.CustomCommands
 
             //hoo it does lets remove it
             var commandName = command.Command.ArgumentsAsList[0].ToLower();
-            var commandText = command.Command.ArgumentsAsString.Remove(0, commandName.Length + 1);
 
             using (var context = new DatabaseContext())
             {
                 context.Commands.Remove(new Data.Models.Commands
                 {
                     CommandName = commandName,
-                    CommandText = commandText
+                    CommandText = cmdText
                 });
 
                 context.SaveChanges();

@@ -23,5 +23,8 @@ namespace BreganTwitchBot.Data.Models
 
         [Column("lastDailyPointsAllowed")]
         public DateTime LastDailyPointsAllowed { get; set; }
+
+        [Column("subathonTime")]
+        public TimeSpan SubathonTime { get; set; }
     }
 }

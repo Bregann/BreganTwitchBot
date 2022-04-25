@@ -1,5 +1,4 @@
-﻿using BreganTwitchbot.Data.Models;
-using BreganTwitchBot.Data.Models;
+﻿using BreganTwitchBot.Data.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace BreganTwitchBot.Data
@@ -15,6 +14,7 @@ namespace BreganTwitchBot.Data
         public DbSet<Users> Users { get; set; }
         public DbSet<StreamViewCount> StreamViewCount { get; set; }
         public DbSet<UniqueViewers> UniqueViewers { get; set; }
+        public DbSet<Subathon> Subathon { get; set; }
 
 #if DEBUG
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)

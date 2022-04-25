@@ -82,7 +82,7 @@ namespace BreganTwitchBot.Core.DiscordBot.Commands.Modules.GeneralCommands.Givea
             }
 
             var msg = channel.GetMessageAsync(interactionId);
-            var emote = await DiscordConnection.DiscordClient.GetGuild(Config.DiscordGuildID).GetEmoteAsync(Config.DiscordGiveawayChannelID);
+            var emote = await DiscordConnection.DiscordClient.GetGuild(Config.DiscordGuildID).GetEmoteAsync(384735587552198662);
 
             var reactions = msg.Result.GetReactionUsersAsync(emote, 500).Flatten();
             var list = await (from item in reactions select item.Id).ToListAsync();

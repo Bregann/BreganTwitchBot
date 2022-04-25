@@ -25,6 +25,7 @@
         AmountOfUsersReset = 20,
         AmountOfRewardsRedeemd = 21,
         RewardRedeemCost = 22,
-        AmountOfDiscordUsersJoined = 23
+        AmountOfDiscordUsersJoined = 23,
+        NewSubscriber = 24
     }
 }

@@ -25,11 +25,30 @@
     <PackageReference Include="SixLabors.ImageSharp.Drawing" Version="1.0.0-beta14" />
     <PackageReference Include="TwitchLib.Api" Version="3.5.2" />
     <PackageReference Include="TwitchLib.Client" Version="3.2.6-preview-5e869129649a88c4cb8d7fb824f17f9397d1668b" />
+    <PackageReference Include="TwitchLib.Communication.Clients.FDGTClient" Version="1.0.0" />
     <PackageReference Include="TwitchLib.PubSub" Version="3.2.5-preview-e27b78571148879a04eaea2cf45441a35b0e908f" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\BreganTwitchbot.Data\BreganTwitchbot.Data.csproj" />
+    <ProjectReference Include="..\BreganTwitchbot.Data\BreganTwitchBot.Data.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Update="Twitch\Commands\Modules\WordBlacklist\RankBeggar.consumption.cs">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Compile>
+    <Compile Update="Twitch\Commands\Modules\WordBlacklist\RankBeggar.training.cs">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Compile>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="Twitch\Commands\Modules\WordBlacklist\RankBeggar.mbconfig">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Twitch\Commands\Modules\WordBlacklist\RankBeggar.zip">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
 </Project>

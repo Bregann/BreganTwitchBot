@@ -19,7 +19,6 @@ namespace BreganTwitchBot.Services
 
         internal async Task Connect()
         {
-
             var clientOptions = new ClientOptions
             {
                 MessagesAllowedInPeriod = 100,

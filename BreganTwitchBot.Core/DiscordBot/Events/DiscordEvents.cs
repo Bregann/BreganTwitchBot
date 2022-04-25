@@ -211,7 +211,6 @@ namespace BreganTwitchBot.DiscordBot.Events
             if (arg.Channel.Id == 713365310408884236)
             {
                 await arg.DeleteAsync();
-
             }
 
             if (arg.Content.ToLower().Contains("nitro") || arg.Content.ToLower().Contains(".gift"))
@@ -381,7 +380,7 @@ namespace BreganTwitchBot.DiscordBot.Events
 
             using (var how2LinkGif = new FileStream($"Skins/how2link.gif", FileMode.Open))
             {
-                var channel2 = await DiscordConnection.DiscordClient.GetChannelAsync(Config.DiscordRankUpAnnouncementChannelID) as IMessageChannel;
+                var channel2 = await DiscordConnection.DiscordClient.GetChannelAsync(Config.DiscordLinkingChannelID) as IMessageChannel;
                 await channel2.SendFileAsync(how2LinkGif, "how2link.gif", $"Welcome {arg.Mention}! \n\n To access the Discord Server, you must link your Twitch account with Discord by using the ``/link`` command!");
             };
 

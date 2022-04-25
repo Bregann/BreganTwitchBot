@@ -12,6 +12,7 @@ using BreganTwitchBot.Core.Twitch.Commands.Modules.Linking;
 using BreganTwitchBot.Core.Twitch.Commands.Modules.Marbles;
 using BreganTwitchBot.Core.Twitch.Commands.Modules.Points;
 using BreganTwitchBot.Core.Twitch.Commands.Modules.StreamInfo;
+using BreganTwitchBot.Core.Twitch.Commands.Modules.Subathon;
 using BreganTwitchBot.Core.Twitch.Commands.Modules.SuperMods;
 using BreganTwitchBot.Core.Twitch.Commands.Modules.TwitchBosses;
 using BreganTwitchBot.Core.Twitch.Commands.Modules.Uptime;
@@ -66,7 +67,7 @@ namespace BreganTwitchBot.Core.Twitch.Commands
 
             //Handle custom command
             var commandName = command.Command.ChatMessage.Message.Split(" ")[0].ToLower();
-            SendCustomCommandAndUpdateUsage(commandName, command.Command.ChatMessage.UserId, command.Command.ChatMessage.UserId);
+            SendCustomCommandAndUpdateUsage(commandName, command.Command.ChatMessage.UserId, command.Command.ChatMessage.Username);
 
             //The main commands
             switch (command.Command.CommandText.ToLower())
@@ -269,6 +270,9 @@ namespace BreganTwitchBot.Core.Twitch.Commands
                     break;
                 case "addmarbleswin" when SuperMods.IsUserSupermod(command.Command.ChatMessage.UserId):
                     await Marbles.HandleAddMarblesWinCommand(command);
+                    break;
+                case "subathon":
+                    Subathon.HandleSubathonCommand(command.Command.ChatMessage.Username);
                     break;
             }
 

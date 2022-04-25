@@ -14,7 +14,7 @@ namespace BreganTwitchBot.Core.Twitch.Commands.Modules.DiceRoll
 
             using (var context = new DatabaseContext())
             {
-                var user = context.Users.FirstOrDefault();
+                var user = context.Users.Where(x => x.Username == username).FirstOrDefault();
 
                 if (user != null)
                 {

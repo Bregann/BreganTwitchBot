@@ -70,6 +70,7 @@ namespace BreganTwitchBot.Core.Twitch.Commands.Modules.DailyPoints
                         foreach (var user in usersToReset)
                         {
                             user.CurrentStreak = 0;
+                            amountOfUsersReset++;
                         }
 
                         foreach (var user in usersToAllowCollecting)

@@ -43,7 +43,7 @@ namespace BreganTwitchBot.Core.Twitch.Services
                     }
                 }
 
-                context.StreamStats.OrderBy(x => x.StreamId).Last().PointsGainedWatching = totalPointsAdded;
+                context.StreamStats.OrderBy(x => x.StreamId).Last().PointsGainedWatching += totalPointsAdded;
                 context.Users.UpdateRange(usersBeingUpdated);
                 context.SaveChanges();
 
