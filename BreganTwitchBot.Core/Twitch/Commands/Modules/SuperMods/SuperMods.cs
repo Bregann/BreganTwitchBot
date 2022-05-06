@@ -6,20 +6,21 @@ namespace BreganTwitchBot.Core.Twitch.Commands.Modules.SuperMods
 {
     public class SuperMods
     {
-        private static List<string> _superModIds;
-
         public static bool IsUserSupermod(string userId)
         {
-            //If the supermods haven't been loaded
-            if (_superModIds == null)
+            using (var context = new DatabaseContext())
             {
-                using (var context = new DatabaseContext())
+                var user = context.Users.Where(x => x.TwitchUserId == userId && x.IsSuperMod).FirstOrDefault();
+
+                if (user == null)
                 {
-                    _superModIds = context.Users.Where(x => x.IsSuperMod == true).Select(x => x.TwitchUserId).ToList();
+                    return false;
+                }
+                else
+                {
+                    return true;
                 }
             }
-
-            return _superModIds.Contains(userId);
         }
 
         public static async Task HandleAddSupermodCommand(OnChatCommandReceivedArgs command)

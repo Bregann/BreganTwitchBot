@@ -1,3 +1,4 @@
+using Blazor.Analytics;
 using BreganTwitchBot.Web.Data;
 using BreganTwitchBot.Web.Data.Commands;
 using BreganTwitchBot.Web.Data.Leaderboards;
@@ -20,8 +21,8 @@ builder.Services.AddSingleton<CustomCommandsService>();
 builder.Services.AddSingleton<UserSearchService>();
 builder.Services.AddSingleton<LeaderboardsService>();
 builder.Services.AddMudServices();
+builder.Services.AddGoogleAnalytics("G-8S83WNS8CG");
 builder.Logging.AddSerilog();
-
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

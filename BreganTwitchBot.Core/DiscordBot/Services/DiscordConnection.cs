@@ -83,7 +83,7 @@ namespace BreganTwitchBot.Services
             await DiscordEvents.SetupDiscordEvents();
             CustomCommands.SetupCustomCommands();
 
-            await DiscordClient.SetGameAsync("test", type: ActivityType.Watching);
+            await DiscordClient.SetGameAsync("many users", type: ActivityType.Watching);
             await DiscordClient.DownloadUsersAsync(DiscordClient.Guilds);
 
             _interactionService = new InteractionService(DiscordClient.Rest);

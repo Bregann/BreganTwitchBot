@@ -77,7 +77,7 @@ namespace BreganTwitchBot
 #endif
 
         private static bool _doublePingJobStarted = false;
-        public static readonly bool SubathonActive = true;
+        public static readonly bool SubathonActive = false;
 
         public static async Task LoadConfigAndInsertDatabaseFieldsIfNeeded()
         {
@@ -94,7 +94,8 @@ namespace BreganTwitchBot
                         DailyPointsCollectingAllowed = false,
                         BroadcasterRefresh = "",
                         StreamAnnounced = false,
-                        LastDailyPointsAllowed = DateTime.Now.AddDays(-1)
+                        LastDailyPointsAllowed = DateTime.Now.AddDays(-1),
+                        SubathonTime = TimeSpan.FromSeconds(0)
                     });
 
                     await context.SaveChangesAsync();
@@ -130,6 +131,7 @@ namespace BreganTwitchBot
                 BroadcasterRefresh = configVariables.BroadcasterRefresh;
                 DailyPointsCollectingAllowed = configVariables.DailyPointsCollectingAllowed;
                 StreamAnnounced = configVariables.StreamAnnounced;
+                SubathonTime = configVariables.SubathonTime;
             }
         }
 

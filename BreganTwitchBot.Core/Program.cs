@@ -3,8 +3,9 @@ using BreganTwitchBot.Core.Twitch.Commands.Modules.WordBlacklist;
 using BreganTwitchBot.Events;
 using BreganTwitchBot.Services;
 using Serilog;
+using Serilog.Events;
 
-Log.Logger = new LoggerConfiguration().WriteTo.File("Logs/log.log", rollingInterval: RollingInterval.Day, retainedFileCountLimit: null).WriteTo.Console().CreateLogger();
+Log.Logger = new LoggerConfiguration().WriteTo.File("Logs/log.log", rollingInterval: RollingInterval.Day, retainedFileCountLimit: null).WriteTo.Console(restrictedToMinimumLevel: Serilog.Events.LogEventLevel.Information).CreateLogger();
 Log.Information("Logger Setup");
 
 AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);

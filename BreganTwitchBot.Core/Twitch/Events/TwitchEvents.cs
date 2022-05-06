@@ -270,86 +270,96 @@ namespace BreganTwitchBot.Events
 
         private static void MessageReceived(object? sender, OnMessageReceivedArgs e)
         {
+            Log.Information($"[Twitch Message Received] Username: {e.ChatMessage.Username} Message: {e.ChatMessage.Message}");
+
             try
             {
                 CommandHandler.HandleCustomCommand(e);
+
+                WordBlacklist.OnMessageReceived(e);
+
+                using (var context = new DatabaseContext())
+                {
+                    var user = context.Users.Where(x => x.TwitchUserId == e.ChatMessage.UserId).FirstOrDefault();
+                    var uniqueUser = context.UniqueViewers.Where(x => x.Username == e.ChatMessage.Username).FirstOrDefault();
+
+                    if (uniqueUser == null)
+                    {
+                        context.UniqueViewers.Add(new UniqueViewers
+                        {
+                            Username = e.ChatMessage.Username
+                        });
+                    }
+
+                    if (user != null)
+                    {
+                        user.TotalMessages++;
+                        user.Username = e.ChatMessage.Username.ToLower();
+                        user.InStream = true;
+                        user.IsSub = e.ChatMessage.IsSubscriber;
+                    }
+                    else
+                    {
+                        var newUser = new Users
+                        {
+                            TwitchUserId = e.ChatMessage.UserId,
+                            Username = e.ChatMessage.Username.ToLower(),
+                            InStream = true,
+                            IsSub = e.ChatMessage.IsSubscriber,
+                            MinutesInStream = 0,
+                            Points = 0,
+                            IsSuperMod = false,
+                            TotalMessages = 1,
+                            DiscordUserId = 0,
+                            LastSeenDate = DateTime.Now,
+                            PointsGambled = 0,
+                            PointsWon = 0,
+                            PointsLost = 0,
+                            TotalSpins = 0,
+                            Tier1Wins = 0,
+                            Tier2Wins = 0,
+                            Tier3Wins = 0,
+                            JackpotWins = 0,
+                            SmorcWins = 0,
+                            CurrentStreak = 0,
+                            HighestStreak = 0,
+                            TotalTimesClaimed = 0,
+                            TotalPointsClaimed = 0,
+                            PointsLastClaimed = new DateTime(0),
+                            PointsClaimedThisStream = false,
+                            GiftedSubsThisMonth = 0,
+                            BitsDonatedThisMonth = 0,
+                            MarblesWins = 0,
+                            DiceRolls = 0,
+                            BonusDiceRolls = 0,
+                            DiscordDailyStreak = 0,
+                            DiscordDailyTotalClaims = 0,
+                            DiscordDailyClaimed = false,
+                            DiscordLevel = 0,
+                            DiscordXp = 0,
+                            DiscordLevelUpNotifsEnabled = true,
+                            PrestigeLevel = 0,
+                            MinutesWatchedThisStream = 0,
+                            MinutesWatchedThisWeek = 0,
+                            MinutesWatchedThisMonth = 0,
+                            BossesDone = 0,
+                            BossesPointsWon = 0,
+                            TimeoutStrikes = 0,
+                            WarnStrikes = 0
+                        };
+
+                        context.Users.Add(newUser);
+                    }
+
+                    context.SaveChanges();
+                }
+
+                StreamStatsService.UpdateStreamStat(1, StatTypes.MessagesReceived);
             }
             catch (Exception ex)
             {
                 Log.Information($"[Commands] {ex}");
             }
-
-            WordBlacklist.OnMessageReceived(e);
-
-            using (var context = new DatabaseContext())
-            {
-                var user = context.Users.Where(x => x.TwitchUserId == e.ChatMessage.UserId).FirstOrDefault();
-
-                if (user != null)
-                {
-                    user.TotalMessages++;
-                    user.Username = e.ChatMessage.Username.ToLower();
-                    user.InStream = true;
-                    user.IsSub = e.ChatMessage.IsSubscriber;
-                }
-                else
-                {
-                    var newUser = new Users
-                    {
-                        TwitchUserId = e.ChatMessage.UserId,
-                        Username = e.ChatMessage.Username.ToLower(),
-                        InStream = true,
-                        IsSub = e.ChatMessage.IsSubscriber,
-                        MinutesInStream = 0,
-                        Points = 0,
-                        IsSuperMod = false,
-                        TotalMessages = 1,
-                        DiscordUserId = 0,
-                        LastSeenDate = DateTime.Now,
-                        PointsGambled = 0,
-                        PointsWon = 0,
-                        PointsLost = 0,
-                        TotalSpins = 0,
-                        Tier1Wins = 0,
-                        Tier2Wins = 0,
-                        Tier3Wins = 0,
-                        JackpotWins = 0,
-                        SmorcWins = 0,
-                        CurrentStreak = 0,
-                        HighestStreak = 0,
-                        TotalTimesClaimed = 0,
-                        TotalPointsClaimed = 0,
-                        PointsLastClaimed = new DateTime(0),
-                        PointsClaimedThisStream = false,
-                        GiftedSubsThisMonth = 0,
-                        BitsDonatedThisMonth = 0,
-                        MarblesWins = 0,
-                        DiceRolls = 0,
-                        BonusDiceRolls = 0,
-                        DiscordDailyStreak = 0,
-                        DiscordDailyTotalClaims = 0,
-                        DiscordDailyClaimed = false,
-                        DiscordLevel = 0,
-                        DiscordXp = 0,
-                        DiscordLevelUpNotifsEnabled = true,
-                        PrestigeLevel = 0,
-                        MinutesWatchedThisStream = 0,
-                        MinutesWatchedThisWeek = 0,
-                        MinutesWatchedThisMonth = 0,
-                        BossesDone = 0,
-                        BossesPointsWon = 0,
-                        TimeoutStrikes = 0,
-                        WarnStrikes = 0
-                    };
-
-                    context.Users.Add(newUser);
-                }
-
-                context.SaveChanges();
-            }
-
-            StreamStatsService.UpdateStreamStat(1, StatTypes.MessagesReceived);
-            Log.Information($"[Twitch Message Received] Username: {e.ChatMessage.Username} Message: {e.ChatMessage.Message}");
         }
 
         private static async void ChatCommandReceived(object? sender, OnChatCommandReceivedArgs e)

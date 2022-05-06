@@ -183,8 +183,7 @@ namespace BreganTwitchBot.Core.Twitch.Commands.Modules.DailyPoints
                 pointsToAdd = roundedStreakAmount * 200;
             }
 
-            PointsHelper.AddUserPoints(command.Command.ChatMessage.Username.ToLower(), pointsToAdd);
-
+            user.Points += pointsToAdd;
             user.PointsLastClaimed = DateTime.Now;
             user.PointsClaimedThisStream = true;
             user.TotalPointsClaimed += pointsToAdd;

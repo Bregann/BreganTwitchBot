@@ -58,7 +58,7 @@ namespace BreganTwitchBot.Services
             var warnedUsersTrigger = TriggerBuilder.Create().WithIdentity("warnedUsersTrigger").WithSimpleSchedule(x => x.WithIntervalInMinutes(5).RepeatForever()).StartAt(DateTimeOffset.Now.AddSeconds(30)).Build();
 
             //Reset weekly/monthly minutes
-            var resetMinutesTrigger = TriggerBuilder.Create().WithIdentity("resetMinutesTrigger").WithCronSchedule("0 0 3 1/1 * ? *").Build();
+            var resetMinutesTrigger = TriggerBuilder.Create().WithIdentity("resetMinutesTrigger").WithCronSchedule("0 5 3 1/1 * ? *").Build();
             var resetMinutes = JobBuilder.Create<ResetMinutesJob>().WithIdentity("resetMinutes").Build();
 
             //Check if bot is connected to twitch
@@ -424,6 +424,20 @@ namespace BreganTwitchBot.Services
                     dbContext.SaveChanges();
                     Log.Information("[Minutes Job] Weekly minutes reset");
                 }
+            }
+
+            using (var dbContext = new DatabaseContext())
+            {
+                var usersToReset = dbContext.Users.Where(x => x.MinutesWatchedThisStream != 0).ToList();
+
+                foreach (var user in usersToReset)
+                {
+                    user.MinutesWatchedThisStream = 0;
+                }
+
+                dbContext.Users.UpdateRange(usersToReset);
+                dbContext.SaveChanges();
+                Log.Information("[Minutes Job] Stream minutes reset");
             }
         }
     }

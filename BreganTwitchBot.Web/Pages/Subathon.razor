@@ -1,7 +1,184 @@
 ﻿@page "/subathon"
+@using System.Timers
+@using BreganTwitchBot.Data
+@using Humanizer
+@using Humanizer.Localisation
 
-<h3>Subathon</h3>
+@if(startCountdownMusic)
+{
+    <audio autoplay>
+      <source src="/content/audio/countdown.mp3" type="audio/mpeg">
+    </audio>
+}
+
+@if(recordScratch)
+{
+    <audio autoplay>
+      <source src="/content/audio/record.mp3" type="audio/mpeg">
+    </audio>
+}
+
+@if(quack)
+{
+    <audio autoplay>
+      <source src="/content/audio/quack.mp3" type="audio/mpeg">
+    </audio>
+}
+
+<MudText Typo="Typo.h2" Align="Align.Center" Style="color: white;" Class="pt-4">Subathon</MudText>
+<MudText Typo="Typo.h4" Align="Align.Center" Style="color: white;" Class="pt-4 pb-4">Time Left: @timeLeft</MudText>
+<MudText Typo="Typo.h6" Align="Align.Center" Style="color: white;" Class="pt-4 pb-4">Time Extended: @timeExtended</MudText>
+
+<MudContainer MaxWidth="MaxWidth.Large">
+    <MudGrid Justify="Justify.Center">
+        <MudItem xs=6>
+            <MudTable Items="subsLb" Hover=true Striped=true Style="background-color: #27272f;" Elevation=5>
+                <ToolBarContent>
+                    <MudText Typo="Typo.h6" Style="color: white;">Top 10 Subs Leaderboard</MudText>
+                    <MudSpacer />
+                </ToolBarContent>
+                <HeaderContent>
+                    <MudTh Style="color: white;">Username</MudTh>
+                    <MudTh Style="color: white;">Amount</MudTh>
+                </HeaderContent>
+                <RowTemplate>
+                    <MudTd DataLabel="Username">@context.Username</MudTd>
+                    <MudTd DataLabel="Amount">@context.SubsGifted.ToString("N0")</MudTd>
+                </RowTemplate>
+            </MudTable>
+        </MudItem>
+        <MudItem xs=6>
+            <MudTable Items="bitsLb" Hover=true Striped=true Style="background-color: #27272f;" Elevation=5>
+                <ToolBarContent>
+                    <MudText Typo="Typo.h6" Style="color: white;">Top 10 Bits Leaderboard</MudText>
+                    <MudSpacer />
+                </ToolBarContent>
+                <HeaderContent>
+                    <MudTh Style="color: white;">Username</MudTh>
+                    <MudTh Style="color: white;">Amount</MudTh>
+                </HeaderContent>
+                <RowTemplate>
+                    <MudTd DataLabel="Username">@context.Username</MudTd>
+                    <MudTd DataLabel="Amount">@context.BitsDonated.ToString("N0")</MudTd>
+                </RowTemplate>
+            </MudTable>
+        </MudItem>
+    </MudGrid>
+</MudContainer>
+
+
+
 
 @code {
+    public TimeSpan subathonTime = TimeSpan.FromSeconds(0);
+    public string timeLeft = "500 years";
+    public string timeExtended = "500 years";
+    public int counter;
+    public double secondsLeft;
+    public bool startCountdownMusic = false;
+    public bool isPlaying = false;
+    public bool recordScratch = false;
+    public bool quack = false;
 
+    public List<BreganTwitchBot.Data.Models.Subathon> subsLb = new ();
+    public List<BreganTwitchBot.Data.Models.Subathon> bitsLb = new ();
+
+    protected override void OnInitialized()
+    {
+        using(var context = new DatabaseContext())
+        {
+            subathonTime = context.Config.First().SubathonTime;
+            subsLb = context.Subathon.OrderByDescending(x => x.SubsGifted).Take(10).ToList();
+            bitsLb = context.Subathon.OrderByDescending(x => x.BitsDonated).Take(10).ToList();
+        }
+
+
+        timeExtended = subathonTime.Humanize(maxUnit: TimeUnit.Year, minUnit: TimeUnit.Second, precision: 7);
+
+        var timer = new System.Timers.Timer(1000);
+        timer.Elapsed += Timer_Elapsed;
+        timer.Start();
+    }
+
+    public void Timer_Elapsed(object sender, ElapsedEventArgs e)
+    {
+        double secondsLeftBeforeUpdate = secondsLeft;
+        recordScratch = false;
+        quack = false;
+
+        //if less than 60 seconds left get every second
+        if(secondsLeft < 60)
+        {
+            using(var context = new DatabaseContext())
+            {
+                subathonTime = context.Config.First().SubathonTime;
+                subsLb = context.Subathon.OrderByDescending(x => x.SubsGifted).Take(10).ToList();
+                bitsLb = context.Subathon.OrderByDescending(x => x.BitsDonated).Take(10).ToList();
+            }
+
+            timeExtended = subathonTime.Humanize(maxUnit: TimeUnit.Year, minUnit: TimeUnit.Second, precision: 7);
+        }
+        else
+        {
+            //every 5s get the updated info from db
+            if(counter == 5)
+            {
+                counter = 0;
+                using(var context = new DatabaseContext())
+                {
+                    subathonTime = context.Config.First().SubathonTime;
+                    subsLb = context.Subathon.OrderByDescending(x => x.SubsGifted).Take(10).ToList();
+                    bitsLb = context.Subathon.OrderByDescending(x => x.BitsDonated).Take(10).ToList();
+                }
+
+                timeExtended = subathonTime.Humanize(maxUnit: TimeUnit.Year, minUnit: TimeUnit.Second, precision: 7);
+            }
+
+        }
+
+        var startTime = new DateTime(2022, 5, 1, 12, 5, 0);
+
+        var endTimeDT = startTime.Add(subathonTime);
+        var timeDiff = endTimeDT - DateTime.Now;
+
+        timeLeft = timeDiff.Humanize(maxUnit: TimeUnit.Year, minUnit: TimeUnit.Second, precision: 7);
+        counter++;
+        secondsLeft = timeDiff.TotalSeconds;
+
+        if(secondsLeft <= 0)
+        {
+            timeLeft = "Subathon is over!";
+            InvokeAsync(StateHasChanged);
+            return;
+        }
+
+        //If someone has extended it then stop the playback and play the quack sound
+        if(secondsLeft > secondsLeftBeforeUpdate)
+        {
+            if (secondsLeft >= 30 && isPlaying)
+            {
+                startCountdownMusic = false;
+                isPlaying = false;
+                recordScratch = true;
+                InvokeAsync(StateHasChanged);
+                return;
+            }
+
+            var timeAdded = secondsLeft - secondsLeftBeforeUpdate;
+
+            if(secondsLeftBeforeUpdate != 0 && timeAdded > 50)
+            {
+                quack = true;
+            }
+        }
+
+        //Audio clip is 30s long
+        if(secondsLeft <= 30 && !isPlaying)
+        {
+            startCountdownMusic = true;
+            isPlaying = true;
+        }
+
+        InvokeAsync(StateHasChanged);
+    }
 }

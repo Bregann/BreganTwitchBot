@@ -31,7 +31,6 @@ namespace BreganTwitchBot.DiscordBot.Events
             DiscordConnection.DiscordClient.UserIsTyping += UserIsTyping;
             DiscordConnection.DiscordClient.MessageDeleted += MessageDeleted;
             DiscordConnection.DiscordClient.ButtonExecuted += ButtonPressed;
-
             using (var context = new DatabaseContext())
             {
                 _permBanWords = context.Blacklist.Where(x => x.WordType == "word").Select(x => x.Word).ToList();
@@ -417,11 +416,18 @@ namespace BreganTwitchBot.DiscordBot.Events
                 messageEmbed.AddField("Twitch username", user.Username);
                 messageEmbed.AddField("Minutes watched", userTime.Humanize(maxUnit: TimeUnit.Year, minUnit: TimeUnit.Second, precision: 7), true);
                 messageEmbed.AddField("Last in stream", user.LastSeenDate, true);
+
+                using (var context = new DatabaseContext())
+                {
+                    context.Users.Where(x => x.DiscordUserId == arg2.Id).FirstOrDefault().DiscordUserId = 0;
+                    context.SaveChanges();
+                }
             }
 
-            Log.Information($"[Discord] User Left: {arg2.Username}");
             var channel = await DiscordConnection.DiscordClient.GetChannelAsync(Config.DiscordEventChannelID) as IMessageChannel;
             await channel.SendMessageAsync(embed: messageEmbed.Build());
+
+            Log.Information($"[Discord] User Left: {arg2.Username}");
         }
 
         private static async Task UserVoiceStateUpdated(global::Discord.WebSocket.SocketUser arg1, global::Discord.WebSocket.SocketVoiceState arg2, global::Discord.WebSocket.SocketVoiceState arg3)

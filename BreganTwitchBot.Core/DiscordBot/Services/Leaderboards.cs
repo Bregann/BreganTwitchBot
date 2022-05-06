@@ -38,6 +38,7 @@ namespace BreganTwitchBot.Core.DiscordBot.Services
                     }
 
                     context.Users.UpdateRange(usersToUpdate);
+                    context.SaveChanges();
                 }
 
                 //loop through the roles list and remove the role
@@ -75,7 +76,7 @@ namespace BreganTwitchBot.Core.DiscordBot.Services
             using (var context = new DatabaseContext())
             {
                 //Get the bits lb first
-                var bits = context.Users.OrderBy(x => x.BitsDonatedThisMonth).Select(x => x.DiscordUserId).Take(3).ToList();
+                var bits = context.Users.OrderByDescending(x => x.BitsDonatedThisMonth).Select(x => x.DiscordUserId).Take(3).ToList();
 
                 foreach (var id in bits)
                 {
@@ -83,7 +84,7 @@ namespace BreganTwitchBot.Core.DiscordBot.Services
                 }
 
                 //now the subs
-                var subs = context.Users.OrderBy(x => x.GiftedSubsThisMonth).Select(x => x.DiscordUserId).Take(3).ToList();
+                var subs = context.Users.OrderByDescending(x => x.GiftedSubsThisMonth).Select(x => x.DiscordUserId).Take(3).ToList();
 
                 foreach (var id in subs)
                 {

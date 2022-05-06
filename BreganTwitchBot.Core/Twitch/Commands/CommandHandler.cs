@@ -48,7 +48,7 @@ namespace BreganTwitchBot.Core.Twitch.Commands
             }
 
             var commandName = msg.ChatMessage.Message.Split(" ")[0].ToLower();
-            SendCustomCommandAndUpdateUsage(commandName, msg.ChatMessage.UserId, msg.ChatMessage.UserId);
+            SendCustomCommandAndUpdateUsage(commandName, msg.ChatMessage.UserId, msg.ChatMessage.Username);
         }
 
         public static async Task HandleCommand(OnChatCommandReceivedArgs command)
