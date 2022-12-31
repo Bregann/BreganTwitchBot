@@ -120,7 +120,7 @@ namespace BreganTwitchBot.Services
             await DiscordClient.DownloadUsersAsync(DiscordClient.Guilds);
 
             _interactionService = new InteractionService(DiscordClient.Rest);
-            await _interactionService.AddModulesAsync(assembly: Assembly.GetEntryAssembly(), null);
+            await _interactionService.AddModulesAsync(assembly: Assembly.GetExecutingAssembly(), null);
 #if DEBUG
             await _interactionService.RegisterCommandsToGuildAsync(AppConfig.DiscordGuildID, true);
 #else
