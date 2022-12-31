@@ -1,4 +1,4 @@
-﻿using BreganTwitchBot.Data;
+﻿using BreganTwitchBot.Infrastructure.Database.Context;
 
 namespace BreganTwitchBot.Web.Data.Stats
 {
@@ -6,7 +6,7 @@ namespace BreganTwitchBot.Web.Data.Stats
     {
         public TopStats GetStats()
         {
-            using(var context = new DatabaseContext())
+            using (var context = new DatabaseContext())
             {
                 var topStats = new TopStats();
 

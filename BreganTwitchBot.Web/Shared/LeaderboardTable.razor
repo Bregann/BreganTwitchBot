@@ -2,11 +2,12 @@
 @using Data.Leaderboards.Enums
 
 @inject LeaderboardsService Leaderboards
+@inject NavigationManager navManager
 
-<MudText Typo="Typo.h2" Align="Align.Center" Class="pt-7 pb-5" Style="color: white;">Current Streak</MudText>
+<MudText Typo="Typo.h2" Align="Align.Center" Class="pt-7 pb-5" Style="color: white;">@leaderboardName</MudText>
 
 <MudContainer MaxWidth="MaxWidth.Large">
-    <MudTable Items="@leaderboard" Hover=true Striped=true Style="background-color: #27272f;" Elevation=5 Filter="new Func<Leaderboards, bool>(LeaderboardsFilterFunc)">
+    <MudTable Items="@leaderboard" Hover=true Striped=true Style="background-color: #27272f;" Elevation=5 Filter="new Func<Leaderboards, bool>(LeaderboardsFilterFunc)" OnRowClick="NavigateToUserStats" T="Leaderboards">
         <ToolBarContent>
             <MudText Typo="Typo.h6">@leaderboardName</MudText>
             <MudSpacer />
@@ -33,6 +34,12 @@
     private string leaderboardsTable = "";
     [Parameter] public LeaderboardType leaderboardType { get; set; }
     [Parameter] public string leaderboardName { get; set; } = "Leaderboard";
+
+    public void NavigateToUserStats(TableRowClickEventArgs<Leaderboards> row)
+    {
+        navManager.NavigateTo("/usersearch/" + row.Item.Username);
+        
+    }
 
     protected override async Task OnInitializedAsync()
     {

@@ -1,42 +1,64 @@
-﻿using BreganTwitchBot;
-using BreganTwitchBot.Core.Twitch.Commands.Modules.WordBlacklist;
-using BreganTwitchBot.Events;
-using BreganTwitchBot.Services;
+using BreganTwitchBot;
+using BreganTwitchBot.Domain;
+using BreganUtils.ProjectMonitor;
+using Hangfire;
+using Hangfire.Dashboard.Dark;
+using Hangfire.PostgreSql;
 using Serilog;
-using Serilog.Events;
 
-Log.Logger = new LoggerConfiguration().WriteTo.File("Logs/log.log", rollingInterval: RollingInterval.Day, retainedFileCountLimit: null).WriteTo.Console(restrictedToMinimumLevel: Serilog.Events.LogEventLevel.Information).CreateLogger();
-Log.Information("Logger Setup");
+Log.Logger = new LoggerConfiguration().WriteTo.Async(x => x.File("Logs/log.log", retainedFileCountLimit: null, rollingInterval: RollingInterval.Day)).WriteTo.Console().CreateLogger(); Log.Information("Logger Setup");
+AppConfig.LoadConfig();
+
+//Setup project monitor
+#if DEBUG
+ProjectMonitorConfig.SetupMonitor("debug", AppConfig.ProjectMonitorApiKey);
+#else
+ProjectMonitorConfig.SetupMonitor("release", AppConfig.ProjectMonitorApiKey);
+#endif
+
+ProjectMonitorCommon.ReportProjectUp("twitchbot");
 
 AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
 
-#region Config
-await Config.LoadConfigAndInsertDatabaseFieldsIfNeeded();
-await JobScheduler.SetupJobScheduler();
-#endregion
+var builder = WebApplication.CreateBuilder(args);
 
-#region Twitch
-var bot = new TwitchBotConnection();
-var twitchThread = new Thread(bot.Connect().GetAwaiter().GetResult);
-twitchThread.Start();
-Log.Information("[Twitch Client] Started Twitch Thread");
+#if RELEASE
+builder.WebHost.UseUrls("http://localhost:5005");
+#endif
 
-var twitchApi = new TwitchApiConnection();
-twitchApi.Connect();
-Log.Information("[Twitch API] Connected To Twitch API");
+// Add services to the container.
+JobStorage.Current = new PostgreSqlStorage(AppConfig.HFConnectionString, new PostgreSqlStorageOptions { SchemaName = "twitchbot" });
 
-var pubSub = new TwitchPubSubConnection();
-pubSub.Connect();
-Log.Information("[Twitch PubSub] Connected To Twitch PubSub");
+builder.Services.AddHangfire(configuration => configuration
+        .SetDataCompatibilityLevel(CompatibilityLevel.Version_170)
+        .UseSimpleAssemblyNameTypeSerializer()
+        .UseRecommendedSerializerSettings()
+        .UsePostgreSqlStorage(AppConfig.HFConnectionString, new PostgreSqlStorageOptions { SchemaName = "twitchbot" })
+        .UseDarkDashboard()
+        );
 
-TwitchEvents.SetupTwitchEvents();
-WordBlacklist.LoadBlacklistedWords();
-#endregion
+builder.Services.AddHangfireServer(options => options.SchedulePollingInterval = TimeSpan.FromSeconds(10));
 
-#region Discord
-//Start Discord
-var discordThread = new Thread(DiscordConnection.MainAsync().GetAwaiter().GetResult);
-discordThread.Start();
-#endregion
+builder.Services.AddControllers();
+// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
 
-await Task.Delay(-1);
+var app = builder.Build();
+
+// Configure the HTTP request pipeline.
+if (app.Environment.IsDevelopment())
+{
+    app.UseSwagger();
+    app.UseSwaggerUI();
+}
+
+app.UseHttpsRedirection();
+
+app.UseAuthorization();
+
+app.MapControllers();
+
+await SetupBot.Setup();
+
+app.Run();

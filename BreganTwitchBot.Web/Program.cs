@@ -1,5 +1,4 @@
 using Blazor.Analytics;
-using BreganTwitchBot.Web.Data;
 using BreganTwitchBot.Web.Data.Commands;
 using BreganTwitchBot.Web.Data.Leaderboards;
 using BreganTwitchBot.Web.Data.Stats;
@@ -11,6 +10,10 @@ Log.Logger = new LoggerConfiguration().WriteTo.Async(x => x.File("Logs/log.log",
 Log.Information("Logger Setup");
 
 var builder = WebApplication.CreateBuilder(args);
+
+#if RELEASE
+builder.WebHost.UseUrls("http://localhost:5004");
+#endif
 
 // Add services to the container.
 builder.Services.AddRazorPages();

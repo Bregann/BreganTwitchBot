@@ -1,7 +1,4 @@
-﻿using BreganTwitchBot.Data;
-using BreganTwitchBot.Web.Data.Leaderboards.Enums;
-
-namespace BreganTwitchBot.Web.Data.Leaderboards
+﻿namespace BreganTwitchBot.Web.Data.Leaderboards
 {
     public class Leaderboards
     {

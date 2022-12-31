@@ -1,5 +1,4 @@
-﻿using BreganTwitchBot.Data;
-using System.Linq;
+﻿using BreganTwitchBot.Infrastructure.Database.Context;
 
 namespace BreganTwitchBot.Web.Data.Commands
 {

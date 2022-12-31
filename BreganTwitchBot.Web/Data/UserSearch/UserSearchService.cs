@@ -1,4 +1,4 @@
-﻿using BreganTwitchBot.Data;
+﻿using BreganTwitchBot.Infrastructure.Database.Context;
 
 namespace BreganTwitchBot.Web.Data.UserSearch
 {
@@ -6,7 +6,7 @@ namespace BreganTwitchBot.Web.Data.UserSearch
     {
         public UserSearchData? GetUserDataByTwitchUsername(string twitchUsername)
         {
-            using(var context = new DatabaseContext())
+            using (var context = new DatabaseContext())
             {
                 var user = context.Users.Where(x => x.Username == twitchUsername).FirstOrDefault();
 

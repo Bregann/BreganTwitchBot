@@ -1,4 +1,4 @@
-﻿@page "/usersearch"
+﻿@page "/usersearch/{Username?}"
 
 @using Data.UserSearch
 @inject UserSearchService UserSearchService
@@ -222,6 +222,7 @@
     private UserSearchData? userSearch = null;
     private bool firstRender = true;
     private string userSearchText = "";
+    [Parameter] public string? Username { get; set; }
 
     async void HandleTextChanged(string changedText)
     {
@@ -242,5 +243,12 @@
         StateHasChanged();
     }
 
-
+    protected override async Task OnParametersSetAsync()
+    {
+        if(Username != null){
+            userSearch = UserSearchService.GetUserDataByTwitchUsername(Username.ToLower());
+            firstRender = false;
+            StateHasChanged();
+        }
+    }
 }

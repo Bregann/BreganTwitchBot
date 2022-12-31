@@ -1,6 +1,6 @@
 ﻿@page "/subathon"
 @using System.Timers
-@using BreganTwitchBot.Data
+@using BreganTwitchBot.Infrastructure.Database.Context;
 @using Humanizer
 @using Humanizer.Localisation
 
@@ -22,6 +22,13 @@
 {
     <audio autoplay>
       <source src="/content/audio/quack.mp3" type="audio/mpeg">
+    </audio>
+}
+
+@if (nero)
+{
+    <audio autoplay>
+        <source src="/content/audio/nero.mp3" type="audio/mpeg">
     </audio>
 }
 
@@ -79,9 +86,10 @@
     public bool isPlaying = false;
     public bool recordScratch = false;
     public bool quack = false;
+    public bool nero = false;
 
-    public List<BreganTwitchBot.Data.Models.Subathon> subsLb = new ();
-    public List<BreganTwitchBot.Data.Models.Subathon> bitsLb = new ();
+    public List<Infrastructure.Database.Models.Subathon> subsLb = new ();
+    public List<Infrastructure.Database.Models.Subathon> bitsLb = new ();
 
     protected override void OnInitialized()
     {
@@ -136,7 +144,7 @@
 
         }
 
-        var startTime = new DateTime(2022, 5, 1, 12, 5, 0);
+        var startTime = new DateTime(2022, 9, 25, 11, 35, 0);
 
         var endTimeDT = startTime.Add(subathonTime);
         var timeDiff = endTimeDT - DateTime.Now;
@@ -168,7 +176,16 @@
 
             if(secondsLeftBeforeUpdate != 0 && timeAdded > 50)
             {
-                quack = true;
+                var rnd = new Random();
+
+                if(rnd.Next(0, 10) == 5)
+                {
+                    nero = true;
+                }
+                else
+                {
+                    quack = true;
+                }
             }
         }
 
