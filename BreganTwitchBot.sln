@@ -5,13 +5,13 @@ VisualStudioVersion = 17.0.32126.317
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BreganTwitchBot.Web", "BreganTwitchBot.Web\BreganTwitchBot.Web.csproj", "{0AED50FE-E158-4E93-96B5-23CA9D6F1E41}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BreganUtils", "..\BreganUtils\BreganUtils\BreganUtils.csproj", "{627AF403-63C5-448E-A1C3-73E7B9449C1B}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BreganTwitchBot.Domain", "BreganTwitchBot.Domain\BreganTwitchBot.Domain.csproj", "{CAF5F7B4-4D10-40D5-833C-80833AA4ED24}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BreganTwitchBot.Infrastructure", "BreganTwitchbot.Infrastructure\BreganTwitchBot.Infrastructure.csproj", "{DF23A2AE-F8B9-4877-A0FC-7877B67647B3}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BreganTwitchBot.Core", "BreganTwitchBot.Core\BreganTwitchBot.Core.csproj", "{A6F91A57-4C36-449E-8FA2-6D6EDECF41FB}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BreganTwitchBot.Core", "BreganTwitchBot.Core\BreganTwitchBot.Core.csproj", "{A6F91A57-4C36-449E-8FA2-6D6EDECF41FB}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BreganUtils", "..\..\BreganUtils\BreganUtils\BreganUtils.csproj", "{3AFCEFC0-EB5B-4FCA-8B05-D16AF8CBE74C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -23,10 +23,6 @@ Global
 		{0AED50FE-E158-4E93-96B5-23CA9D6F1E41}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0AED50FE-E158-4E93-96B5-23CA9D6F1E41}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{0AED50FE-E158-4E93-96B5-23CA9D6F1E41}.Release|Any CPU.Build.0 = Release|Any CPU
-		{627AF403-63C5-448E-A1C3-73E7B9449C1B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{627AF403-63C5-448E-A1C3-73E7B9449C1B}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{627AF403-63C5-448E-A1C3-73E7B9449C1B}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{627AF403-63C5-448E-A1C3-73E7B9449C1B}.Release|Any CPU.Build.0 = Release|Any CPU
 		{CAF5F7B4-4D10-40D5-833C-80833AA4ED24}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{CAF5F7B4-4D10-40D5-833C-80833AA4ED24}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{CAF5F7B4-4D10-40D5-833C-80833AA4ED24}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -39,6 +35,10 @@ Global
 		{A6F91A57-4C36-449E-8FA2-6D6EDECF41FB}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A6F91A57-4C36-449E-8FA2-6D6EDECF41FB}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A6F91A57-4C36-449E-8FA2-6D6EDECF41FB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3AFCEFC0-EB5B-4FCA-8B05-D16AF8CBE74C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3AFCEFC0-EB5B-4FCA-8B05-D16AF8CBE74C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3AFCEFC0-EB5B-4FCA-8B05-D16AF8CBE74C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3AFCEFC0-EB5B-4FCA-8B05-D16AF8CBE74C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
