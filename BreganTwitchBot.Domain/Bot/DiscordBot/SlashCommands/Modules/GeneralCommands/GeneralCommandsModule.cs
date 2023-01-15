@@ -9,11 +9,11 @@ using Discord.Interactions;
 using Discord.Rest;
 using Humanizer;
 using Humanizer.Localisation;
-using RankBeggarAI;
 using Serilog;
 using System.Diagnostics;
 using BreganTwitchBot.Domain.Bot.Twitch.Services;
 using BreganTwitchBot.Infrastructure.Database.Models;
+using BreganTwitchBot_Domain;
 
 namespace BreganTwitchBot.Domain.Bot.DiscordBot.SlashCommands.Modules.GeneralCommands
 {
@@ -229,14 +229,14 @@ namespace BreganTwitchBot.Domain.Bot.DiscordBot.SlashCommands.Modules.GeneralCom
                 return;
             }
 
-            var sampleData = new RankBeggarAI.RankBeggar.ModelInput()
+            var sampleData = new BreganTwitchBot_Domain.RankBeggar.ModelInput()
             {
-                SentimentText = message.Replace("'", ""),
+                Message = message.Replace("'", ""),
             };
 
             // Make a single prediction on the sample data and print results
-            var predictionResult = RankBeggarAI.RankBeggar.Predict(sampleData);
-            await RespondAsync($"Message: {message} \n Prediction result: {predictionResult.Prediction} \n 0: {predictionResult.Score[0]}% \n 1: {predictionResult.Score[1]}%");
+            var predictionResult = BreganTwitchBot_Domain.RankBeggar.Predict(sampleData);
+            await RespondAsync($"Message: {message} \n Prediction result: {predictionResult.AiResult} \n 0: {predictionResult.Score[0]}% \n 1: {predictionResult.Score[1]}%");
         }
 
         [SlashCommand("birthday", "Set your birthday to get a Happy Birthday announcement")]

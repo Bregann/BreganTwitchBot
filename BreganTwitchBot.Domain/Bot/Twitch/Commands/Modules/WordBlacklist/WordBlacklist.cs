@@ -1,10 +1,10 @@
 ﻿using BreganTwitchBot.Infrastructure.Database.Context;
 using BreganTwitchBot.Domain.Bot.Twitch.Commands.Modules.SuperMods;
 using BreganTwitchBot.Domain.Bot.Twitch.Helpers;
-using RankBeggarAI;
 using Serilog;
 using System.Text.RegularExpressions;
 using TwitchLib.Client.Events;
+using BreganTwitchBot_Domain;
 
 namespace BreganTwitchBot.Domain.Bot.Twitch.Commands.Modules.WordBlacklist
 {
@@ -238,13 +238,13 @@ namespace BreganTwitchBot.Domain.Bot.Twitch.Commands.Modules.WordBlacklist
             {
                 RankBeggar.ModelInput sampleData = new RankBeggar.ModelInput()
                 {
-                    SentimentText = e.ChatMessage.Message.Replace("'", "").Replace("blocksRank", "").Replace("blocksMe", "").Replace("blocksPls", "").Replace("blocksGiveaway", ""),
+                    Message = e.ChatMessage.Message.Replace("'", "").Replace("blocksRank", "").Replace("blocksMe", "").Replace("blocksPls", "").Replace("blocksGiveaway", ""),
                 };
 
                 // Make a single prediction on the sample data and print results
                 var predictionResult = RankBeggar.Predict(sampleData);
 
-                if (predictionResult.Prediction == 1 || _strikeWords.Any(rankBeggarRegex.Contains))
+                if (predictionResult.AiResult == 1 || _strikeWords.Any(rankBeggarRegex.Contains))
                 {
                     Log.Information($"debug - {predictionResult.Score[0]} - {predictionResult.Score[1]} - {predictionResult.Score.Length}");
 
