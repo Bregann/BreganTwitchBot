@@ -11,10 +11,6 @@ Log.Information("Logger Setup");
 
 var builder = WebApplication.CreateBuilder(args);
 
-#if RELEASE
-builder.WebHost.UseUrls("http://localhost:5004");
-#endif
-
 // Add services to the container.
 builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();

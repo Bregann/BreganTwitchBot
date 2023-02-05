@@ -1,12 +1,11 @@
 ﻿using BreganTwitchBot.Infrastructure.Database.Models;
 using Microsoft.EntityFrameworkCore;
-using RetroTrack.Infrastructure;
 
 namespace BreganTwitchBot.Infrastructure.Database.Context
 {
     public class DatabaseContext : DbContext
     {
-        private static readonly string _connectionString = DbSettings.ConnectionString;
+        private static readonly string _connectionString = Environment.GetEnvironmentVariable("BTBConnString");
 
         public DbSet<Blacklist> Blacklist { get; set; }
         public DbSet<Commands> Commands { get; set; }
