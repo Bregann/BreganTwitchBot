@@ -5,7 +5,7 @@ namespace BreganTwitchBot.Infrastructure.Database.Context
 {
     public class DatabaseContext : DbContext
     {
-        private static readonly string _connectionString = Environment.GetEnvironmentVariable("BTBConnString");
+        private static readonly string _connectionString = Environment.GetEnvironmentVariable("BTBConnStringLive");
 
         public DbSet<Blacklist> Blacklist { get; set; }
         public DbSet<Commands> Commands { get; set; }
@@ -59,7 +59,9 @@ namespace BreganTwitchBot.Infrastructure.Database.Context
                 PrestigeCap = 0,
                 SubathonTime = TimeSpan.FromSeconds(0),
                 ProjectMonitorApiKey = "",
-                HFConnectionString = ""
+                HFConnectionString = "",
+                TwitchBotApiKey = "",
+                TwitchBotApiRefresh = ""
             });
 
             modelBuilder.Entity<SlotMachine>().HasData(new SlotMachine

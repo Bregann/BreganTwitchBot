@@ -100,5 +100,11 @@ namespace BreganTwitchBot.Infrastructure.Database.Models
 
         [Required]
         public string ProjectMonitorApiKey { get; set; }
+
+        [Required]
+        public string TwitchBotApiKey { get; set; }
+
+        [Required]
+        public string TwitchBotApiRefresh { get; set; }
     }
 }

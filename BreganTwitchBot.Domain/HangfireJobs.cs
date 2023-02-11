@@ -179,12 +179,19 @@ namespace BreganTwitchBot.Domain
         {
             try
             {
-                var refresh = await TwitchApiConnection.ApiClient.Auth.RefreshAuthTokenAsync(AppConfig.BroadcasterRefresh, AppConfig.TwitchAPISecret, AppConfig.TwitchAPIClientID);
-                TwitchApiConnection.ApiClient.Settings.AccessToken = refresh.AccessToken;
-                AppConfig.UpdateStreamConfig(refresh.RefreshToken, refresh.AccessToken);
+                var streamerRefresh = await TwitchApiConnection.ApiClient.Auth.RefreshAuthTokenAsync(AppConfig.BroadcasterRefresh, AppConfig.TwitchAPISecret, AppConfig.TwitchAPIClientID);
+                TwitchApiConnection.ApiClient.Settings.AccessToken = streamerRefresh.AccessToken;
+                AppConfig.UpdateStreamerApiCredentials(streamerRefresh.RefreshToken, streamerRefresh.AccessToken);
 
                 ProjectMonitorBreganTwitchBot.SendTwitchAPIKeyRefreshUpdate();
-                Log.Information($"[Refresh Job] Token {refresh.AccessToken} successfully refreshed! Expires in: {refresh.ExpiresIn} | Refresh: {refresh.RefreshToken}");
+                Log.Information($"[Refresh Job] Streamer token {streamerRefresh.AccessToken} successfully refreshed! Expires in: {streamerRefresh.ExpiresIn} | Refresh: {streamerRefresh.RefreshToken}");
+
+                var botRefresh = await TwitchApiConnection.ApiClient.Auth.RefreshAuthTokenAsync(AppConfig.TwitchBotApiRefresh, AppConfig.TwitchBotApiRefresh, AppConfig.TwitchAPIClientID);
+                TwitchApiConnection.ApiClient.Settings.AccessToken = botRefresh.AccessToken;
+                AppConfig.UpdateBotApiCredentials(botRefresh.RefreshToken, botRefresh.AccessToken);
+
+                ProjectMonitorBreganTwitchBot.SendTwitchAPIKeyRefreshUpdate();
+                Log.Information($"[Refresh Job] Bot token {botRefresh.AccessToken} successfully refreshed! Expires in: {botRefresh.ExpiresIn} | Refresh: {botRefresh.RefreshToken}");
             }
             catch (Exception e)
             {

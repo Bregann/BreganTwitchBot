@@ -46,6 +46,9 @@ namespace BreganTwitchBot
         public static long PrestigeCap { get; private set; }
         public static string HFConnectionString { get; private set; }
         public static string ProjectMonitorApiKey { get; private set; }
+        public static string TwitchBotApiKey { get; private set; }
+        public static string TwitchBotApiRefresh { get; private set; }
+
 
         private static bool _doublePingJobStarted = false;
         public static readonly bool SubathonActive = false;
@@ -87,6 +90,8 @@ namespace BreganTwitchBot
                 PrestigeCap = configVariables.PrestigeCap;
                 HFConnectionString = configVariables.HFConnectionString;
                 ProjectMonitorApiKey = configVariables.ProjectMonitorApiKey;
+                TwitchBotApiKey = configVariables.TwitchBotApiKey;
+                TwitchBotApiRefresh = configVariables.TwitchBotApiRefresh;
             }
         }
 
@@ -103,7 +108,7 @@ namespace BreganTwitchBot
             }
         }
 
-        public static void UpdateStreamConfig(string refreshToken, string accessToken)
+        public static void UpdateStreamerApiCredentials(string refreshToken, string accessToken)
         {
             using (var context = new DatabaseContext())
             {
@@ -115,6 +120,28 @@ namespace BreganTwitchBot
 
             BroadcasterOAuth = accessToken;
             BroadcasterRefresh = refreshToken;
+        }
+
+
+        /*
+         * https://id.twitch.tv/oauth2/authorize
+                ?response_type=code
+                &client_id=
+                &redirect_uri=http://localhost
+                &scope=moderation%3Aread+moderator%3Amanage%3Aannouncements+moderator%3Amanage%3Abanned_users+moderator%3Amanage%3Achat_messages+moderator%3Amanage%3Achat_settings+moderation%3Aread+channel%3Aread%3Avips
+         */
+        public static void UpdateBotApiCredentials(string refreshToken, string accessToken)
+        {
+            using (var context = new DatabaseContext())
+            {
+                var config = context.Config.First();
+                config.TwitchBotApiKey = accessToken;
+                config.TwitchBotApiRefresh = refreshToken;
+                context.SaveChanges();
+            }
+
+            TwitchBotApiKey = accessToken;
+            TwitchBotApiRefresh = refreshToken;
         }
 
         public static void UpdatePinnedMessageAndMessageId(string newMessage, ulong id)
