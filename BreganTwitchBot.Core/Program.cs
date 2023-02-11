@@ -8,7 +8,7 @@ using Serilog;
 
 Log.Logger = new LoggerConfiguration().WriteTo.Async(x => x.File("Data/Logs/log.log", retainedFileCountLimit: null, rollingInterval: RollingInterval.Day)).WriteTo.Console().CreateLogger(); 
 Log.Information("Logger Setup");
-AppConfig.LoadConfig();
+AppConfig.LoadConfig(); 
 
 //Setup project monitor
 #if DEBUG
