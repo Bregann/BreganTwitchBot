@@ -1,0 +1,71 @@
+name: Build and Package bot
+
+on:
+  push:
+    branches:
+      - 'main'
+    paths-ignore:
+      - 'BreganTwitchBot.Web/**'
+
+env:
+  DOTNET_CLI_TELEMETRY_OPTOUT: 1
+  
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v3.3.0
+
+    - name: Build Docker Image
+      run: |
+        docker build -t twitchbotbot -f BreganTwitchBot.Core/Dockerfile .
+        
+    - name: Save Docker Image
+      run: |
+        docker save twitchbotbot > twitchbotbot.tar
+
+    - name: Upload Docker Image
+      uses: appleboy/scp-action@v0.1.3
+      with:
+        host: ${{ secrets.SSH_HOST }}
+        username: ${{ secrets.SSH_USERNAME }}
+        key: ${{ secrets.KEY }}
+        source: twitchbotbot.tar
+        target: ${{ secrets.TARGET }}
+        
+    - name: Stop And Remove Current Container
+      uses: appleboy/ssh-action@v0.1.7
+      with:
+        host: ${{ secrets.SSH_HOST }}
+        username: ${{ secrets.SSH_USERNAME }}
+        key: ${{ secrets.KEY }}
+        script: |
+            docker stop twitchbotbot || true && docker rm twitchbotbot || true
+    - name: Load New Docker Image
+      uses: appleboy/ssh-action@v0.1.7
+      with:
+        host: ${{ secrets.SSH_HOST }}
+        username: ${{ secrets.SSH_USERNAME }}
+        key: ${{ secrets.KEY }}
+        script: |
+          docker load -i ${{ secrets.TARGET }}twitchbotbot.tar
+
+    - name: Start New Container
+      uses: appleboy/ssh-action@v0.1.7
+      with:
+        host: ${{ secrets.SSH_HOST }}
+        username: ${{ secrets.SSH_USERNAME }}
+        key: ${{ secrets.KEY }}
+        script: |
+          docker run -d -p 5005:80 --mount type=bind,source="${{ secrets.BOT_FILE_PATH }}",target=/app/Data --env BTBConnString='${{ secrets.ENV }}' --name twitchbotbot twitchbotbot:latest -restart
+
+    - name: Clean Up The Tar File
+      uses: appleboy/ssh-action@v0.1.7
+      with:
+        host: ${{ secrets.SSH_HOST }}
+        username: ${{ secrets.SSH_USERNAME }}
+        key: ${{ secrets.KEY }}
+        script: |
+          rm ${{ secrets.TARGET }}twitchbotbot.tar
