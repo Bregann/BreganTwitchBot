@@ -269,10 +269,10 @@ namespace BreganTwitchBot.Domain.Bot.DiscordBot.SlashCommands.Data.Levelling
             }
 
             //Setup the bitmap
-            using (var blankBackground = Image.Load("Skins/blankProgress.png"))
+            using (var blankBackground = Image.Load("Data/ProgressBars/blankProgress.png"))
             {
                 //Load the image and cut it
-                var cutImage = CutImage(Image.Load($"ProgressBars/{backgroundToUse}.png"), percentage);
+                var cutImage = CutImage(Image.Load($"Data/ProgressBars/{backgroundToUse}.png"), percentage);
 
                 //Draw the rectangle for the background
                 blankBackground.Mutate(x => x.DrawImage(cutImage, new Point(0, 0), 1));

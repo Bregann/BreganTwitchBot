@@ -32,4 +32,10 @@
     </Reference>
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="RankBeggar.zip">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>

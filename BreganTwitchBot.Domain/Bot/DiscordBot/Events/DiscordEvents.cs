@@ -552,7 +552,7 @@ namespace BreganTwitchBot.DiscordBot.Events
             var channel = await DiscordConnection.DiscordClient.GetChannelAsync(AppConfig.DiscordEventChannelID) as IMessageChannel;
             await channel.SendMessageAsync(embed: messageEmbed.Build());
 
-            using (var how2LinkGif = new FileStream($"Skins/how2link.gif", FileMode.Open))
+            using (var how2LinkGif = new FileStream($"Data/Skins/how2link.gif", FileMode.Open))
             {
                 var channel2 = await DiscordConnection.DiscordClient.GetChannelAsync(AppConfig.DiscordLinkingChannelID) as IMessageChannel;
                 await channel2.SendFileAsync(how2LinkGif, "how2link.gif", $"Welcome {arg.Mention}! \n\n To access the Discord Server, you must link your Twitch account with Discord by using the ``/link`` command!");
