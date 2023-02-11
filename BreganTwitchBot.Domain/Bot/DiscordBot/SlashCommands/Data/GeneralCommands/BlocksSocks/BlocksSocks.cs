@@ -97,7 +97,7 @@ namespace BreganTwitchBot.Domain.Bot.DiscordBot.SlashCommands.Data.GeneralComman
 
             using (WebClient client = new())
             {
-                client.DownloadFile(skinResponse.Textures.Skin.Url, $"Data/Skins/{uuid}.png");
+                client.DownloadFile(skinResponse.Textures.Skin.Url, $"Skins/{uuid}.png");
             }
 
             //check if right size
@@ -112,7 +112,7 @@ namespace BreganTwitchBot.Domain.Bot.DiscordBot.SlashCommands.Data.GeneralComman
 
             //create colour and load socks
             var funnyColour = Color.FromArgb(0, 255, 255, 255);
-            var socks = Image.Load("Data/Skins/socks.png");
+            var socks = Image.Load("Skins/socks.png");
 
             //draw socks
             bmp.Mutate(x => x.DrawImage(socks, new Point(0, 0), 1));
@@ -136,14 +136,14 @@ namespace BreganTwitchBot.Domain.Bot.DiscordBot.SlashCommands.Data.GeneralComman
             //make the rectangle transparent
             //bmp.MakeTransparent(funnyColour);
 
-            bmp.SaveAsPng($"Data/Skins/{uuid}-socks.png");
+            bmp.SaveAsPng($"Skins/{uuid}-socks.png");
 
             bmp.Dispose();
             socks.Dispose();
 
-            using (var socksFs = new FileStream($"Data/Skins/{uuid}-socks.png", FileMode.Open))
+            using (var socksFs = new FileStream($"Skins/{uuid}-socks.png", FileMode.Open))
             {
-                await channel.SendFileAsync(socksFs, $"Data/Skins/{uuid}-socks.png");
+                await channel.SendFileAsync(socksFs, $"Skins/{uuid}-socks.png");
                 embedBuilder.Title = "Your socks have been added";
                 embedBuilder.Color = new Discord.Color(34, 255, 0);
                 return embedBuilder;

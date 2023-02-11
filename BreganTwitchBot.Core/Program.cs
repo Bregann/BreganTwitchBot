@@ -6,7 +6,7 @@ using Hangfire.Dashboard.Dark;
 using Hangfire.PostgreSql;
 using Serilog;
 
-Log.Logger = new LoggerConfiguration().WriteTo.Async(x => x.File("Data/Logs/log.log", retainedFileCountLimit: null, rollingInterval: RollingInterval.Day)).WriteTo.Console().CreateLogger(); 
+Log.Logger = new LoggerConfiguration().WriteTo.Async(x => x.File("Logs/log.log", retainedFileCountLimit: null, rollingInterval: RollingInterval.Day)).WriteTo.Console().CreateLogger(); 
 Log.Information("Logger Setup");
 AppConfig.LoadConfig(); 
 

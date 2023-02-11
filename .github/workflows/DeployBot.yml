@@ -59,7 +59,7 @@ jobs:
         username: ${{ secrets.SSH_USERNAME }}
         key: ${{ secrets.KEY }}
         script: |
-          docker run -d -p 5005:80 --mount type=bind,source="${{ secrets.BOT_FILE_PATH }}",target=/app/Data --env BTBConnString='${{ secrets.ENV }}' --name twitchbotbot twitchbotbot:latest -restart
+          docker run -d -p 5005:80 --mount type=bind,source="${{ secrets.BOT_FILE_PATH_LOGS }}",target=/app/Logs --mount type=bind,source="${{ secrets.BOT_FILE_PATH_SKINS }}",target=/app/Skins --mount type=bind,source="${{ secrets.BOT_FILE_PATH_BARS }}",target=/app/ProgressBars --env BTBConnString='${{ secrets.ENV }}' --name twitchbotbot twitchbotbot:latest -restart
 
     - name: Clean Up The Tar File
       uses: appleboy/ssh-action@v0.1.7
