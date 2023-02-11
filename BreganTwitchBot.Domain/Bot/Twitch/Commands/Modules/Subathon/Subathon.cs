@@ -52,6 +52,58 @@ namespace BreganTwitchBot.Domain.Bot.Twitch.Commands.Modules.Subathon
                         case TwitchLib.Client.Enums.SubscriptionPlan.NotSet:
                         case TwitchLib.Client.Enums.SubscriptionPlan.Prime:
                         case TwitchLib.Client.Enums.SubscriptionPlan.Tier1:
+                            AppConfig.AddSubathonTime(TimeSpan.FromMinutes(5));
+                            Log.Information("[Subathon Time] Subathon time increased by 5 minutes");
+                            break;
+
+                        case TwitchLib.Client.Enums.SubscriptionPlan.Tier2:
+                            AppConfig.AddSubathonTime(TimeSpan.FromMinutes(10));
+                            Log.Information("[Subathon Time] Subathon time increased by 10 minutes");
+                            break;
+
+                        case TwitchLib.Client.Enums.SubscriptionPlan.Tier3:
+                            AppConfig.AddSubathonTime(TimeSpan.FromMinutes(25));
+                            Log.Information("[Subathon Time] Subathon time increased by 25 minutes");
+                            break;
+                    }
+                    break;
+
+                case 13:
+                case 14:
+                case 15:
+                    switch (subType)
+                    {
+                        case TwitchLib.Client.Enums.SubscriptionPlan.NotSet:
+                        case TwitchLib.Client.Enums.SubscriptionPlan.Prime:
+                        case TwitchLib.Client.Enums.SubscriptionPlan.Tier1:
+                            AppConfig.AddSubathonTime(TimeSpan.FromMinutes(4));
+                            Log.Information("[Subathon Time] Subathon time increased by 4 minutes");
+                            break;
+
+                        case TwitchLib.Client.Enums.SubscriptionPlan.Tier2:
+                            AppConfig.AddSubathonTime(TimeSpan.FromMinutes(8));
+                            Log.Information("[Subathon Time] Subathon time increased by 8 minutes");
+                            break;
+
+                        case TwitchLib.Client.Enums.SubscriptionPlan.Tier3:
+                            AppConfig.AddSubathonTime(TimeSpan.FromMinutes(20));
+                            Log.Information("[Subathon Time] Subathon time increased by 20 minutes");
+                            break;
+                    }
+                    break;
+
+                case 16:
+                case 17:
+                case 18:
+                case 19:
+                case 20:
+                case 21:
+                case 22:
+                    switch (subType)
+                    {
+                        case TwitchLib.Client.Enums.SubscriptionPlan.NotSet:
+                        case TwitchLib.Client.Enums.SubscriptionPlan.Prime:
+                        case TwitchLib.Client.Enums.SubscriptionPlan.Tier1:
                             AppConfig.AddSubathonTime(TimeSpan.FromMinutes(3));
                             Log.Information("[Subathon Time] Subathon time increased by 3 minutes");
                             break;
@@ -62,13 +114,13 @@ namespace BreganTwitchBot.Domain.Bot.Twitch.Commands.Modules.Subathon
                             break;
 
                         case TwitchLib.Client.Enums.SubscriptionPlan.Tier3:
-                            AppConfig.AddSubathonTime(TimeSpan.FromMinutes(15));
-                            Log.Information("[Subathon Time] Subathon time increased by 15 minutes");
+                            AppConfig.AddSubathonTime(TimeSpan.FromMinutes(12));
+                            Log.Information("[Subathon Time] Subathon time increased by 12 minutes");
                             break;
                     }
                     break;
 
-                case 13:
+                case 23:
                     switch (subType)
                     {
                         case TwitchLib.Client.Enums.SubscriptionPlan.NotSet:
@@ -84,13 +136,14 @@ namespace BreganTwitchBot.Domain.Bot.Twitch.Commands.Modules.Subathon
                             break;
 
                         case TwitchLib.Client.Enums.SubscriptionPlan.Tier3:
-                            AppConfig.AddSubathonTime(TimeSpan.FromMinutes(10));
-                            Log.Information("[Subathon Time] Subathon time increased by 10 minutes");
+                            AppConfig.AddSubathonTime(TimeSpan.FromMinutes(8));
+                            Log.Information("[Subathon Time] Subathon time increased by 8 minutes");
                             break;
                     }
                     break;
 
-                case 14:
+                default: //24h+
+                    Log.Information($"[Subathon Time] {AppConfig.SubathonTime}");
                     switch (subType)
                     {
                         case TwitchLib.Client.Enums.SubscriptionPlan.NotSet:
@@ -108,51 +161,6 @@ namespace BreganTwitchBot.Domain.Bot.Twitch.Commands.Modules.Subathon
                         case TwitchLib.Client.Enums.SubscriptionPlan.Tier3:
                             AppConfig.AddSubathonTime(TimeSpan.FromMinutes(5));
                             Log.Information("[Subathon Time] Subathon time increased by 5 minutes");
-                            break;
-                    }
-                    break;
-
-                case 15:
-                    switch (subType)
-                    {
-                        case TwitchLib.Client.Enums.SubscriptionPlan.NotSet:
-                        case TwitchLib.Client.Enums.SubscriptionPlan.Prime:
-                        case TwitchLib.Client.Enums.SubscriptionPlan.Tier1:
-                            AppConfig.AddSubathonTime(TimeSpan.FromSeconds(30));
-                            Log.Information("[Subathon Time] Subathon time increased by 30 seconds");
-                            break;
-
-                        case TwitchLib.Client.Enums.SubscriptionPlan.Tier2:
-                            AppConfig.AddSubathonTime(TimeSpan.FromMinutes(1));
-                            Log.Information("[Subathon Time] Subathon time increased by 1 minutes");
-                            break;
-
-                        case TwitchLib.Client.Enums.SubscriptionPlan.Tier3:
-                            AppConfig.AddSubathonTime(TimeSpan.FromSeconds(170));
-                            Log.Information("[Subathon Time] Subathon time increased by 2 1/2 minutes");
-                            break;
-                    }
-                    break;
-
-                default: //16h+
-                    Log.Information($"[Subathon Time] {AppConfig.SubathonTime}");
-                    switch (subType)
-                    {
-                        case TwitchLib.Client.Enums.SubscriptionPlan.NotSet:
-                        case TwitchLib.Client.Enums.SubscriptionPlan.Prime:
-                        case TwitchLib.Client.Enums.SubscriptionPlan.Tier1:
-                            AppConfig.AddSubathonTime(TimeSpan.FromSeconds(10));
-                            Log.Information("[Subathon Time] Subathon time increased by 10 seconds");
-                            break;
-
-                        case TwitchLib.Client.Enums.SubscriptionPlan.Tier2:
-                            AppConfig.AddSubathonTime(TimeSpan.FromSeconds(20));
-                            Log.Information("[Subathon Time] Subathon time increased by 20 seconds");
-                            break;
-
-                        case TwitchLib.Client.Enums.SubscriptionPlan.Tier3:
-                            AppConfig.AddSubathonTime(TimeSpan.FromSeconds(50));
-                            Log.Information("[Subathon Time] Subathon time increased by 50 seconds");
                             break;
                     }
                     break;
@@ -179,25 +187,28 @@ namespace BreganTwitchBot.Domain.Bot.Twitch.Commands.Modules.Subathon
                 case <= 11:
                     subTimeHoursConfig += TimeSpan.FromMilliseconds(900 * bitsAmount);
                     break;
-
                 case 12:
+                    subTimeHoursConfig += TimeSpan.FromMilliseconds(750 * bitsAmount);
+                    break;
+                case 13:
+                case 14:
+                case 15:
+                    subTimeHoursConfig += TimeSpan.FromMilliseconds(600 * bitsAmount);
+                    break;
+                case 16:
+                case 17:
+                case 18:
+                case 19:
+                case 20:
+                case 21:
+                case 22:
                     subTimeHoursConfig += TimeSpan.FromMilliseconds(450 * bitsAmount);
                     break;
-
-                case 13:
-                    subTimeHoursConfig += TimeSpan.FromMilliseconds(220 * bitsAmount);
+                case 23:
+                    subTimeHoursConfig += TimeSpan.FromMilliseconds(300 * bitsAmount);
                     break;
-
-                case 14:
-                    subTimeHoursConfig += TimeSpan.FromMilliseconds(110 * bitsAmount);
-                    break;
-
-                case 15:
-                    subTimeHoursConfig += TimeSpan.FromMilliseconds(50 * bitsAmount);
-                    break;
-
-                default: //16h+
-                    subTimeHoursConfig += TimeSpan.FromMilliseconds(20 * bitsAmount);
+                default: //24h+
+                    subTimeHoursConfig += TimeSpan.FromMilliseconds(150 * bitsAmount);
                     break;
             }
 
@@ -209,25 +220,28 @@ namespace BreganTwitchBot.Domain.Bot.Twitch.Commands.Modules.Subathon
                     case <= 11:
                         AppConfig.AddSubathonTime(TimeSpan.FromMilliseconds(900 * bitsAmount));
                         break;
-
                     case 12:
+                        AppConfig.AddSubathonTime(TimeSpan.FromMilliseconds(750 * bitsAmount));
+                        break;
+                    case 13:
+                    case 14:
+                    case 15:
+                        AppConfig.AddSubathonTime(TimeSpan.FromMilliseconds(600 * bitsAmount));
+                        break;
+                    case 16:
+                    case 17:
+                    case 18:
+                    case 19:
+                    case 20:
+                    case 21:
+                    case 22:
                         AppConfig.AddSubathonTime(TimeSpan.FromMilliseconds(450 * bitsAmount));
                         break;
-
-                    case 13:
-                        AppConfig.AddSubathonTime(TimeSpan.FromMilliseconds(220 * bitsAmount));
+                    case 23:
+                        AppConfig.AddSubathonTime(TimeSpan.FromMilliseconds(300 * bitsAmount));
                         break;
-
-                    case 14:
-                        AppConfig.AddSubathonTime(TimeSpan.FromMilliseconds(110 * bitsAmount));
-                        break;
-
-                    case 15:
-                        AppConfig.AddSubathonTime(TimeSpan.FromMilliseconds(50 * bitsAmount));
-                        break;
-
-                    default: //16h+
-                        AppConfig.AddSubathonTime(TimeSpan.FromMilliseconds(20 * bitsAmount));
+                    default: //24h+
+                        AppConfig.AddSubathonTime(TimeSpan.FromMilliseconds(150 * bitsAmount));
                         break;
                 }
 
@@ -245,25 +259,28 @@ namespace BreganTwitchBot.Domain.Bot.Twitch.Commands.Modules.Subathon
                     case <= 11:
                         totalTsToAdd += TimeSpan.FromMilliseconds(900);
                         break;
-
                     case 12:
+                        totalTsToAdd += TimeSpan.FromMilliseconds(750);
+                        break;
+                    case 13:
+                    case 14:
+                    case 15:
+                        totalTsToAdd += TimeSpan.FromMilliseconds(600);
+                        break;
+                    case 16:
+                    case 17:
+                    case 18:
+                    case 19:
+                    case 20:
+                    case 21:
+                    case 22:
                         totalTsToAdd += TimeSpan.FromMilliseconds(450);
                         break;
-
-                    case 13:
-                        totalTsToAdd += TimeSpan.FromMilliseconds(220);
+                    case 23:
+                        totalTsToAdd += TimeSpan.FromMilliseconds(300);
                         break;
-
-                    case 14:
-                        totalTsToAdd += TimeSpan.FromMilliseconds(110);
-                        break;
-
-                    case 15:
-                        totalTsToAdd += TimeSpan.FromMilliseconds(50);
-                        break;
-
-                    default: //16h+
-                        totalTsToAdd += TimeSpan.FromMilliseconds(20);
+                    default: //24h+
+                        totalTsToAdd += TimeSpan.FromMilliseconds(150);
                         break;
                 }
             }
