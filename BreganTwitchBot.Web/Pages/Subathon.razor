@@ -32,6 +32,55 @@
     </audio>
 }
 
+@if (snape)
+{
+    <audio autoplay>
+        <source src="/content/audio/snape.mp3" type="audio/mpeg">
+    </audio>
+}
+
+@if (ron)
+{
+    <audio autoplay>
+        <source src="/content/audio/ron.mp3" type="audio/mpeg">
+    </audio>
+}
+
+@if (dumbledore)
+{
+    <audio autoplay>
+        <source src="/content/audio/dumbledore.mp3" type="audio/mpeg">
+    </audio>
+}
+
+@if (voldy)
+{
+    <audio autoplay>
+        <source src="/content/audio/voldy.mp3" type="audio/mpeg">
+    </audio>
+}
+
+@if (hp)
+{
+    <audio autoplay>
+        <source src="/content/audio/hp.mp3" type="audio/mpeg">
+    </audio>
+}
+
+@if (herm)
+{
+    <audio autoplay>
+        <source src="/content/audio/herm.mp3" type="audio/mpeg">
+    </audio>
+}
+
+@if (all)
+{
+    <audio autoplay>
+        <source src="/content/audio/all.mp3" type="audio/mpeg">
+    </audio>
+}
+
 <MudText Typo="Typo.h2" Align="Align.Center" Style="color: white;" Class="pt-4">Subathon</MudText>
 <MudText Typo="Typo.h4" Align="Align.Center" Style="color: white;" Class="pt-4 pb-4">Time Left: @timeLeft</MudText>
 <MudText Typo="Typo.h6" Align="Align.Center" Style="color: white;" Class="pt-4 pb-4">Time Extended: @timeExtended</MudText>
@@ -81,12 +130,20 @@
     public string timeLeft = "500 years";
     public string timeExtended = "500 years";
     public int counter;
+    public int resetSounds;
     public double secondsLeft;
     public bool startCountdownMusic = false;
     public bool isPlaying = false;
     public bool recordScratch = false;
     public bool quack = false;
     public bool nero = false;
+    public bool snape = false;
+    public bool ron = false;
+    public bool dumbledore = false;
+    public bool voldy = false;
+    public bool hp = false;
+    public bool herm = false;
+    public bool all = false;
 
     public List<Infrastructure.Database.Models.Subathon> subsLb = new ();
     public List<Infrastructure.Database.Models.Subathon> bitsLb = new ();
@@ -113,6 +170,22 @@
         double secondsLeftBeforeUpdate = secondsLeft;
         recordScratch = false;
         quack = false;
+        nero = false;
+        resetSounds++;
+
+        if (resetSounds == 5)
+    {
+            quack = false;
+            nero = false;
+            snape = false;
+            ron = false;
+            dumbledore = false;
+            voldy = false;
+            hp = false;
+            herm = false;
+            all = false;
+        }
+
 
         //if less than 60 seconds left get every second
         if(secondsLeft < 60)
@@ -144,7 +217,7 @@
 
         }
 
-        var startTime = new DateTime(2022, 9, 25, 11, 35, 0);
+        var startTime = new DateTime(2023, 2, 26, 11, 0, 0);
 
         var endTimeDT = startTime.Add(subathonTime);
         var timeDiff = endTimeDT - DateTime.Now;
@@ -177,15 +250,45 @@
             if(secondsLeftBeforeUpdate != 0 && timeAdded > 50)
             {
                 var rnd = new Random();
+                var num = rnd.Next(0, 7);
 
-                if(rnd.Next(0, 10) == 5)
+                switch (num)
                 {
-                    nero = true;
+                    case 0:
+                        resetSounds = 0;
+                        snape = true;
+                        break;
+                    case 1:
+                        resetSounds = 0;
+                        ron = true;
+                        break;
+                    case 2:
+                        resetSounds = 0;
+                        dumbledore = true;
+                        break;
+                    case 3:
+                        resetSounds = 0;
+                        voldy = true;
+                        break;
+                    case 4:
+                        resetSounds = 0;
+                        herm = true;
+                        break;
+                    case 5:
+                        resetSounds = 0;
+                        hp = true;
+                        break;
+                    case 6:
+                        resetSounds = 0;
+                        all = true;
+                        break;
+                    default:
+                        resetSounds = 0;
+                        dumbledore = true;
+                        break;
                 }
-                else
-                {
-                    quack = true;
-                }
+
+
             }
         }
 
