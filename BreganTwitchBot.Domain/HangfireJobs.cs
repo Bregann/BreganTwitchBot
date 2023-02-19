@@ -186,7 +186,7 @@ namespace BreganTwitchBot.Domain
                 ProjectMonitorBreganTwitchBot.SendTwitchAPIKeyRefreshUpdate();
                 Log.Information($"[Refresh Job] Streamer token {streamerRefresh.AccessToken} successfully refreshed! Expires in: {streamerRefresh.ExpiresIn} | Refresh: {streamerRefresh.RefreshToken}");
 
-                var botRefresh = await TwitchApiConnection.ApiClient.Auth.RefreshAuthTokenAsync(AppConfig.TwitchBotApiRefresh, AppConfig.TwitchBotApiRefresh, AppConfig.TwitchAPIClientID);
+                var botRefresh = await TwitchApiConnection.ApiClient.Auth.RefreshAuthTokenAsync(AppConfig.TwitchBotApiRefresh, AppConfig.TwitchAPISecret, AppConfig.TwitchAPIClientID);
                 TwitchApiConnection.ApiClient.Settings.AccessToken = botRefresh.AccessToken;
                 AppConfig.UpdateBotApiCredentials(botRefresh.RefreshToken, botRefresh.AccessToken);
 
