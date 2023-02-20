@@ -61,11 +61,6 @@ namespace BreganTwitchBot.Domain.Bot.Twitch.Events
                     case "goose":
                         TwitchHelper.SendMessage($"{e.RewardRedeemed.Redemption.User.DisplayName} has redeemed Goose! Goose Goose Goose Goose Goose Goose Goose Goose Goose Goose Goose Goose Goose Goose Goose");
                         break;
-
-                    case "dice roll":
-                        DiceRoll.AddNormalDiceRoll(e.RewardRedeemed.Redemption.User.DisplayName.ToLower());
-                        TwitchHelper.SendMessage($"{e.RewardRedeemed.Redemption.User.DisplayName} has redeemed Dice Roll! Do your roll with !roll");
-                        break;
                 }
             }
             catch (Exception xe)

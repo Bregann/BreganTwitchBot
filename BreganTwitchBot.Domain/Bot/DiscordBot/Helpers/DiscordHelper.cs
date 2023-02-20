@@ -105,11 +105,11 @@ namespace BreganTwitchBot.DiscordBot.Helpers
             }
         }
 
-        public static async Task InformDiscordIfUserBanned(string username)
+        public static async Task InformDiscordIfUserBanned(string userId)
         {
             using (var context = new DatabaseContext())
             {
-                var user = context.Users.Where(x => x.Username == username).FirstOrDefault();
+                var user = context.Users.Where(x => x.TwitchUserId == userId).FirstOrDefault();
 
                 if (user == null)
                 {

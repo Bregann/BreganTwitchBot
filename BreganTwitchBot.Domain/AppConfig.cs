@@ -48,6 +48,7 @@ namespace BreganTwitchBot
         public static string ProjectMonitorApiKey { get; private set; }
         public static string TwitchBotApiKey { get; private set; }
         public static string TwitchBotApiRefresh { get; private set; }
+        public static string BotChannelId { get; private set; }
 
 
         private static bool _doublePingJobStarted = false;
@@ -92,6 +93,7 @@ namespace BreganTwitchBot
                 ProjectMonitorApiKey = configVariables.ProjectMonitorApiKey;
                 TwitchBotApiKey = configVariables.TwitchBotApiKey;
                 TwitchBotApiRefresh = configVariables.TwitchBotApiRefresh;
+                BotChannelId = configVariables.BotChannelId;
             }
         }
 

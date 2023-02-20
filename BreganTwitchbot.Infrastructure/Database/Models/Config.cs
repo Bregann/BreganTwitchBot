@@ -106,5 +106,8 @@ namespace BreganTwitchBot.Infrastructure.Database.Models
 
         [Required]
         public string TwitchBotApiRefresh { get; set; }
+
+        [Required]
+        public string BotChannelId { get; set; }
     }
 }

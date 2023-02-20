@@ -197,7 +197,7 @@ namespace BreganTwitchBot.Domain.Bot.Twitch.Commands.Modules.WordBlacklist
             {
                 if (e.ChatMessage.Message.ToLower().StartsWith("has donated") || e.ChatMessage.Message.ToLower().StartsWith("donated"))
                 {
-                    TwitchHelper.TimeoutUser(e.ChatMessage.Username, TimeSpan.FromSeconds(10), "blocksWOT automated rule - monopoly money melvin");
+                    await TwitchHelper.TimeoutUser(e.ChatMessage.UserId, 10, "blocksWOT automated rule - monopoly money melvin");
                     TwitchHelper.SendMessage("Thank you for the monopoly money blocksBANNED (Warning)");
                     Log.Information($"[Word Blacklist] Timed out {e.ChatMessage.Username} for melvin monopoly money");
                 }
@@ -219,7 +219,7 @@ namespace BreganTwitchBot.Domain.Bot.Twitch.Commands.Modules.WordBlacklist
 
                 if (_messagesInARow == 3)
                 {
-                    TwitchHelper.TimeoutUser(e.ChatMessage.Username, TimeSpan.FromSeconds(60), "vip spam");
+                    await TwitchHelper.TimeoutUser(e.ChatMessage.UserId, 60, "vip spam");
                     TwitchHelper.SendMessage($"@{e.ChatMessage.Username} => Stop using your VIP to spam please :)");
                     _messagesInARow = 0;
                     _lastUser = "";
@@ -269,7 +269,7 @@ namespace BreganTwitchBot.Domain.Bot.Twitch.Commands.Modules.WordBlacklist
                     if (totalMessages < 10)
                     {
                         TwitchHelper.SendMessage("It's quite rude to join and beg within your first few messages blocksBANNED");
-                        await TwitchHelper.BanUser(e.ChatMessage.Username, "Joining and begging");
+                        await TwitchHelper.BanUser(e.ChatMessage.UserId, "Joining and begging");
                         return;
                     }
 
@@ -278,12 +278,12 @@ namespace BreganTwitchBot.Domain.Bot.Twitch.Commands.Modules.WordBlacklist
                         if (_strikedUsers.Contains(e.ChatMessage.Username))
                         {
                             TwitchHelper.SendMessage("Warned once and continued to beg, very naughty blocksBANNED");
-                            await TwitchHelper.BanUser(e.ChatMessage.Username, "continued to beg after being warned for begging at low message count");
+                            await TwitchHelper.BanUser(e.ChatMessage.UserId, "continued to beg after being warned for begging at low message count");
                             return;
                         }
 
                         TwitchHelper.SendMessage("How about you don't join the stream and start begging for ranks :) blocksBANNED");
-                        TwitchHelper.TimeoutUser(e.ChatMessage.Username, TimeSpan.FromSeconds(600), "blocksWOT automated AI rule - joining and begging");
+                        await TwitchHelper.TimeoutUser(e.ChatMessage.UserId, 600, "blocksWOT automated AI rule - joining and begging");
                         AddTimeoutStrike(e.ChatMessage.UserId);
 
                         _strikedUsers.Add(e.ChatMessage.Username);
@@ -292,7 +292,7 @@ namespace BreganTwitchBot.Domain.Bot.Twitch.Commands.Modules.WordBlacklist
                     else if (_warnedUsers.Contains(e.ChatMessage.Username.ToLower()))
                     {
                         TwitchHelper.SendMessage("I told you once not to beg and you do it again blocksRage blocksBANNED");
-                        TwitchHelper.TimeoutUser(e.ChatMessage.Username, TimeSpan.FromSeconds(600), "blocksWOT automated AI rule - multiple warnings");
+                        await TwitchHelper.TimeoutUser(e.ChatMessage.UserId, 600, "blocksWOT automated AI rule - multiple warnings");
                         Log.Information($"[Word Blacklist] Timed out {e.ChatMessage.Username} for begging");
                         AddTimeoutStrike(e.ChatMessage.UserId);
 
@@ -304,7 +304,7 @@ namespace BreganTwitchBot.Domain.Bot.Twitch.Commands.Modules.WordBlacklist
                     }
                     else
                     {
-                        TwitchHelper.DeleteMessage(e.ChatMessage.Id);
+                        await TwitchHelper.DeleteMessage(e.ChatMessage.Id);
                         TwitchHelper.SendMessage("Please don't beg for ranks/ask for an f add! :) blocksBANNED");
                         _warnedUsers.Add(e.ChatMessage.Username.ToLower());
                         Log.Information($"[Word Blacklist] Warned {e.ChatMessage.Username} for begging/f add");
@@ -343,7 +343,7 @@ namespace BreganTwitchBot.Domain.Bot.Twitch.Commands.Modules.WordBlacklist
 
             if (_warningWords.Any(messageToCheckForLinks.Contains))
             {
-                TwitchHelper.TimeoutUser(e.ChatMessage.Username, TimeSpan.FromSeconds(30), "blocksWOT automated rule - link or promotion");
+                await TwitchHelper.TimeoutUser(e.ChatMessage.UserId, 30, "blocksWOT automated rule - link or promotion");
                 TwitchHelper.SendMessage("Please don't post links or say that over streamers are live :) blocksBANNED");
                 Log.Information($"[Word Blacklist] BAD WORD DETECTED {_warningWords.FirstOrDefault(e.ChatMessage.Message.ToLower().Replace(" ", "").Contains)} sent by {e.ChatMessage.Username} ");
             }
@@ -351,7 +351,7 @@ namespace BreganTwitchBot.Domain.Bot.Twitch.Commands.Modules.WordBlacklist
             //for 600s words
             if (_tempBanWords.Any(message.Contains))
             {
-                TwitchHelper.TimeoutUser(e.ChatMessage.Username, TimeSpan.FromSeconds(600), "blocksWOT automated rule - potentialy offensive word");
+                await TwitchHelper.TimeoutUser(e.ChatMessage.UserId, 600, "blocksWOT automated rule - potentialy offensive word");
                 TwitchHelper.SendMessage("Yeetus temp ban deletus blocksBANNED");
                 Log.Information($"[Word Blacklist] BAD WORD DETECTED {_warningWords.FirstOrDefault(e.ChatMessage.Message.ToLower().Replace(" ", "").Contains)} sent by {e.ChatMessage.Username} ");
             }
@@ -359,7 +359,7 @@ namespace BreganTwitchBot.Domain.Bot.Twitch.Commands.Modules.WordBlacklist
             //for the edgy 12 year olds who think saying the n word is funny
             if (_permBanWords.Any(message.Contains))
             {
-                await TwitchHelper.BanUser(e.ChatMessage.Username, "blocksWOT automated rule - very offensive word");
+                await TwitchHelper.BanUser(e.ChatMessage.UserId, "blocksWOT automated rule - very offensive word");
                 TwitchHelper.SendMessage("Yeetus perm ban deletus blocksBANNED");
                 Log.Information($"[Word Blacklist] BAD WORD DETECTED {_warningWords.FirstOrDefault(e.ChatMessage.Message.ToLower().Replace(" ", "").Contains)} sent by {e.ChatMessage.Username} ");
             }

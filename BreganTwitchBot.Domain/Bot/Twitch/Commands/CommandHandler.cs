@@ -233,16 +233,8 @@ namespace BreganTwitchBot.Domain.Bot.Twitch.Commands
                     DailyPoints.HandleStreakCommand(command);
                     break;
 
-                case "roll":
-                    DiceRoll.HandleDiceCommand(command.Command.ChatMessage.Username.ToLower());
-                    break;
-
                 case "addpoints" when Supermods.IsUserSupermod(command.Command.ChatMessage.UserId):
                     Points.HandleAddPointsCommand(command);
-                    break;
-
-                case "addroll" when Supermods.IsUserSupermod(command.Command.ChatMessage.UserId):
-                    DiceRoll.HandleAddRollCommand(command);
                     break;
 
                 case "pointslb":

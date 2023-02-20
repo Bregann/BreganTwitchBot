@@ -2,6 +2,7 @@
 using BreganTwitchBot.Domain.Bot.Twitch.Services;
 using Serilog;
 using TwitchLib.Client.Extensions;
+using TwitchLib.Api.Helix.Models.Moderation.BanUser;
 
 namespace BreganTwitchBot.Domain.Bot.Twitch.Helpers
 {
@@ -19,12 +20,20 @@ namespace BreganTwitchBot.Domain.Bot.Twitch.Helpers
             }
         }
 
-        public static void TimeoutUser(string user, TimeSpan timeToTimeoutFor, string reason)
+        public static async Task TimeoutUser(string userId, int timeToTimeoutFor, string reason)
         {
             try
             {
-                TwitchBotConnection.Client.TimeoutUser(AppConfig.BroadcasterName, user, timeToTimeoutFor, reason);
-                Log.Information($"[Twitch Timeout] {user} timed out for {timeToTimeoutFor.TotalSeconds} seconds");
+                var banRequest = new BanUserRequest
+                {
+                    UserId = userId,
+                    Reason = reason,
+                    Duration = timeToTimeoutFor
+                };
+
+
+                await TwitchApiConnection.ApiClient.Helix.Moderation.BanUserAsync(AppConfig.TwitchChannelID, AppConfig.BotChannelId, banRequest, AppConfig.TwitchBotApiKey);
+                Log.Information($"[Twitch Timeout] {userId} timed out for {timeToTimeoutFor} seconds");
             }
             catch (Exception e)
             {
@@ -32,15 +41,22 @@ namespace BreganTwitchBot.Domain.Bot.Twitch.Helpers
             }
         }
 
-        public static async Task BanUser(string user, string reason)
+        public static async Task BanUser(string userId, string reason)
         {
             try
             {
-                TwitchBotConnection.Client.BanUser(AppConfig.BroadcasterName, user, reason);
-                Log.Information($"[Twitch Ban] {user} permanently banned from the twitch dot television livestream");
+                var banRequest = new BanUserRequest
+                {
+                    UserId = userId,
+                    Reason = reason
+                };
+
+
+                await TwitchApiConnection.ApiClient.Helix.Moderation.BanUserAsync(AppConfig.TwitchChannelID, AppConfig.BotChannelId, banRequest, AppConfig.TwitchBotApiKey);
+                Log.Information($"[Twitch Ban] {userId} permanently banned from the twitch dot television livestream");
 
                 //Send over to discord for an inspection
-                await DiscordHelper.InformDiscordIfUserBanned(user);
+                await DiscordHelper.InformDiscordIfUserBanned(userId);
             }
             catch (Exception e)
             {
@@ -48,11 +64,11 @@ namespace BreganTwitchBot.Domain.Bot.Twitch.Helpers
             }
         }
 
-        public static void DeleteMessage(string msgId)
+        public static async Task DeleteMessage(string msgId)
         {
             try
             {
-                TwitchBotConnection.Client.DeleteMessage(AppConfig.BroadcasterName, msgId);
+                await TwitchApiConnection.ApiClient.Helix.Moderation.DeleteChatMessagesAsync(AppConfig.TwitchChannelID, AppConfig.BotChannelId, msgId, AppConfig.TwitchBotApiKey);
                 Log.Information($"[Twitch Ban] Message ID {msgId} deleted");
             }
             catch (Exception e)
