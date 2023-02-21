@@ -12,14 +12,15 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace BreganTwitchBot.Infrastructure.Migrations
 {
     [DbContext(typeof(DatabaseContext))]
-    [Migration("20230211224135_AddBotKeyAndRefreshTokens")]
-    partial class AddBotKeyAndRefreshTokens
+    [Migration("20230221215429_Initial")]
+    partial class Initial
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
+                .HasDefaultSchema("twitchbot_new")
                 .HasAnnotation("ProductVersion", "7.0.2")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
@@ -39,7 +40,7 @@ namespace BreganTwitchBot.Infrastructure.Migrations
 
                     b.HasKey("DiscordId");
 
-                    b.ToTable("Birthdays");
+                    b.ToTable("Birthdays", "twitchbot_new");
                 });
 
             modelBuilder.Entity("BreganTwitchBot.Infrastructure.Database.Models.Blacklist", b =>
@@ -53,7 +54,7 @@ namespace BreganTwitchBot.Infrastructure.Migrations
 
                     b.HasKey("Word");
 
-                    b.ToTable("Blacklist");
+                    b.ToTable("Blacklist", "twitchbot_new");
                 });
 
             modelBuilder.Entity("BreganTwitchBot.Infrastructure.Database.Models.Commands", b =>
@@ -73,12 +74,16 @@ namespace BreganTwitchBot.Infrastructure.Migrations
 
                     b.HasKey("CommandName");
 
-                    b.ToTable("Commands");
+                    b.ToTable("Commands", "twitchbot_new");
                 });
 
             modelBuilder.Entity("BreganTwitchBot.Infrastructure.Database.Models.Config", b =>
                 {
                     b.Property<string>("BroadcasterName")
+                        .HasColumnType("text");
+
+                    b.Property<string>("BotChannelId")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<string>("BotName")
@@ -196,12 +201,13 @@ namespace BreganTwitchBot.Infrastructure.Migrations
 
                     b.HasKey("BroadcasterName");
 
-                    b.ToTable("Config");
+                    b.ToTable("Config", "twitchbot_new");
 
                     b.HasData(
                         new
                         {
                             BroadcasterName = "",
+                            BotChannelId = "",
                             BotName = "",
                             BotOAuth = "",
                             BroadcasterOAuth = "",
@@ -221,8 +227,8 @@ namespace BreganTwitchBot.Infrastructure.Migrations
                             DiscordSocksChannelID = 0m,
                             DiscordStreamAnnouncementChannelID = 0m,
                             HFConnectionString = "",
-                            LastDailyPointsAllowed = new DateTime(2023, 2, 10, 22, 41, 34, 759, DateTimeKind.Utc).AddTicks(8345),
-                            PinnedStreamDate = new DateTime(2023, 2, 10, 22, 41, 34, 759, DateTimeKind.Utc).AddTicks(8341),
+                            LastDailyPointsAllowed = new DateTime(2023, 2, 20, 21, 54, 29, 559, DateTimeKind.Utc).AddTicks(7857),
+                            PinnedStreamDate = new DateTime(2023, 2, 20, 21, 54, 29, 559, DateTimeKind.Utc).AddTicks(7854),
                             PinnedStreamMessage = "",
                             PinnedStreamMessageId = 0m,
                             PointsName = "",
@@ -238,6 +244,53 @@ namespace BreganTwitchBot.Infrastructure.Migrations
                         });
                 });
 
+            modelBuilder.Entity("BreganTwitchBot.Infrastructure.Database.Models.DailyPoints", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("CurrentStreak")
+                        .HasColumnType("integer");
+
+                    b.Property<bool>("DiscordDailyClaimed")
+                        .HasColumnType("boolean");
+
+                    b.Property<int>("DiscordDailyStreak")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("DiscordDailyTotalClaims")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("HighestStreak")
+                        .HasColumnType("integer");
+
+                    b.Property<bool>("PointsClaimedThisStream")
+                        .HasColumnType("boolean");
+
+                    b.Property<DateTime>("PointsLastClaimed")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<long>("TotalPointsClaimed")
+                        .HasColumnType("bigint");
+
+                    b.Property<int>("TotalTimesClaimed")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("TwitchUserId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TwitchUserId")
+                        .IsUnique();
+
+                    b.ToTable("DailyPoints", "twitchbot_new");
+                });
+
             modelBuilder.Entity("BreganTwitchBot.Infrastructure.Database.Models.DiscordLinkRequests", b =>
                 {
                     b.Property<string>("TwitchName")
@@ -248,7 +301,39 @@ namespace BreganTwitchBot.Infrastructure.Migrations
 
                     b.HasKey("TwitchName");
 
-                    b.ToTable("DiscordLinkRequests");
+                    b.ToTable("DiscordLinkRequests", "twitchbot_new");
+                });
+
+            modelBuilder.Entity("BreganTwitchBot.Infrastructure.Database.Models.DiscordUserStats", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("DiscordLevel")
+                        .HasColumnType("integer");
+
+                    b.Property<bool>("DiscordLevelUpNotifsEnabled")
+                        .HasColumnType("boolean");
+
+                    b.Property<int>("DiscordXp")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("PrestigeLevel")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("TwitchUserId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TwitchUserId")
+                        .IsUnique();
+
+                    b.ToTable("DiscordUserStats", "twitchbot_new");
                 });
 
             modelBuilder.Entity("BreganTwitchBot.Infrastructure.Database.Models.RankBeggar", b =>
@@ -268,7 +353,7 @@ namespace BreganTwitchBot.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("RankBeggar");
+                    b.ToTable("RankBeggar", "twitchbot_new");
                 });
 
             modelBuilder.Entity("BreganTwitchBot.Infrastructure.Database.Models.SlotMachine", b =>
@@ -320,7 +405,7 @@ namespace BreganTwitchBot.Infrastructure.Migrations
 
                     b.HasKey("StreamName");
 
-                    b.ToTable("SlotMachine");
+                    b.ToTable("SlotMachine", "twitchbot_new");
 
                     b.HasData(
                         new
@@ -473,7 +558,7 @@ namespace BreganTwitchBot.Infrastructure.Migrations
 
                     b.HasKey("StreamId");
 
-                    b.ToTable("StreamStats");
+                    b.ToTable("StreamStats", "twitchbot_new");
                 });
 
             modelBuilder.Entity("BreganTwitchBot.Infrastructure.Database.Models.StreamViewCount", b =>
@@ -486,7 +571,7 @@ namespace BreganTwitchBot.Infrastructure.Migrations
 
                     b.HasKey("Time");
 
-                    b.ToTable("StreamViewCount");
+                    b.ToTable("StreamViewCount", "twitchbot_new");
                 });
 
             modelBuilder.Entity("BreganTwitchBot.Infrastructure.Database.Models.Subathon", b =>
@@ -502,7 +587,7 @@ namespace BreganTwitchBot.Infrastructure.Migrations
 
                     b.HasKey("Username");
 
-                    b.ToTable("Subathon");
+                    b.ToTable("Subathon", "twitchbot_new");
                 });
 
             modelBuilder.Entity("BreganTwitchBot.Infrastructure.Database.Models.UniqueViewers", b =>
@@ -512,7 +597,54 @@ namespace BreganTwitchBot.Infrastructure.Migrations
 
                     b.HasKey("Username");
 
-                    b.ToTable("UniqueViewers");
+                    b.ToTable("UniqueViewers", "twitchbot_new");
+                });
+
+            modelBuilder.Entity("BreganTwitchBot.Infrastructure.Database.Models.UserGambleStats", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("JackpotWins")
+                        .HasColumnType("integer");
+
+                    b.Property<long>("PointsGambled")
+                        .HasColumnType("bigint");
+
+                    b.Property<long>("PointsLost")
+                        .HasColumnType("bigint");
+
+                    b.Property<long>("PointsWon")
+                        .HasColumnType("bigint");
+
+                    b.Property<int>("SmorcWins")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("Tier1Wins")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("Tier2Wins")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("Tier3Wins")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("TotalSpins")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("TwitchUserId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TwitchUserId")
+                        .IsUnique();
+
+                    b.ToTable("UserGambleStats", "twitchbot_new");
                 });
 
             modelBuilder.Entity("BreganTwitchBot.Infrastructure.Database.Models.Users", b =>
@@ -523,46 +655,16 @@ namespace BreganTwitchBot.Infrastructure.Migrations
                     b.Property<int>("BitsDonatedThisMonth")
                         .HasColumnType("integer");
 
-                    b.Property<int>("BonusDiceRolls")
-                        .HasColumnType("integer");
-
                     b.Property<int>("BossesDone")
                         .HasColumnType("integer");
 
                     b.Property<long>("BossesPointsWon")
                         .HasColumnType("bigint");
 
-                    b.Property<int>("CurrentStreak")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("DiceRolls")
-                        .HasColumnType("integer");
-
-                    b.Property<bool>("DiscordDailyClaimed")
-                        .HasColumnType("boolean");
-
-                    b.Property<int>("DiscordDailyStreak")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("DiscordDailyTotalClaims")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("DiscordLevel")
-                        .HasColumnType("integer");
-
-                    b.Property<bool>("DiscordLevelUpNotifsEnabled")
-                        .HasColumnType("boolean");
-
                     b.Property<decimal>("DiscordUserId")
                         .HasColumnType("numeric(20,0)");
 
-                    b.Property<int>("DiscordXp")
-                        .HasColumnType("integer");
-
                     b.Property<int>("GiftedSubsThisMonth")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("HighestStreak")
                         .HasColumnType("integer");
 
                     b.Property<bool>("InStream")
@@ -574,14 +676,40 @@ namespace BreganTwitchBot.Infrastructure.Migrations
                     b.Property<bool>("IsSuperMod")
                         .HasColumnType("boolean");
 
-                    b.Property<int>("JackpotWins")
-                        .HasColumnType("integer");
-
                     b.Property<DateTime>("LastSeenDate")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<int>("MarblesWins")
                         .HasColumnType("integer");
+
+                    b.Property<long>("Points")
+                        .HasColumnType("bigint");
+
+                    b.Property<int>("TimeoutStrikes")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("TotalMessages")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Username")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("WarnStrikes")
+                        .HasColumnType("integer");
+
+                    b.HasKey("TwitchUserId");
+
+                    b.ToTable("Users", "twitchbot_new");
+                });
+
+            modelBuilder.Entity("BreganTwitchBot.Infrastructure.Database.Models.Watchtime", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<int>("MinutesInStream")
                         .HasColumnType("integer");
@@ -593,27 +721,6 @@ namespace BreganTwitchBot.Infrastructure.Migrations
                         .HasColumnType("integer");
 
                     b.Property<int>("MinutesWatchedThisWeek")
-                        .HasColumnType("integer");
-
-                    b.Property<long>("Points")
-                        .HasColumnType("bigint");
-
-                    b.Property<bool>("PointsClaimedThisStream")
-                        .HasColumnType("boolean");
-
-                    b.Property<long>("PointsGambled")
-                        .HasColumnType("bigint");
-
-                    b.Property<DateTime>("PointsLastClaimed")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<long>("PointsLost")
-                        .HasColumnType("bigint");
-
-                    b.Property<long>("PointsWon")
-                        .HasColumnType("bigint");
-
-                    b.Property<int>("PrestigeLevel")
                         .HasColumnType("integer");
 
                     b.Property<bool>("Rank1Applied")
@@ -631,43 +738,75 @@ namespace BreganTwitchBot.Infrastructure.Migrations
                     b.Property<bool>("Rank5Applied")
                         .HasColumnType("boolean");
 
-                    b.Property<int>("SmorcWins")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("Tier1Wins")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("Tier2Wins")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("Tier3Wins")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("TimeoutStrikes")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("TotalMessages")
-                        .HasColumnType("integer");
-
-                    b.Property<long>("TotalPointsClaimed")
-                        .HasColumnType("bigint");
-
-                    b.Property<int>("TotalSpins")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("TotalTimesClaimed")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("Username")
+                    b.Property<string>("TwitchUserId")
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<int>("WarnStrikes")
-                        .HasColumnType("integer");
+                    b.HasKey("Id");
 
-                    b.HasKey("TwitchUserId");
+                    b.HasIndex("TwitchUserId")
+                        .IsUnique();
 
-                    b.ToTable("Users");
+                    b.ToTable("Watchtime", "twitchbot_new");
+                });
+
+            modelBuilder.Entity("BreganTwitchBot.Infrastructure.Database.Models.DailyPoints", b =>
+                {
+                    b.HasOne("BreganTwitchBot.Infrastructure.Database.Models.Users", "User")
+                        .WithOne("DailyPoints")
+                        .HasForeignKey("BreganTwitchBot.Infrastructure.Database.Models.DailyPoints", "TwitchUserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("BreganTwitchBot.Infrastructure.Database.Models.DiscordUserStats", b =>
+                {
+                    b.HasOne("BreganTwitchBot.Infrastructure.Database.Models.Users", "User")
+                        .WithOne("DiscordUserStats")
+                        .HasForeignKey("BreganTwitchBot.Infrastructure.Database.Models.DiscordUserStats", "TwitchUserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("BreganTwitchBot.Infrastructure.Database.Models.UserGambleStats", b =>
+                {
+                    b.HasOne("BreganTwitchBot.Infrastructure.Database.Models.Users", "User")
+                        .WithOne("UserGambleStats")
+                        .HasForeignKey("BreganTwitchBot.Infrastructure.Database.Models.UserGambleStats", "TwitchUserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("BreganTwitchBot.Infrastructure.Database.Models.Watchtime", b =>
+                {
+                    b.HasOne("BreganTwitchBot.Infrastructure.Database.Models.Users", "User")
+                        .WithOne("Watchtime")
+                        .HasForeignKey("BreganTwitchBot.Infrastructure.Database.Models.Watchtime", "TwitchUserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("BreganTwitchBot.Infrastructure.Database.Models.Users", b =>
+                {
+                    b.Navigation("DailyPoints")
+                        .IsRequired();
+
+                    b.Navigation("DiscordUserStats")
+                        .IsRequired();
+
+                    b.Navigation("UserGambleStats")
+                        .IsRequired();
+
+                    b.Navigation("Watchtime")
+                        .IsRequired();
                 });
 #pragma warning restore 612, 618
         }

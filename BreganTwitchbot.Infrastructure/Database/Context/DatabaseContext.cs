@@ -19,12 +19,38 @@ namespace BreganTwitchBot.Infrastructure.Database.Context
         public DbSet<Subathon> Subathon { get; set; }
         public DbSet<Birthdays> Birthdays { get; set; }
         public DbSet<RankBeggar> RankBeggar { get; set; }
+        public DbSet<DailyPoints> DailyPoints { get; set; }
+        public DbSet<DiscordUserStats> DiscordUserStats { get; set; }
+        public DbSet<UserGambleStats> UserGambleStats { get; set; }
+        public DbSet<Watchtime> Watchtime { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
             => optionsBuilder.UseNpgsql(_connectionString);
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            modelBuilder.HasDefaultSchema("twitchbot_new");
+
+            modelBuilder.Entity<Users>()
+                .HasOne(b => b.DailyPoints)
+                .WithOne(i => i.User)
+                .HasForeignKey<DailyPoints>(b => b.TwitchUserId);
+
+            modelBuilder.Entity<Users>()
+                .HasOne(b => b.DiscordUserStats)
+                .WithOne(i => i.User)
+                .HasForeignKey<DiscordUserStats>(b => b.TwitchUserId);
+
+            modelBuilder.Entity<Users>()
+                .HasOne(b => b.UserGambleStats)
+                .WithOne(i => i.User)
+                .HasForeignKey<UserGambleStats>(b => b.TwitchUserId);
+
+            modelBuilder.Entity<Users>()
+                .HasOne(b => b.Watchtime)
+                .WithOne(i => i.User)
+                .HasForeignKey<Watchtime>(b => b.TwitchUserId);
+
             //Seed in the data
             modelBuilder.Entity<Config>().HasData(new Config
             {

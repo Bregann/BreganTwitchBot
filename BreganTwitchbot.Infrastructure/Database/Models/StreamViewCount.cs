@@ -5,10 +5,8 @@ namespace BreganTwitchBot.Infrastructure.Database.Models
     public class StreamViewCount
     {
         [Key]
-        [Required]
-        public DateTime Time { get; set; }
+        public required DateTime Time { get; set; }
 
-        [Required]
-        public int ViewCount { get; set; }
+        public required int ViewCount { get; set; }
     }
 }

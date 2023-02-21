@@ -6,9 +6,9 @@ using Hangfire.Dashboard.Dark;
 using Hangfire.PostgreSql;
 using Serilog;
 
-Log.Logger = new LoggerConfiguration().WriteTo.Async(x => x.File("Logs/log.log", retainedFileCountLimit: null, rollingInterval: RollingInterval.Day)).WriteTo.Console().CreateLogger(); 
+Log.Logger = new LoggerConfiguration().WriteTo.Async(x => x.File("Logs/log.log", retainedFileCountLimit: null, rollingInterval: RollingInterval.Day)).WriteTo.Console().CreateLogger();
 Log.Information("Logger Setup");
-AppConfig.LoadConfig(); 
+AppConfig.LoadConfig();
 
 //Setup project monitor
 #if DEBUG
@@ -63,3 +63,8 @@ app.MapControllers();
 await SetupBot.Setup();
 
 app.Run();
+
+
+using BreganTwitchBot.Infrastructure.Database.Context;
+
+Console.WriteLine("hello");

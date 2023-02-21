@@ -5,10 +5,8 @@ namespace BreganTwitchBot.Infrastructure.Database.Models
     public class Blacklist
     {
         [Key]
-        [Required]
-        public string Word { get; set; }
+        public required string Word { get; set; }
 
-        [Required]
-        public string WordType { get; set; }
+        public required string WordType { get; set; }
     }
 }
