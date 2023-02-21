@@ -4,7 +4,7 @@ using Serilog;
 using TwitchLib.Client.Extensions;
 using TwitchLib.Api.Helix.Models.Moderation.BanUser;
 
-namespace BreganTwitchBot.Domain.Bot.Twitch.Helpers
+namespace BreganTwitchBot.Domain.Data.TwitchBot.Helpers
 {
     public class TwitchHelper
     {

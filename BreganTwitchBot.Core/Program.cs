@@ -63,8 +63,3 @@ app.MapControllers();
 await SetupBot.Setup();
 
 app.Run();
-
-
-using BreganTwitchBot.Infrastructure.Database.Context;
-
-Console.WriteLine("hello");

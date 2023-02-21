@@ -1,9 +1,9 @@
 ﻿using BreganTwitchBot.Infrastructure.Database.Context;
 using BreganTwitchBot.DiscordBot.Helpers;
 using BreganTwitchBot.Domain.Bot.DiscordBot.SlashCommands.Data.Linking;
-using BreganTwitchBot.Domain.Bot.Twitch.Helpers;
 using BreganTwitchBot.Infrastructure.Database.Models;
 using TwitchLib.Client.Events;
+using BreganTwitchBot.Domain.Data.TwitchBot.Helpers;
 
 namespace BreganTwitchBot.Domain.Bot.Twitch.Commands.Modules.Linking
 {

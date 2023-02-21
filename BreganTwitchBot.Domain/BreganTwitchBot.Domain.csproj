@@ -45,4 +45,7 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Data\TwitchBot\Commands\" />
+  </ItemGroup>
 </Project>

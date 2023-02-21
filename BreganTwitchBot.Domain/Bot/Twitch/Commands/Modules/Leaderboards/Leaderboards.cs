@@ -1,7 +1,7 @@
 ﻿using BreganTwitchBot.Infrastructure.Database.Context;
 using BreganTwitchBot.Domain.Bot.Twitch.Commands.Modules.Leaderboards.Enums;
-using BreganTwitchBot.Domain.Bot.Twitch.Helpers;
 using System.Text;
+using BreganTwitchBot.Domain.Data.TwitchBot.Helpers;
 
 namespace BreganTwitchBot.Domain.Bot.Twitch.Commands.Modules.Leaderboards
 {

@@ -1,8 +1,8 @@
 ﻿using BreganTwitchBot.Infrastructure.Database.Context;
-using BreganTwitchBot.Domain.Bot.Twitch.Helpers;
 using Humanizer;
 using Humanizer.Localisation;
 using Serilog;
+using BreganTwitchBot.Domain.Data.TwitchBot.Helpers;
 
 namespace BreganTwitchBot.Domain.Bot.Twitch.Commands.Modules.Subathon
 {

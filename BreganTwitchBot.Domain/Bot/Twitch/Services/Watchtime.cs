@@ -1,11 +1,11 @@
 ﻿using BreganTwitchBot.Infrastructure.Database.Context;
 using BreganTwitchBot.Domain.Bot.DiscordBot.SlashCommands.Data.Linking;
-using BreganTwitchBot.Domain.Bot.Twitch.Helpers;
-using BreganTwitchBot.Domain.Bot.Twitch.Services.Stats;
-using BreganTwitchBot.Domain.Bot.Twitch.Services.Stats.Enums;
 using BreganTwitchBot.Infrastructure.Database.Models;
 using BreganUtils.ProjectMonitor.Projects;
 using Serilog;
+using BreganTwitchBot.Domain.Data.TwitchBot.Stats;
+using BreganTwitchBot.Domain.Data.TwitchBot.Enums;
+using BreganTwitchBot.Domain.Data.TwitchBot.Helpers;
 
 namespace BreganTwitchBot.Domain.Bot.Twitch.Services
 {

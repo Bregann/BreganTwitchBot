@@ -1,4 +1,4 @@
-﻿namespace BreganTwitchBot.Domain.Bot.Twitch.Services.Stats.Enums
+﻿namespace BreganTwitchBot.Domain.Data.TwitchBot.Enums
 {
     public enum StatTypes
     {

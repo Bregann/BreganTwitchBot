@@ -1,5 +1,5 @@
-﻿using BreganTwitchBot.Domain.Bot.Twitch.Helpers;
-using BreganTwitchBot.Domain.Bot.Twitch.Services;
+﻿using BreganTwitchBot.Domain.Bot.Twitch.Services;
+using BreganTwitchBot.Domain.Data.TwitchBot.Helpers;
 using Serilog;
 
 namespace BreganTwitchBot.Domain.Bot.Twitch.Commands.Modules.StreamInfo

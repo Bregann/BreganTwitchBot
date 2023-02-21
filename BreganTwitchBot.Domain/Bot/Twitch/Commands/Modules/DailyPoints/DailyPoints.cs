@@ -1,12 +1,12 @@
 ﻿using BreganTwitchBot.Infrastructure.Database.Context;
-using BreganTwitchBot.Domain.Bot.Twitch.Helpers;
 using BreganTwitchBot.Domain.Bot.Twitch.Services;
-using BreganTwitchBot.Domain.Bot.Twitch.Services.Stats;
-using BreganTwitchBot.Domain.Bot.Twitch.Services.Stats.Enums;
 using BreganUtils.ProjectMonitor.Projects;
 using Serilog;
 using System.Text;
 using TwitchLib.Client.Events;
+using BreganTwitchBot.Domain.Data.TwitchBot.Stats;
+using BreganTwitchBot.Domain.Data.TwitchBot.Enums;
+using BreganTwitchBot.Domain.Data.TwitchBot.Helpers;
 
 namespace BreganTwitchBot.Domain.Bot.Twitch.Commands.Modules.DailyPoints
 {

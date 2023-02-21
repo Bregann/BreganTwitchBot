@@ -1,16 +1,17 @@
 ﻿using BreganTwitchBot.Infrastructure.Database.Context;
 using BreganTwitchBot.DiscordBot.Helpers;
-using BreganTwitchBot.Domain.Bot.Twitch.Services.Stats.Enums;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
 using TwitchLib.Api.Core.Models.Undocumented.Chatters;
 using BreganTwitchBot.Infrastructure.Database.Models;
+using BreganTwitchBot.Domain.Bot.Twitch.Services;
+using BreganTwitchBot.Domain.Data.TwitchBot.Enums;
 
-namespace BreganTwitchBot.Domain.Bot.Twitch.Services.Stats
+namespace BreganTwitchBot.Domain.Data.TwitchBot.Stats
 {
     public class StreamStatsService
     {
-        public static void UpdateStreamStat(long amount, StatTypes statType)
+        public static async Task UpdateStreamStat(long amount, StatTypes statType)
         {
             if (!AppConfig.StreamerLive)
             {
@@ -122,7 +123,7 @@ namespace BreganTwitchBot.Domain.Bot.Twitch.Services.Stats
                         break;
                 }
 
-                context.SaveChanges();
+                await context.SaveChangesAsync();
             }
         }
 
@@ -142,18 +143,12 @@ namespace BreganTwitchBot.Domain.Bot.Twitch.Services.Stats
             catch (Exception exception)
             {
                 Log.Fatal($"[Stream Stats] Error getting API data for AddNewStream: {exception}");
-                followerCount = 0;
-                subCount = 0;
             }
 
             using (var context = new DatabaseContext())
             {
                 var streamId = context.StreamStats.OrderBy(x => x.StreamId).Last().StreamId;
-                Log.Information("stats debug " + streamId.ToString());
-
                 var newStreamId = streamId + 1;
-
-                Log.Information("stats debug " + newStreamId.ToString());
 
                 //Clear out the tables
                 context.UniqueViewers.FromSqlRaw("DELETE from UniqueViewers");
@@ -205,12 +200,13 @@ namespace BreganTwitchBot.Domain.Bot.Twitch.Services.Stats
                     Uptime = TimeSpan.FromSeconds(1)
                 });
 
-                context.SaveChanges();
-            }
+                await context.SaveChangesAsync();
 
-            Log.Information("[Stream Stats] New stream added");
+                Log.Information($"[Stream Stats] New stream {newStreamId} added");
+            }
         }
 
+        //todo: this method
         public static async Task GetUserListAndViewCountAndAddToTables()
         {
             if (AppConfig.StreamAnnounced && AppConfig.StreamerLive)
@@ -262,6 +258,7 @@ namespace BreganTwitchBot.Domain.Bot.Twitch.Services.Stats
             }
         }
 
+        //todo: this method
         public static async Task CalculateEndStreamData()
         {
             long followerCount = 0;

@@ -1,6 +1,6 @@
 ﻿using BreganTwitchBot.Domain.Bot.Twitch.Commands.Modules.SuperMods;
-using BreganTwitchBot.Domain.Bot.Twitch.Helpers;
 using BreganTwitchBot.Domain.Bot.Twitch.Services;
+using BreganTwitchBot.Domain.Data.TwitchBot.Helpers;
 using Humanizer;
 using Humanizer.Localisation;
 using Serilog;

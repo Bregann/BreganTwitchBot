@@ -1,10 +1,10 @@
 ﻿using BreganTwitchBot.Infrastructure.Database.Context;
 using BreganTwitchBot.Domain.Bot.Twitch.Commands.Modules.SuperMods;
-using BreganTwitchBot.Domain.Bot.Twitch.Helpers;
 using Serilog;
 using System.Text.RegularExpressions;
 using TwitchLib.Client.Events;
 using BreganTwitchBot_Domain;
+using BreganTwitchBot.Domain.Data.TwitchBot.Helpers;
 
 namespace BreganTwitchBot.Domain.Bot.Twitch.Commands.Modules.WordBlacklist
 {

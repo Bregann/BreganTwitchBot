@@ -1,4 +1,4 @@
-﻿using BreganTwitchBot.Domain.Bot.Twitch.Helpers;
+﻿using BreganTwitchBot.Domain.Data.TwitchBot.Helpers;
 using ICanHazDadJoke.NET;
 using Serilog;
 

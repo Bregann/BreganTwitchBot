@@ -11,8 +11,8 @@ using Humanizer;
 using Humanizer.Localisation;
 using Serilog;
 using System.Text.RegularExpressions;
-using BreganTwitchBot.Domain.Bot.Twitch.Services.Stats;
-using BreganTwitchBot.Domain.Bot.Twitch.Services.Stats.Enums;
+using BreganTwitchBot.Domain.Data.TwitchBot.Stats;
+using BreganTwitchBot.Domain.Data.TwitchBot.Enums;
 
 namespace BreganTwitchBot.DiscordBot.Events
 {

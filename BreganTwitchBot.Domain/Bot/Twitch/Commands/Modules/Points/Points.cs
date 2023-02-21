@@ -2,6 +2,7 @@
 using BreganTwitchBot.Domain.Bot.Twitch.Helpers;
 using Serilog;
 using TwitchLib.Client.Events;
+using BreganTwitchBot.Domain.Data.TwitchBot.Helpers;
 
 namespace BreganTwitchBot.Domain.Bot.Twitch.Commands.Modules.Points
 {

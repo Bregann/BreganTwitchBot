@@ -1,6 +1,6 @@
 ﻿using BreganTwitchBot.Infrastructure.Database.Context;
-using BreganTwitchBot.Domain.Bot.Twitch.Helpers;
 using TwitchLib.Client.Events;
+using BreganTwitchBot.Domain.Data.TwitchBot.Helpers;
 
 namespace BreganTwitchBot.Domain.Bot.Twitch.Commands.Modules.SuperMods
 {

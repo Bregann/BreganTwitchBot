@@ -5,12 +5,13 @@ using BreganTwitchBot.Domain.Bot.Twitch.Commands.Modules.DiceRoll;
 using BreganTwitchBot.Domain.Bot.Twitch.Commands.Modules.WordBlacklist;
 using BreganTwitchBot.Domain.Bot.Twitch.Helpers;
 using BreganTwitchBot.Domain.Bot.Twitch.Services;
-using BreganTwitchBot.Domain.Bot.Twitch.Services.Stats;
-using BreganTwitchBot.Domain.Bot.Twitch.Services.Stats.Enums;
 using Serilog;
 using TwitchLib.Client.Events;
 using TwitchLib.PubSub.Events;
 using BreganTwitchBot.Infrastructure.Database.Models;
+using BreganTwitchBot.Domain.Data.TwitchBot.Stats;
+using BreganTwitchBot.Domain.Data.TwitchBot.Enums;
+using BreganTwitchBot.Domain.Data.TwitchBot.Helpers;
 
 namespace BreganTwitchBot.Domain.Bot.Twitch.Events
 {
@@ -18,57 +19,21 @@ namespace BreganTwitchBot.Domain.Bot.Twitch.Events
     {
         public static void SetupTwitchEvents(bool pubsubRefresh = false)
         {
-            if (pubsubRefresh)
-            {
-                TwitchPubSubConnection.PubSubClient.OnBitsReceivedV2 += BitsReceived;
-                TwitchPubSubConnection.PubSubClient.OnFollow += UserFollowed;
-                TwitchPubSubConnection.PubSubClient.OnChannelPointsRewardRedeemed += ChannelPointsRewardRedeemed;
-            }
-            else
-            {
-                TwitchBotConnection.Client.OnChatCommandReceived += ChatCommandReceived;
-                TwitchBotConnection.Client.OnMessageReceived += MessageReceived;
-                TwitchBotConnection.Client.OnUserBanned += UserBanned;
-                TwitchBotConnection.Client.OnUserTimedout += UserTimedout;
-                TwitchBotConnection.Client.OnMessageSent += MessageSent;
-                TwitchBotConnection.Client.OnGiftedSubscription += GiftedSubscription;
-                TwitchBotConnection.Client.OnNewSubscriber += NewSubscriber;
-                TwitchBotConnection.Client.OnReSubscriber += ReSubscriber;
-                TwitchBotConnection.Client.OnRaidNotification += RaidNotification;
-                TwitchBotConnection.Client.OnUserJoined += UserJoined;
-                TwitchBotConnection.Client.OnUserLeft += UserLeft;
-                TwitchPubSubConnection.PubSubClient.OnBitsReceivedV2 += BitsReceived;
-                TwitchPubSubConnection.PubSubClient.OnFollow += UserFollowed;
-                TwitchPubSubConnection.PubSubClient.OnChannelPointsRewardRedeemed += ChannelPointsRewardRedeemed;
-            }
+            TwitchPubSubConnection.PubSubClient.OnBitsReceivedV2 += BitsReceived;
+            TwitchPubSubConnection.PubSubClient.OnFollow += UserFollowed;
+            TwitchBotConnection.Client.OnChatCommandReceived += ChatCommandReceived;
+            TwitchBotConnection.Client.OnMessageReceived += MessageReceived;
+            TwitchBotConnection.Client.OnUserBanned += UserBanned;
+            TwitchBotConnection.Client.OnUserTimedout += UserTimedout;
+            TwitchBotConnection.Client.OnMessageSent += MessageSent;
+            TwitchBotConnection.Client.OnGiftedSubscription += GiftedSubscription;
+            TwitchBotConnection.Client.OnNewSubscriber += NewSubscriber;
+            TwitchBotConnection.Client.OnReSubscriber += ReSubscriber;
+            TwitchBotConnection.Client.OnRaidNotification += RaidNotification;
+            TwitchBotConnection.Client.OnUserJoined += UserJoined;
+            TwitchBotConnection.Client.OnUserLeft += UserLeft;
         }
 
-        private static void ChannelPointsRewardRedeemed(object? sender, OnChannelPointsRewardRedeemedArgs e)
-        {
-            try
-            {
-                Log.Information($"[Channel Reward Redeemed] Name: {e.RewardRedeemed.Redemption.Reward.Title} Cost: {e.RewardRedeemed.Redemption.Reward.Cost} User who redeemed: {e.RewardRedeemed.Redemption.User.DisplayName}");
-                StreamStatsService.UpdateStreamStat(1, StatTypes.AmountOfRewardsRedeemd);
-                StreamStatsService.UpdateStreamStat(e.RewardRedeemed.Redemption.Reward.Cost, StatTypes.RewardRedeemCost);
-
-                if (e.RewardRedeemed.Redemption.Status == "ACTION_TAKEN")
-                {
-                    return;
-                }
-
-                switch (e.RewardRedeemed.Redemption.Reward.Title.ToLower())
-                {
-                    case "goose":
-                        TwitchHelper.SendMessage($"{e.RewardRedeemed.Redemption.User.DisplayName} has redeemed Goose! Goose Goose Goose Goose Goose Goose Goose Goose Goose Goose Goose Goose Goose Goose Goose");
-                        break;
-                }
-            }
-            catch (Exception xe)
-            {
-                Log.Information($"[channel points error] {xe}");
-                return;
-            }
-        }
 
         private static void UserFollowed(object? sender, OnFollowArgs e)
         {

@@ -17,24 +17,7 @@ namespace BreganTwitchBot.Domain
         {
             #region Twitch
 
-            var bot = new TwitchBotConnection();
-            var twitchThread = new Thread(bot.Connect().GetAwaiter().GetResult);
-            twitchThread.Start();
-            Log.Information("[Twitch Client] Started Twitch Thread");
 
-            await Task.Delay(2000);
-
-            var twitchApi = new TwitchApiConnection();
-            twitchApi.Connect();
-            Log.Information("[Twitch API] Connected To Twitch API");
-
-            await Task.Delay(2000);
-
-            var pubSub = new TwitchPubSubConnection();
-            pubSub.Connect();
-            Log.Information("[Twitch PubSub] Connected To Twitch PubSub");
-
-            await Task.Delay(2000);
 
             TwitchEvents.SetupTwitchEvents();
             WordBlacklist.LoadBlacklistedWords();

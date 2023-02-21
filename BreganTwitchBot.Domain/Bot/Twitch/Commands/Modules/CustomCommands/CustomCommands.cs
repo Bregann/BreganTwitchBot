@@ -1,4 +1,4 @@
-﻿using BreganTwitchBot.Domain.Bot.Twitch.Helpers;
+﻿using BreganTwitchBot.Domain.Data.TwitchBot.Helpers;
 using BreganTwitchBot.Infrastructure.Database.Context;
 using Serilog;
 using TwitchLib.Client.Events;

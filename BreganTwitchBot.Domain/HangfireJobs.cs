@@ -4,9 +4,7 @@ using BreganTwitchBot.DiscordBot.Helpers;
 using BreganTwitchBot.Domain.Bot.Twitch.Commands.Modules.DailyPoints;
 using BreganTwitchBot.Domain.Bot.Twitch.Commands.Modules.TwitchBosses;
 using BreganTwitchBot.Domain.Bot.Twitch.Commands.Modules.WordBlacklist;
-using BreganTwitchBot.Domain.Bot.Twitch.Helpers;
 using BreganTwitchBot.Domain.Bot.Twitch.Services;
-using BreganTwitchBot.Domain.Bot.Twitch.Services.Stats;
 using BreganTwitchBot.Infrastructure.Database.Context;
 using BreganUtils;
 using BreganUtils.ProjectMonitor.Projects;
@@ -20,6 +18,8 @@ using System.Text;
 using System.Threading.Tasks;
 using TwitchLib.Client.Extensions;
 using BreganTwitchBot.Services;
+using BreganTwitchBot.Domain.Data.TwitchBot.Stats;
+using BreganTwitchBot.Domain.Data.TwitchBot.Helpers;
 
 namespace BreganTwitchBot.Domain
 {
