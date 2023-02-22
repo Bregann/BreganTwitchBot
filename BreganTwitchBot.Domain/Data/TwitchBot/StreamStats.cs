@@ -7,7 +7,7 @@ using BreganTwitchBot.Infrastructure.Database.Models;
 using BreganTwitchBot.Domain.Bot.Twitch.Services;
 using BreganTwitchBot.Domain.Data.TwitchBot.Enums;
 
-namespace BreganTwitchBot.Domain.Data.TwitchBot.Stats
+namespace BreganTwitchBot.Domain.Data.TwitchBot
 {
     public class StreamStatsService
     {

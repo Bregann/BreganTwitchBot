@@ -1,14 +1,136 @@
 ﻿using BreganTwitchBot.Infrastructure.Database.Context;
-using Humanizer;
-using Humanizer.Localisation;
 using Serilog;
-using BreganTwitchBot.Domain.Data.TwitchBot.Helpers;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
-namespace BreganTwitchBot.Domain.Bot.Twitch.Commands.Modules.Subathon
+namespace BreganTwitchBot.Domain.Data.TwitchBot
 {
     public class Subathon
     {
-        private static DateTime _subathonCooldown;
+        public static void AddSubathonBitsTime(int bitsAmount, string cheererUsername)
+        {
+            if (!AppConfig.SubathonActive)
+            {
+                return;
+            }
+
+            AddOrUpdateUserToSubathonTable(cheererUsername, bitsAmount, "bits");
+
+            //Work out to see if it needs to loop or not
+            var subTimeHoursConfig = AppConfig.SubathonTime;
+            Log.Information($"[Subathon] {AppConfig.SubathonTime}");
+            Log.Information($"[Subathon] {AppConfig.SubathonTime.TotalHours}");
+            Log.Information($"[Subathon] {Math.Floor(AppConfig.SubathonTime.TotalHours)}");
+
+            switch (Math.Floor(AppConfig.SubathonTime.TotalHours))
+            {
+                case <= 11:
+                    subTimeHoursConfig += TimeSpan.FromMilliseconds(900 * bitsAmount);
+                    break;
+                case 12:
+                    subTimeHoursConfig += TimeSpan.FromMilliseconds(750 * bitsAmount);
+                    break;
+                case 13:
+                case 14:
+                case 15:
+                    subTimeHoursConfig += TimeSpan.FromMilliseconds(600 * bitsAmount);
+                    break;
+                case 16:
+                case 17:
+                case 18:
+                case 19:
+                case 20:
+                case 21:
+                case 22:
+                    subTimeHoursConfig += TimeSpan.FromMilliseconds(450 * bitsAmount);
+                    break;
+                case 23:
+                    subTimeHoursConfig += TimeSpan.FromMilliseconds(300 * bitsAmount);
+                    break;
+                default: //24h+
+                    subTimeHoursConfig += TimeSpan.FromMilliseconds(150 * bitsAmount);
+                    break;
+            }
+
+            //See if the updated time changes hours - if not then save and return
+            if (Math.Floor(subTimeHoursConfig.TotalHours) == Math.Floor(AppConfig.SubathonTime.TotalHours))
+            {
+                switch (Math.Floor(AppConfig.SubathonTime.TotalHours))
+                {
+                    case <= 11:
+                        AppConfig.AddSubathonTime(TimeSpan.FromMilliseconds(900 * bitsAmount));
+                        break;
+                    case 12:
+                        AppConfig.AddSubathonTime(TimeSpan.FromMilliseconds(750 * bitsAmount));
+                        break;
+                    case 13:
+                    case 14:
+                    case 15:
+                        AppConfig.AddSubathonTime(TimeSpan.FromMilliseconds(600 * bitsAmount));
+                        break;
+                    case 16:
+                    case 17:
+                    case 18:
+                    case 19:
+                    case 20:
+                    case 21:
+                    case 22:
+                        AppConfig.AddSubathonTime(TimeSpan.FromMilliseconds(450 * bitsAmount));
+                        break;
+                    case 23:
+                        AppConfig.AddSubathonTime(TimeSpan.FromMilliseconds(300 * bitsAmount));
+                        break;
+                    default: //24h+
+                        AppConfig.AddSubathonTime(TimeSpan.FromMilliseconds(150 * bitsAmount));
+                        break;
+                }
+
+                return;
+            }
+
+            //loop through every bit to add the correct time
+
+            var totalTsToAdd = TimeSpan.FromSeconds(0);
+
+            for (int i = 0; i < bitsAmount; i++)
+            {
+                switch (Math.Floor(AppConfig.SubathonTime.TotalHours))
+                {
+                    case <= 11:
+                        totalTsToAdd += TimeSpan.FromMilliseconds(900);
+                        break;
+                    case 12:
+                        totalTsToAdd += TimeSpan.FromMilliseconds(750);
+                        break;
+                    case 13:
+                    case 14:
+                    case 15:
+                        totalTsToAdd += TimeSpan.FromMilliseconds(600);
+                        break;
+                    case 16:
+                    case 17:
+                    case 18:
+                    case 19:
+                    case 20:
+                    case 21:
+                    case 22:
+                        totalTsToAdd += TimeSpan.FromMilliseconds(450);
+                        break;
+                    case 23:
+                        totalTsToAdd += TimeSpan.FromMilliseconds(300);
+                        break;
+                    default: //24h+
+                        totalTsToAdd += TimeSpan.FromMilliseconds(150);
+                        break;
+                }
+            }
+
+            Log.Information($"[Subathon] Subathon time to add {totalTsToAdd}");
+            AppConfig.AddSubathonTime(totalTsToAdd);
+        }
 
         public static void AddSubathonSubTime(TwitchLib.Client.Enums.SubscriptionPlan subType, string gifterUsername)
         {
@@ -167,150 +289,6 @@ namespace BreganTwitchBot.Domain.Bot.Twitch.Commands.Modules.Subathon
             }
         }
 
-        public static void AddSubathonBitsTime(int bitsAmount, string cheererUsername)
-        {
-            if (!AppConfig.SubathonActive)
-            {
-                return;
-            }
-
-            AddOrUpdateUserToSubathonTable(cheererUsername, bitsAmount, "bits");
-
-            //Work out to see if it needs to loop or not
-            var subTimeHoursConfig = AppConfig.SubathonTime;
-            Log.Information($"[Subathon Time] {AppConfig.SubathonTime}");
-            Log.Information($"[Subathon Time] {AppConfig.SubathonTime.TotalHours}");
-            Log.Information($"[Subathon Time] {Math.Floor(AppConfig.SubathonTime.TotalHours)}");
-
-            switch (Math.Floor(AppConfig.SubathonTime.TotalHours))
-            {
-                case <= 11:
-                    subTimeHoursConfig += TimeSpan.FromMilliseconds(900 * bitsAmount);
-                    break;
-                case 12:
-                    subTimeHoursConfig += TimeSpan.FromMilliseconds(750 * bitsAmount);
-                    break;
-                case 13:
-                case 14:
-                case 15:
-                    subTimeHoursConfig += TimeSpan.FromMilliseconds(600 * bitsAmount);
-                    break;
-                case 16:
-                case 17:
-                case 18:
-                case 19:
-                case 20:
-                case 21:
-                case 22:
-                    subTimeHoursConfig += TimeSpan.FromMilliseconds(450 * bitsAmount);
-                    break;
-                case 23:
-                    subTimeHoursConfig += TimeSpan.FromMilliseconds(300 * bitsAmount);
-                    break;
-                default: //24h+
-                    subTimeHoursConfig += TimeSpan.FromMilliseconds(150 * bitsAmount);
-                    break;
-            }
-
-            //See if the updated time changes hours - if not then save and return
-            if (Math.Floor(subTimeHoursConfig.TotalHours) == Math.Floor(AppConfig.SubathonTime.TotalHours))
-            {
-                switch (Math.Floor(AppConfig.SubathonTime.TotalHours))
-                {
-                    case <= 11:
-                        AppConfig.AddSubathonTime(TimeSpan.FromMilliseconds(900 * bitsAmount));
-                        break;
-                    case 12:
-                        AppConfig.AddSubathonTime(TimeSpan.FromMilliseconds(750 * bitsAmount));
-                        break;
-                    case 13:
-                    case 14:
-                    case 15:
-                        AppConfig.AddSubathonTime(TimeSpan.FromMilliseconds(600 * bitsAmount));
-                        break;
-                    case 16:
-                    case 17:
-                    case 18:
-                    case 19:
-                    case 20:
-                    case 21:
-                    case 22:
-                        AppConfig.AddSubathonTime(TimeSpan.FromMilliseconds(450 * bitsAmount));
-                        break;
-                    case 23:
-                        AppConfig.AddSubathonTime(TimeSpan.FromMilliseconds(300 * bitsAmount));
-                        break;
-                    default: //24h+
-                        AppConfig.AddSubathonTime(TimeSpan.FromMilliseconds(150 * bitsAmount));
-                        break;
-                }
-
-                return;
-            }
-
-            //loop through every bit to add the correct time
-
-            var totalTsToAdd = TimeSpan.FromSeconds(0);
-
-            for (int i = 0; i < bitsAmount; i++)
-            {
-                switch (Math.Floor(AppConfig.SubathonTime.TotalHours))
-                {
-                    case <= 11:
-                        totalTsToAdd += TimeSpan.FromMilliseconds(900);
-                        break;
-                    case 12:
-                        totalTsToAdd += TimeSpan.FromMilliseconds(750);
-                        break;
-                    case 13:
-                    case 14:
-                    case 15:
-                        totalTsToAdd += TimeSpan.FromMilliseconds(600);
-                        break;
-                    case 16:
-                    case 17:
-                    case 18:
-                    case 19:
-                    case 20:
-                    case 21:
-                    case 22:
-                        totalTsToAdd += TimeSpan.FromMilliseconds(450);
-                        break;
-                    case 23:
-                        totalTsToAdd += TimeSpan.FromMilliseconds(300);
-                        break;
-                    default: //24h+
-                        totalTsToAdd += TimeSpan.FromMilliseconds(150);
-                        break;
-                }
-            }
-
-            Log.Information($"[Subathon Time] Subathon time to add {totalTsToAdd}");
-            AppConfig.AddSubathonTime(totalTsToAdd);
-        }
-
-        public static void HandleSubathonCommand(string username)
-        {
-            //5 sec cooldown to prevent spam
-            if (DateTime.UtcNow - TimeSpan.FromSeconds(5) <= _subathonCooldown && !SuperMods.Supermods.IsUserSupermod(username))
-            {
-                return;
-            }
-
-            if (!AppConfig.SubathonActive)
-            {
-                return;
-            }
-
-            //Get the stream uptime
-            var startTime = new DateTime(2022, 9, 25, 11, 35, 0);
-
-            var endTimeDT = startTime.Add(AppConfig.SubathonTime);
-            var timeLeft = endTimeDT - DateTime.UtcNow;
-
-            TwitchHelper.SendMessage($"@{username} => The subathon has been extended to a total of {AppConfig.SubathonTime.Humanize(maxUnit: TimeUnit.Year, minUnit: TimeUnit.Second, precision: 7)}! The stream will end in {timeLeft.Humanize(maxUnit: TimeUnit.Year, minUnit: TimeUnit.Second, precision: 7)}. See all the info at https://bot.bregan.me/subathon");
-            _subathonCooldown = DateTime.UtcNow;
-        }
 
         private static void AddOrUpdateUserToSubathonTable(string username, int amount, string type)
         {
@@ -322,7 +300,7 @@ namespace BreganTwitchBot.Domain.Bot.Twitch.Commands.Modules.Subathon
                 {
                     if (type == "sub")
                     {
-                        context.Subathon.Add(new BreganTwitchBot.Infrastructure.Database.Models.Subathon
+                        context.Subathon.Add(new Infrastructure.Database.Models.Subathon
                         {
                             Username = username,
                             BitsDonated = 0,
@@ -331,7 +309,7 @@ namespace BreganTwitchBot.Domain.Bot.Twitch.Commands.Modules.Subathon
                     }
                     else
                     {
-                        context.Subathon.Add(new BreganTwitchBot.Infrastructure.Database.Models.Subathon
+                        context.Subathon.Add(new Infrastructure.Database.Models.Subathon
                         {
                             Username = username,
                             BitsDonated = amount,

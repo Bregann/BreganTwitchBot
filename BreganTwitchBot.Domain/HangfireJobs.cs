@@ -18,8 +18,9 @@ using System.Text;
 using System.Threading.Tasks;
 using TwitchLib.Client.Extensions;
 using BreganTwitchBot.Services;
-using BreganTwitchBot.Domain.Data.TwitchBot.Stats;
 using BreganTwitchBot.Domain.Data.TwitchBot.Helpers;
+using BreganTwitchBot.Domain.Data.TwitchBot;
+using BreganTwitchBot.Domain.Data.TwitchBot.WordBlacklist;
 
 namespace BreganTwitchBot.Domain
 {
@@ -46,6 +47,7 @@ namespace BreganTwitchBot.Domain
             RecurringJob.AddOrUpdate("UpdateLeaderboardRoles", () => UpdateLeaderboardRoles(), "0 2 * * *");
             RecurringJob.AddOrUpdate("DiscordDailyReset", () => DiscordDailyReset(), "0 3 * * *");
             RecurringJob.AddOrUpdate("CheckBirthdays", () => CheckBirthdays(), "0 6 * * *");
+            //todo: add a job for every 5 mins, get active chatters and update users in stream
             Log.Information("[Job Scheduler] Job Scheduler Setup");
         }
 

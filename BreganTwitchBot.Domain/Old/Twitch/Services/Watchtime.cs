@@ -3,9 +3,9 @@ using BreganTwitchBot.Domain.Bot.DiscordBot.SlashCommands.Data.Linking;
 using BreganTwitchBot.Infrastructure.Database.Models;
 using BreganUtils.ProjectMonitor.Projects;
 using Serilog;
-using BreganTwitchBot.Domain.Data.TwitchBot.Stats;
 using BreganTwitchBot.Domain.Data.TwitchBot.Enums;
 using BreganTwitchBot.Domain.Data.TwitchBot.Helpers;
+using BreganTwitchBot.Domain.Data.TwitchBot;
 
 namespace BreganTwitchBot.Domain.Bot.Twitch.Services
 {

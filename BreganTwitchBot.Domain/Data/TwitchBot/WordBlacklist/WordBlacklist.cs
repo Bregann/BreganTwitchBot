@@ -1,25 +1,29 @@
-﻿using BreganTwitchBot.Infrastructure.Database.Context;
-using BreganTwitchBot.Domain.Bot.Twitch.Commands.Modules.SuperMods;
-using Serilog;
-using System.Text.RegularExpressions;
-using TwitchLib.Client.Events;
-using BreganTwitchBot_Domain;
+﻿using BreganTwitchBot.Domain.Bot.Twitch.Commands.Modules.SuperMods;
 using BreganTwitchBot.Domain.Data.TwitchBot.Helpers;
+using BreganTwitchBot.Infrastructure.Database.Context;
+using BreganTwitchBot_Domain;
+using Serilog;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Text.RegularExpressions;
+using System.Threading.Tasks;
+using TwitchLib.Client.Events;
 
-namespace BreganTwitchBot.Domain.Bot.Twitch.Commands.Modules.WordBlacklist
+namespace BreganTwitchBot.Domain.Data.TwitchBot.WordBlacklist
 {
     public class WordBlacklist
     {
-        private static List<string> _strikeWords;
-        private static List<string> _warningWords;
-        private static List<string> _tempBanWords;
-        private static List<string> _permBanWords;
-        private static List<string> _warnedUsers;
-        private static List<string> _strikedUsers;
+        private static List<string> _strikeWords = new();
+        private static List<string> _warningWords = new();
+        private static List<string> _tempBanWords = new();
+        private static List<string> _permBanWords = new();
+        private static List<string> _warnedUsers = new();
+        private static List<string> _strikedUsers = new();
         private static int _messagesInARow;
         private static string _lastMessage = "";
         private static string _lastUser = "";
-        private static bool aiEnabled = true;
 
         public static void LoadBlacklistedWords()
         {
@@ -35,162 +39,7 @@ namespace BreganTwitchBot.Domain.Bot.Twitch.Commands.Modules.WordBlacklist
             _strikedUsers = new List<string>();
         }
 
-        public static void HandleToggleAiCommand(OnChatCommandReceivedArgs command)
-        {
-            if (aiEnabled == true)
-            {
-                aiEnabled = false;
-            }
-            else
-            {
-                aiEnabled = true;
-            }
-
-            TwitchHelper.SendMessage($"@{command.Command.ChatMessage.Username} => The AI rank begging has been set to {aiEnabled}!");
-        }
-
-        public static void HandleAddWordCommand(OnChatCommandReceivedArgs command)
-        {
-            if (command.Command.ArgumentsAsString == "")
-            {
-                TwitchHelper.SendMessage($"@{command.Command.ChatMessage.Username} => The usage for this command is !{command.Command.CommandText} <word>");
-                Log.Information("[Twitch Commands] !addbadword command handled successfully");
-                return;
-            }
-
-            var words = Regex.Replace(command.Command.ArgumentsAsString, @"[^0-9a-zA-Z⠁⠂⠃⠄⠅⠆⠇⠈⠉⠊⠋⠌⠍⠎⠏⠐⠑⠒⠓⠔⠕⠖⠗⠘⠙⠚⠛⠜⠝⠞⠟⠠⠡⠢⠣⠤⠥⠦⠧⠨⠩⠪⠫⠬⠭⠮⠯⠰⠱⠲⠳⠴⠵⠶⠷⠸⠹⠺⠻⠼⠽⠾⠿⡀⡁⡂⡃⡄⡅⡆⡇⡈⡉⡊⡋⡌⡍⡎⡏⡐⡑⡒⡓⡔⡕⡖⡗⡘⡙⡚⡛⡜⡝⡞⡟⡠⡡⡢⡣⡤⡥⡦⡧⡨⡩⡪⡫⡬⡭⡮⡯⡰⡱⡲⡳⡴⡵⡶⡷⡸⡹⡺⡻⡼⡽⡾⡿⢀⢁⢂⢃⢄⢅⢆⢇⢈⢉⢊⢋⢌⢍⢎⢏⢐⢑⢒⢓⢔⢕⢖⢗⢘⢙⢚⢛⢜⢝⢞⢟⢠⢡⢢⢣⢤⢥⢦⢧⢨⢩⢪⢫⢬⢭⢮⢯⢰⢱⢲⢳⢴⢵⢶⢷⢸⢹⢺⢻⢼⢽⢾⢿⣀⣁⣂⣃⣄⣅⣆⣇⣈⣉⣊⣋⣌⣍⣎⣏⣐⣑⣒⣓⣔⣕⣖⣗⣘⣙⣚⣛⣜⣝⣞⣟⣠⣡⣢⣣⣤⣥⣦⣧⣨⣩⣪⣫⣬⣭⣮⣯⣰⣱⣲⣳⣴⣵⣶⣷⣸⣹⣺⣻⣼⣽⣾⣿░█▄▌▀─\p{L}]+", "").ToLower();
-
-            switch (command.Command.CommandText.ToLower())
-            {
-                case "addbadword":
-                    if (_permBanWords.Contains(words))
-                    {
-                        TwitchHelper.SendMessage($"@{command.Command.ChatMessage.Username} => You silly ole bean that word is already blacklisted!");
-                        return;
-                    }
-                    AddBlacklistedItem(words, "word");
-                    _permBanWords.Add(words);
-
-                    TwitchHelper.SendMessage($"@{command.Command.ChatMessage.Username} => That word has been blacklisted :)");
-                    break;
-
-                case "addtempword":
-                    if (_tempBanWords.Contains(words))
-                    {
-                        TwitchHelper.SendMessage($"@{command.Command.ChatMessage.Username} => You silly ole bean that word is already blacklisted!");
-                        return;
-                    }
-                    AddBlacklistedItem(words, "tempword");
-                    _tempBanWords.Add(words);
-
-                    TwitchHelper.SendMessage($"@{command.Command.ChatMessage.Username} => That word has been blacklisted :)");
-                    break;
-
-                case "addwarningword":
-                    if (_warningWords.Contains(command.Command.ArgumentsAsString))
-                    {
-                        TwitchHelper.SendMessage($"@{command.Command.ChatMessage.Username} => You silly ole bean that word is already blacklisted!");
-                        return;
-                    }
-                    AddBlacklistedItem(command.Command.ArgumentsAsString, "10sword");
-                    _warningWords.Add(command.Command.ArgumentsAsString);
-
-                    TwitchHelper.SendMessage($"@{command.Command.ChatMessage.Username} => That word has been blacklisted :)");
-                    break;
-
-                case "addstrikeword":
-                    if (_strikeWords.Contains(command.Command.ArgumentsAsString))
-                    {
-                        TwitchHelper.SendMessage($"@{command.Command.ChatMessage.Username} => You silly ole bean that word is already blacklisted!");
-                        return;
-                    }
-                    AddBlacklistedItem(words, "strikeword");
-                    _strikeWords.Add(words);
-
-                    TwitchHelper.SendMessage($"@{command.Command.ChatMessage.Username} => That word has been blacklisted :)");
-                    break;
-            }
-
-            Log.Information($"[Word Blacklist] {command.Command.ArgumentsAsString} has been blacklisted");
-        }
-
-        public static void HandleRemoveWordCommand(OnChatCommandReceivedArgs command)
-        {
-            if (command.Command.ArgumentsAsString == "")
-            {
-                TwitchHelper.SendMessage($"@{command.Command.ChatMessage.Username} => The usage for this command is !{command.Command.CommandText} <word>");
-                Log.Information("[Twitch Commands] !addbadword command handled successfully");
-                return;
-            }
-
-            var words = Regex.Replace(command.Command.ArgumentsAsString, @"[^0-9a-zA-Z⠁⠂⠃⠄⠅⠆⠇⠈⠉⠊⠋⠌⠍⠎⠏⠐⠑⠒⠓⠔⠕⠖⠗⠘⠙⠚⠛⠜⠝⠞⠟⠠⠡⠢⠣⠤⠥⠦⠧⠨⠩⠪⠫⠬⠭⠮⠯⠰⠱⠲⠳⠴⠵⠶⠷⠸⠹⠺⠻⠼⠽⠾⠿⡀⡁⡂⡃⡄⡅⡆⡇⡈⡉⡊⡋⡌⡍⡎⡏⡐⡑⡒⡓⡔⡕⡖⡗⡘⡙⡚⡛⡜⡝⡞⡟⡠⡡⡢⡣⡤⡥⡦⡧⡨⡩⡪⡫⡬⡭⡮⡯⡰⡱⡲⡳⡴⡵⡶⡷⡸⡹⡺⡻⡼⡽⡾⡿⢀⢁⢂⢃⢄⢅⢆⢇⢈⢉⢊⢋⢌⢍⢎⢏⢐⢑⢒⢓⢔⢕⢖⢗⢘⢙⢚⢛⢜⢝⢞⢟⢠⢡⢢⢣⢤⢥⢦⢧⢨⢩⢪⢫⢬⢭⢮⢯⢰⢱⢲⢳⢴⢵⢶⢷⢸⢹⢺⢻⢼⢽⢾⢿⣀⣁⣂⣃⣄⣅⣆⣇⣈⣉⣊⣋⣌⣍⣎⣏⣐⣑⣒⣓⣔⣕⣖⣗⣘⣙⣚⣛⣜⣝⣞⣟⣠⣡⣢⣣⣤⣥⣦⣧⣨⣩⣪⣫⣬⣭⣮⣯⣰⣱⣲⣳⣴⣵⣶⣷⣸⣹⣺⣻⣼⣽⣾⣿░█▄▌▀─\p{L}]+", "").ToLower();
-
-            switch (command.Command.CommandText.ToLower())
-            {
-                case "removebadword":
-                    if (!_permBanWords.Contains(words))
-                    {
-                        TwitchHelper.SendMessage($"@{command.Command.ChatMessage.Username} => Oh dear that word isn't blacklisted you silly sausage!");
-                        Log.Information("[Twitch Commands] !removebadword command handled successfully");
-                        return;
-                    }
-
-                    RemoveBlacklistedItem(words, "word");
-                    _permBanWords.Remove(words);
-
-                    TwitchHelper.SendMessage($"@{command.Command.ChatMessage.Username} => That word has been unblacklisted :)");
-                    Log.Information("[Twitch Commands] !removebadword command handled successfully");
-                    break;
-
-                case "removetempword":
-                    if (!_tempBanWords.Contains(words))
-                    {
-                        TwitchHelper.SendMessage($"@{command.Command.ChatMessage.Username} => Oh dear that word isn't blacklisted you silly sausage!");
-                        Log.Information("[Twitch Commands] !removetempword command handled successfully");
-                        return;
-                    }
-
-                    RemoveBlacklistedItem(words, "tempword");
-                    _tempBanWords.Remove(words);
-
-                    TwitchHelper.SendMessage($"@{command.Command.ChatMessage.Username} => That word has been unblacklisted :)");
-                    Log.Information("[Twitch Commands] !removetempword command handled successfully");
-                    break;
-
-                case "removewarningword":
-                    if (!_warningWords.Contains(command.Command.ArgumentsAsString))
-                    {
-                        TwitchHelper.SendMessage($"@{command.Command.ChatMessage.Username} => Oh dear that word isn't blacklisted you silly sausage!");
-                        Log.Information("[Twitch Commands] !removewarningword command handled successfully");
-                        return;
-                    }
-
-                    RemoveBlacklistedItem(command.Command.ArgumentsAsString, "10sword");
-                    _warningWords.Remove(command.Command.ArgumentsAsString);
-
-                    TwitchHelper.SendMessage($"@{command.Command.ChatMessage.Username} => That word has been unblacklisted :)");
-                    Log.Information("[Twitch Commands] !removewarningword command handled successfully");
-                    break;
-
-                case "removestrikeword":
-                    if (!_strikeWords.Contains(words))
-                    {
-                        TwitchHelper.SendMessage($"@{command.Command.ChatMessage.Username} => Oh dear that word isn't blacklisted you silly sausage!");
-                        Log.Information("[Twitch Commands] !removestrikeword command handled successfully");
-                        return;
-                    }
-                    RemoveBlacklistedItem(words, "strikeword");
-                    _strikeWords.Remove(words);
-
-                    TwitchHelper.SendMessage($"@{command.Command.ChatMessage.Username} => That word has been unblacklisted :)");
-                    Log.Information("[Twitch Commands] !removestrikeword command handled successfully");
-                    break;
-            }
-
-            Log.Information($"[Word Blacklist] {command.Command.ArgumentsAsString} has been blacklisted");
-        }
-
-        public static async void OnMessageReceived(OnMessageReceivedArgs e)
+        public static async Task HandleMessageChecks(OnMessageReceivedArgs e)
         {
             //for the /me melvins
             if (e.ChatMessage.IsMe)
@@ -234,7 +83,7 @@ namespace BreganTwitchBot.Domain.Bot.Twitch.Commands.Modules.WordBlacklist
                 _messagesInARow = 1;
             }
 
-            if (aiEnabled)
+            if (AppConfig.AiEnabled)
             {
                 RankBeggar.ModelInput sampleData = new RankBeggar.ModelInput()
                 {
@@ -246,8 +95,6 @@ namespace BreganTwitchBot.Domain.Bot.Twitch.Commands.Modules.WordBlacklist
 
                 if (predictionResult.AiResult == 1 || _strikeWords.Any(rankBeggarRegex.Contains))
                 {
-                    Log.Information($"debug - {predictionResult.Score[0]} - {predictionResult.Score[1]} - {predictionResult.Score.Length}");
-
                     using (var context = new DatabaseContext())
                     {
                         context.RankBeggar.Add(new Infrastructure.Database.Models.RankBeggar
@@ -256,7 +103,7 @@ namespace BreganTwitchBot.Domain.Bot.Twitch.Commands.Modules.WordBlacklist
                             AiResult = 1
                         });
 
-                        context.SaveChanges();
+                        await context.SaveChangesAsync();
                     }
 
                     if (predictionResult.Score[1] < 0.70)
@@ -264,6 +111,7 @@ namespace BreganTwitchBot.Domain.Bot.Twitch.Commands.Modules.WordBlacklist
                         Log.Information($"[Word Blacklist] Did not time out {e.ChatMessage.Username} for begging, bot is unsure. Message - {e.ChatMessage.Message}");
                         return;
                     }
+
                     var totalMessages = GetTotalMessages(e.ChatMessage.UserId);
 
                     if (totalMessages < 10)
@@ -284,7 +132,7 @@ namespace BreganTwitchBot.Domain.Bot.Twitch.Commands.Modules.WordBlacklist
 
                         TwitchHelper.SendMessage("How about you don't join the stream and start begging for ranks :) blocksBANNED");
                         await TwitchHelper.TimeoutUser(e.ChatMessage.UserId, 600, "blocksWOT automated AI rule - joining and begging");
-                        AddTimeoutStrike(e.ChatMessage.UserId);
+                        await AddTimeoutStrike(e.ChatMessage.UserId);
 
                         _strikedUsers.Add(e.ChatMessage.Username);
                         Log.Information($"[Word Blacklist] Timed out {e.ChatMessage.Username} for begging with low message count");
@@ -293,13 +141,14 @@ namespace BreganTwitchBot.Domain.Bot.Twitch.Commands.Modules.WordBlacklist
                     {
                         TwitchHelper.SendMessage("I told you once not to beg and you do it again blocksRage blocksBANNED");
                         await TwitchHelper.TimeoutUser(e.ChatMessage.UserId, 600, "blocksWOT automated AI rule - multiple warnings");
+
                         Log.Information($"[Word Blacklist] Timed out {e.ChatMessage.Username} for begging");
-                        AddTimeoutStrike(e.ChatMessage.UserId);
+                        await AddTimeoutStrike(e.ChatMessage.UserId);
 
                         var totalStrikes = GetTotalTimeoutStrikes(e.ChatMessage.Username);
                         var totalWarns = GetTotalWarns(e.ChatMessage.Username);
 
-                        //todo: when discord added
+                        //todo: when discord added, send the above values
                         //await DiscordConnection.SendMessage(928407056086605845, $"{e.ChatMessage.Username} timed out \n Total Strikes So Far: {totalStrikes:N0} \n Total Warns: {totalWarns} \n Total Messages: {totalMessages}");
                     }
                     else
@@ -308,7 +157,7 @@ namespace BreganTwitchBot.Domain.Bot.Twitch.Commands.Modules.WordBlacklist
                         TwitchHelper.SendMessage("Please don't beg for ranks/ask for an f add! :) blocksBANNED");
                         _warnedUsers.Add(e.ChatMessage.Username.ToLower());
                         Log.Information($"[Word Blacklist] Warned {e.ChatMessage.Username} for begging/f add");
-                        AddWarn(e.ChatMessage.UserId);
+                        await AddWarn(e.ChatMessage.UserId);
 
                         var totalStrikes = GetTotalTimeoutStrikes(e.ChatMessage.UserId);
                         var totalWarns = GetTotalWarns(e.ChatMessage.UserId);
@@ -380,6 +229,15 @@ namespace BreganTwitchBot.Domain.Bot.Twitch.Commands.Modules.WordBlacklist
             }
         }
 
+        private static async Task AddTimeoutStrike(string userId)
+        {
+            using (var context = new DatabaseContext())
+            {
+                context.Users.Where(x => x.TwitchUserId == userId).First().TimeoutStrikes++;
+                await context.SaveChangesAsync();
+            }
+        }
+
         private static int GetTotalTimeoutStrikes(string userId)
         {
             using (var context = new DatabaseContext())
@@ -410,63 +268,13 @@ namespace BreganTwitchBot.Domain.Bot.Twitch.Commands.Modules.WordBlacklist
             }
         }
 
-        private static void AddTimeoutStrike(string userId)
-        {
-            using (var context = new DatabaseContext())
-            {
-                context.Users.Where(x => x.TwitchUserId == userId).First().TimeoutStrikes++;
-                context.SaveChanges();
-            }
-        }
-
-        private static void AddWarn(string userId)
+        private static async Task AddWarn(string userId)
         {
             using (var context = new DatabaseContext())
             {
                 context.Users.Where(x => x.TwitchUserId == userId).First().WarnStrikes++;
-                context.SaveChanges();
+                await context.SaveChangesAsync();
             }
-        }
-
-        private static void AddBlacklistedItem(string word, string type)
-        {
-            using (var context = new DatabaseContext())
-            {
-                context.Blacklist.Add(new Infrastructure.Database.Models.Blacklist
-                {
-                    WordType = type,
-                    Word = word
-                });
-
-                context.SaveChanges();
-            }
-        }
-
-        private static void RemoveBlacklistedItem(string word, string type)
-        {
-            using (var context = new DatabaseContext())
-            {
-                var wordToRemove = new Infrastructure.Database.Models.Blacklist
-                {
-                    Word = word,
-                    WordType = type
-                };
-
-                context.Blacklist.Remove(wordToRemove);
-                context.SaveChanges();
-            }
-        }
-
-        public static void ClearOutWarnedUsers()
-        {
-            _warnedUsers.Clear();
-            Log.Information("[Word Blacklist] Cleared out warned users list");
-        }
-
-        public static void ClearOutStrikedUsers()
-        {
-            _strikedUsers.Clear();
-            Log.Information("[Word Blacklist] Cleared out striked users list");
         }
     }
 }

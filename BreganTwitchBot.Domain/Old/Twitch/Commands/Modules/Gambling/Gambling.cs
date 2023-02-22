@@ -2,9 +2,9 @@
 using BreganTwitchBot.Domain.Bot.Twitch.Helpers;
 using Serilog;
 using TwitchLib.Client.Events;
-using BreganTwitchBot.Domain.Data.TwitchBot.Stats;
 using BreganTwitchBot.Domain.Data.TwitchBot.Enums;
 using BreganTwitchBot.Domain.Data.TwitchBot.Helpers;
+using BreganTwitchBot.Domain.Data.TwitchBot;
 
 namespace BreganTwitchBot.Domain.Bot.Twitch.Commands.Modules.Gambling
 {

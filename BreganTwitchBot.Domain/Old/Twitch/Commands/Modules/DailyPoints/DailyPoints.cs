@@ -4,9 +4,9 @@ using BreganUtils.ProjectMonitor.Projects;
 using Serilog;
 using System.Text;
 using TwitchLib.Client.Events;
-using BreganTwitchBot.Domain.Data.TwitchBot.Stats;
 using BreganTwitchBot.Domain.Data.TwitchBot.Enums;
 using BreganTwitchBot.Domain.Data.TwitchBot.Helpers;
+using BreganTwitchBot.Domain.Data.TwitchBot;
 
 namespace BreganTwitchBot.Domain.Bot.Twitch.Commands.Modules.DailyPoints
 {

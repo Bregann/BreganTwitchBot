@@ -30,22 +30,19 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Update="Bot\Twitch\Commands\Modules\WordBlacklist\RankBeggar.consumption.cs">
+    <Compile Update="Data\TwitchBot\WordBlacklist\RankBeggar.consumption.cs">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Compile>
-    <Compile Update="Bot\Twitch\Commands\Modules\WordBlacklist\RankBeggar.training.cs">
+    <Compile Update="Data\TwitchBot\WordBlacklist\RankBeggar.training.cs">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <None Update="Bot\Twitch\Commands\Modules\WordBlacklist\RankBeggar.mbconfig">
+    <None Update="Data\TwitchBot\WordBlacklist\RankBeggar.mbconfig">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="Bot\Twitch\Commands\Modules\WordBlacklist\RankBeggar.zip">
+    <None Update="Data\TwitchBot\WordBlacklist\RankBeggar.zip">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-  </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Data\TwitchBot\Commands\" />
   </ItemGroup>
 </Project>

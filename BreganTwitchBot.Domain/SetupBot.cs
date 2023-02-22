@@ -15,15 +15,6 @@ namespace BreganTwitchBot.Domain
     {
         public static async Task Setup()
         {
-            #region Twitch
-
-
-
-            TwitchEvents.SetupTwitchEvents();
-            WordBlacklist.LoadBlacklistedWords();
-
-            #endregion Twitch
-
             #region Discord
 
             await Task.Delay(2000);
@@ -34,7 +25,7 @@ namespace BreganTwitchBot.Domain
 
             #endregion Discord
 
-            HangfireJobs.SetupHangfireJobs();
+            
         }
     }
 }

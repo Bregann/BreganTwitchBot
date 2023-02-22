@@ -9,9 +9,10 @@ using Serilog;
 using TwitchLib.Client.Events;
 using TwitchLib.PubSub.Events;
 using BreganTwitchBot.Infrastructure.Database.Models;
-using BreganTwitchBot.Domain.Data.TwitchBot.Stats;
 using BreganTwitchBot.Domain.Data.TwitchBot.Enums;
 using BreganTwitchBot.Domain.Data.TwitchBot.Helpers;
+using BreganTwitchBot.Domain.Data.TwitchBot;
+using BreganTwitchBot.Domain.Data.TwitchBot.WordBlacklist;
 
 namespace BreganTwitchBot.Domain.Bot.Twitch.Events
 {
@@ -19,8 +20,6 @@ namespace BreganTwitchBot.Domain.Bot.Twitch.Events
     {
         public static void SetupTwitchEvents(bool pubsubRefresh = false)
         {
-            TwitchPubSubConnection.PubSubClient.OnBitsReceivedV2 += BitsReceived;
-            TwitchPubSubConnection.PubSubClient.OnFollow += UserFollowed;
             TwitchBotConnection.Client.OnChatCommandReceived += ChatCommandReceived;
             TwitchBotConnection.Client.OnMessageReceived += MessageReceived;
             TwitchBotConnection.Client.OnUserBanned += UserBanned;
@@ -35,43 +34,6 @@ namespace BreganTwitchBot.Domain.Bot.Twitch.Events
         }
 
 
-        private static void UserFollowed(object? sender, OnFollowArgs e)
-        {
-            Log.Information($"[New Twitch Follow] {e.DisplayName} just followed! Twitch ID: {e.UserId}");
-        }
-
-        private static void BitsReceived(object? sender, OnBitsReceivedV2Args e)
-        {
-            try
-            {
-                Commands.Modules.Subathon.Subathon.AddSubathonBitsTime(e.BitsUsed, e.UserName.ToLower());
-
-                using (var context = new DatabaseContext())
-                {
-                    var user = context.Users.Where(x => x.TwitchUserId == e.UserId).FirstOrDefault();
-
-                    if (user != null)
-                    {
-                        user.BitsDonatedThisMonth += e.BitsUsed;
-                        context.SaveChanges();
-                    }
-                }
-
-                if (e.BitsUsed <= 4)
-                {
-                    Log.Information($"[PubSub] Just received {e.BitsUsed} bits from {e.UserName}. That brings their total to {e.TotalBitsUsed} bits!");
-                    return;
-                }
-
-                TwitchHelper.SendMessage($"{e.UserName} has donated {e.BitsUsed:N0} bits with a grand total of {e.TotalBitsUsed:N0} donated PogChamp");
-                Log.Information($"[PubSub] Just received {e.BitsUsed} bits from {e.UserName}. That brings their total to {e.TotalBitsUsed} bits!");
-            }
-            catch (Exception xe)
-            {
-                Log.Information($"[bits error] {xe}");
-                return;
-            }
-        }
 
         private static void UserLeft(object? sender, OnUserLeftArgs e)
         {
@@ -267,9 +229,6 @@ namespace BreganTwitchBot.Domain.Bot.Twitch.Events
 
             try
             {
-                CommandHandler.HandleCustomCommand(e);
-
-                WordBlacklist.OnMessageReceived(e);
 
                 using (var context = new DatabaseContext())
                 {
@@ -355,16 +314,5 @@ namespace BreganTwitchBot.Domain.Bot.Twitch.Events
             }
         }
 
-        private static async void ChatCommandReceived(object? sender, OnChatCommandReceivedArgs e)
-        {
-            try
-            {
-                await CommandHandler.HandleCommand(e);
-            }
-            catch (Exception ex)
-            {
-                Log.Information($"[Twitch Commands] {ex}");
-            }
-        }
     }
 }

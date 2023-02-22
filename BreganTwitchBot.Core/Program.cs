@@ -60,6 +60,6 @@ app.UseAuthorization();
 
 app.MapControllers();
 
-await SetupBot.Setup();
+HangfireJobs.SetupHangfireJobs();
 
 app.Run();

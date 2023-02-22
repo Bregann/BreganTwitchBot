@@ -5,7 +5,7 @@ using BreganTwitchBot.Domain.Bot.Twitch.Services;
 using BreganUtils.ProjectMonitor.Projects;
 using Serilog;
 using BreganTwitchBot.Domain;
-using BreganTwitchBot.Domain.Data.TwitchBot.Stats;
+using BreganTwitchBot.Domain.Data.TwitchBot;
 
 namespace BreganTwitchBot
 {
@@ -49,7 +49,7 @@ namespace BreganTwitchBot
         public static string TwitchBotApiKey { get; private set; }
         public static string TwitchBotApiRefresh { get; private set; }
         public static string BotChannelId { get; private set; }
-
+        public static bool AiEnabled { get; private set; }
 
         private static bool _doublePingJobStarted = false;
         public static readonly bool SubathonActive = false;
@@ -94,6 +94,7 @@ namespace BreganTwitchBot
                 TwitchBotApiKey = configVariables.TwitchBotApiKey;
                 TwitchBotApiRefresh = configVariables.TwitchBotApiRefresh;
                 BotChannelId = configVariables.BotChannelId;
+                AiEnabled= configVariables.AiEnabled;
             }
         }
 
@@ -162,7 +163,7 @@ namespace BreganTwitchBot
         }
 
         public static async Task CheckAndUpdateIfStreamIsLive()
-        {
+        { //todo: refactor this
             try
             {
                 var getStreams = await TwitchApiConnection.ApiClient.Helix.Streams.GetStreamsAsync(userIds: new List<string> { TwitchChannelID });

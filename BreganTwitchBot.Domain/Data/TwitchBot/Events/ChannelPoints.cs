@@ -1,6 +1,5 @@
 ﻿using BreganTwitchBot.Domain.Data.TwitchBot.Enums;
 using BreganTwitchBot.Domain.Data.TwitchBot.Helpers;
-using BreganTwitchBot.Domain.Data.TwitchBot.Stats;
 using Serilog;
 using System;
 using System.Collections.Generic;

@@ -20,9 +20,10 @@ using BreganTwitchBot.Domain.Bot.Twitch.Commands.Modules.Uptime;
 using BreganTwitchBot.Domain.Bot.Twitch.Commands.Modules.WordBlacklist;
 using Serilog;
 using TwitchLib.Client.Events;
-using BreganTwitchBot.Domain.Data.TwitchBot.Stats;
 using BreganTwitchBot.Domain.Data.TwitchBot.Enums;
 using BreganTwitchBot.Domain.Data.TwitchBot.Helpers;
+using BreganTwitchBot.Domain.Data.TwitchBot;
+using BreganTwitchBot.Domain.Data.TwitchBot.WordBlacklist;
 
 namespace BreganTwitchBot.Domain.Bot.Twitch.Commands
 {
@@ -323,50 +324,6 @@ namespace BreganTwitchBot.Domain.Bot.Twitch.Commands
             }
 
             Log.Information($"[Twitch Commands] !{command.Command.CommandText.ToLower()} completed");
-        }
-
-        private static void SendCustomCommandAndUpdateUsage(string commandName, string userId, string username)
-        {
-            //Check if the command actually exists
-            if (!_customCommands.Contains(commandName))
-            {
-                return;
-            }
-
-            StreamStatsService.UpdateStreamStat(1, StatTypes.CommandsSent);
-
-
-            using (var context = new DatabaseContext())
-            {
-                //get the command
-                var command = context.Commands.Where(x => x.CommandName == commandName).FirstOrDefault();
-
-
-                //Make sure it's not on a cooldown
-                if (DateTime.UtcNow - TimeSpan.FromSeconds(5) < command.LastUsed && !Supermods.IsUserSupermod(userId))
-                {
-                    Log.Information("[Twitch Commands] custom command handled successfully (cooldown)");
-                    return;
-                }
-
-                //Send the message
-                TwitchHelper.SendMessage(command.CommandText.Replace("[count]", command.TimesUsed.ToString("N0")).Replace("[user]", username));
-
-                //Update the command usage and time
-                command.LastUsed = DateTime.UtcNow;
-                command.TimesUsed++;
-                context.SaveChanges();
-
-                Log.Information($"[Twitch Commands] Custom Command {commandName} Handled Successfully");
-            }
-        }
-
-        public static void UpdateCustomCommandsList()
-        {
-            using (var context = new DatabaseContext())
-            {
-                _customCommands = context.Commands.Select(x => x.CommandName).ToList();
-            }
         }
     }
 }
