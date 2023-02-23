@@ -234,7 +234,7 @@ namespace BreganTwitchBot
             }
         }
 
-        public static void AddSubathonTime(TimeSpan tsToAdd)
+        public static async Task AddSubathonTime(TimeSpan tsToAdd)
         {
             SubathonTime += tsToAdd;
             Log.Information($"[Subathon Time] {SubathonTime}");
@@ -242,7 +242,7 @@ namespace BreganTwitchBot
             using (var context = new DatabaseContext())
             {
                 context.Config.First().SubathonTime = SubathonTime;
-                context.SaveChanges();
+                await context.SaveChangesAsync();
             }
 
             Log.Information($"[Subathon Time] {tsToAdd} added");

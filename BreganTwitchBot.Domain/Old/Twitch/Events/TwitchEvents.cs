@@ -20,12 +20,6 @@ namespace BreganTwitchBot.Domain.Bot.Twitch.Events
     {
         public static void SetupTwitchEvents(bool pubsubRefresh = false)
         {
-            TwitchBotConnection.Client.OnChatCommandReceived += ChatCommandReceived;
-            TwitchBotConnection.Client.OnMessageReceived += MessageReceived;
-            TwitchBotConnection.Client.OnUserBanned += UserBanned;
-            TwitchBotConnection.Client.OnUserTimedout += UserTimedout;
-            TwitchBotConnection.Client.OnMessageSent += MessageSent;
-            TwitchBotConnection.Client.OnGiftedSubscription += GiftedSubscription;
             TwitchBotConnection.Client.OnNewSubscriber += NewSubscriber;
             TwitchBotConnection.Client.OnReSubscriber += ReSubscriber;
             TwitchBotConnection.Client.OnRaidNotification += RaidNotification;
@@ -111,208 +105,15 @@ namespace BreganTwitchBot.Domain.Bot.Twitch.Events
 
         private static void NewSubscriber(object? sender, OnNewSubscriberArgs e)
         {
-            var subName = "";
 
-            Commands.Modules.Subathon.Subathon.AddSubathonSubTime(e.Subscriber.SubscriptionPlan, e.Subscriber.DisplayName.ToLower());
-
-            switch (e.Subscriber.SubscriptionPlan)
-            {
-                case TwitchLib.Client.Enums.SubscriptionPlan.NotSet:
-                case TwitchLib.Client.Enums.SubscriptionPlan.Tier1:
-                    subName = "tier 1 subscription PogChamp <3 blocksGuinea1 blocksGuinea2 blocksGuinea3 blocksW blocksOK blocksGuinea blocksMarge blocksBitrate blocksSWIRL blocksFail blocksWOT blocksEcho blocksEcho";
-                    PointsHelper.AddUserPoints(e.Subscriber.DisplayName.ToLower(), 20000);
-                    StreamStatsService.UpdateStreamStat(20000, StatTypes.PointsGainedSubscribing);
-                    break;
-
-                case TwitchLib.Client.Enums.SubscriptionPlan.Prime:
-                    subName = "TWITCH PRIME SUBSCRIPTION!!!! ANY PRIMERS? <3 <3 PogChamp blocksGuinea1 blocksGuinea2 blocksGuinea3 blocksW blocksOK blocksGuinea blocksMarge blocksBitrate blocksSWIRL blocksFail blocksWOT blocksEcho blocksEcho";
-                    PointsHelper.AddUserPoints(e.Subscriber.DisplayName.ToLower(), 30000);
-                    StreamStatsService.UpdateStreamStat(30000, StatTypes.PointsGainedSubscribing);
-                    break;
-
-                case TwitchLib.Client.Enums.SubscriptionPlan.Tier2:
-                    subName = "tier 2 subscription PogChamp PogChamp <3 blocksGuinea1 blocksGuinea2 blocksGuinea3 blocksW blocksOK blocksGuinea blocksMarge blocksBitrate blocksSWIRL blocksFail blocksWOT blocksBANNED blocksEcho blocksEcho";
-                    PointsHelper.AddUserPoints(e.Subscriber.DisplayName.ToLower(), 40000);
-                    StreamStatsService.UpdateStreamStat(40000, StatTypes.PointsGainedSubscribing);
-                    break;
-
-                case TwitchLib.Client.Enums.SubscriptionPlan.Tier3:
-                    subName = "tier 3 subscription PogChamp PogChamp PogChamp <3 blocksGuinea1 blocksGuinea2 blocksGuinea3 blocksW blocksOK blocksGuinea blocksMarge blocksBitrate blocksSWIRL blocksFail blocksWOT blocksBANNED blocksJ0F blocksWOTG blocksGuineaG blocksEcho blocksEcho";
-                    PointsHelper.AddUserPoints(e.Subscriber.DisplayName.ToLower(), 100000);
-                    StreamStatsService.UpdateStreamStat(100000, StatTypes.PointsGainedSubscribing);
-                    break;
-            }
-
-            StreamStatsService.UpdateStreamStat(1, StatTypes.NewSubscriber);
-            TwitchHelper.SendMessage($"Welcome {e.Subscriber.DisplayName}to the {AppConfig.BroadcasterName} squad with a {subName}");
         }
 
-        private static void GiftedSubscription(object? sender, OnGiftedSubscriptionArgs e)
-        {
-            var subName = "";
 
-            Commands.Modules.Subathon.Subathon.AddSubathonSubTime(e.GiftedSubscription.MsgParamSubPlan, e.GiftedSubscription.DisplayName.ToLower());
 
-            switch (e.GiftedSubscription.MsgParamSubPlan)
-            {
-                case TwitchLib.Client.Enums.SubscriptionPlan.NotSet:
-                case TwitchLib.Client.Enums.SubscriptionPlan.Prime:
-                case TwitchLib.Client.Enums.SubscriptionPlan.Tier1:
-                    PointsHelper.AddUserPoints(e.GiftedSubscription.DisplayName.ToLower(), 20000);
-                    PointsHelper.AddUserPoints(e.GiftedSubscription.MsgParamRecipientUserName.ToLower(), 5000);
-                    StreamStatsService.UpdateStreamStat(25000, StatTypes.PointsGainedSubscribing);
-                    subName = "tier 1";
-                    break;
 
-                case TwitchLib.Client.Enums.SubscriptionPlan.Tier2:
-                    PointsHelper.AddUserPoints(e.GiftedSubscription.DisplayName.ToLower(), 40000);
-                    PointsHelper.AddUserPoints(e.GiftedSubscription.MsgParamRecipientUserName.ToLower(), 5000);
-                    StreamStatsService.UpdateStreamStat(45000, StatTypes.PointsGainedSubscribing);
-                    subName = "tier 2";
-                    break;
 
-                case TwitchLib.Client.Enums.SubscriptionPlan.Tier3:
-                    PointsHelper.AddUserPoints(e.GiftedSubscription.DisplayName.ToLower(), 100000);
-                    PointsHelper.AddUserPoints(e.GiftedSubscription.MsgParamRecipientUserName.ToLower(), 5000);
-                    StreamStatsService.UpdateStreamStat(105000, StatTypes.PointsGainedSubscribing);
-                    subName = "tier 3";
-                    break;
 
-                default:
-                    break;
-            }
 
-            try
-            {
-                using (var context = new DatabaseContext())
-                {
-                    var user = context.Users.Where(x => x.Username == e.GiftedSubscription.DisplayName.ToLower()).FirstOrDefault();
-
-                    if (user != null)
-                    {
-                        user.GiftedSubsThisMonth++;
-                        context.SaveChanges();
-                    }
-                }
-
-                Log.Information($"[Sub Leaderboard] +1 to {e.GiftedSubscription.DisplayName.ToLower()}");
-            }
-            catch (Exception eee)
-            {
-                Log.Fatal(eee.Message);
-            }
-
-            StreamStatsService.UpdateStreamStat(1, StatTypes.NewGiftedSubs);
-            TwitchHelper.SendMessage($"Thank you {e.GiftedSubscription.DisplayName} for gifting {e.GiftedSubscription.MsgParamRecipientUserName} a {subName} subscription PogChamp <3 blocksGuinea1 blocksGuinea2 blocksGuinea3 blocksW blocksOK blocksGuinea blocksMarge blocksBitrate blocksSWIRL blocksFail blocksWOT blocksBANNED blocksJ0F blocksWOTG blocksGuineaG blocksEcho blocksEcho");
-        }
-
-        private static void MessageSent(object? sender, OnMessageSentArgs e)
-        {
-            Log.Information($"[Twitch Message Sent] {e.SentMessage.Message}");
-        }
-
-        private static void UserTimedout(object? sender, OnUserTimedoutArgs e)
-        {
-            StreamStatsService.UpdateStreamStat(1, StatTypes.TotalTimeouts);
-            Log.Information($"[User Timed out in Stream] User banned: {e.UserTimeout.Username} Duration: {e.UserTimeout.TimeoutDuration} Reason: {e.UserTimeout.TimeoutReason}");
-        }
-
-        private static void UserBanned(object? sender, OnUserBannedArgs e)
-        {
-            StreamStatsService.UpdateStreamStat(1, StatTypes.TotalBans);
-            Log.Information($"[User Banned in Stream] User banned: {e.UserBan.Username}");
-        }
-
-        private static void MessageReceived(object? sender, OnMessageReceivedArgs e)
-        {
-            Log.Information($"[Twitch Message Received] Username: {e.ChatMessage.Username} Message: {e.ChatMessage.Message}");
-
-            try
-            {
-
-                using (var context = new DatabaseContext())
-                {
-                    var user = context.Users.Where(x => x.TwitchUserId == e.ChatMessage.UserId).FirstOrDefault();
-                    var uniqueUser = context.UniqueViewers.Where(x => x.Username == e.ChatMessage.Username).FirstOrDefault();
-
-                    if (uniqueUser == null)
-                    {
-                        context.UniqueViewers.Add(new UniqueViewers
-                        {
-                            Username = e.ChatMessage.Username
-                        });
-                    }
-
-                    if (user != null)
-                    {
-                        user.TotalMessages++;
-                        user.Username = e.ChatMessage.Username.ToLower();
-                        user.InStream = true;
-                        user.IsSub = e.ChatMessage.IsSubscriber;
-                    }
-                    else
-                    {
-                        var newUser = new Users
-                        {
-                            TwitchUserId = e.ChatMessage.UserId,
-                            Username = e.ChatMessage.Username.ToLower(),
-                            InStream = true,
-                            IsSub = e.ChatMessage.IsSubscriber,
-                            MinutesInStream = 0,
-                            Points = 0,
-                            IsSuperMod = false,
-                            TotalMessages = 1,
-                            DiscordUserId = 0,
-                            LastSeenDate = DateTime.UtcNow,
-                            PointsGambled = 0,
-                            PointsWon = 0,
-                            PointsLost = 0,
-                            TotalSpins = 0,
-                            Tier1Wins = 0,
-                            Tier2Wins = 0,
-                            Tier3Wins = 0,
-                            JackpotWins = 0,
-                            SmorcWins = 0,
-                            CurrentStreak = 0,
-                            HighestStreak = 0,
-                            TotalTimesClaimed = 0,
-                            TotalPointsClaimed = 0,
-                            PointsLastClaimed = new DateTime(0),
-                            PointsClaimedThisStream = false,
-                            GiftedSubsThisMonth = 0,
-                            BitsDonatedThisMonth = 0,
-                            MarblesWins = 0,
-                            DiceRolls = 0,
-                            BonusDiceRolls = 0,
-                            DiscordDailyStreak = 0,
-                            DiscordDailyTotalClaims = 0,
-                            DiscordDailyClaimed = false,
-                            DiscordLevel = 0,
-                            DiscordXp = 0,
-                            DiscordLevelUpNotifsEnabled = true,
-                            PrestigeLevel = 0,
-                            MinutesWatchedThisStream = 0,
-                            MinutesWatchedThisWeek = 0,
-                            MinutesWatchedThisMonth = 0,
-                            BossesDone = 0,
-                            BossesPointsWon = 0,
-                            TimeoutStrikes = 0,
-                            WarnStrikes = 0
-                        };
-
-                        context.Users.Add(newUser);
-                    }
-
-                    context.SaveChanges();
-                }
-
-                StreamStatsService.UpdateStreamStat(1, StatTypes.MessagesReceived);
-            }
-            catch (Exception ex)
-            {
-                Log.Information($"[Commands] {ex}");
-            }
-        }
 
     }
 }

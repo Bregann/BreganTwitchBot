@@ -1,14 +1,19 @@
 ﻿using BreganTwitchBot.Infrastructure.Database.Context;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
-namespace BreganTwitchBot.Domain.Bot.Twitch.Helpers
+namespace BreganTwitchBot.Domain.Data.TwitchBot.Helpers
 {
     public class PointsHelper
     {
-        public static long GetUserPoints(string username)
+        public static long GetUserPoints(string userId)
         {
             using (var context = new DatabaseContext())
             {
-                var user = context.Users.Where(x => x.Username == username).FirstOrDefault();
+                var user = context.Users.Where(x => x.TwitchUserId == userId).FirstOrDefault();
 
                 if (user == null)
                 {
@@ -18,11 +23,11 @@ namespace BreganTwitchBot.Domain.Bot.Twitch.Helpers
             }
         }
 
-        public static void AddUserPoints(string username, long pointsToAdd)
+        public static async Task AddUserPoints(string userId, long pointsToAdd)
         {
             using (var context = new DatabaseContext())
             {
-                var user = context.Users.Where(x => x.Username == username).FirstOrDefault();
+                var user = context.Users.Where(x => x.TwitchUserId == userId).FirstOrDefault();
 
                 if (user == null)
                 {
@@ -31,15 +36,15 @@ namespace BreganTwitchBot.Domain.Bot.Twitch.Helpers
 
                 user.Points += pointsToAdd;
 
-                context.SaveChanges();
+                await context.SaveChangesAsync();
             }
         }
 
-        public static void RemoveUserPoints(string username, long pointsToRemove)
+        public static async Task RemoveUserPoints(string userId, long pointsToRemove)
         {
             using (var context = new DatabaseContext())
             {
-                var user = context.Users.Where(x => x.Username == username).FirstOrDefault();
+                var user = context.Users.Where(x => x.TwitchUserId == userId).FirstOrDefault();
 
                 if (user == null)
                 {
@@ -48,7 +53,7 @@ namespace BreganTwitchBot.Domain.Bot.Twitch.Helpers
 
                 user.Points -= pointsToRemove;
 
-                context.SaveChanges();
+                await context.SaveChangesAsync();
             }
         }
     }
