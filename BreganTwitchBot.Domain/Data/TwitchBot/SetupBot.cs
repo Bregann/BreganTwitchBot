@@ -58,7 +58,7 @@ namespace BreganTwitchBot.Domain.Data.TwitchBot
             TwitchBotConnection.Client.OnReSubscriber += ReSubscriber;
             TwitchBotConnection.Client.OnRaidNotification += RaidNotification;
             TwitchBotConnection.Client.OnUserJoined += UserJoined;
-            TwitchBotConnection.Client.OnUserLeft += UserLeft;
+            TwitchBotConnection.Client.OnUserLeft += UserPressence;
         }
 
         private static async void ChannelPointsRewardRedeemed(object? sender, OnChannelPointsRewardRedeemedArgs e)
@@ -134,6 +134,27 @@ namespace BreganTwitchBot.Domain.Data.TwitchBot
         {
             await Subathon.AddSubathonSubTime(e.Subscriber.SubscriptionPlan, e.Subscriber.DisplayName.ToLower());
             await Subscribers.HandleNewSubscriberEvent(e.Subscriber.SubscriptionPlan, e.Subscriber.DisplayName, e.Subscriber.UserId);
+        }
+
+        private static async void ReSubscriber(object? sender, OnReSubscriberArgs e)
+        {
+            await Subathon.AddSubathonSubTime(e.ReSubscriber.SubscriptionPlan, e.ReSubscriber.DisplayName.ToLower());
+            await Subscribers.HandleResubscriberEvent(e.ReSubscriber.SubscriptionPlan, e.ReSubscriber.DisplayName, e.ReSubscriber.UserId, e.ReSubscriber.MsgParamCumulativeMonths, e.ReSubscriber.MsgParamStreakMonths);
+        }
+
+        private static void RaidNotification(object? sender, OnRaidNotificationArgs e)
+        {
+            Raid.HandleRaidEvent(e.RaidNotification.MsgParamViewerCount, e.RaidNotification.DisplayName);
+        }
+
+        private static void UserJoined(object? sender, OnUserJoinedArgs e)
+        {
+            Log.Information($"[User Joined] {e.Username} joined the stream");
+        }
+
+        private static async void UserLeft(object? sender, OnUserLeftArgs e)
+        {
+            await UserPressence.HandleUserLeftEvent(e.Username);
         }
     }
 }
