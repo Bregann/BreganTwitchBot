@@ -2,7 +2,7 @@
 using ICanHazDadJoke.NET;
 using Serilog;
 
-namespace BreganTwitchBot.Domain.Bot.Twitch.Commands.Modules.DadJoke
+namespace BreganTwitchBot.Domain.Data.TwitchBot.Commands.DadJoke
 {
     public class DadJokes
     {

@@ -1,4 +1,6 @@
-﻿using BreganTwitchBot.Domain.Bot.Twitch.Commands.Modules.SuperMods;
+﻿using BreganTwitchBot.Core.Twitch.Commands.Modules.EightBall;
+using BreganTwitchBot.Domain.Bot.Twitch.Commands.Modules.SuperMods;
+using BreganTwitchBot.Domain.Data.TwitchBot.Commands.DadJoke;
 using BreganTwitchBot.Domain.Data.TwitchBot.Enums;
 using BreganTwitchBot.Domain.Data.TwitchBot.Helpers;
 using BreganTwitchBot.Infrastructure.Database.Context;
@@ -16,8 +18,41 @@ namespace BreganTwitchBot.Domain.Data.TwitchBot.Commands
     {
         public static async Task HandleCommand(OnChatCommandReceivedArgs command)
         {
-            //todo: do custom commands
+            await StreamStatsService.UpdateStreamStat(1, StatTypes.CommandsSent);
+            Log.Information($"[Twitch Commands] !{command.Command.CommandText.ToLower()} receieved from {command.Command.ChatMessage.Username}");
 
+            //todo: do custom commands
+            switch (command.Command.CommandText.ToLower())
+            {
+                case "dadjoke":
+                    await DadJokes.HandleDadJokeCommand(command.Command.ChatMessage.Username);
+                    break;
+                case "8ball":
+                    EightBall.Handle8BallCommand(command.Command.ChatMessage.Username);
+                    break;
+                case "commands":
+                    TwitchHelper.SendMessage($"@{command.Command.ChatMessage.Username} => Bot commands + much more can be found at https://bot.bregan.me/ ! :)");
+                    break;
+                case "uptime":
+                    await Uptime.Uptime.HandleUptimeCommand(command.Command.ChatMessage.Username, command.Command.ChatMessage.UserId);
+                    break;
+                case "botuptime":
+                    Uptime.Uptime.HandleBotUptimeCommand(command.Command.ChatMessage.Username);
+                    break;
+                case "shoutout" when command.Command.ChatMessage.IsModerator:
+                case "shoutout" when command.Command.ChatMessage.IsBroadcaster:
+                case "so" when command.Command.ChatMessage.IsModerator:
+                case "so" when command.Command.ChatMessage.IsBroadcaster:
+                    if (command.Command.ArgumentsAsList.Count == 0)
+                    {
+                        return;
+                    }
+
+                    TwitchHelper.SendMessage($"Hey go check out {command.Command.ArgumentsAsList[0].Replace("@", "")} at twitch.tv/{command.Command.ArgumentsAsList[0].Replace("@", "").Trim()} for some great content!");
+                    break;
+                default:
+                    break;
+            }
         }
 
         public static async Task HandleCustomCommand(string? commandName, string username, string userId)

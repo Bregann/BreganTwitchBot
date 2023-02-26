@@ -11,9 +11,9 @@ using Humanizer;
 using Humanizer.Localisation;
 using Serilog;
 using System.Diagnostics;
-using BreganTwitchBot.Domain.Bot.Twitch.Services;
 using BreganTwitchBot.Infrastructure.Database.Models;
 using BreganTwitchBot_Domain;
+using BreganTwitchBot.Domain.Data.TwitchBot;
 
 namespace BreganTwitchBot.Domain.Bot.DiscordBot.SlashCommands.Modules.GeneralCommands
 {

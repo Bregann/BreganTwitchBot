@@ -4,7 +4,6 @@ using Microsoft.EntityFrameworkCore;
 using Serilog;
 using TwitchLib.Api.Core.Models.Undocumented.Chatters;
 using BreganTwitchBot.Infrastructure.Database.Models;
-using BreganTwitchBot.Domain.Bot.Twitch.Services;
 using BreganTwitchBot.Domain.Data.TwitchBot.Enums;
 
 namespace BreganTwitchBot.Domain.Data.TwitchBot

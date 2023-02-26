@@ -1,4 +1,4 @@
-﻿using BreganTwitchBot.Domain.Bot.Twitch.Services;
+﻿using BreganTwitchBot.Domain.Data.TwitchBot;
 using BreganTwitchBot.Domain.Data.TwitchBot.Helpers;
 using Serilog;
 

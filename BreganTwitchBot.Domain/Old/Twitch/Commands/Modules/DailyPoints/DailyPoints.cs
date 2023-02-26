@@ -1,5 +1,4 @@
 ﻿using BreganTwitchBot.Infrastructure.Database.Context;
-using BreganTwitchBot.Domain.Bot.Twitch.Services;
 using BreganUtils.ProjectMonitor.Projects;
 using Serilog;
 using System.Text;

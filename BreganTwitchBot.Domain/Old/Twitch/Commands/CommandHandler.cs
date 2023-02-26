@@ -1,7 +1,5 @@
 ﻿using BreganTwitchBot.Core.Twitch.Commands.Modules.EightBall;
 using BreganTwitchBot.Infrastructure.Database.Context;
-using BreganTwitchBot.Domain.Bot.Twitch.Commands.Modules.CustomCommands;
-using BreganTwitchBot.Domain.Bot.Twitch.Commands.Modules.DadJoke;
 using BreganTwitchBot.Domain.Bot.Twitch.Commands.Modules.DailyPoints;
 using BreganTwitchBot.Domain.Bot.Twitch.Commands.Modules.DiceRoll;
 using BreganTwitchBot.Domain.Bot.Twitch.Commands.Modules.FollowAge;
@@ -16,7 +14,6 @@ using BreganTwitchBot.Domain.Bot.Twitch.Commands.Modules.StreamInfo;
 using BreganTwitchBot.Domain.Bot.Twitch.Commands.Modules.Subathon;
 using BreganTwitchBot.Domain.Bot.Twitch.Commands.Modules.SuperMods;
 using BreganTwitchBot.Domain.Bot.Twitch.Commands.Modules.TwitchBosses;
-using BreganTwitchBot.Domain.Bot.Twitch.Commands.Modules.Uptime;
 using BreganTwitchBot.Domain.Bot.Twitch.Commands.Modules.WordBlacklist;
 using Serilog;
 using TwitchLib.Client.Events;
@@ -24,6 +21,9 @@ using BreganTwitchBot.Domain.Data.TwitchBot.Enums;
 using BreganTwitchBot.Domain.Data.TwitchBot.Helpers;
 using BreganTwitchBot.Domain.Data.TwitchBot;
 using BreganTwitchBot.Domain.Data.TwitchBot.WordBlacklist;
+using BreganTwitchBot.Domain.Data.TwitchBot.Commands.DadJoke;
+using BreganTwitchBot.Domain.Data.TwitchBot.Commands.Uptime;
+using BreganTwitchBot.Domain.Data.TwitchBot.Commands.CustomCommands;
 
 namespace BreganTwitchBot.Domain.Bot.Twitch.Commands
 {
@@ -54,57 +54,10 @@ namespace BreganTwitchBot.Domain.Bot.Twitch.Commands
 
         public static async Task HandleCommand(OnChatCommandReceivedArgs command)
         {
-            StreamStatsService.UpdateStreamStat(1, StatTypes.CommandsSent);
-            Log.Information($"[Twitch Commands] !{command.Command.CommandText.ToLower()} receieved from {command.Command.ChatMessage.Username}");
-
-            //If its null then load the command list
-            if (_customCommands == null)
-            {
-                using (var context = new DatabaseContext())
-                {
-                    _customCommands = context.Commands.Select(x => x.CommandName).ToList();
-                }
-            }
-
-            //Handle custom command
-            var commandName = command.Command.ChatMessage.Message.Split(" ")[0].ToLower();
-            SendCustomCommandAndUpdateUsage(commandName, command.Command.ChatMessage.UserId, command.Command.ChatMessage.Username);
-
+            command.Command.Arg
             //The main commands
             switch (command.Command.CommandText.ToLower())
             {
-                case "dadjoke":
-                    await DadJokes.HandleDadJokeCommand(command.Command.ChatMessage.Username);
-                    break;
-
-                case "8ball":
-                    EightBall.Handle8BallCommand(command.Command.ChatMessage.Username);
-                    break;
-
-                case "commands":
-                    TwitchHelper.SendMessage($"@{command.Command.ChatMessage.Username} => Bot commands + much more can be found at https://bot.bregan.me/ ! :)");
-                    break;
-
-                case "uptime":
-                    await Uptime.HandleUptimeCommand(command.Command.ChatMessage.Username, command.Command.ChatMessage.UserId);
-                    break;
-
-                case "botuptime":
-                    Uptime.HandleBotUptimeCommand(command.Command.ChatMessage.Username);
-                    break;
-
-                case "shoutout" when command.Command.ChatMessage.IsModerator:
-                case "shoutout" when command.Command.ChatMessage.IsBroadcaster:
-                case "so" when command.Command.ChatMessage.IsModerator:
-                case "so" when command.Command.ChatMessage.IsBroadcaster:
-                    if (command.Command.ArgumentsAsList.Count == 0)
-                    {
-                        return;
-                    }
-
-                    TwitchHelper.SendMessage($"Hey go check out {command.Command.ArgumentsAsList[0].Replace("@", "")} at twitch.tv/{command.Command.ArgumentsAsList[0].Replace("@", "").Trim()} for some great content!");
-                    break;
-
                 case "addcmd" when command.Command.ChatMessage.IsModerator:
                 case "addcmd" when Supermods.IsUserSupermod(command.Command.ChatMessage.UserId):
                 case "cmdadd" when command.Command.ChatMessage.IsModerator:

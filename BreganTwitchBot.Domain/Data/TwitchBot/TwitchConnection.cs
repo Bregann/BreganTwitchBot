@@ -11,12 +11,12 @@ using TwitchLib.Communication.Events;
 using TwitchLib.Communication.Models;
 using TwitchLib.PubSub;
 
-namespace BreganTwitchBot.Domain.Bot.Twitch.Services
+namespace BreganTwitchBot.Domain.Data.TwitchBot
 {
     internal class TwitchBotConnection
     {
-        public static TwitchClient Client;
-        private static readonly ConnectionCredentials Credentials = new ConnectionCredentials(AppConfig.BotName, AppConfig.BotOAuth);
+        public static TwitchClient Client = new();
+        private static readonly ConnectionCredentials Credentials = new(AppConfig.BotName, AppConfig.BotOAuth);
 
         internal async Task Connect()
         {
@@ -70,7 +70,7 @@ namespace BreganTwitchBot.Domain.Bot.Twitch.Services
 
     internal class TwitchPubSubConnection
     {
-        public static TwitchPubSub PubSubClient;
+        public static TwitchPubSub PubSubClient = new();
 
         internal void Connect()
         {
@@ -132,7 +132,7 @@ namespace BreganTwitchBot.Domain.Bot.Twitch.Services
 
     internal class TwitchApiConnection
     {
-        public static TwitchAPI ApiClient;
+        public static TwitchAPI ApiClient = new();
 
         internal void Connect()
         {

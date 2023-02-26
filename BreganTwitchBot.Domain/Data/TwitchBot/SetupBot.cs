@@ -1,6 +1,5 @@
 ﻿using BreganTwitchBot.Domain.Bot.Twitch.Commands.Modules.WordBlacklist;
 using BreganTwitchBot.Domain.Bot.Twitch.Helpers;
-using BreganTwitchBot.Domain.Bot.Twitch.Services;
 using BreganTwitchBot.Domain.Data.TwitchBot.Commands;
 using BreganTwitchBot.Domain.Data.TwitchBot.Enums;
 using BreganTwitchBot.Domain.Data.TwitchBot.Events;
@@ -58,7 +57,7 @@ namespace BreganTwitchBot.Domain.Data.TwitchBot
             TwitchBotConnection.Client.OnReSubscriber += ReSubscriber;
             TwitchBotConnection.Client.OnRaidNotification += RaidNotification;
             TwitchBotConnection.Client.OnUserJoined += UserJoined;
-            TwitchBotConnection.Client.OnUserLeft += UserPressence;
+            TwitchBotConnection.Client.OnUserLeft += UserLeft;
         }
 
         private static async void ChannelPointsRewardRedeemed(object? sender, OnChannelPointsRewardRedeemedArgs e)

@@ -1,12 +1,12 @@
 ﻿using BreganTwitchBot.Domain.Bot.Twitch.Commands.Modules.SuperMods;
-using BreganTwitchBot.Domain.Bot.Twitch.Services;
+using BreganTwitchBot.Domain.Data.TwitchBot;
 using BreganTwitchBot.Domain.Data.TwitchBot.Helpers;
 using Humanizer;
 using Humanizer.Localisation;
 using Serilog;
 using System.Diagnostics;
 
-namespace BreganTwitchBot.Domain.Bot.Twitch.Commands.Modules.Uptime
+namespace BreganTwitchBot.Domain.Data.TwitchBot.Commands.Uptime
 {
     public class Uptime
     {
@@ -17,6 +17,13 @@ namespace BreganTwitchBot.Domain.Bot.Twitch.Commands.Modules.Uptime
             //5 sec cooldown to prevent spam
             if (DateTime.UtcNow - TimeSpan.FromSeconds(5) <= _uptimeCooldown && !Supermods.IsUserSupermod(userId))
             {
+                return;
+            }
+
+            if (AppConfig.StreamerLive == false)
+            {
+                TwitchHelper.SendMessage($"{AppConfig.BroadcasterName} is not live :(");
+                _uptimeCooldown = DateTime.UtcNow;
                 return;
             }
 
