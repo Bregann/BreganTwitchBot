@@ -75,5 +75,6 @@ namespace BreganTwitchBot.Infrastructure.Database.Models
 
         public required string BotChannelId { get; set; }
         public required bool AiEnabled { get; set; }
+        public required bool SubathonActive { get; set; }
     }
 }

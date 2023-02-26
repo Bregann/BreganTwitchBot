@@ -49,9 +49,9 @@ namespace BreganTwitchBot
         public static string TwitchBotApiRefresh { get; private set; }
         public static string BotChannelId { get; private set; }
         public static bool AiEnabled { get; private set; }
+        public static bool SubathonActive { get; private set; }
 
         private static bool _doublePingJobStarted = false;
-        public static readonly bool SubathonActive = false;
 
         public static void LoadConfig()
         {
@@ -93,7 +93,8 @@ namespace BreganTwitchBot
                 TwitchBotApiKey = configVariables.TwitchBotApiKey;
                 TwitchBotApiRefresh = configVariables.TwitchBotApiRefresh;
                 BotChannelId = configVariables.BotChannelId;
-                AiEnabled= configVariables.AiEnabled;
+                AiEnabled = configVariables.AiEnabled;
+                SubathonActive = configVariables.SubathonActive;
             }
         }
 
