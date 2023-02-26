@@ -52,7 +52,7 @@ namespace BreganTwitchBot
 
 
         private static bool _doublePingJobStarted = false;
-        public static readonly bool SubathonActive = false;
+        public static readonly bool SubathonActive = true;
 
         public static void LoadConfig()
         {
