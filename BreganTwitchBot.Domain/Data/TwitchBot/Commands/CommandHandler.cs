@@ -50,8 +50,16 @@ namespace BreganTwitchBot.Domain.Data.TwitchBot.Commands
 
                     TwitchHelper.SendMessage($"Hey go check out {command.Command.ArgumentsAsList[0].Replace("@", "")} at twitch.tv/{command.Command.ArgumentsAsList[0].Replace("@", "").Trim()} for some great content!");
                     break;
+                case "addcmd" when command.Command.ChatMessage.IsModerator:
+                case "addcmd" when Supermods.IsUserSupermod(command.Command.ChatMessage.UserId):
+                case "cmdadd" when command.Command.ChatMessage.IsModerator:
+                case "cmdadd" when Supermods.IsUserSupermod(command.Command.ChatMessage.UserId):
+                    await CustomCommands.CustomCommands.HandleAddCommand(command.Command.ChatMessage.Username, command.Command.ArgumentsAsList, command.Command.ArgumentsAsString);
+                    break;
                 default:
                     break;
+
+
             }
         }
 

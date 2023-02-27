@@ -108,8 +108,7 @@ namespace BreganTwitchBot.Domain.Data.TwitchBot.Commands.CustomCommands
                 await context.SaveChangesAsync();
             }
 
-            CommandHandler.UpdateCustomCommandsList();
-            TwitchHelper.SendMessage($"@{command.Command.ChatMessage.Username} => Your command has been edited! :)");
+            TwitchHelper.SendMessage($"@{username} => Your command has been edited! :)");
         }
     }
 }

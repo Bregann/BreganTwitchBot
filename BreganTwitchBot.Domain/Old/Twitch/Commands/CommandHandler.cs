@@ -58,12 +58,7 @@ namespace BreganTwitchBot.Domain.Bot.Twitch.Commands
             //The main commands
             switch (command.Command.CommandText.ToLower())
             {
-                case "addcmd" when command.Command.ChatMessage.IsModerator:
-                case "addcmd" when Supermods.IsUserSupermod(command.Command.ChatMessage.UserId):
-                case "cmdadd" when command.Command.ChatMessage.IsModerator:
-                case "cmdadd" when Supermods.IsUserSupermod(command.Command.ChatMessage.UserId):
-                    CustomCommands.HandleAddCommand(command);
-                    break;
+
 
                 case "delcmd" when command.Command.ChatMessage.IsModerator:
                 case "delcmd" when Supermods.IsUserSupermod(command.Command.ChatMessage.UserId):
