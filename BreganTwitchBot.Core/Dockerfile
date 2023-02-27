@@ -16,7 +16,7 @@ WORKDIR "/src/BreganTwitchBot.Core"
 RUN dotnet build "BreganTwitchBot.Core.csproj" -c Release -o /app/build
 
 FROM build AS publish
-RUN dotnet publish "BreganTwitchBot.Core.csproj" -c Release -o /app/publish /p:UseAppHost=false
+RUN dotnet publish "BreganTwitchBot.Core.csproj" -c Release -o /app/publish
 
 FROM base AS final
 WORKDIR /app
