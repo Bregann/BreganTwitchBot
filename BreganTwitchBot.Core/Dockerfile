@@ -21,4 +21,4 @@ RUN dotnet publish "BreganTwitchBot.Core.csproj" -c Release -o /app/publish /p:U
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
-ENTRYPOINT ["dotnet", "BreganTwitchBot.Core.dll"]
+ENTRYPOINT /app/ProgressBars/twitchbot.sh
