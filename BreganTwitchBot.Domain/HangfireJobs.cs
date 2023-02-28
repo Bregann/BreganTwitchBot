@@ -7,7 +7,6 @@ using BreganTwitchBot.Domain.Bot.Twitch.Commands.Modules.WordBlacklist;
 using BreganTwitchBot.Domain.Bot.Twitch.Helpers;
 using BreganTwitchBot.Domain.Bot.Twitch.Services;
 using BreganTwitchBot.Domain.Bot.Twitch.Services.Stats;
-using BreganTwitchBot.Infrastructure.Database.Context;
 using BreganUtils;
 using BreganUtils.ProjectMonitor.Projects;
 using Discord;
@@ -404,7 +403,14 @@ namespace BreganTwitchBot.Domain
 
                 foreach (var user in birthdays)
                 {
-                    await DiscordHelper.SendMessage(AppConfig.DiscordGeneralChannel, $"It's <@{user.DiscordId}> birthday today! Happy Birthday <@{user.DiscordId}>!");
+                    if (user.DiscordId == AppConfig.DiscordGuildOwner)
+                    {
+                        await DiscordHelper.SendMessage(AppConfig.DiscordGeneralChannel, $"@everyone It's <@{user.DiscordId}> dumble birthday today! Happy Birthday <@{user.DiscordId}>! Make sure to ask him if he needs a nero :)");
+                    }
+                    else
+                    {
+                        await DiscordHelper.SendMessage(AppConfig.DiscordGeneralChannel, $"It's <@{user.DiscordId}> birthday today! Happy Birthday <@{user.DiscordId}>!");
+                    }
                 }
             }
 
