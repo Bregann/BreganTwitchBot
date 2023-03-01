@@ -289,6 +289,15 @@ namespace BreganTwitchBot.Domain.Data.TwitchBot
             }
         }
 
+            //Get the stream uptime
+            var startTime = new DateTime(2023, 2, 26, 11, 0, 0);
+
+            var endTimeDT = startTime.Add(AppConfig.SubathonTime);
+            var timeLeft = endTimeDT - DateTime.UtcNow;
+
+            TwitchHelper.SendMessage($"@{username} => The dumblethon has been extended to a total of {AppConfig.SubathonTime.Humanize(maxUnit: TimeUnit.Year, minUnit: TimeUnit.Second, precision: 7)}! The stream will end in {timeLeft.Humanize(maxUnit: TimeUnit.Year, minUnit: TimeUnit.Second, precision: 7)}. See all the info at https://bot.bregan.me/subathon");
+            _subathonCooldown = DateTime.UtcNow;
+        }
 
         private static async Task AddOrUpdateUserToSubathonTable(string username, int amount, string type)
         {

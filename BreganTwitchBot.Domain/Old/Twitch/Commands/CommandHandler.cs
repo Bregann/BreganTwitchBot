@@ -267,6 +267,7 @@ namespace BreganTwitchBot.Domain.Bot.Twitch.Commands
                     break;
 
                 case "subathon":
+                case "dumblethon":
                     Subathon.HandleSubathonCommand(command.Command.ChatMessage.Username);
                     break;
             }
