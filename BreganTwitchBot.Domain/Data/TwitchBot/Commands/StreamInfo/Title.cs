@@ -2,18 +2,19 @@
 using BreganTwitchBot.Domain.Data.TwitchBot.Helpers;
 using Serilog;
 using TwitchLib.Api.Helix.Models.Channels.GetChannelInformation;
+using TwitchLib.Api.Helix.Models.Channels.ModifyChannelInformation;
 using TwitchLib.Client.Events;
 
-namespace BreganTwitchBot.Domain.Bot.Twitch.Commands.Modules.StreamInfo
+namespace BreganTwitchBot.Domain.Data.TwitchBot.Commands.StreamInfo
 {
     public class Title
     {
         private static DateTime _titleCooldown;
 
-        public static async Task HandleTitleCommand(OnChatCommandReceivedArgs command)
+        public static async Task HandleTitleCommand(string username, string chatMessage, string chatArgumentsAsString, bool isMod, bool isBroadcaster)
         {
             //if all they are doing is checking the title
-            if (command.Command.ChatMessage.Message.ToLower() == "!title")
+            if (chatMessage.ToLower() == "!title")
             {
                 if (DateTime.UtcNow - TimeSpan.FromSeconds(5) <= _titleCooldown)
                 {
@@ -21,25 +22,24 @@ namespace BreganTwitchBot.Domain.Bot.Twitch.Commands.Modules.StreamInfo
                     return;
                 }
 
-                await GetTitle(command.Command.ChatMessage.Username);
+                await GetTitle(username);
                 _titleCooldown = DateTime.UtcNow;
                 return;
             }
 
             //If updating the command
-            if (command.Command.ChatMessage.IsModerator || command.Command.ChatMessage.IsBroadcaster)
+            if (isMod || isBroadcaster)
             {
-                await SetChannelTitle(command.Command.ChatMessage.Username, command.Command.ArgumentsAsString);
+                await SetChannelTitle(username, chatArgumentsAsString);
             }
         }
 
         private static async Task GetTitle(string username)
         {
-            GetChannelInformationResponse getChannelRequest;
-
             try
             {
-                getChannelRequest = await TwitchApiConnection.ApiClient.Helix.Channels.GetChannelInformationAsync(AppConfig.TwitchChannelID);
+                var getChannelRequest = await TwitchApiConnection.ApiClient.Helix.Channels.GetChannelInformationAsync(AppConfig.TwitchChannelID);
+                TwitchHelper.SendMessage($"@{username} => The current stream title is {getChannelRequest.Data[0].Title}");
             }
             catch (Exception e)
             {
@@ -47,8 +47,6 @@ namespace BreganTwitchBot.Domain.Bot.Twitch.Commands.Modules.StreamInfo
                 TwitchHelper.SendMessage($"@{username} => hooo I could not get the channel title sorry try again later");
                 return;
             }
-
-            TwitchHelper.SendMessage($"@{username} => The current stream title is {getChannelRequest.Data[0].Title}");
         }
 
         private static async Task SetChannelTitle(string username, string title)
@@ -68,7 +66,7 @@ namespace BreganTwitchBot.Domain.Bot.Twitch.Commands.Modules.StreamInfo
 
             try
             {
-                var request = new TwitchLib.Api.Helix.Models.Channels.ModifyChannelInformation.ModifyChannelInformationRequest()
+                var request = new ModifyChannelInformationRequest()
                 {
                     Title = title,
                     GameId = getChannelRequest.Data[0].GameId

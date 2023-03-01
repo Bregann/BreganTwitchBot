@@ -4,7 +4,7 @@ using Serilog;
 using TwitchLib.Api.Helix.Models.Channels.GetChannelInformation;
 using TwitchLib.Client.Events;
 
-namespace BreganTwitchBot.Domain.Bot.Twitch.Commands.Modules.StreamInfo
+namespace BreganTwitchBot.Domain.Data.TwitchBot.Commands.StreamInfo
 {
     public class Game
     {

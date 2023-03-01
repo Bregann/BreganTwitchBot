@@ -1,6 +1,7 @@
 ﻿using BreganTwitchBot.Core.Twitch.Commands.Modules.EightBall;
 using BreganTwitchBot.Domain.Bot.Twitch.Commands.Modules.SuperMods;
 using BreganTwitchBot.Domain.Data.TwitchBot.Commands.DadJoke;
+using BreganTwitchBot.Domain.Data.TwitchBot.Commands.StreamInfo;
 using BreganTwitchBot.Domain.Data.TwitchBot.Enums;
 using BreganTwitchBot.Domain.Data.TwitchBot.Helpers;
 using BreganTwitchBot.Infrastructure.Database.Context;
@@ -55,6 +56,21 @@ namespace BreganTwitchBot.Domain.Data.TwitchBot.Commands
                 case "cmdadd" when command.Command.ChatMessage.IsModerator:
                 case "cmdadd" when Supermods.IsUserSupermod(command.Command.ChatMessage.UserId):
                     await CustomCommands.CustomCommands.HandleAddCommand(command.Command.ChatMessage.Username, command.Command.ArgumentsAsList, command.Command.ArgumentsAsString);
+                    break;
+                case "delcmd" when command.Command.ChatMessage.IsModerator:
+                case "delcmd" when Supermods.IsUserSupermod(command.Command.ChatMessage.UserId):
+                case "cmddel" when command.Command.ChatMessage.IsModerator:
+                case "cmddel" when Supermods.IsUserSupermod(command.Command.ChatMessage.UserId):
+                    await CustomCommands.CustomCommands.HandleRemoveCommand(command.Command.ChatMessage.Username, command.Command.CommandText.ToLower());
+                    break;
+                case "editcmd" when command.Command.ChatMessage.IsModerator:
+                case "editcmd" when Supermods.IsUserSupermod(command.Command.ChatMessage.UserId):
+                case "cmdedit" when command.Command.ChatMessage.IsModerator:
+                case "cmdedit" when Supermods.IsUserSupermod(command.Command.ChatMessage.UserId):
+                    await CustomCommands.CustomCommands.HandleEditCommandCommand(command.Command.ChatMessage.Username, command.Command.ArgumentsAsList, command.Command.ArgumentsAsString);
+                    break;
+                case "title":
+                    await Title.HandleTitleCommand(command.Command.ChatMessage.Username, command.Command.ChatMessage.Message, command.Command.ArgumentsAsString, command.Command.ChatMessage.IsModerator, command.Command.ChatMessage.IsBroadcaster);
                     break;
                 default:
                     break;

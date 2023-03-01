@@ -10,7 +10,6 @@ using BreganTwitchBot.Domain.Bot.Twitch.Commands.Modules.Leaderboards.Enums;
 using BreganTwitchBot.Domain.Bot.Twitch.Commands.Modules.Linking;
 using BreganTwitchBot.Domain.Bot.Twitch.Commands.Modules.Marbles;
 using BreganTwitchBot.Domain.Bot.Twitch.Commands.Modules.Points;
-using BreganTwitchBot.Domain.Bot.Twitch.Commands.Modules.StreamInfo;
 using BreganTwitchBot.Domain.Bot.Twitch.Commands.Modules.Subathon;
 using BreganTwitchBot.Domain.Bot.Twitch.Commands.Modules.SuperMods;
 using BreganTwitchBot.Domain.Bot.Twitch.Commands.Modules.TwitchBosses;
@@ -24,10 +23,11 @@ using BreganTwitchBot.Domain.Data.TwitchBot.WordBlacklist;
 using BreganTwitchBot.Domain.Data.TwitchBot.Commands.DadJoke;
 using BreganTwitchBot.Domain.Data.TwitchBot.Commands.Uptime;
 using BreganTwitchBot.Domain.Data.TwitchBot.Commands.CustomCommands;
+using BreganTwitchBot.Domain.Data.TwitchBot.Commands.StreamInfo;
 
 namespace BreganTwitchBot.Domain.Bot.Twitch.Commands
 {
-    public class CommandHandler
+    public class CommandHandlerOld
     {
         private static List<string> _customCommands;
 
@@ -58,22 +58,6 @@ namespace BreganTwitchBot.Domain.Bot.Twitch.Commands
             //The main commands
             switch (command.Command.CommandText.ToLower())
             {
-
-
-                case "delcmd" when command.Command.ChatMessage.IsModerator:
-                case "delcmd" when Supermods.IsUserSupermod(command.Command.ChatMessage.UserId):
-                case "cmddel" when command.Command.ChatMessage.IsModerator:
-                case "cmddel" when Supermods.IsUserSupermod(command.Command.ChatMessage.UserId):
-                    CustomCommands.HandleRemoveCommand(command);
-                    break;
-
-                case "editcmd" when command.Command.ChatMessage.IsModerator:
-                case "editcmd" when Supermods.IsUserSupermod(command.Command.ChatMessage.UserId):
-                case "cmdedit" when command.Command.ChatMessage.IsModerator:
-                case "cmdedit" when Supermods.IsUserSupermod(command.Command.ChatMessage.UserId):
-                    CustomCommands.HandleEditCommandCommand(command);
-                    break;
-
                 case "title":
                     await Title.HandleTitleCommand(command);
                     break;

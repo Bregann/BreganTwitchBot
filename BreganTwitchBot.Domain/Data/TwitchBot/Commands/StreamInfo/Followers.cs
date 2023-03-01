@@ -2,7 +2,7 @@
 using BreganTwitchBot.Domain.Data.TwitchBot.Helpers;
 using Serilog;
 
-namespace BreganTwitchBot.Domain.Bot.Twitch.Commands.Modules.StreamInfo
+namespace BreganTwitchBot.Domain.Data.TwitchBot.Commands.StreamInfo
 {
     public class Followers
     {
