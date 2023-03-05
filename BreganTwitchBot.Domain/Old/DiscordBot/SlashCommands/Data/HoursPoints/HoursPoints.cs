@@ -1,5 +1,5 @@
-﻿using BreganTwitchBot.Infrastructure.Database.Context;
-using BreganTwitchBot.Domain.Bot.DiscordBot.SlashCommands.Data.Levelling;
+﻿using BreganTwitchBot.Domain.Bot.DiscordBot.SlashCommands.Data.Levelling;
+using BreganTwitchBot.Infrastructure.Database.Context;
 using Discord;
 using Discord.Interactions;
 using Hangfire;

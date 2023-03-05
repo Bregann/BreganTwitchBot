@@ -1,18 +1,9 @@
 ﻿using BreganTwitchBot.Domain.Data.TwitchBot.Commands;
 using BreganTwitchBot.Domain.Data.TwitchBot.Enums;
 using BreganTwitchBot.Domain.Data.TwitchBot.Events;
-using BreganTwitchBot.Domain.Data.TwitchBot.Helpers;
 using BreganTwitchBot.Domain.Data.TwitchBot.WordBlacklist;
-using BreganTwitchBot.Infrastructure.Database.Context;
 using Serilog;
-using System;
-using System.Collections.Generic;
-using System.Data;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using TwitchLib.Client.Events;
-using TwitchLib.Client.Models;
 using TwitchLib.PubSub.Events;
 
 namespace BreganTwitchBot.Domain.Data.TwitchBot

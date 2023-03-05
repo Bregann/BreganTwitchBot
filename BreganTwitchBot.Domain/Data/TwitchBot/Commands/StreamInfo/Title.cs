@@ -1,9 +1,7 @@
-﻿using BreganTwitchBot.Domain.Data.TwitchBot;
-using BreganTwitchBot.Domain.Data.TwitchBot.Helpers;
+﻿using BreganTwitchBot.Domain.Data.TwitchBot.Helpers;
 using Serilog;
 using TwitchLib.Api.Helix.Models.Channels.GetChannelInformation;
 using TwitchLib.Api.Helix.Models.Channels.ModifyChannelInformation;
-using TwitchLib.Client.Events;
 
 namespace BreganTwitchBot.Domain.Data.TwitchBot.Commands.StreamInfo
 {

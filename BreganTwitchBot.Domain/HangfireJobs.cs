@@ -1,25 +1,19 @@
 ﻿using BreganTwitchBot.Core.DiscordBot.Services;
-using BreganTwitchBot.Infrastructure.Database.Context;
 using BreganTwitchBot.DiscordBot.Helpers;
-using BreganTwitchBot.Domain.Bot.Twitch.Commands.Modules.DailyPoints;
-using BreganTwitchBot.Domain.Bot.Twitch.Commands.Modules.TwitchBosses;
 using BreganTwitchBot.Domain.Bot.Twitch.Services;
+using BreganTwitchBot.Domain.Data.TwitchBot;
+using BreganTwitchBot.Domain.Data.TwitchBot.Commands.DailyPoints;
+using BreganTwitchBot.Domain.Data.TwitchBot.Commands.TwitchBosses;
+using BreganTwitchBot.Domain.Data.TwitchBot.Helpers;
+using BreganTwitchBot.Domain.Data.TwitchBot.WordBlacklist;
+using BreganTwitchBot.Infrastructure.Database.Context;
+using BreganTwitchBot.Services;
 using BreganUtils;
 using BreganUtils.ProjectMonitor.Projects;
 using Discord;
 using Hangfire;
 using Serilog;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using TwitchLib.Client.Extensions;
-using BreganTwitchBot.Services;
-using BreganTwitchBot.Domain.Data.TwitchBot.Helpers;
-using BreganTwitchBot.Domain.Data.TwitchBot;
-using BreganTwitchBot.Domain.Data.TwitchBot.WordBlacklist;
-using BreganTwitchBot.Domain.Data.TwitchBot.Commands.WordBlacklist;
 
 namespace BreganTwitchBot.Domain
 {
@@ -46,14 +40,10 @@ namespace BreganTwitchBot.Domain
             RecurringJob.AddOrUpdate("UpdateLeaderboardRoles", () => UpdateLeaderboardRoles(), "0 2 * * *");
             RecurringJob.AddOrUpdate("DiscordDailyReset", () => DiscordDailyReset(), "0 3 * * *");
             RecurringJob.AddOrUpdate("CheckBirthdays", () => CheckBirthdays(), "0 6 * * *");
+            RecurringJob.AddOrUpdate("DailyPointsReminder", () => DailyPointsAnnouncementJob(), "20 * * * *");
+
             //todo: add a job for every 5 mins, get active chatters and update users in stream
             Log.Information("[Job Scheduler] Job Scheduler Setup");
-        }
-
-        public static void CreateDailyPointsReminder()
-        {
-            TwitchHelper.SendMessage($"Don't forget to claim your daily {AppConfig.PointsName} with !daily PogChamp");
-            RecurringJob.AddOrUpdate("DailyPointsReminder", () => TwitchHelper.SendMessage($"Don't forget to claim your daily {AppConfig.PointsName} with !daily PogChamp"), "20 * * * *");
         }
 
         public static void DeleteDailyPointsReminderJob()
@@ -75,6 +65,14 @@ namespace BreganTwitchBot.Domain
             BackgroundJob.Schedule(() => TurnFollowersOn(), TimeSpan.FromMinutes(2));
 
             _raidFollowersJobStarted = true;
+        }
+
+        public static void DailyPointsAnnouncementJob()
+        {
+            if (AppConfig.DailyPointsCollectingAllowed)
+            {
+                TwitchHelper.SendMessage($"Don't forget to claim your daily {AppConfig.PointsName} with !daily PogChamp");
+            }
         }
 
         public static void StartDoublePingPreventionJob()

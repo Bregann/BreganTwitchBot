@@ -1,5 +1,5 @@
-﻿using BreganTwitchBot.Infrastructure.Database.Context;
-using BreganTwitchBot.DiscordBot.Helpers;
+﻿using BreganTwitchBot.DiscordBot.Helpers;
+using BreganTwitchBot.Infrastructure.Database.Context;
 using Discord;
 using Discord.Interactions;
 using Serilog;

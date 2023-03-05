@@ -1,8 +1,7 @@
 ﻿using BreganTwitchBot.DiscordBot.Helpers;
-using Serilog;
-using TwitchLib.Client.Extensions;
-using TwitchLib.Api.Helix.Models.Moderation.BanUser;
 using BreganTwitchBot.Infrastructure.Database.Context;
+using Serilog;
+using TwitchLib.Api.Helix.Models.Moderation.BanUser;
 
 namespace BreganTwitchBot.Domain.Data.TwitchBot.Helpers
 {
@@ -96,7 +95,7 @@ namespace BreganTwitchBot.Domain.Data.TwitchBot.Helpers
 
         public static string? GetUserIdFromUsername(string username)
         {
-            using(var context = new DatabaseContext())
+            using (var context = new DatabaseContext())
             {
                 var user = context.Users.Where(x => x.Username == username).FirstOrDefault();
 

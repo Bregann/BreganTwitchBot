@@ -1,16 +1,9 @@
-﻿using BreganTwitchBot.Domain.Data.TwitchBot.Commands.DadJoke;
-using BreganTwitchBot.Domain.Data.TwitchBot.Commands.StreamInfo;
+﻿using BreganTwitchBot.Domain.Data.TwitchBot.Commands.StreamInfo;
 using BreganTwitchBot.Domain.Data.TwitchBot.Commands.WordBlacklist;
 using BreganTwitchBot.Domain.Data.TwitchBot.Enums;
 using BreganTwitchBot.Domain.Data.TwitchBot.Helpers;
-using BreganTwitchBot.Domain.Data.TwitchBot.WordBlacklist;
 using BreganTwitchBot.Infrastructure.Database.Context;
 using Serilog;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using TwitchLib.Client.Events;
 
 namespace BreganTwitchBot.Domain.Data.TwitchBot.Commands
@@ -22,7 +15,8 @@ namespace BreganTwitchBot.Domain.Data.TwitchBot.Commands
             await StreamStatsService.UpdateStreamStat(1, StatTypes.CommandsSent);
             Log.Information($"[Twitch Commands] !{command.Command.CommandText.ToLower()} receieved from {command.Command.ChatMessage.Username}");
 
-            //todo: do custom commands
+            //todo: do custom ! commands
+
             switch (command.Command.CommandText.ToLower())
             {
                 case "dadjoke":
@@ -135,6 +129,84 @@ namespace BreganTwitchBot.Domain.Data.TwitchBot.Commands
                 case "spinstats":
                     Gambling.Gambling.HandleSpinStatsCommand(command.Command.ChatMessage.Username);
                     break;
+                case "daily":
+                case "dailt":
+                case "claim":
+                case "dailypoints":
+                case "collect":
+                    await DailyPoints.DailyPoints.HandleClaimPointsCommand(command.Command.ChatMessage.Username, command.Command.ChatMessage.UserId);
+                    break;
+                case "streak":
+                case "steak":
+                    DailyPoints.DailyPoints.HandleStreakCommand(command.Command.ChatMessage.Username, command.Command.ChatMessage.UserId, command.Command.ChatMessage.Message, command.Command.ArgumentsAsList);
+                    break;
+                case "addpoints" when TwitchHelper.IsUserSupermod(command.Command.ChatMessage.UserId):
+                    await Points.Points.HandleAddPointsCommand(command.Command.ChatMessage.Username, command.Command.ArgumentsAsList);
+                    break;
+                case "pointslb":
+                    Leaderboards.Leaderboards.HandleLeaderboardCommand(command.Command.ChatMessage.Username, LeaderboardType.Points);
+                    break;
+                case "hrslb":
+                case "hourslb":
+                    Leaderboards.Leaderboards.HandleLeaderboardCommand(command.Command.ChatMessage.Username, LeaderboardType.AllTimeHours);
+                    break; ;
+                case "pointswonlb":
+                    Leaderboards.Leaderboards.HandleLeaderboardCommand(command.Command.ChatMessage.Username, LeaderboardType.PointsWon);
+                    break;
+                case "pointslostlb":
+                    Leaderboards.Leaderboards.HandleLeaderboardCommand(command.Command.ChatMessage.Username, LeaderboardType.PointsLost);
+                    break;
+                case "pointsgambledlb":
+                    Leaderboards.Leaderboards.HandleLeaderboardCommand(command.Command.ChatMessage.Username, LeaderboardType.PointsGambled);
+                    break;
+                case "totalspinslb":
+                    Leaderboards.Leaderboards.HandleLeaderboardCommand(command.Command.ChatMessage.Username, LeaderboardType.TotalSpins);
+                    break;
+                case "dailystreaklb":
+                case "streaklb":
+                    Leaderboards.Leaderboards.HandleLeaderboardCommand(command.Command.ChatMessage.Username, LeaderboardType.CurrentStreak);
+                    break;
+                case "higheststreaklb":
+                    Leaderboards.Leaderboards.HandleLeaderboardCommand(command.Command.ChatMessage.Username, LeaderboardType.HighestStreak);
+                    break;
+                case "totalclaimslb":
+                    Leaderboards.Leaderboards.HandleLeaderboardCommand(command.Command.ChatMessage.Username, LeaderboardType.TotalTimesClaimed);
+                    break;
+                case "streamhrslb":
+                case "streamhourslb":
+                    Leaderboards.Leaderboards.HandleLeaderboardCommand(command.Command.ChatMessage.Username, LeaderboardType.StreamHours);
+                    break;
+                case "weeklyhrslb":
+                case "weeklyhourslb":
+                    Leaderboards.Leaderboards.HandleLeaderboardCommand(command.Command.ChatMessage.Username, LeaderboardType.WeeklyHours);
+                    break;
+                case "monthlyhrslb":
+                case "monthlyhourslb":
+                    Leaderboards.Leaderboards.HandleLeaderboardCommand(command.Command.ChatMessage.Username, LeaderboardType.MonthlyHours);
+                    break;
+                case "marbleswinslb":
+                case "marblewinslb":
+                case "marbleslb":
+                case "marbolslb":
+                    Leaderboards.Leaderboards.HandleLeaderboardCommand(command.Command.ChatMessage.Username, LeaderboardType.MarblesRacesWon);
+                    break;
+                case "jackpot":
+                case "yackpot":
+                    Gambling.Gambling.HandleJackpotCommand(command.Command.ChatMessage.Username);
+                    break;
+                case "boss":
+                    TwitchBosses.TwitchBosses.AddUser(command.Command.ChatMessage.Username, command.Command.ChatMessage.UserId);
+                    break;
+                case "link":
+                    await Linking.Linking.HandleLinkingCommand(command.Command.ChatMessage.Username);
+                    break;
+                case "addmarbleswin" when TwitchHelper.IsUserSupermod(command.Command.ChatMessage.UserId):
+                    await Marbles.Marbles.HandleAddMarblesWinCommand(command.Command.ChatMessage.Username, command.Command.ChatMessage.Message, command.Command.ArgumentsAsList);
+                    break;
+                case "subathon":
+                case "dumblethon":
+                    Subathon.Subathon.HandleSubathonCommand(command.Command.ChatMessage.Username);
+                    break;
             }
         }
 
@@ -162,7 +234,7 @@ namespace BreganTwitchBot.Domain.Data.TwitchBot.Commands
                 }
 
                 //Make sure it's not on a cooldown
-                if (DateTime.UtcNow - TimeSpan.FromSeconds(5) < command.LastUsed && !Supermods.IsUserSupermod(userId))
+                if (DateTime.UtcNow - TimeSpan.FromSeconds(5) < command.LastUsed && !TwitchHelper.IsUserSupermod(userId))
                 {
                     Log.Information("[Twitch Commands] Custom command handled successfully (cooldown)");
                     return;

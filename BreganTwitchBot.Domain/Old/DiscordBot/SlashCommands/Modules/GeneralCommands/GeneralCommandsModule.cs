@@ -1,19 +1,17 @@
-﻿using BreganTwitchBot.Infrastructure.Database.Context;
-using BreganTwitchBot.DiscordBot.Helpers;
+﻿using BreganTwitchBot.DiscordBot.Helpers;
 using BreganTwitchBot.Domain.Bot.DiscordBot.SlashCommands.Data.GeneralCommands.BlocksSocks;
 using BreganTwitchBot.Domain.Bot.DiscordBot.SlashCommands.Data.GeneralCommands.Giveaway;
 using BreganTwitchBot.Domain.Bot.DiscordBot.SlashCommands.Data.GeneralCommands.Whois;
+using BreganTwitchBot.Domain.Data.TwitchBot;
+using BreganTwitchBot.Infrastructure.Database.Context;
+using BreganTwitchBot.Infrastructure.Database.Models;
 using BreganTwitchBot.Services;
 using Discord;
 using Discord.Interactions;
-using Discord.Rest;
 using Humanizer;
 using Humanizer.Localisation;
 using Serilog;
 using System.Diagnostics;
-using BreganTwitchBot.Infrastructure.Database.Models;
-using BreganTwitchBot_Domain;
-using BreganTwitchBot.Domain.Data.TwitchBot;
 
 namespace BreganTwitchBot.Domain.Bot.DiscordBot.SlashCommands.Modules.GeneralCommands
 {

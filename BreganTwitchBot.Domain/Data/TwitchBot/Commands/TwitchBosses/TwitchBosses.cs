@@ -1,18 +1,16 @@
-﻿using BreganTwitchBot.Domain.Bot.Twitch.Helpers;
-using BreganTwitchBot.Domain.Data.TwitchBot;
-using BreganTwitchBot.Domain.Data.TwitchBot.Helpers;
+﻿using BreganTwitchBot.Domain.Data.TwitchBot.Helpers;
 using Serilog;
 using TwitchLib.Client.Extensions;
 
-namespace BreganTwitchBot.Domain.Bot.Twitch.Commands.Modules.TwitchBosses
+namespace BreganTwitchBot.Domain.Data.TwitchBot.Commands.TwitchBosses
 {
     public class TwitchBosses
     {
-        private static List<string> _viewersJoined = new();
+        private static Dictionary<string, string> _viewersJoined = new();
         private static List<string> _twitchModsAndVIPs = new();
         private static bool _bossCountdownEnabled;
         private static bool _bossInProgress;
-
+        //todo: make the boss fight a bit more random or just redo it tbh
         public static async Task StartBossFight()
         {
             try
@@ -88,7 +86,7 @@ namespace BreganTwitchBot.Domain.Bot.Twitch.Commands.Modules.TwitchBosses
 
                 foreach (var viewer in _viewersJoined)
                 {
-                    PointsHelper.AddUserPoints(viewer, amountToDistribute);
+                    await PointsHelper.AddUserPoints(viewer.Key, amountToDistribute);
                 }
 
                 TwitchHelper.SendMessage($"All {_viewersJoined.Count} people who survived the fight against {bossName} have won a grand total of {amountToDistribute:N0} {AppConfig.PointsName} each PogChamp");
@@ -128,26 +126,26 @@ namespace BreganTwitchBot.Domain.Bot.Twitch.Commands.Modules.TwitchBosses
             }
         }
 
-        public static void AddUser(string twitchUsername)
+        public static void AddUser(string twitchUsername, string userId)
         {
             if (!_bossCountdownEnabled || _bossInProgress)
             {
                 return;
             }
 
-            if (_viewersJoined.Contains(twitchUsername))
+            if (_viewersJoined.ContainsKey(userId))
             {
                 return;
             }
 
-            _viewersJoined.Add(twitchUsername);
+            _viewersJoined.Add(userId, twitchUsername);
             Log.Information($"[Twitch Bosses] {twitchUsername} added to the boss list");
             return;
         }
 
-        public static async Task StartBossFightCountdown()
+        public static void StartBossFightCountdown()
         {
-            _viewersJoined = new List<string>();
+            _viewersJoined = new Dictionary<string, string>();
             Log.Information("[Twitch Bosses] Twitch boss countdown started");
             HangfireJobs.StartTwitchBossFight();
             _bossCountdownEnabled = true;

@@ -1,10 +1,5 @@
 ﻿using BreganTwitchBot.Infrastructure.Database.Context;
 using BreganTwitchBot.Infrastructure.Database.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace BreganTwitchBot.Domain.Data.TwitchBot.Events
 {
@@ -12,7 +7,7 @@ namespace BreganTwitchBot.Domain.Data.TwitchBot.Events
     {
         public static async Task HandleUserAddingOrUpdating(string username, string userId, bool isSubscriber)
         {
-            using(var context = new DatabaseContext())
+            using (var context = new DatabaseContext())
             {
                 var user = context.Users.Where(x => x.TwitchUserId == userId).FirstOrDefault();
                 var uniqueUser = context.UniqueViewers.Where(x => x.Username == username).FirstOrDefault();

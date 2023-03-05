@@ -1,16 +1,13 @@
-﻿using BreganTwitchBot.Core;
-using BreganTwitchBot.Core.DiscordBot.Services;
+﻿using BreganTwitchBot.Core.DiscordBot.Services;
 using BreganTwitchBot.DiscordBot.Events;
 using BreganTwitchBot.DiscordBot.Helpers;
 using BreganTwitchBot.Domain;
-using BreganUtils.ProjectMonitor.Projects;
 using Discord;
 using Discord.Interactions;
 using Discord.WebSocket;
 using Hangfire;
 using Microsoft.Extensions.DependencyInjection;
 using Serilog;
-using System.Data;
 using System.Reflection;
 
 namespace BreganTwitchBot.Services

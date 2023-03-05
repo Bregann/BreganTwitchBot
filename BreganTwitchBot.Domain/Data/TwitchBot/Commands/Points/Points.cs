@@ -1,8 +1,6 @@
-﻿using BreganTwitchBot.Infrastructure.Database.Context;
+﻿using BreganTwitchBot.Domain.Data.TwitchBot.Helpers;
+using BreganTwitchBot.Infrastructure.Database.Context;
 using Serilog;
-using TwitchLib.Client.Events;
-using BreganTwitchBot.Domain.Data.TwitchBot.Helpers;
-using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
 
 namespace BreganTwitchBot.Domain.Data.TwitchBot.Commands.Points
 {
@@ -11,7 +9,7 @@ namespace BreganTwitchBot.Domain.Data.TwitchBot.Commands.Points
         public static void HandlePointsCommand(string username, string userId, string message, List<string> chatArgumentsAsList)
         {
             if (message.ToLower() == "!points" ||
-                message.ToLower() == "!coins" || 
+                message.ToLower() == "!coins" ||
                 message.ToLower() == "!pooants")
             {
                 TwitchHelper.SendMessage($"@{username} => You have {PointsHelper.GetUserPoints(userId):N0} {AppConfig.PointsName}. Rank: {GetPointsRank(userId)}");

@@ -1,13 +1,8 @@
-﻿using BreganTwitchBot.Infrastructure.Database.Context;
+﻿using BreganTwitchBot.Domain.Data.TwitchBot.Helpers;
+using BreganTwitchBot.Domain.Data.TwitchBot.WordBlacklist;
+using BreganTwitchBot.Infrastructure.Database.Enums;
 using Serilog;
 using System.Text.RegularExpressions;
-using TwitchLib.Client.Events;
-using BreganTwitchBot_Domain;
-using BreganTwitchBot.Domain.Data.TwitchBot.Helpers;
-using BreganTwitchBot.Infrastructure.Database.Models;
-using Microsoft.EntityFrameworkCore;
-using BreganTwitchBot.Infrastructure.Database.Enums;
-using BreganTwitchBot.Domain.Data.TwitchBot.WordBlacklist;
 
 namespace BreganTwitchBot.Domain.Data.TwitchBot.Commands.WordBlacklist
 {

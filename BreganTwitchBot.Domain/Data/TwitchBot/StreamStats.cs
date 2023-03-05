@@ -1,10 +1,10 @@
-﻿using BreganTwitchBot.Infrastructure.Database.Context;
-using BreganTwitchBot.DiscordBot.Helpers;
+﻿using BreganTwitchBot.DiscordBot.Helpers;
+using BreganTwitchBot.Domain.Data.TwitchBot.Enums;
+using BreganTwitchBot.Infrastructure.Database.Context;
+using BreganTwitchBot.Infrastructure.Database.Models;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
 using TwitchLib.Api.Core.Models.Undocumented.Chatters;
-using BreganTwitchBot.Infrastructure.Database.Models;
-using BreganTwitchBot.Domain.Data.TwitchBot.Enums;
 
 namespace BreganTwitchBot.Domain.Data.TwitchBot
 {

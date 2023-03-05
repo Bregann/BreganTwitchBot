@@ -1,4 +1,4 @@
-﻿namespace BreganTwitchBot.Domain.Bot.Twitch.Commands.Modules.Leaderboards.Enums
+﻿namespace BreganTwitchBot.Domain.Data.TwitchBot.Enums
 {
     public enum LeaderboardType
     {

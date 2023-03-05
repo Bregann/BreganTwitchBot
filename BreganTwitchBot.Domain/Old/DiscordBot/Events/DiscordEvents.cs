@@ -1,7 +1,9 @@
-﻿using BreganTwitchBot.Infrastructure.Database.Context;
-using BreganTwitchBot.DiscordBot.Helpers;
+﻿using BreganTwitchBot.DiscordBot.Helpers;
 using BreganTwitchBot.Domain.Bot.DiscordBot.SlashCommands.Data.GeneralCommands.Giveaway;
 using BreganTwitchBot.Domain.Bot.DiscordBot.SlashCommands.Data.Levelling;
+using BreganTwitchBot.Domain.Data.TwitchBot;
+using BreganTwitchBot.Domain.Data.TwitchBot.Enums;
+using BreganTwitchBot.Infrastructure.Database.Context;
 using BreganTwitchBot.Infrastructure.Database.Models;
 using BreganTwitchBot.Services;
 using Discord;
@@ -11,8 +13,6 @@ using Humanizer;
 using Humanizer.Localisation;
 using Serilog;
 using System.Text.RegularExpressions;
-using BreganTwitchBot.Domain.Data.TwitchBot.Enums;
-using BreganTwitchBot.Domain.Data.TwitchBot;
 
 namespace BreganTwitchBot.DiscordBot.Events
 {

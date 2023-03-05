@@ -1,10 +1,9 @@
-﻿using BreganTwitchBot.Core;
-using BreganTwitchBot.Infrastructure.Database.Context;
-using BreganTwitchBot.DiscordBot.Helpers;
-using BreganUtils.ProjectMonitor.Projects;
-using Serilog;
+﻿using BreganTwitchBot.DiscordBot.Helpers;
 using BreganTwitchBot.Domain;
 using BreganTwitchBot.Domain.Data.TwitchBot;
+using BreganTwitchBot.Infrastructure.Database.Context;
+using BreganUtils.ProjectMonitor.Projects;
+using Serilog;
 
 namespace BreganTwitchBot
 {

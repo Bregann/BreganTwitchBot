@@ -1,11 +1,11 @@
-﻿using BreganTwitchBot.Infrastructure.Database.Context;
-using BreganTwitchBot.Domain.Bot.DiscordBot.SlashCommands.Data.Linking;
+﻿using BreganTwitchBot.Domain.Bot.DiscordBot.SlashCommands.Data.Linking;
+using BreganTwitchBot.Domain.Data.TwitchBot;
+using BreganTwitchBot.Domain.Data.TwitchBot.Enums;
+using BreganTwitchBot.Domain.Data.TwitchBot.Helpers;
+using BreganTwitchBot.Infrastructure.Database.Context;
 using BreganTwitchBot.Infrastructure.Database.Models;
 using BreganUtils.ProjectMonitor.Projects;
 using Serilog;
-using BreganTwitchBot.Domain.Data.TwitchBot.Enums;
-using BreganTwitchBot.Domain.Data.TwitchBot.Helpers;
-using BreganTwitchBot.Domain.Data.TwitchBot;
 
 namespace BreganTwitchBot.Domain.Bot.Twitch.Services
 {
@@ -45,7 +45,6 @@ namespace BreganTwitchBot.Domain.Bot.Twitch.Services
                     }
                 }
 
-                context.Users.UpdateRange(usersBeingUpdated);
                 context.SaveChanges();
 
                 StreamStatsService.UpdateStreamStat(totalPointsAdded, StatTypes.PointsGainedWatching);

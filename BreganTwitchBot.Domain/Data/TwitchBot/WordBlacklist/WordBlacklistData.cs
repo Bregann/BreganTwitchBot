@@ -2,15 +2,9 @@
 using BreganTwitchBot.Infrastructure.Database.Context;
 using BreganTwitchBot.Infrastructure.Database.Enums;
 using BreganTwitchBot.Infrastructure.Database.Models;
-using BreganTwitchBot_Domain;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 using TwitchLib.Client.Events;
 using RankBeggar = BreganTwitchBot_Domain.RankBeggar;
 

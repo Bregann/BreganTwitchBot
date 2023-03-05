@@ -1,13 +1,7 @@
-﻿using BreganTwitchBot.Domain.Bot.Twitch.Helpers;
-using BreganTwitchBot.Domain.Data.TwitchBot.Enums;
+﻿using BreganTwitchBot.Domain.Data.TwitchBot.Enums;
 using BreganTwitchBot.Domain.Data.TwitchBot.Helpers;
 using BreganTwitchBot.Infrastructure.Database.Context;
 using Serilog;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace BreganTwitchBot.Domain.Data.TwitchBot.Events
 {
@@ -59,7 +53,7 @@ namespace BreganTwitchBot.Domain.Data.TwitchBot.Events
                 }
 
                 Log.Information($"[Sub Leaderboard] +1 to {gifterUsername}");
-            
+
                 await StreamStatsService.UpdateStreamStat(1, StatTypes.NewGiftedSubs);
                 TwitchHelper.SendMessage($"Thank you {gifterUsername} for gifting {recipientUsername} a {subName} subscription PogChamp <3 blocksGuinea1 blocksGuinea2 blocksGuinea3 blocksW blocksOK blocksGuinea blocksMarge blocksBitrate blocksSWIRL blocksFail blocksWOT blocksBANNED blocksJ0F blocksWOTG blocksGuineaG blocksEcho");
             }

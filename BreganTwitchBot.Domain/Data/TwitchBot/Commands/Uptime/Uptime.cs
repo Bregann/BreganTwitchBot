@@ -1,5 +1,4 @@
-﻿using BreganTwitchBot.Domain.Data.TwitchBot;
-using BreganTwitchBot.Domain.Data.TwitchBot.Helpers;
+﻿using BreganTwitchBot.Domain.Data.TwitchBot.Helpers;
 using Humanizer;
 using Humanizer.Localisation;
 using Serilog;

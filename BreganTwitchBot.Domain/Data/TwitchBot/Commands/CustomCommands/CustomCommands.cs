@@ -2,7 +2,6 @@
 using BreganTwitchBot.Infrastructure.Database.Context;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
-using TwitchLib.Client.Events;
 
 namespace BreganTwitchBot.Domain.Data.TwitchBot.Commands.CustomCommands
 {
@@ -29,7 +28,7 @@ namespace BreganTwitchBot.Domain.Data.TwitchBot.Commands.CustomCommands
                     Log.Information("[Twitch Commands] !addcmd handled successfully (invalid/already exists)");
                     return;
                 }
-            
+
                 //Create the command text and name
                 var commandName = commandNameList[0].ToLower();
                 commandText = commandText.Remove(0, commandName.Length + 1);

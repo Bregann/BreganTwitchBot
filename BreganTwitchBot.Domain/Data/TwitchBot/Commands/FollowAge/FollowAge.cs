@@ -1,12 +1,9 @@
-﻿using BreganTwitchBot.Domain.Data.TwitchBot;
-using BreganTwitchBot.Domain.Data.TwitchBot.Commands.Supermods;
-using BreganTwitchBot.Domain.Data.TwitchBot.Helpers;
+﻿using BreganTwitchBot.Domain.Data.TwitchBot.Helpers;
 using Humanizer;
 using Humanizer.Localisation;
 using Serilog;
 using TwitchLib.Api.Helix.Models.Users.GetUserFollows;
 using TwitchLib.Api.Helix.Models.Users.GetUsers;
-using TwitchLib.Client.Events;
 
 namespace BreganTwitchBot.Domain.Data.TwitchBot.Commands.FollowAge
 {

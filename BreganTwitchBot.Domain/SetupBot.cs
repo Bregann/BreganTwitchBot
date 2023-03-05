@@ -1,13 +1,4 @@
-﻿using BreganTwitchBot.Domain.Bot.Twitch.Commands.Modules.WordBlacklist;
-using BreganTwitchBot.Domain.Bot.Twitch.Events;
-using BreganTwitchBot.Domain.Bot.Twitch.Services;
-using BreganTwitchBot.Services;
-using Serilog;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using BreganTwitchBot.Services;
 
 namespace BreganTwitchBot.Domain
 {
@@ -25,7 +16,7 @@ namespace BreganTwitchBot.Domain
 
             #endregion Discord
 
-            
+
         }
     }
 }

@@ -1,6 +1,6 @@
-﻿using BreganTwitchBot.Infrastructure.Database.Context;
-using BreganTwitchBot.DiscordBot.Helpers;
+﻿using BreganTwitchBot.DiscordBot.Helpers;
 using BreganTwitchBot.Domain.Bot.DiscordBot.SlashCommands.Data.Levelling;
+using BreganTwitchBot.Infrastructure.Database.Context;
 using BreganTwitchBot.Infrastructure.Database.Models;
 using Discord;
 using Discord.Interactions;

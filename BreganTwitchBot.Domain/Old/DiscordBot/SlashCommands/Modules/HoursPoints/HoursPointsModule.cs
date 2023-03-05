@@ -1,7 +1,6 @@
-﻿using Discord;
+﻿using BreganTwitchBot.Domain.Bot.DiscordBot.SlashCommands.Data.HoursPoints;
+using Discord;
 using Discord.Interactions;
-using BreganTwitchBot.Domain.Bot.DiscordBot.SlashCommands.Data;
-using BreganTwitchBot.Domain.Bot.DiscordBot.SlashCommands.Data.HoursPoints;
 
 namespace BreganTwitchBot.Domain.Bot.DiscordBot.SlashCommands.Modules.HoursPoints
 {

@@ -1,12 +1,6 @@
-﻿using BreganTwitchBot.Domain.Bot.Twitch.Commands.Modules.SuperMods;
-using BreganTwitchBot.Domain.Data.TwitchBot.Helpers;
-using Humanizer.Localisation;
+﻿using BreganTwitchBot.Domain.Data.TwitchBot.Helpers;
 using Humanizer;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using Humanizer.Localisation;
 
 namespace BreganTwitchBot.Domain.Data.TwitchBot.Commands.Subathon
 {
@@ -17,7 +11,7 @@ namespace BreganTwitchBot.Domain.Data.TwitchBot.Commands.Subathon
         public static void HandleSubathonCommand(string username)
         {
             //5 sec cooldown to prevent spam
-            if (DateTime.UtcNow - TimeSpan.FromSeconds(5) <= _subathonCooldown && !SuperMods.Supermods.IsUserSupermod(username))
+            if (DateTime.UtcNow - TimeSpan.FromSeconds(5) <= _subathonCooldown && !TwitchHelper.IsUserSupermod(username))
             {
                 return;
             }

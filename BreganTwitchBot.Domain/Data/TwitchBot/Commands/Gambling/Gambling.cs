@@ -1,9 +1,7 @@
-﻿using BreganTwitchBot.Infrastructure.Database.Context;
-using Serilog;
-using TwitchLib.Client.Events;
-using BreganTwitchBot.Domain.Data.TwitchBot.Enums;
+﻿using BreganTwitchBot.Domain.Data.TwitchBot.Enums;
 using BreganTwitchBot.Domain.Data.TwitchBot.Helpers;
-using BreganTwitchBot.Domain.Data.TwitchBot;
+using BreganTwitchBot.Infrastructure.Database.Context;
+using Serilog;
 
 namespace BreganTwitchBot.Domain.Data.TwitchBot.Commands.Gambling
 {

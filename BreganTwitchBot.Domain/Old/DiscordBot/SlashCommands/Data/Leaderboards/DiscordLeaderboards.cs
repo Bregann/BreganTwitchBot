@@ -1,5 +1,5 @@
-﻿using BreganTwitchBot.Infrastructure.Database.Context;
-using BreganTwitchBot.Domain.Bot.DiscordBot.SlashCommands.Data.Leaderboards.Enums;
+﻿using BreganTwitchBot.Domain.Bot.DiscordBot.SlashCommands.Data.Leaderboards.Enums;
+using BreganTwitchBot.Infrastructure.Database.Context;
 
 namespace BreganTwitchBot.Domain.Bot.DiscordBot.SlashCommands.Data.Leaderboards
 {
