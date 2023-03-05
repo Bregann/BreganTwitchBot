@@ -2,18 +2,12 @@
 using BreganTwitchBot.Infrastructure.Database.Context;
 using BreganTwitchBot.Domain.Bot.Twitch.Commands.Modules.DailyPoints;
 using BreganTwitchBot.Domain.Bot.Twitch.Commands.Modules.DiceRoll;
-using BreganTwitchBot.Domain.Bot.Twitch.Commands.Modules.FollowAge;
-using BreganTwitchBot.Domain.Bot.Twitch.Commands.Modules.Gambling;
-using BreganTwitchBot.Domain.Bot.Twitch.Commands.Modules.Hours;
 using BreganTwitchBot.Domain.Bot.Twitch.Commands.Modules.Leaderboards;
 using BreganTwitchBot.Domain.Bot.Twitch.Commands.Modules.Leaderboards.Enums;
 using BreganTwitchBot.Domain.Bot.Twitch.Commands.Modules.Linking;
 using BreganTwitchBot.Domain.Bot.Twitch.Commands.Modules.Marbles;
-using BreganTwitchBot.Domain.Bot.Twitch.Commands.Modules.Points;
 using BreganTwitchBot.Domain.Bot.Twitch.Commands.Modules.Subathon;
-using BreganTwitchBot.Domain.Bot.Twitch.Commands.Modules.SuperMods;
 using BreganTwitchBot.Domain.Bot.Twitch.Commands.Modules.TwitchBosses;
-using BreganTwitchBot.Domain.Bot.Twitch.Commands.Modules.WordBlacklist;
 using Serilog;
 using TwitchLib.Client.Events;
 using BreganTwitchBot.Domain.Data.TwitchBot.Enums;
@@ -24,6 +18,12 @@ using BreganTwitchBot.Domain.Data.TwitchBot.Commands.DadJoke;
 using BreganTwitchBot.Domain.Data.TwitchBot.Commands.Uptime;
 using BreganTwitchBot.Domain.Data.TwitchBot.Commands.CustomCommands;
 using BreganTwitchBot.Domain.Data.TwitchBot.Commands.StreamInfo;
+using BreganTwitchBot.Domain.Data.TwitchBot.Commands.Supermods;
+using BreganTwitchBot.Domain.Data.TwitchBot.Commands.FollowAge;
+using BreganTwitchBot.Domain.Data.TwitchBot.Commands.Points;
+using BreganTwitchBot.Domain.Data.TwitchBot.Commands.Hours;
+using BreganTwitchBot.Domain.Data.TwitchBot.Commands.WordBlacklist;
+using BreganTwitchBot.Domain.Data.TwitchBot.Commands.Gambling;
 
 namespace BreganTwitchBot.Domain.Bot.Twitch.Commands
 {
@@ -58,101 +58,6 @@ namespace BreganTwitchBot.Domain.Bot.Twitch.Commands
             //The main commands
             switch (command.Command.CommandText.ToLower())
             {
-                case "title":
-                    await Title.HandleTitleCommand(command);
-                    break;
-
-                case "game":
-                    await Game.HandleGameCommand(command);
-                    break;
-
-                case "subs":
-                case "subcount":
-                    await Subs.HandleSubsCommand(command.Command.ChatMessage.Username);
-                    break;
-
-                case "followage":
-                case "howlong":
-                    await FollowAge.HandleFollowageCommand(command);
-                    break;
-
-                case "followsince":
-                    await FollowAge.HandleFollowSinceCommand(command);
-                    break;
-
-                case "addsupermod" when Supermods.IsUserSupermod(command.Command.ChatMessage.UserId):
-                    await Supermods.HandleAddSupermodCommand(command);
-                    break;
-
-                case "removesupermod" when Supermods.IsUserSupermod(command.Command.ChatMessage.UserId):
-                    await Supermods.HandleRemoveSupermodCommand(command);
-                    break;
-
-                case "points":
-                case "pooants":
-                case "coins":
-                    Points.HandlePointsCommand(command);
-                    break;
-
-                case "hours":
-                case "houres":
-                case "hrs":
-                    Hours.HandleHoursCommand(command);
-                    break;
-
-                case "streamhours":
-                case "streamhrs":
-                    Hours.HandleStreamHoursCommand(command);
-                    break;
-
-                case "weeklyhours":
-                case "weeklyhrs":
-                    Hours.HandleWeeklyHoursCommand(command);
-                    break;
-
-                case "monthlyhours":
-                case "monthlyhrs":
-                    Hours.HandleMonthlyHoursCommand(command);
-                    break;
-
-                case "addbadword" when Supermods.IsUserSupermod(command.Command.ChatMessage.UserId):
-                case "addtempword" when Supermods.IsUserSupermod(command.Command.ChatMessage.UserId):
-                case "addwarningword" when Supermods.IsUserSupermod(command.Command.ChatMessage.UserId):
-                case "addstrikeword" when Supermods.IsUserSupermod(command.Command.ChatMessage.UserId):
-                    WordBlacklist.HandleAddWordCommand(command);
-                    break;
-
-                case "removebadword" when Supermods.IsUserSupermod(command.Command.ChatMessage.UserId):
-                case "removetempword" when Supermods.IsUserSupermod(command.Command.ChatMessage.UserId):
-                case "removewarningword" when Supermods.IsUserSupermod(command.Command.ChatMessage.UserId):
-                case "removestrikeword" when Supermods.IsUserSupermod(command.Command.ChatMessage.UserId):
-                    WordBlacklist.HandleRemoveWordCommand(command);
-                    break;
-
-                case "removebadword" when Supermods.IsUserSupermod(command.Command.ChatMessage.UserId):
-                case "removetempword" when Supermods.IsUserSupermod(command.Command.ChatMessage.UserId):
-                case "removewarningword" when Supermods.IsUserSupermod(command.Command.ChatMessage.UserId):
-                    WordBlacklist.HandleRemoveWordCommand(command);
-                    break;
-
-                case "aitoggle" when Supermods.IsUserSupermod(command.Command.ChatMessage.UserId):
-                case "toggleai" when Supermods.IsUserSupermod(command.Command.ChatMessage.UserId):
-                    WordBlacklist.HandleToggleAiCommand(command);
-                    break;
-
-                case "spin":
-                case "slots":
-                case "gamble":
-                    await Gambling.HandleGamblingCommand(command);
-                    break;
-
-                case "spinstats":
-                    Gambling.HandleSpinStatsCommand(command.Command.ChatMessage.Username);
-                    break;
-
-                default:
-                    break;
-
                 case "daily":
                 case "dailt":
                 case "claim":

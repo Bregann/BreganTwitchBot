@@ -2,6 +2,7 @@
 using Serilog;
 using TwitchLib.Client.Extensions;
 using TwitchLib.Api.Helix.Models.Moderation.BanUser;
+using BreganTwitchBot.Infrastructure.Database.Context;
 
 namespace BreganTwitchBot.Domain.Data.TwitchBot.Helpers
 {
@@ -73,6 +74,39 @@ namespace BreganTwitchBot.Domain.Data.TwitchBot.Helpers
             catch (Exception e)
             {
                 Log.Error($"[Twitch Message Delete] Error deleting message - {e}");
+            }
+        }
+
+        public static bool IsUserSupermod(string userId)
+        {
+            using (var context = new DatabaseContext())
+            {
+                var user = context.Users.Where(x => x.TwitchUserId == userId && x.IsSuperMod).FirstOrDefault();
+
+                if (user == null)
+                {
+                    return false;
+                }
+                else
+                {
+                    return true;
+                }
+            }
+        }
+
+        public static string? GetUserIdFromUsername(string username)
+        {
+            using(var context = new DatabaseContext())
+            {
+                var user = context.Users.Where(x => x.Username == username).FirstOrDefault();
+
+                if (user == null)
+                {
+                    return null;
+                }
+
+                return user.Username;
+
             }
         }
     }

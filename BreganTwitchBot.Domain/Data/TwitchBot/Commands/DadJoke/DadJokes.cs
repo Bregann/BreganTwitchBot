@@ -4,7 +4,7 @@ using Serilog;
 
 namespace BreganTwitchBot.Domain.Data.TwitchBot.Commands.DadJoke
 {
-    public class DadJokes
+    public class DadJoke
     {
         public static async Task HandleDadJokeCommand(string username)
         {

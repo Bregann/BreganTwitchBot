@@ -1,9 +1,9 @@
-﻿using BreganTwitchBot.Core.Twitch.Commands.Modules.EightBall;
-using BreganTwitchBot.Domain.Bot.Twitch.Commands.Modules.SuperMods;
-using BreganTwitchBot.Domain.Data.TwitchBot.Commands.DadJoke;
+﻿using BreganTwitchBot.Domain.Data.TwitchBot.Commands.DadJoke;
 using BreganTwitchBot.Domain.Data.TwitchBot.Commands.StreamInfo;
+using BreganTwitchBot.Domain.Data.TwitchBot.Commands.WordBlacklist;
 using BreganTwitchBot.Domain.Data.TwitchBot.Enums;
 using BreganTwitchBot.Domain.Data.TwitchBot.Helpers;
+using BreganTwitchBot.Domain.Data.TwitchBot.WordBlacklist;
 using BreganTwitchBot.Infrastructure.Database.Context;
 using Serilog;
 using System;
@@ -26,10 +26,10 @@ namespace BreganTwitchBot.Domain.Data.TwitchBot.Commands
             switch (command.Command.CommandText.ToLower())
             {
                 case "dadjoke":
-                    await DadJokes.HandleDadJokeCommand(command.Command.ChatMessage.Username);
+                    await DadJoke.DadJoke.HandleDadJokeCommand(command.Command.ChatMessage.Username);
                     break;
                 case "8ball":
-                    EightBall.Handle8BallCommand(command.Command.ChatMessage.Username);
+                    EightBall.EightBall.Handle8BallCommand(command.Command.ChatMessage.Username);
                     break;
                 case "commands":
                     TwitchHelper.SendMessage($"@{command.Command.ChatMessage.Username} => Bot commands + much more can be found at https://bot.bregan.me/ ! :)");
@@ -52,30 +52,89 @@ namespace BreganTwitchBot.Domain.Data.TwitchBot.Commands
                     TwitchHelper.SendMessage($"Hey go check out {command.Command.ArgumentsAsList[0].Replace("@", "")} at twitch.tv/{command.Command.ArgumentsAsList[0].Replace("@", "").Trim()} for some great content!");
                     break;
                 case "addcmd" when command.Command.ChatMessage.IsModerator:
-                case "addcmd" when Supermods.IsUserSupermod(command.Command.ChatMessage.UserId):
+                case "addcmd" when TwitchHelper.IsUserSupermod(command.Command.ChatMessage.UserId):
                 case "cmdadd" when command.Command.ChatMessage.IsModerator:
-                case "cmdadd" when Supermods.IsUserSupermod(command.Command.ChatMessage.UserId):
+                case "cmdadd" when TwitchHelper.IsUserSupermod(command.Command.ChatMessage.UserId):
                     await CustomCommands.CustomCommands.HandleAddCommand(command.Command.ChatMessage.Username, command.Command.ArgumentsAsList, command.Command.ArgumentsAsString);
                     break;
                 case "delcmd" when command.Command.ChatMessage.IsModerator:
-                case "delcmd" when Supermods.IsUserSupermod(command.Command.ChatMessage.UserId):
+                case "delcmd" when TwitchHelper.IsUserSupermod(command.Command.ChatMessage.UserId):
                 case "cmddel" when command.Command.ChatMessage.IsModerator:
-                case "cmddel" when Supermods.IsUserSupermod(command.Command.ChatMessage.UserId):
+                case "cmddel" when TwitchHelper.IsUserSupermod(command.Command.ChatMessage.UserId):
                     await CustomCommands.CustomCommands.HandleRemoveCommand(command.Command.ChatMessage.Username, command.Command.CommandText.ToLower());
                     break;
                 case "editcmd" when command.Command.ChatMessage.IsModerator:
-                case "editcmd" when Supermods.IsUserSupermod(command.Command.ChatMessage.UserId):
+                case "editcmd" when TwitchHelper.IsUserSupermod(command.Command.ChatMessage.UserId):
                 case "cmdedit" when command.Command.ChatMessage.IsModerator:
-                case "cmdedit" when Supermods.IsUserSupermod(command.Command.ChatMessage.UserId):
+                case "cmdedit" when TwitchHelper.IsUserSupermod(command.Command.ChatMessage.UserId):
                     await CustomCommands.CustomCommands.HandleEditCommandCommand(command.Command.ChatMessage.Username, command.Command.ArgumentsAsList, command.Command.ArgumentsAsString);
                     break;
                 case "title":
                     await Title.HandleTitleCommand(command.Command.ChatMessage.Username, command.Command.ChatMessage.Message, command.Command.ArgumentsAsString, command.Command.ChatMessage.IsModerator, command.Command.ChatMessage.IsBroadcaster);
                     break;
+                case "game":
+                    await Game.HandleGameCommand(command.Command.ChatMessage.Username, command.Command.ChatMessage.Message, command.Command.ArgumentsAsString, command.Command.ChatMessage.IsModerator, command.Command.ChatMessage.IsBroadcaster);
+                    break;
+                case "subs":
+                case "subcount":
+                    await Subs.HandleSubsCommand(command.Command.ChatMessage.Username);
+                    break;
                 default:
                     break;
-
-
+                case "followage":
+                case "howlong":
+                    await FollowAge.FollowAge.HandleFollowageCommand(command.Command.ChatMessage.Username, command.Command.ChatMessage.UserId, command.Command.ChatMessage.Message, command.Command.ArgumentsAsList);
+                    break;
+                case "followsince":
+                    await FollowAge.FollowAge.HandleFollowSinceCommand(command.Command.ChatMessage.Username, command.Command.ChatMessage.UserId, command.Command.ChatMessage.Message, command.Command.ArgumentsAsList);
+                    break;
+                case "points":
+                case "pooants":
+                case "coins":
+                    Points.Points.HandlePointsCommand(command.Command.ChatMessage.Username, command.Command.ChatMessage.UserId, command.Command.ChatMessage.Message, command.Command.ArgumentsAsList);
+                    break;
+                case "hours":
+                case "houres":
+                case "hrs":
+                case "watchtime":
+                    Hours.Hours.HandleHoursCommand(command.Command.ChatMessage.Username, command.Command.ChatMessage.UserId, command.Command.ChatMessage.Message, command.Command.ArgumentsAsList);
+                    break;
+                case "streamhours":
+                case "streamhrs":
+                    Hours.Hours.HandleStreamHoursCommand(command.Command.ChatMessage.Username, command.Command.ChatMessage.UserId, command.Command.ChatMessage.Message, command.Command.ArgumentsAsList);
+                    break;
+                case "weeklyhours":
+                case "weeklyhrs":
+                    Hours.Hours.HandleWeeklyHoursCommand(command.Command.ChatMessage.Username, command.Command.ChatMessage.UserId, command.Command.ChatMessage.Message, command.Command.ArgumentsAsList);
+                    break;
+                case "monthlyhours":
+                case "monthlyhrs":
+                    Hours.Hours.HandleMonthlyHoursCommand(command.Command.ChatMessage.Username, command.Command.ChatMessage.UserId, command.Command.ChatMessage.Message, command.Command.ArgumentsAsList);
+                    break;
+                case "addbadword" when TwitchHelper.IsUserSupermod(command.Command.ChatMessage.UserId):
+                case "addtempword" when TwitchHelper.IsUserSupermod(command.Command.ChatMessage.UserId):
+                case "addwarningword" when TwitchHelper.IsUserSupermod(command.Command.ChatMessage.UserId):
+                case "addstrikeword" when TwitchHelper.IsUserSupermod(command.Command.ChatMessage.UserId):
+                    await WordBlacklistCommand.HandleAddWordCommand(command.Command.ChatMessage.Username, command.Command.CommandText, command.Command.ArgumentsAsString);
+                    break;
+                case "removebadword" when TwitchHelper.IsUserSupermod(command.Command.ChatMessage.UserId):
+                case "removetempword" when TwitchHelper.IsUserSupermod(command.Command.ChatMessage.UserId):
+                case "removewarningword" when TwitchHelper.IsUserSupermod(command.Command.ChatMessage.UserId):
+                case "removestrikeword" when TwitchHelper.IsUserSupermod(command.Command.ChatMessage.UserId):
+                    await WordBlacklistCommand.HandleRemoveWordCommand(command.Command.ChatMessage.Username, command.Command.CommandText, command.Command.ArgumentsAsString);
+                    break;
+                case "aitoggle" when TwitchHelper.IsUserSupermod(command.Command.ChatMessage.UserId):
+                case "toggleai" when TwitchHelper.IsUserSupermod(command.Command.ChatMessage.UserId):
+                    WordBlacklistCommand.HandleToggleAiCommand(command.Command.ChatMessage.Username);
+                    break;
+                case "spin":
+                case "slots":
+                case "gamble":
+                    await Gambling.Gambling.HandleGamblingCommand(command.Command.ChatMessage.Username, command.Command.ChatMessage.UserId, command.Command.ChatMessage.Message, command.Command.ArgumentsAsList);
+                    break;
+                case "spinstats":
+                    Gambling.Gambling.HandleSpinStatsCommand(command.Command.ChatMessage.Username);
+                    break;
             }
         }
 

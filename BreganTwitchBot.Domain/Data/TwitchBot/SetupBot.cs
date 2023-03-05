@@ -1,10 +1,8 @@
-﻿using BreganTwitchBot.Domain.Bot.Twitch.Commands.Modules.WordBlacklist;
-using BreganTwitchBot.Domain.Bot.Twitch.Helpers;
-using BreganTwitchBot.Domain.Data.TwitchBot.Commands;
+﻿using BreganTwitchBot.Domain.Data.TwitchBot.Commands;
 using BreganTwitchBot.Domain.Data.TwitchBot.Enums;
 using BreganTwitchBot.Domain.Data.TwitchBot.Events;
 using BreganTwitchBot.Domain.Data.TwitchBot.Helpers;
-using BreganTwitchBot.Domain.Data.TwitchBot.Stats;
+using BreganTwitchBot.Domain.Data.TwitchBot.WordBlacklist;
 using BreganTwitchBot.Infrastructure.Database.Context;
 using Serilog;
 using System;
@@ -42,7 +40,7 @@ namespace BreganTwitchBot.Domain.Data.TwitchBot
 
             await Task.Delay(2000);
 
-            WordBlacklist.WordBlacklist.LoadBlacklistedWords();
+            WordBlacklistData.LoadBlacklistedWords();
 
             TwitchPubSubConnection.PubSubClient.OnChannelPointsRewardRedeemed += ChannelPointsRewardRedeemed;
             TwitchPubSubConnection.PubSubClient.OnBitsReceivedV2 += BitsReceived;
@@ -94,7 +92,7 @@ namespace BreganTwitchBot.Domain.Data.TwitchBot
             try
             {
                 await CommandHandler.HandleCustomCommand(e.ChatMessage.Message.Split(' ').FirstOrDefault(), e.ChatMessage.Username, e.ChatMessage.UserId);
-                await WordBlacklist.WordBlacklist.HandleMessageChecks(e);
+                await WordBlacklist.WordBlacklistData.HandleMessageChecks(e);
                 await Message.HandleUserAddingOrUpdating(e.ChatMessage.Username, e.ChatMessage.UserId, e.ChatMessage.IsSubscriber);
                 await StreamStatsService.UpdateStreamStat(1, StatTypes.MessagesReceived);
 

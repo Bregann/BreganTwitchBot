@@ -1,54 +1,53 @@
 ﻿using BreganTwitchBot.Infrastructure.Database.Context;
-using BreganTwitchBot.Domain.Bot.Twitch.Helpers;
 using Serilog;
 using TwitchLib.Client.Events;
 using BreganTwitchBot.Domain.Data.TwitchBot.Enums;
 using BreganTwitchBot.Domain.Data.TwitchBot.Helpers;
 using BreganTwitchBot.Domain.Data.TwitchBot;
 
-namespace BreganTwitchBot.Domain.Bot.Twitch.Commands.Modules.Gambling
+namespace BreganTwitchBot.Domain.Data.TwitchBot.Commands.Gambling
 {
     public class Gambling
     {
         private static DateTime _gamblingCooldown;
 
-        public static async Task HandleGamblingCommand(OnChatCommandReceivedArgs command)
+        public static async Task HandleGamblingCommand(string username, string userId, string message, List<string> argumentsAsList)
         {
             //Check if the stream is even online
             if (!AppConfig.StreamerLive)
             {
-                TwitchHelper.SendMessage($"@{command.Command.ChatMessage.Username} => The streamer is offline so no gambling!");
+                TwitchHelper.SendMessage($"@{username} => The streamer is offline so no gambling!");
                 return;
             }
 
             //Check the cooldown
-            if (DateTime.UtcNow - TimeSpan.FromSeconds(5) <= _gamblingCooldown && !SuperMods.Supermods.IsUserSupermod(command.Command.ChatMessage.Username.ToLower()))
+            if (DateTime.UtcNow - TimeSpan.FromSeconds(5) <= _gamblingCooldown && !TwitchHelper.IsUserSupermod(userId))
             {
                 Log.Information("[Twitch Commands] !spin command handled successfully (cooldown)");
                 return;
             }
 
             //check if they've done the command
-            if (command.Command.ChatMessage.Message.ToLower() == "!spin" || command.Command.ChatMessage.Message.ToLower() == "!slots" || command.Command.ChatMessage.Message.ToLower() == "!gamble")
+            if (message.ToLower() == "!spin" || message.ToLower() == "!slots" || message.ToLower() == "!gamble")
             {
-                TwitchHelper.SendMessage($"@{command.Command.ChatMessage.Username} => try using !spin <{AppConfig.PointsName}> or !spin all. Remember it is 100 points minimum!");
+                TwitchHelper.SendMessage($"@{username} => try using !spin <{AppConfig.PointsName}> or !spin all. Remember it is 100 points minimum!");
                 return;
             }
 
             long points;
             //check if they're gambling them all or if they are gambling a set amount
-            if (command.Command.ChatMessage.Message.ToLower() == "!spin all")
+            if (message.ToLower() == "!spin all")
             {
-                points = PointsHelper.GetUserPoints(command.Command.ChatMessage.Username.ToLower());
+                points = PointsHelper.GetUserPoints(username.ToLower());
             }
             else
             {
-                long.TryParse(command.Command.ArgumentsAsList[0], out points);
+                long.TryParse(argumentsAsList[0], out points);
             }
 
             if (points == 0)
             {
-                TwitchHelper.SendMessage($"@{command.Command.ChatMessage.Username} => try using !spin <{AppConfig.PointsName}> or !spin all. Remember it is 100 points minimum!");
+                TwitchHelper.SendMessage($"@{username} => try using !spin <{AppConfig.PointsName}> or !spin all. Remember it is 100 points minimum!");
                 return;
             }
 
@@ -58,7 +57,7 @@ namespace BreganTwitchBot.Domain.Bot.Twitch.Commands.Modules.Gambling
                 return;
             }
 
-            var userPoints = PointsHelper.GetUserPoints(command.Command.ChatMessage.Username.ToLower());
+            var userPoints = PointsHelper.GetUserPoints(username.ToLower());
 
             if (userPoints < points)
             {
@@ -67,7 +66,7 @@ namespace BreganTwitchBot.Domain.Bot.Twitch.Commands.Modules.Gambling
             }
 
             //once the checks are done we can gamble their points
-            await SpinSlotMachine(command.Command.ChatMessage.Username.ToLower(), points);
+            await SpinSlotMachine(username.ToLower(), userId, points);
             _gamblingCooldown = DateTime.UtcNow;
         }
 
@@ -86,10 +85,10 @@ namespace BreganTwitchBot.Domain.Bot.Twitch.Commands.Modules.Gambling
             TwitchHelper.SendMessage($"@{username} => The current point yackpot is {jackpotAmount:N0}");
         }
 
-        private static async Task SpinSlotMachine(string username, long pointsGambled)
+        private static async Task SpinSlotMachine(string username, string userId, long pointsGambled)
         {
-            StreamStatsService.UpdateStreamStat(pointsGambled, StatTypes.PointsGambled);
-            PointsHelper.RemoveUserPoints(username, pointsGambled);
+            await StreamStatsService.UpdateStreamStat(pointsGambled, StatTypes.PointsGambled);
+            await PointsHelper.RemoveUserPoints(username, pointsGambled);
 
             var random = new Random();
             var emoteList = new List<string>();
@@ -123,28 +122,28 @@ namespace BreganTwitchBot.Domain.Bot.Twitch.Commands.Modules.Gambling
             switch (emoteList[0])
             {
                 case "Kappa" when emoteList[1] == "Kappa" && emoteList[2] == "Kappa":
-                    PointsHelper.AddUserPoints(username, pointsGambled * 10);
-                    StreamStatsService.UpdateStreamStat(pointsGambled * 10, StatTypes.PointsWon);
-                    StreamStatsService.UpdateStreamStat(1, StatTypes.KappaWins);
-                    AddWinToSlotMachineAndUser(username, "tier1Wins", pointsGambled, pointsGambled * 10);
+                    await PointsHelper.AddUserPoints(userId, pointsGambled * 10);
+                    await StreamStatsService.UpdateStreamStat(pointsGambled * 10, StatTypes.PointsWon);
+                    await StreamStatsService.UpdateStreamStat(1, StatTypes.KappaWins);
+                    AddWinToSlotMachineAndUser(userId, "tier1Wins", pointsGambled, pointsGambled * 10);
                     TwitchHelper.SendMessage($"@{username} => You have spun {emoteList[0]} | {emoteList[1]} | {emoteList[2]}. You have won {pointsGambled * 10:N0} {AppConfig.PointsName}!");
                     Log.Information($"[Slot Machine] {username} got a Kappa win!");
                     break;
 
                 case "4Head" when emoteList[1] == "4Head" && emoteList[2] == "4Head":
-                    PointsHelper.AddUserPoints(username, pointsGambled * 20);
-                    StreamStatsService.UpdateStreamStat(pointsGambled * 20, StatTypes.PointsWon);
-                    StreamStatsService.UpdateStreamStat(1, StatTypes.ForeheadWins);
-                    AddWinToSlotMachineAndUser(username, "tier2Wins", pointsGambled, pointsGambled * 20);
+                    await PointsHelper.AddUserPoints(userId, pointsGambled * 20);
+                    await StreamStatsService.UpdateStreamStat(pointsGambled * 20, StatTypes.PointsWon);
+                    await StreamStatsService.UpdateStreamStat(1, StatTypes.ForeheadWins);
+                    AddWinToSlotMachineAndUser(userId, "tier2Wins", pointsGambled, pointsGambled * 20);
                     TwitchHelper.SendMessage($"@{username} => You have spun {emoteList[0]} | {emoteList[1]} | {emoteList[2]}. You have won {pointsGambled * 20:N0} {AppConfig.PointsName}!");
                     Log.Information($"[Slot Machine] {username} got a 4Head win!");
                     break;
 
                 case "LUL" when emoteList[1] == "LUL" && emoteList[2] == "LUL":
-                    PointsHelper.AddUserPoints(username, pointsGambled * 40);
-                    StreamStatsService.UpdateStreamStat(pointsGambled * 40, StatTypes.PointsWon);
-                    StreamStatsService.UpdateStreamStat(1, StatTypes.LULWins);
-                    AddWinToSlotMachineAndUser(username, "tier3Wins", pointsGambled, pointsGambled * 40);
+                    await PointsHelper.AddUserPoints(userId, pointsGambled * 40);
+                    await StreamStatsService.UpdateStreamStat(pointsGambled * 40, StatTypes.PointsWon);
+                    await StreamStatsService.UpdateStreamStat(1, StatTypes.LULWins);
+                    AddWinToSlotMachineAndUser(userId, "tier3Wins", pointsGambled, pointsGambled * 40);
                     TwitchHelper.SendMessage($"@{username} => You have spun {emoteList[0]} | {emoteList[1]} | {emoteList[2]}. You have won {pointsGambled * 40:N0} {AppConfig.PointsName}!");
                     Log.Information($"[Slot Machine] {username} got a LUL win!");
                     break;
@@ -152,10 +151,10 @@ namespace BreganTwitchBot.Domain.Bot.Twitch.Commands.Modules.Gambling
                 case "TriHard" when emoteList[1] == "TriHard" && emoteList[2] == "TriHard":
                     {
                         var jackpotAmount = GetJackpotAmount();
-                        PointsHelper.AddUserPoints(username, jackpotAmount);
-                        AddWinToSlotMachineAndUser(username, "jackpotWins", pointsGambled, jackpotAmount);
-                        StreamStatsService.UpdateStreamStat(jackpotAmount, StatTypes.PointsWon);
-                        StreamStatsService.UpdateStreamStat(1, StatTypes.jackpotWins);
+                        await PointsHelper.AddUserPoints(userId, jackpotAmount);
+                        AddWinToSlotMachineAndUser(userId, "jackpotWins", pointsGambled, jackpotAmount);
+                        await StreamStatsService.UpdateStreamStat(jackpotAmount, StatTypes.PointsWon);
+                        await StreamStatsService.UpdateStreamStat(1, StatTypes.jackpotWins);
 
                         using (var context = new DatabaseContext())
                         {
@@ -169,9 +168,9 @@ namespace BreganTwitchBot.Domain.Bot.Twitch.Commands.Modules.Gambling
                     }
                 case "SMOrc" when emoteList[1] == "SMOrc" && emoteList[2] == "SMOrc":
                     {
-                        PointsHelper.AddUserPoints(username, 1);
-                        AddWinToSlotMachineAndUser(username, "smorcWins", pointsGambled, 1);
-                        StreamStatsService.UpdateStreamStat(1, StatTypes.SMOrcWins);
+                        await PointsHelper.AddUserPoints(userId, 1);
+                        AddWinToSlotMachineAndUser(userId, "smorcWins", pointsGambled, 1);
+                        await StreamStatsService.UpdateStreamStat(1, StatTypes.SMOrcWins);
                         TwitchHelper.SendMessage($"@{username} => You have spun {emoteList[0]} | {emoteList[1]} | {emoteList[2]}. DING DING DING BUDGET JACKPOT!!! You have won the grand total of 1 WHOLE {AppConfig.PointsName} PogChamp PogChamp PogChamp PogChamp PogChamp PogChamp PogChamp PogChamp PogChamp PogChamp PogChamp PogChamp PogChamp PogChamp ");
                         Log.Information($"[Slot Machine] {username} won the budget SMOrc jackpot!");
                         break;
@@ -180,19 +179,19 @@ namespace BreganTwitchBot.Domain.Bot.Twitch.Commands.Modules.Gambling
                 default:
                     TwitchHelper.SendMessage($"@{username} => You have spun {emoteList[0]} | {emoteList[1]} | {emoteList[2]}. No win :(");
                     var jackpotAmountCheck = GetJackpotAmount();
-                    AddLossToJackpotAndUser(username, pointsGambled, pointsGambled / 100 * 60);
-                    StreamStatsService.UpdateStreamStat(1, StatTypes.PointsLost);
+                    AddLossToJackpotAndUser(userId, pointsGambled, pointsGambled / 100 * 60);
+                    await StreamStatsService.UpdateStreamStat(1, StatTypes.PointsLost);
                     break;
             }
 
-            StreamStatsService.UpdateStreamStat(1, StatTypes.TotalSpins);
+            await StreamStatsService.UpdateStreamStat(1, StatTypes.TotalSpins);
         }
 
-        private static void AddWinToSlotMachineAndUser(string username, string winType, long pointsGambled, long pointsWon)
+        private static void AddWinToSlotMachineAndUser(string userId, string winType, long pointsGambled, long pointsWon)
         {
             using (var context = new DatabaseContext())
             {
-                var user = context.Users.Where(x => x.Username == username).First();
+                var user = context.UserGambleStats.Where(x => x.TwitchUserId == userId).First();
                 user.PointsGambled += pointsGambled;
                 user.PointsWon += pointsWon;
                 user.TotalSpins++;
@@ -228,11 +227,11 @@ namespace BreganTwitchBot.Domain.Bot.Twitch.Commands.Modules.Gambling
             }
         }
 
-        private static void AddLossToJackpotAndUser(string username, long pointsGambled, long pointsToJackpot)
+        private static void AddLossToJackpotAndUser(string userId, long pointsGambled, long pointsToJackpot)
         {
             using (var context = new DatabaseContext())
             {
-                var user = context.Users.Where(x => x.Username == username).First();
+                var user = context.UserGambleStats.Where(x => x.TwitchUserId == userId).First();
                 user.PointsGambled += pointsGambled;
                 user.PointsLost += pointsGambled;
                 user.TotalSpins++;

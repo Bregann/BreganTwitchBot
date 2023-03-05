@@ -1,6 +1,6 @@
 ﻿using BreganTwitchBot.Domain.Data.TwitchBot.Helpers;
 
-namespace BreganTwitchBot.Core.Twitch.Commands.Modules.EightBall
+namespace BreganTwitchBot.Domain.Data.TwitchBot.Commands.EightBall
 {
     public class EightBall
     {

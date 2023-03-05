@@ -1,4 +1,4 @@
-﻿namespace BreganTwitchBot.Domain.Bot.Twitch.Commands.Modules.Hours.Enums
+﻿namespace BreganTwitchBot.Domain.Data.TwitchBot.Enums
 {
     public enum HoursWatchTypes
     {

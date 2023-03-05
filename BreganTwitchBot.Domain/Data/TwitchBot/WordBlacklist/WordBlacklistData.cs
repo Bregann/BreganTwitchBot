@@ -1,7 +1,9 @@
-﻿using BreganTwitchBot.Domain.Bot.Twitch.Commands.Modules.SuperMods;
-using BreganTwitchBot.Domain.Data.TwitchBot.Helpers;
+﻿using BreganTwitchBot.Domain.Data.TwitchBot.Helpers;
 using BreganTwitchBot.Infrastructure.Database.Context;
+using BreganTwitchBot.Infrastructure.Database.Enums;
+using BreganTwitchBot.Infrastructure.Database.Models;
 using BreganTwitchBot_Domain;
+using Microsoft.EntityFrameworkCore;
 using Serilog;
 using System;
 using System.Collections.Generic;
@@ -10,10 +12,11 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using TwitchLib.Client.Events;
+using RankBeggar = BreganTwitchBot_Domain.RankBeggar;
 
 namespace BreganTwitchBot.Domain.Data.TwitchBot.WordBlacklist
 {
-    public class WordBlacklist
+    public class WordBlacklistData
     {
         private static List<string> _strikeWords = new();
         private static List<string> _warningWords = new();
@@ -29,10 +32,10 @@ namespace BreganTwitchBot.Domain.Data.TwitchBot.WordBlacklist
         {
             using (var context = new DatabaseContext())
             {
-                _warningWords = context.Blacklist.Where(x => x.WordType == "10sword").Select(x => x.Word).ToList();
-                _tempBanWords = context.Blacklist.Where(x => x.WordType == "tempword").Select(x => x.Word).ToList();
-                _permBanWords = context.Blacklist.Where(x => x.WordType == "word").Select(x => x.Word).ToList();
-                _strikeWords = context.Blacklist.Where(x => x.WordType == "strikeword").Select(x => x.Word).ToList();
+                _warningWords = context.Blacklist.Where(x => x.WordType == WordTypes.WarningWord).Select(x => x.Word).ToList();
+                _tempBanWords = context.Blacklist.Where(x => x.WordType == WordTypes.TempBanWord).Select(x => x.Word).ToList();
+                _permBanWords = context.Blacklist.Where(x => x.WordType == WordTypes.PermBanWord).Select(x => x.Word).ToList();
+                _strikeWords = context.Blacklist.Where(x => x.WordType == WordTypes.StrikeWord).Select(x => x.Word).ToList();
             }
 
             _warnedUsers = new List<string>();
@@ -56,7 +59,7 @@ namespace BreganTwitchBot.Domain.Data.TwitchBot.WordBlacklist
             var rankBeggarRegex = Regex.Replace(e.ChatMessage.Message, @"[^0-9a-zA-Z+\p{L}]+", "").ToLower();
 
             //we trust these geezers
-            if (e.ChatMessage.IsModerator || e.ChatMessage.IsBroadcaster || Supermods.IsUserSupermod(e.ChatMessage.UserId))
+            if (e.ChatMessage.IsModerator || e.ChatMessage.IsBroadcaster || TwitchHelper.IsUserSupermod(e.ChatMessage.UserId))
             {
                 return;
             }
@@ -214,6 +217,89 @@ namespace BreganTwitchBot.Domain.Data.TwitchBot.WordBlacklist
             }
         }
 
+        public static void ClearOutWarnedUsers()
+        {
+            _warnedUsers.Clear();
+            Log.Information("[Word Blacklist] Cleared out warned users list");
+        }
+
+        public static void ClearOutStrikedUsers()
+        {
+            _strikedUsers.Clear();
+            Log.Information("[Word Blacklist] Cleared out striked users list");
+        }
+
+        public static bool CheckIfWordIsBlacklisted(string word, WordTypes wordType)
+        {
+            return wordType switch
+            {
+                WordTypes.PermBanWord => _permBanWords.Contains(word),
+                WordTypes.TempBanWord => _tempBanWords.Contains(word),
+                WordTypes.WarningWord => _warningWords.Contains(word),
+                WordTypes.StrikeWord => _strikeWords.Contains(word),
+                _ => false,
+            };
+        }
+
+        public static async Task AddBlacklistedItem(string word, WordTypes type)
+        {
+            using (var context = new DatabaseContext())
+            {
+                context.Blacklist.Add(new Blacklist
+                {
+                    WordType = type,
+                    Word = word
+                });
+
+                await context.SaveChangesAsync();
+            }
+
+            switch (type)
+            {
+                case WordTypes.PermBanWord:
+                    _permBanWords.Add(word);
+                    break;
+                case WordTypes.TempBanWord:
+                    _tempBanWords.Add(word);
+                    break;
+                case WordTypes.WarningWord:
+                    _warningWords.Add(word);
+                    break;
+                case WordTypes.StrikeWord:
+                    _strikeWords.Add(word);
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        public static async Task RemoveBlacklistedItem(string word, WordTypes type)
+        {
+            using (var context = new DatabaseContext())
+            {
+                await context.Blacklist.Where(x => x.Word == word).ExecuteDeleteAsync();
+                await context.SaveChangesAsync();
+            }
+
+            switch (type)
+            {
+                case WordTypes.PermBanWord:
+                    _permBanWords.Remove(word);
+                    break;
+                case WordTypes.TempBanWord:
+                    _tempBanWords.Remove(word);
+                    break;
+                case WordTypes.WarningWord:
+                    _warningWords.Remove(word);
+                    break;
+                case WordTypes.StrikeWord:
+                    _strikeWords.Remove(word);
+                    break;
+                default:
+                    break;
+            }
+        }
+
         private static int GetTotalMessages(string userId)
         {
             using (var context = new DatabaseContext())
@@ -276,5 +362,7 @@ namespace BreganTwitchBot.Domain.Data.TwitchBot.WordBlacklist
                 await context.SaveChangesAsync();
             }
         }
+
+
     }
 }

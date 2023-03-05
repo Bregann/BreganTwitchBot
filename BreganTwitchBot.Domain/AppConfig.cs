@@ -247,5 +247,10 @@ namespace BreganTwitchBot
 
             Log.Information($"[Subathon Time] {tsToAdd} added");
         }
+
+        public static void ToggleAiEnabled()
+        {
+            AiEnabled = AiEnabled != true;
+        }
     }
 }

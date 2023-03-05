@@ -2,6 +2,7 @@
 using BreganTwitchBot.Domain.Data.TwitchBot.Helpers;
 using Serilog;
 using TwitchLib.Api.Helix.Models.Channels.GetChannelInformation;
+using TwitchLib.Api.Helix.Models.Channels.ModifyChannelInformation;
 using TwitchLib.Client.Events;
 
 namespace BreganTwitchBot.Domain.Data.TwitchBot.Commands.StreamInfo
@@ -10,10 +11,10 @@ namespace BreganTwitchBot.Domain.Data.TwitchBot.Commands.StreamInfo
     {
         private static DateTime _gameCooldown;
 
-        public static async Task HandleGameCommand(OnChatCommandReceivedArgs command)
+        public static async Task HandleGameCommand(string username, string chatMessage, string chatArgumentsAsString, bool isMod, bool isBroadcaster)
         {
             //if all they are doing is checking the title
-            if (command.Command.ChatMessage.Message.ToLower() == "!game")
+            if (chatMessage == "!game")
             {
                 if (DateTime.UtcNow - TimeSpan.FromSeconds(5) <= _gameCooldown)
                 {
@@ -21,25 +22,24 @@ namespace BreganTwitchBot.Domain.Data.TwitchBot.Commands.StreamInfo
                     return;
                 }
 
-                await GetGame(command.Command.ChatMessage.Username);
+                await GetGame(username);
                 _gameCooldown = DateTime.UtcNow;
                 return;
             }
 
             //If updating the command
-            if (command.Command.ChatMessage.IsModerator || command.Command.ChatMessage.IsBroadcaster)
+            if (isMod || isBroadcaster)
             {
-                await SetGame(command.Command.ChatMessage.Username, command.Command.ArgumentsAsString);
+                await SetGame(username, chatArgumentsAsString);
             }
         }
 
         private static async Task GetGame(string username)
         {
-            GetChannelInformationResponse getChannelRequest;
-
             try
             {
-                getChannelRequest = await TwitchApiConnection.ApiClient.Helix.Channels.GetChannelInformationAsync(AppConfig.TwitchChannelID);
+                var getChannelRequest = await TwitchApiConnection.ApiClient.Helix.Channels.GetChannelInformationAsync(AppConfig.TwitchChannelID);
+                TwitchHelper.SendMessage($"@{username} => The current game is {getChannelRequest.Data[0].GameName}");
             }
             catch (Exception e)
             {
@@ -48,8 +48,6 @@ namespace BreganTwitchBot.Domain.Data.TwitchBot.Commands.StreamInfo
 
                 return;
             }
-
-            TwitchHelper.SendMessage($"@{username} => The current game is {getChannelRequest.Data[0].GameName}");
         }
 
         private static async Task SetGame(string username, string game)
@@ -77,7 +75,7 @@ namespace BreganTwitchBot.Domain.Data.TwitchBot.Commands.StreamInfo
                     return;
                 }
 
-                var request = new TwitchLib.Api.Helix.Models.Channels.ModifyChannelInformation.ModifyChannelInformationRequest()
+                var request = new ModifyChannelInformationRequest()
                 {
                     Title = getChannelRequest.Data[0].Title,
                     GameId = gameId.Games[0].Id

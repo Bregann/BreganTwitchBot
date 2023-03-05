@@ -3,7 +3,6 @@ using BreganTwitchBot.Infrastructure.Database.Context;
 using BreganTwitchBot.DiscordBot.Helpers;
 using BreganTwitchBot.Domain.Bot.Twitch.Commands.Modules.DailyPoints;
 using BreganTwitchBot.Domain.Bot.Twitch.Commands.Modules.TwitchBosses;
-using BreganTwitchBot.Domain.Bot.Twitch.Commands.Modules.WordBlacklist;
 using BreganTwitchBot.Domain.Bot.Twitch.Services;
 using BreganUtils;
 using BreganUtils.ProjectMonitor.Projects;
@@ -20,6 +19,7 @@ using BreganTwitchBot.Services;
 using BreganTwitchBot.Domain.Data.TwitchBot.Helpers;
 using BreganTwitchBot.Domain.Data.TwitchBot;
 using BreganTwitchBot.Domain.Data.TwitchBot.WordBlacklist;
+using BreganTwitchBot.Domain.Data.TwitchBot.Commands.WordBlacklist;
 
 namespace BreganTwitchBot.Domain
 {
@@ -234,7 +234,7 @@ namespace BreganTwitchBot.Domain
 
         public static void ClearWarnedUsers()
         {
-            WordBlacklist.ClearOutWarnedUsers();
+            WordBlacklistData.ClearOutWarnedUsers();
         }
 
         public static void ResetMinutes()

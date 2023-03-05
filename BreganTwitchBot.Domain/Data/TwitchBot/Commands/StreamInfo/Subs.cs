@@ -16,11 +16,10 @@ namespace BreganTwitchBot.Domain.Data.TwitchBot.Commands.StreamInfo
                 return;
             }
 
-            int subCount;
             try
             {
                 var subReq = await TwitchApiConnection.ApiClient.Helix.Subscriptions.GetBroadcasterSubscriptionsAsync(AppConfig.TwitchChannelID, accessToken: AppConfig.BroadcasterOAuth);
-                subCount = subReq.Total;
+                TwitchHelper.SendMessage($"@{username} => {AppConfig.BroadcasterName} has {subReq.Total} subs");
             }
             catch (Exception e)
             {
@@ -30,7 +29,6 @@ namespace BreganTwitchBot.Domain.Data.TwitchBot.Commands.StreamInfo
                 return;
             }
 
-            TwitchHelper.SendMessage($"@{username} => {AppConfig.BroadcasterName} has {subCount} subs");
             _subsCooldown = DateTime.UtcNow;
             return;
         }

@@ -1,4 +1,5 @@
 ﻿using BreganTwitchBot.Domain.Data.TwitchBot;
+using BreganTwitchBot.Domain.Data.TwitchBot.Commands.Supermods;
 using BreganTwitchBot.Domain.Data.TwitchBot.Helpers;
 using Humanizer;
 using Humanizer.Localisation;
@@ -7,33 +8,33 @@ using TwitchLib.Api.Helix.Models.Users.GetUserFollows;
 using TwitchLib.Api.Helix.Models.Users.GetUsers;
 using TwitchLib.Client.Events;
 
-namespace BreganTwitchBot.Domain.Bot.Twitch.Commands.Modules.FollowAge
+namespace BreganTwitchBot.Domain.Data.TwitchBot.Commands.FollowAge
 {
     public class FollowAge
     {
         private static DateTime _followAgeCooldown;
         private static DateTime _followSinceCooldown;
 
-        public static async Task HandleFollowageCommand(OnChatCommandReceivedArgs command)
+        public static async Task HandleFollowageCommand(string username, string userId, string message, List<string> chatArgumentsAsList)
         {
-            if (DateTime.UtcNow - TimeSpan.FromSeconds(5) <= _followAgeCooldown && !SuperMods.Supermods.IsUserSupermod(command.Command.ChatMessage.Username.ToLower()))
+            if (DateTime.UtcNow - TimeSpan.FromSeconds(5) <= _followAgeCooldown && !TwitchHelper.IsUserSupermod(userId))
             {
                 Log.Information("[Twitch Commands] !followage command handled successfully (cooldown)");
                 return;
             }
 
-            if (command.Command.ChatMessage.Message.ToLower() == "!followage" || command.Command.ChatMessage.Message.ToLower() == "!howlong")
+            if (message.ToLower() == "!followage" || message.ToLower() == "!howlong")
             {
-                TwitchHelper.SendMessage($"@{command.Command.ChatMessage.Username} => {await GetUserFollowTime(command.Command.ChatMessage.Username.ToLower(), true)}!");
+                TwitchHelper.SendMessage($"@{username} => {await GetUserFollowTime(username.ToLower(), true)}!");
                 _followAgeCooldown = DateTime.UtcNow;
                 return;
             }
 
-            TwitchHelper.SendMessage($"@{command.Command.ChatMessage.Username} => {await GetUserFollowTime(command.Command.ArgumentsAsList[0].ToLower().Replace("@", ""), true)}!");
+            TwitchHelper.SendMessage($"@{username} => {await GetUserFollowTime(chatArgumentsAsList[0].ToLower().Replace("@", ""), true)}!");
             _followAgeCooldown = DateTime.UtcNow;
         }
 
-        public static async Task HandleFollowSinceCommand(OnChatCommandReceivedArgs command)
+        public static async Task HandleFollowSinceCommand(string username, string userId, string message, List<string> chatArgumentsAsList)
         {
             if (DateTime.UtcNow - TimeSpan.FromSeconds(5) <= _followSinceCooldown)
             {
@@ -41,14 +42,14 @@ namespace BreganTwitchBot.Domain.Bot.Twitch.Commands.Modules.FollowAge
                 return;
             }
 
-            if (command.Command.ChatMessage.Message.ToLower() == "!followsince")
+            if (message.ToLower() == "!followsince")
             {
-                TwitchHelper.SendMessage($"@{command.Command.ChatMessage.Username} => You followed {AppConfig.BroadcasterName} at {await GetUserFollowTime(command.Command.ChatMessage.Username.ToLower(), false)}!");
+                TwitchHelper.SendMessage($"@{username} => You followed {AppConfig.BroadcasterName} at {await GetUserFollowTime(username.ToLower(), false)}!");
                 _followSinceCooldown = DateTime.UtcNow;
                 return;
             }
 
-            TwitchHelper.SendMessage($"@{command.Command.ChatMessage.Username} => {await GetUserFollowTime(command.Command.ArgumentsAsList[0].ToLower(), false)}!");
+            TwitchHelper.SendMessage($"@{username} => {await GetUserFollowTime(chatArgumentsAsList[0].ToLower().Replace("@", ""), false)}!");
             _followSinceCooldown = DateTime.UtcNow;
         }
 
