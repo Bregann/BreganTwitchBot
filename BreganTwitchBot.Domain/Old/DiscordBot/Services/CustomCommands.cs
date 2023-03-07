@@ -9,7 +9,7 @@ namespace BreganTwitchBot.Core.DiscordBot.Services
     public class CustomCommands
     {
         private static Dictionary<string, string> _commands;
-
+        //todo: redo this and put it in the messagerecieved event file
         public static void SetupCustomCommands()
         {
             DiscordConnection.DiscordClient.MessageReceived += DiscordClient_MessageReceived;

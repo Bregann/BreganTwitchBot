@@ -1,0 +1,59 @@
+﻿using BreganTwitchBot.DiscordBot.Helpers;
+using BreganTwitchBot.Services;
+using Discord;
+using Serilog;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace BreganTwitchBot.Domain.Data.DiscordBot.Events
+{
+    public class MessageDeletedEvent
+    {
+        public static async Task SendDeletedMessageToEvents(Cacheable<IMessage, ulong> oldMessage, Cacheable<IMessageChannel, ulong> channel) 
+        {
+            await oldMessage.GetOrDownloadAsync();
+            if (oldMessage.Value.Content == null || oldMessage.Value.Author.Id == DiscordConnection.DiscordClient.CurrentUser.Id)
+            {
+                return;
+            }
+
+            if (oldMessage.Value.Content.Replace(Environment.NewLine, "").Replace(" ", "") == "****" || oldMessage.Value.Content.Replace(Environment.NewLine, "").Replace(" ", "") == "__")
+            {
+                return;
+            }
+
+            if (oldMessage.Value.Attachments.Count > 0)
+            {
+                foreach (var attachment in oldMessage.Value.Attachments)
+                {
+                    await DiscordHelper.SendMessage(AppConfig.DiscordEventChannelID, $"Message Deleted: {oldMessage.Value.Content.Replace("@everyone", "").Replace("@here", "")} \nImage Name: {attachment.Filename} \nSent By: {oldMessage.Value.Author} \nIn Channel: {channel.Value.Name} \nDeleted at: {DateTime.Now} \n Link: {attachment.Url}");
+                    Log.Information($"[Discord Message Deleted] Message Deleted: {oldMessage.Value.Content.Replace("@everyone", "").Replace("@here", "")} \nImage Name: {attachment.Filename} \nSent By: {oldMessage.Value.Author} \nIn Channel: {channel.Value.Name} \nDeleted at: {DateTime.Now} \n Link: {attachment.Url}");
+                    return;
+                }
+            }
+
+            var messageEmbed = new EmbedBuilder()
+            {
+                Title = "Deleted message",
+                Timestamp = DateTime.Now,
+                Color = new Color(250, 53, 27)
+            };
+
+            messageEmbed.AddField("Message Deleted", oldMessage.Value.Content.Replace("@everyone", "").Replace("@here", ""));
+            messageEmbed.AddField("Sent By", oldMessage.Value.Author.Username);
+            messageEmbed.AddField("In Channel", oldMessage.Value.Channel.Name);
+            messageEmbed.AddField("Deleted At", DateTime.Now.ToString());
+
+            var channel = await DiscordConnection.DiscordClient.GetChannelAsync(AppConfig.DiscordEventChannelID) as IMessageChannel;
+
+            if (channel != null)
+            {
+                await channel.TriggerTypingAsync();
+                await channel.SendMessageAsync(embed: messageEmbed.Build());
+            }
+        }
+    }
+}

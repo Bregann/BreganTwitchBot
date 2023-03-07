@@ -1,6 +1,5 @@
 ﻿using BreganTwitchBot.Core.DiscordBot.Services;
 using BreganTwitchBot.DiscordBot.Helpers;
-using BreganTwitchBot.Domain.Bot.Twitch.Services;
 using BreganTwitchBot.Domain.Data.TwitchBot;
 using BreganTwitchBot.Domain.Data.TwitchBot.Commands.DailyPoints;
 using BreganTwitchBot.Domain.Data.TwitchBot.Commands.TwitchBosses;

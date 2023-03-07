@@ -122,5 +122,26 @@ namespace BreganTwitchBot.DiscordBot.Helpers
                 }
             }
         }
+
+        public static async Task<bool> AddOrRemoveRole(string roleName, ulong id)
+        {
+            var guild = DiscordConnection.DiscordClient.GetGuild(AppConfig.DiscordGuildID);
+            var roleToCheck = guild.Roles.First(x => x.Name == roleName);
+
+            var user = guild.GetUser(id);
+
+            if (user.Roles.Contains(roleToCheck))
+            {
+                await user.RemoveRoleAsync(roleToCheck);
+                Log.Information($"[Discord Roles] {roleName} has been removed from {id} ({user.Nickname} - {user.Username})");
+                return false;
+            }
+            else
+            {
+                await user.AddRoleAsync(roleToCheck);
+                Log.Information($"[Discord Roles] {roleName} has been added to {id} ({user.Nickname} - {user.Username})");
+                return true;
+            }
+        }
     }
 }

@@ -1,4 +1,7 @@
-﻿using BreganTwitchBot.Infrastructure.Database.Context;
+﻿using BreganTwitchBot.Domain.Data.TwitchBot.Helpers;
+using BreganTwitchBot.Infrastructure.Database.Context;
+using Humanizer;
+using Humanizer.Localisation;
 using Serilog;
 
 namespace BreganTwitchBot.Domain.Data.TwitchBot
@@ -284,58 +287,48 @@ namespace BreganTwitchBot.Domain.Data.TwitchBot
             }
         }
 
-        //Get the stream uptime
-        var startTime = new DateTime(2023, 2, 26, 11, 0, 0);
-
-        var endTimeDT = startTime.Add(AppConfig.SubathonTime);
-        var timeLeft = endTimeDT - DateTime.UtcNow;
-
-        TwitchHelper.SendMessage($"@{username} => The dumblethon has been extended to a total of {AppConfig.SubathonTime.Humanize(maxUnit: TimeUnit.Year, minUnit: TimeUnit.Second, precision: 7)}! The stream will end in {timeLeft.Humanize(maxUnit: TimeUnit.Year, minUnit: TimeUnit.Second, precision: 7)}. See all the info at https://bot.bregan.me/subathon");
-            _subathonCooldown = DateTime.UtcNow;
-        }
-
-    private static async Task AddOrUpdateUserToSubathonTable(string username, int amount, string type)
-    {
-        using (var context = new DatabaseContext())
+        private static async Task AddOrUpdateUserToSubathonTable(string username, int amount, string type)
         {
-            var user = context.Subathon.Where(x => x.Username == username).FirstOrDefault();
-
-            if (user == null)
+            using (var context = new DatabaseContext())
             {
-                if (type == "sub")
+                var user = context.Subathon.Where(x => x.Username == username).FirstOrDefault();
+
+                if (user == null)
                 {
-                    context.Subathon.Add(new Infrastructure.Database.Models.Subathon
+                    if (type == "sub")
                     {
-                        Username = username,
-                        BitsDonated = 0,
-                        SubsGifted = amount
-                    });
+                        context.Subathon.Add(new Infrastructure.Database.Models.Subathon
+                        {
+                            Username = username,
+                            BitsDonated = 0,
+                            SubsGifted = amount
+                        });
+                    }
+                    else
+                    {
+                        context.Subathon.Add(new Infrastructure.Database.Models.Subathon
+                        {
+                            Username = username,
+                            BitsDonated = amount,
+                            SubsGifted = 0
+                        });
+                    }
                 }
                 else
                 {
-                    context.Subathon.Add(new Infrastructure.Database.Models.Subathon
+                    if (type == "sub")
                     {
-                        Username = username,
-                        BitsDonated = amount,
-                        SubsGifted = 0
-                    });
+                        user.SubsGifted += amount;
+                    }
+                    else
+                    {
+                        user.BitsDonated += amount;
+                    }
                 }
-            }
-            else
-            {
-                if (type == "sub")
-                {
-                    user.SubsGifted += amount;
-                }
-                else
-                {
-                    user.BitsDonated += amount;
-                }
-            }
 
-            await context.SaveChangesAsync();
-            Log.Information($"[Subathon] {amount} added to {username} type {type}");
+                await context.SaveChangesAsync();
+                Log.Information($"[Subathon] {amount} added to {username} type {type}");
+            }
         }
     }
-}
 }
