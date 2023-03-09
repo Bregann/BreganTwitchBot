@@ -1,5 +1,6 @@
 ﻿using BreganTwitchBot.Infrastructure.Database.Context;
 using BreganTwitchBot.Web.Data.Leaderboards.Enums;
+using Microsoft.EntityFrameworkCore;
 
 namespace BreganTwitchBot.Web.Data.Leaderboards
 {
@@ -17,63 +18,48 @@ namespace BreganTwitchBot.Web.Data.Leaderboards
                     case LeaderboardType.Points:
                         users = context.Users.OrderByDescending(x => x.Points).Take(250).ToDictionary(x => x.Username, x => x.Points);
                         break;
-
                     case LeaderboardType.PointsWon:
-                        users = context.Users.OrderByDescending(x => x.PointsWon).Take(250).ToDictionary(x => x.Username, x => x.PointsWon);
+                        users = context.Users.Include(x => x.UserGambleStats).OrderByDescending(x => x.UserGambleStats.PointsWon).Take(250).ToDictionary(x => x.Username, x => x.UserGambleStats.PointsWon);
                         break;
-
                     case LeaderboardType.PointsLost:
-                        users = context.Users.OrderByDescending(x => x.PointsLost).Take(250).ToDictionary(x => x.Username, x => x.PointsLost);
+                        users = context.Users.Include(x => x.UserGambleStats).OrderByDescending(x => x.UserGambleStats.PointsLost).Take(250).ToDictionary(x => x.Username, x => x.UserGambleStats.PointsLost);
                         break;
-
                     case LeaderboardType.PointsGambled:
-                        users = context.Users.OrderByDescending(x => x.PointsGambled).Take(250).ToDictionary(x => x.Username, x => x.PointsGambled);
+                        users = context.Users.Include(x => x.UserGambleStats).OrderByDescending(x => x.UserGambleStats.PointsGambled).Take(250).ToDictionary(x => x.Username, x => x.UserGambleStats.PointsGambled);
                         break;
-
                     case LeaderboardType.TotalSpins:
-                        users = context.Users.OrderByDescending(x => x.TotalSpins).Take(250).ToDictionary(x => x.Username, x => (long)x.TotalSpins);
+                        users = context.Users.Include(x => x.UserGambleStats).OrderByDescending(x => x.UserGambleStats.TotalSpins).Take(250).ToDictionary(x => x.Username, x => (long)x.UserGambleStats.TotalSpins);
                         break;
-
                     case LeaderboardType.CurrentStreak:
-                        users = context.Users.OrderByDescending(x => x.CurrentStreak).Take(250).ToDictionary(x => x.Username, x => (long)x.CurrentStreak);
+                        users = context.Users.Include(x => x.DailyPoints).OrderByDescending(x => x.DailyPoints.CurrentStreak).Take(250).ToDictionary(x => x.Username, x => (long)x.DailyPoints.CurrentStreak);
                         break;
-
                     case LeaderboardType.HighestStreak:
-                        users = context.Users.OrderByDescending(x => x.HighestStreak).Take(250).ToDictionary(x => x.Username, x => (long)x.HighestStreak);
+                        users = context.Users.Include(x => x.DailyPoints).OrderByDescending(x => x.DailyPoints.HighestStreak).Take(250).ToDictionary(x => x.Username, x => (long)x.DailyPoints.HighestStreak);
                         break;
-
                     case LeaderboardType.TotalTimesClaimed:
-                        users = context.Users.OrderByDescending(x => x.TotalTimesClaimed).Take(250).ToDictionary(x => x.Username, x => (long)x.TotalTimesClaimed);
+                        users = context.Users.Include(x => x.DailyPoints).OrderByDescending(x => x.DailyPoints.TotalTimesClaimed).Take(250).ToDictionary(x => x.Username, x => (long)x.DailyPoints.TotalTimesClaimed);
                         break;
-
                     case LeaderboardType.MarblesRacesWon:
                         users = context.Users.OrderByDescending(x => x.MarblesWins).Take(250).ToDictionary(x => x.Username, x => (long)x.MarblesWins);
                         break;
-
                     case LeaderboardType.DiscordStreak:
-                        users = context.Users.OrderByDescending(x => x.DiscordDailyTotalClaims).Take(250).ToDictionary(x => x.Username, x => (long)x.DiscordDailyTotalClaims);
+                        users = context.Users.Include(x => x.DailyPoints).OrderByDescending(x => x.DailyPoints.DiscordDailyTotalClaims).Take(250).ToDictionary(x => x.Username, x => (long)x.DailyPoints.DiscordDailyTotalClaims);
                         break;
-
                     case LeaderboardType.Discordlevel:
-                        users = context.Users.OrderByDescending(x => x.DiscordLevel).Take(250).ToDictionary(x => x.Username, x => (long)x.DiscordLevel);
+                        users = context.Users.Include(x => x.DiscordUserStats).OrderByDescending(x => x.DiscordUserStats.DiscordLevel).Take(250).ToDictionary(x => x.Username, x => (long)x.DiscordUserStats.DiscordLevel);
                         break;
-
                     case LeaderboardType.DiscordXP:
-                        users = context.Users.OrderByDescending(x => x.DiscordXp).Take(250).ToDictionary(x => x.Username, x => (long)x.DiscordXp);
+                        users = context.Users.Include(x => x.DiscordUserStats).OrderByDescending(x => x.DiscordUserStats.DiscordXp).Take(250).ToDictionary(x => x.Username, x => (long)x.DiscordUserStats.DiscordXp);
                         break;
-
                     case LeaderboardType.DiscordTotalClaims:
-                        users = context.Users.OrderByDescending(x => x.DiscordDailyTotalClaims).Take(250).ToDictionary(x => x.Username, x => (long)x.DiscordDailyTotalClaims);
+                        users = context.Users.Include(x => x.DailyPoints).OrderByDescending(x => x.DailyPoints.DiscordDailyTotalClaims).Take(250).ToDictionary(x => x.Username, x => (long)x.DailyPoints.DiscordDailyTotalClaims);
                         break;
-
                     case LeaderboardType.MessagesSent:
                         users = context.Users.OrderByDescending(x => x.TotalMessages).Take(250).ToDictionary(x => x.Username, x => (long)x.TotalMessages);
                         break;
-
                     case LeaderboardType.BossesCompleted:
                         users = context.Users.OrderByDescending(x => x.BossesDone).Take(250).ToDictionary(x => x.Username, x => (long)x.BossesDone);
                         break;
-
                     default:
                         break;
                 }
@@ -106,19 +92,19 @@ namespace BreganTwitchBot.Web.Data.Leaderboards
                 switch (type)
                 {
                     case LeaderboardType.AllTimeHours:
-                        users = context.Users.OrderByDescending(x => x.MinutesInStream).Take(250).ToDictionary(x => x.Username, x => x.MinutesInStream);
+                        users = context.Users.Include(x => x.Watchtime).OrderByDescending(x => x.Watchtime.MinutesInStream).Take(250).ToDictionary(x => x.Username, x => x.Watchtime.MinutesInStream);
                         break;
 
                     case LeaderboardType.StreamHours:
-                        users = context.Users.OrderByDescending(x => x.MinutesWatchedThisStream).Take(250).ToDictionary(x => x.Username, x => x.MinutesWatchedThisStream);
+                        users = context.Users.Include(x => x.Watchtime).OrderByDescending(x => x.Watchtime.MinutesWatchedThisStream).Take(250).ToDictionary(x => x.Username, x => x.Watchtime.MinutesWatchedThisStream);
                         break;
 
                     case LeaderboardType.WeeklyHours:
-                        users = context.Users.OrderByDescending(x => x.MinutesWatchedThisWeek).Take(250).ToDictionary(x => x.Username, x => x.MinutesWatchedThisWeek);
+                        users = context.Users.Include(x => x.Watchtime).OrderByDescending(x => x.Watchtime.MinutesWatchedThisWeek).Take(250).ToDictionary(x => x.Username, x => x.Watchtime.MinutesWatchedThisWeek);
                         break;
 
                     case LeaderboardType.MonthlyHours:
-                        users = context.Users.OrderByDescending(x => x.MinutesWatchedThisMonth).Take(250).ToDictionary(x => x.Username, x => x.MinutesWatchedThisMonth);
+                        users = context.Users.Include(x => x.Watchtime).OrderByDescending(x => x.Watchtime.MinutesWatchedThisMonth).Take(250).ToDictionary(x => x.Username, x => x.Watchtime.MinutesWatchedThisMonth);
                         break;
 
                     default:
