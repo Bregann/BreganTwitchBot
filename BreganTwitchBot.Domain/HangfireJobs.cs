@@ -1,12 +1,11 @@
-﻿using BreganTwitchBot.Core.DiscordBot.Services;
-using BreganTwitchBot.DiscordBot.Helpers;
+﻿using BreganTwitchBot.Domain.Data.DiscordBot;
+using BreganTwitchBot.Domain.Data.DiscordBot.Helpers;
 using BreganTwitchBot.Domain.Data.TwitchBot;
 using BreganTwitchBot.Domain.Data.TwitchBot.Commands.DailyPoints;
 using BreganTwitchBot.Domain.Data.TwitchBot.Commands.TwitchBosses;
 using BreganTwitchBot.Domain.Data.TwitchBot.Helpers;
 using BreganTwitchBot.Domain.Data.TwitchBot.WordBlacklist;
 using BreganTwitchBot.Infrastructure.Database.Context;
-using BreganTwitchBot.Services;
 using BreganUtils;
 using BreganUtils.ProjectMonitor.Projects;
 using Discord;
@@ -240,7 +239,7 @@ namespace BreganTwitchBot.Domain
             {
                 using (var dbContext = new DatabaseContext())
                 {
-                    var usersToReset = dbContext.Users.Where(x => x.MinutesWatchedThisMonth != 0).ToList();
+                    var usersToReset = dbContext.Watchtime.Where(x => x.MinutesWatchedThisMonth != 0).ToList();
 
                     foreach (var user in usersToReset)
                     {
@@ -256,7 +255,7 @@ namespace BreganTwitchBot.Domain
             {
                 using (var dbContext = new DatabaseContext())
                 {
-                    var usersToReset = dbContext.Users.Where(x => x.MinutesWatchedThisWeek != 0).ToList();
+                    var usersToReset = dbContext.Watchtime.Where(x => x.MinutesWatchedThisWeek != 0).ToList();
 
                     foreach (var user in usersToReset)
                     {
@@ -270,7 +269,7 @@ namespace BreganTwitchBot.Domain
 
             using (var dbContext = new DatabaseContext())
             {
-                var usersToReset = dbContext.Users.Where(x => x.MinutesWatchedThisStream != 0).ToList();
+                var usersToReset = dbContext.Watchtime.Where(x => x.MinutesWatchedThisStream != 0).ToList();
 
                 foreach (var user in usersToReset)
                 {
@@ -344,7 +343,11 @@ namespace BreganTwitchBot.Domain
                 messageEmbed.AddField("Change", (newFollowerCount.TotalFollows - _currentFollowerCount).ToString());
 
                 var channel = await DiscordConnection.DiscordClient.GetChannelAsync(AppConfig.DiscordEventChannelID) as IMessageChannel;
-                await channel.SendMessageAsync(embed: messageEmbed.Build());
+
+                if (channel != null)
+                {
+                    await channel.SendMessageAsync(embed: messageEmbed.Build());
+                }
 
                 _currentFollowerCount = newFollowerCount.TotalFollows;
             }
@@ -374,14 +377,13 @@ namespace BreganTwitchBot.Domain
         {
             using (var dbContext = new DatabaseContext())
             {
-                var usersToUpdate = dbContext.Users.Where(x => x.DiscordDailyClaimed == true).ToList();
+                var usersToUpdate = dbContext.DailyPoints.Where(x => x.DiscordDailyClaimed == true).ToList();
 
                 foreach (var user in usersToUpdate)
                 {
                     user.DiscordDailyClaimed = false;
                 }
 
-                dbContext.Users.UpdateRange(usersToUpdate);
                 dbContext.SaveChanges();
             }
 

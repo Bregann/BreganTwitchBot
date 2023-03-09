@@ -88,7 +88,9 @@ namespace BreganTwitchBot.Infrastructure.Database.Context
                 HFConnectionString = "",
                 TwitchBotApiKey = "",
                 TwitchBotApiRefresh = "",
-                BotChannelId = ""
+                BotChannelId = "",
+                AiEnabled = false,
+                SubathonActive = false,
             });
 
             modelBuilder.Entity<SlotMachine>().HasData(new SlotMachine

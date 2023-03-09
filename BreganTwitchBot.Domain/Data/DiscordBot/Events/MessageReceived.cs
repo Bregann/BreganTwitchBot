@@ -1,8 +1,7 @@
-﻿using BreganTwitchBot.DiscordBot.Helpers;
-using BreganTwitchBot.Domain.Bot.DiscordBot.SlashCommands.Data.Levelling;
+﻿using BreganTwitchBot.Domain.Data.DiscordBot.Helpers;
+using BreganTwitchBot.Domain.Data.DiscordBot.SlashCommands.Data.Levelling;
 using BreganTwitchBot.Infrastructure.Database.Context;
 using BreganTwitchBot.Infrastructure.Database.Enums;
-using BreganTwitchBot.Services;
 using Discord;
 using Discord.WebSocket;
 using Hangfire;

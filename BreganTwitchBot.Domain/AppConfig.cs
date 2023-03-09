@@ -1,5 +1,5 @@
-﻿using BreganTwitchBot.DiscordBot.Helpers;
-using BreganTwitchBot.Domain;
+﻿using BreganTwitchBot.Domain;
+using BreganTwitchBot.Domain.Data.DiscordBot.Helpers;
 using BreganTwitchBot.Domain.Data.TwitchBot;
 using BreganTwitchBot.Infrastructure.Database.Context;
 using BreganUtils.ProjectMonitor.Projects;

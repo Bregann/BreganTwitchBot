@@ -114,25 +114,25 @@ namespace BreganTwitchBot.Domain.Data.TwitchBot.Events
                 case TwitchLib.Client.Enums.SubscriptionPlan.NotSet:
                 case TwitchLib.Client.Enums.SubscriptionPlan.Tier1:
                     subName = "tier 1";
-                    await PointsHelper.AddUserPoints(e.ReSubscriber.DisplayName.ToLower(), 20000 + months * 2000);
+                    await PointsHelper.AddUserPoints(userId, 20000 + months * 2000);
                     await StreamStatsService.UpdateStreamStat(20000 + months * 2000, StatTypes.PointsGainedSubscribing);
                     break;
 
                 case TwitchLib.Client.Enums.SubscriptionPlan.Prime:
                     subName = "TWITCH PRIME!!! ANY PRIMERS?";
-                    await PointsHelper.AddUserPoints(e.ReSubscriber.DisplayName.ToLower(), 30000 + months * 2000);
+                    await PointsHelper.AddUserPoints(userId, 30000 + months * 2000);
                     await StreamStatsService.UpdateStreamStat(30000 + months * 2000, StatTypes.PointsGainedSubscribing);
                     break;
 
                 case TwitchLib.Client.Enums.SubscriptionPlan.Tier2:
                     subName = "tier 2";
-                    await PointsHelper.AddUserPoints(e.ReSubscriber.DisplayName.ToLower(), 40000 + months * 2000);
+                    await PointsHelper.AddUserPoints(userId, 40000 + months * 2000);
                     await StreamStatsService.UpdateStreamStat(40000 + months * 2000, StatTypes.PointsGainedSubscribing);
                     break;
 
                 case TwitchLib.Client.Enums.SubscriptionPlan.Tier3:
                     subName = "tier 3";
-                    await PointsHelper.AddUserPoints(e.ReSubscriber.DisplayName.ToLower(), 100000 + months * 2000);
+                    await PointsHelper.AddUserPoints(userId, 100000 + months * 2000);
                     await StreamStatsService.UpdateStreamStat(100000 + months * 2000, StatTypes.PointsGainedSubscribing);
                     break;
             }

@@ -1,5 +1,4 @@
-﻿using BreganTwitchBot.DiscordBot.Helpers;
-using BreganTwitchBot.Services;
+﻿using BreganTwitchBot.Domain.Data.DiscordBot.Helpers;
 using Discord;
 using Serilog;
 using System;
@@ -47,12 +46,12 @@ namespace BreganTwitchBot.Domain.Data.DiscordBot.Events
             messageEmbed.AddField("In Channel", oldMessage.Value.Channel.Name);
             messageEmbed.AddField("Deleted At", DateTime.Now.ToString());
 
-            var channel = await DiscordConnection.DiscordClient.GetChannelAsync(AppConfig.DiscordEventChannelID) as IMessageChannel;
+            var eventsChannel = await DiscordConnection.DiscordClient.GetChannelAsync(AppConfig.DiscordEventChannelID) as IMessageChannel;
 
-            if (channel != null)
+            if (eventsChannel != null)
             {
-                await channel.TriggerTypingAsync();
-                await channel.SendMessageAsync(embed: messageEmbed.Build());
+                await eventsChannel.TriggerTypingAsync();
+                await eventsChannel.SendMessageAsync(embed: messageEmbed.Build());
             }
         }
     }

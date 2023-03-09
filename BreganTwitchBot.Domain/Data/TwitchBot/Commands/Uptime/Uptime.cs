@@ -13,7 +13,7 @@ namespace BreganTwitchBot.Domain.Data.TwitchBot.Commands.Uptime
         public static async Task HandleUptimeCommand(string username, string userId)
         {
             //5 sec cooldown to prevent spam
-            if (DateTime.UtcNow - TimeSpan.FromSeconds(5) <= _uptimeCooldown && !Supermods.IsUserSupermod(userId))
+            if (DateTime.UtcNow - TimeSpan.FromSeconds(5) <= _uptimeCooldown && !TwitchHelper.IsUserSupermod(userId))
             {
                 return;
             }

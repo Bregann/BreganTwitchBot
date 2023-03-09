@@ -79,7 +79,7 @@ namespace BreganTwitchBot.Domain.Data.TwitchBot.Events
                         },
                         Username = username,
                         WarnStrikes = 0,
-                        Watchtime = new Watchtime
+                        Watchtime = new Infrastructure.Database.Models.Watchtime
                         {
                             Rank1Applied = false,
                             Rank2Applied = false,

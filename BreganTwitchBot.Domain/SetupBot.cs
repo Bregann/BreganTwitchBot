@@ -1,4 +1,4 @@
-﻿using BreganTwitchBot.Services;
+﻿using BreganTwitchBot.Domain.Data.DiscordBot;
 
 namespace BreganTwitchBot.Domain
 {

@@ -1,4 +1,4 @@
-﻿using BreganTwitchBot.DiscordBot.Helpers;
+﻿using BreganTwitchBot.Domain.Data.DiscordBot.Helpers;
 using BreganTwitchBot.Domain.Data.TwitchBot.Enums;
 using BreganTwitchBot.Infrastructure.Database.Context;
 using BreganTwitchBot.Infrastructure.Database.Models;

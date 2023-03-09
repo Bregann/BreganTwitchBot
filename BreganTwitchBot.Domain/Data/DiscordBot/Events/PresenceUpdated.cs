@@ -1,5 +1,4 @@
-﻿using BreganTwitchBot.Services;
-using Discord;
+﻿using Discord;
 using Discord.WebSocket;
 using Serilog;
 using System;

@@ -9,7 +9,7 @@ namespace BreganTwitchBot.Domain.Data.TwitchBot.Commands.StreamInfo
 
         public static async Task HandleFollowersCommand(string username, string userId)
         {
-            if (DateTime.UtcNow - TimeSpan.FromSeconds(5) <= _followersCooldown && !SuperMods.Supermods.IsUserSupermod(userId))
+            if (DateTime.UtcNow - TimeSpan.FromSeconds(5) <= _followersCooldown && !TwitchHelper.IsUserSupermod(userId))
             {
                 Log.Information("[Twitch Commands] !followers command handled successfully (cooldown)");
                 return;

@@ -1,6 +1,5 @@
-﻿using BreganTwitchBot.DiscordBot.Helpers;
-using BreganTwitchBot.Domain.Bot.DiscordBot.SlashCommands.Data.GeneralCommands.Giveaway;
-using BreganTwitchBot.Services;
+﻿using BreganTwitchBot.Domain.Data.DiscordBot.Helpers;
+using BreganTwitchBot.Domain.Data.DiscordBot.SlashCommands.Data.GeneralCommands.Giveaway;
 using Discord.WebSocket;
 using Serilog;
 using System;

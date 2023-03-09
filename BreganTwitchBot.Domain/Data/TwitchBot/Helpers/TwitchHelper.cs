@@ -1,4 +1,4 @@
-﻿using BreganTwitchBot.DiscordBot.Helpers;
+﻿using BreganTwitchBot.Domain.Data.DiscordBot.Helpers;
 using BreganTwitchBot.Infrastructure.Database.Context;
 using Serilog;
 using TwitchLib.Api.Helix.Models.Moderation.BanUser;
