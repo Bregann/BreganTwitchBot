@@ -20,6 +20,15 @@ namespace BreganTwitchBot.Domain.Data.DiscordBot
         private static bool botLoaded = false;
         public static bool ConnectionStatus;
 
+        public static async Task StartDiscordBot()
+        {
+            await Task.Delay(2000);
+
+            //Start Discord
+            var discordThread = new Thread(MainAsync().GetAwaiter().GetResult);
+            discordThread.Start();
+        }
+
         public static async Task MainAsync()
         {
             DiscordClient = new DiscordSocketClient(new DiscordSocketConfig

@@ -169,7 +169,7 @@ namespace BreganTwitchBot
         }
 
         public static async Task CheckAndUpdateIfStreamIsLive()
-        { //todo: refactor this
+        {
             try
             {
                 var getStreams = await TwitchApiConnection.ApiClient.Helix.Streams.GetStreamsAsync(userIds: new List<string> { TwitchChannelID });
@@ -231,6 +231,7 @@ namespace BreganTwitchBot
         public static void SetStreamAnnouncedToFalse() //this is only needed by the job scheduler for double pings
         {
             StreamAnnounced = false;
+            _doublePingJobStarted = false;
             ProjectMonitorBreganTwitchBot.SendStreamAnnouncedUpdate(false);
 
             using (var context = new DatabaseContext())

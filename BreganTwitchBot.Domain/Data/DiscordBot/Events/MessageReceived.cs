@@ -1,5 +1,6 @@
 ﻿using BreganTwitchBot.Domain.Data.DiscordBot.Helpers;
 using BreganTwitchBot.Domain.Data.DiscordBot.SlashCommands.Data.Levelling;
+using BreganTwitchBot.Domain.Data.TwitchBot.Commands;
 using BreganTwitchBot.Infrastructure.Database.Context;
 using BreganTwitchBot.Infrastructure.Database.Enums;
 using Discord;
@@ -184,6 +185,41 @@ namespace BreganTwitchBot.Domain.Data.DiscordBot.Events
             if (message.Content.ToLower().Contains("stream late"))
             {
                 await DiscordHelper.SendMessage(message.Channel.Id, "you donut, go complain in the twitch chat");
+            }
+        }
+
+        public static async Task HandleCustomCommand(SocketMessage message)
+        {
+            var isMod = DiscordHelper.IsUserMod(message.Author.Id);
+            var commandName = message.Content.Split(" ")[0].ToLower();
+
+            //Check if its actually a command
+            if (!commandName.StartsWith('!') || message.Author.IsBot)
+            {
+                return;
+            }
+
+            if (message.Channel.Id != AppConfig.DiscordCommandsChannelID && !isMod)
+            {
+                return;
+            }
+
+            if (!CommandHandler.Commands.Contains(commandName))
+            {
+                return;
+            }
+
+            using(var context = new DatabaseContext())
+            {
+                var command = context.Commands.First(x => x.CommandName == commandName);
+
+
+                if (command.CommandText.Contains("[user]") || command.CommandText.Contains("[count]"))
+                {
+                    return;
+                }
+
+                await DiscordHelper.SendMessage(message.Channel.Id, command.CommandText);
             }
         }
 

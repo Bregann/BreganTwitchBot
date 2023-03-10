@@ -45,6 +45,7 @@ namespace BreganTwitchBot.Domain.Data.TwitchBot.Commands.CustomCommands
             }
 
             TwitchHelper.SendMessage($"@{username} => Your command has been added! :)");
+            CommandHandler.LoadCommandNamesFromDatabase();
             return;
         }
 
@@ -73,6 +74,7 @@ namespace BreganTwitchBot.Domain.Data.TwitchBot.Commands.CustomCommands
             }
 
             TwitchHelper.SendMessage($"@{username} => Your command has been remove! :)");
+            CommandHandler.LoadCommandNamesFromDatabase();
         }
 
         public static async Task HandleEditCommandCommand(string username, List<string> commandNameList, string commandText)
@@ -108,6 +110,7 @@ namespace BreganTwitchBot.Domain.Data.TwitchBot.Commands.CustomCommands
             }
 
             TwitchHelper.SendMessage($"@{username} => Your command has been edited! :)");
+            CommandHandler.LoadCommandNamesFromDatabase();
         }
     }
 }

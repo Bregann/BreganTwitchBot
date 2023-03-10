@@ -12,6 +12,8 @@ namespace BreganTwitchBot.Domain.Data.TwitchBot
     {
         public static async Task SetupTwitchBot()
         {
+            CommandHandler.LoadCommandNamesFromDatabase();
+
             var bot = new TwitchBotConnection();
             var twitchThread = new Thread(bot.Connect().GetAwaiter().GetResult);
             twitchThread.Start();

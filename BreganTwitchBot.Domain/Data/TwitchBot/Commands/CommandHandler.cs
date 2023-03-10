@@ -10,6 +10,8 @@ namespace BreganTwitchBot.Domain.Data.TwitchBot.Commands
 {
     public class CommandHandler
     {
+        public static List<string> Commands = new ();
+
         public static async Task HandleCommand(OnChatCommandReceivedArgs command)
         {
             await StreamStatsService.UpdateStreamStat(1, StatTypes.CommandsSent);
@@ -223,15 +225,15 @@ namespace BreganTwitchBot.Domain.Data.TwitchBot.Commands
                 return;
             }
 
+            if (!Commands.Contains(commandName.ToLower()))
+            {
+                return;
+            }
+
             using (var context = new DatabaseContext())
             {
                 //get the command and check if it exists
-                var command = context.Commands.Where(x => x.CommandName == commandName).FirstOrDefault();
-
-                if (command == null)
-                {
-                    return;
-                }
+                var command = context.Commands.Where(x => x.CommandName == commandName.ToLower()).First();
 
                 //Make sure it's not on a cooldown
                 if (DateTime.UtcNow - TimeSpan.FromSeconds(5) < command.LastUsed && !TwitchHelper.IsUserSupermod(userId))
@@ -251,6 +253,15 @@ namespace BreganTwitchBot.Domain.Data.TwitchBot.Commands
                 await context.SaveChangesAsync();
 
                 Log.Information($"[Twitch Commands] Custom command {commandName} handled successfully");
+            }
+        }
+
+        public static void LoadCommandNamesFromDatabase()
+        {
+            using(var context = new DatabaseContext())
+            {
+                Commands = context.Commands.Select(x => x.CommandName).ToList();
+                Log.Information($"[Commands] Loaded {Commands.Count} commands from the database");
             }
         }
     }
