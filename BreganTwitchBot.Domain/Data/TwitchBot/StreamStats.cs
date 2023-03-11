@@ -5,6 +5,7 @@ using BreganTwitchBot.Infrastructure.Database.Models;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
 using TwitchLib.Api.Core.Models.Undocumented.Chatters;
+using TwitchLib.Api.Helix.Models.Chat.GetChatters;
 
 namespace BreganTwitchBot.Domain.Data.TwitchBot
 {
@@ -205,14 +206,11 @@ namespace BreganTwitchBot.Domain.Data.TwitchBot
             }
         }
 
-        //todo: this method
         public static async Task GetUserListAndViewCountAndAddToTables()
         {
             if (AppConfig.StreamAnnounced && AppConfig.StreamerLive)
             {
                 int viewCount = 0;
-
-                var chatters = new List<ChatterFormatted>();
 
                 try
                 {
@@ -221,9 +219,6 @@ namespace BreganTwitchBot.Domain.Data.TwitchBot
                     if (streamInfo.Streams.Length != 0)
                     {
                         viewCount = streamInfo.Streams[0].ViewerCount;
-
-                        //Using undocumented stuff monkaS
-                        chatters = await TwitchApiConnection.ApiClient.Undocumented.GetChattersAsync(AppConfig.BroadcasterName);
                     }
                     else
                     {
@@ -236,11 +231,6 @@ namespace BreganTwitchBot.Domain.Data.TwitchBot
                     viewCount = 0;
                 }
 
-                var usersToAdd = chatters.Select(chatter => new UniqueViewers
-                {
-                    Username = chatter.Username
-                }).ToList();
-
                 using (var context = new DatabaseContext())
                 {
                     context.StreamViewCount.Add(new StreamViewCount
@@ -249,15 +239,19 @@ namespace BreganTwitchBot.Domain.Data.TwitchBot
                         ViewCount = viewCount
                     });
 
-                    context.UniqueViewers.UpdateRange(usersToAdd);
-                    context.SaveChanges();
-                }
+                    var usersToAdd = context.Users.Where(x => x.InStream == true).Select(chatter => new UniqueViewers
+                    {
+                        Username = chatter.Username
+                    }).ToList();
 
-                Log.Information($"[Stream Stats] {viewCount} view count added and {usersToAdd.Count} unique viewers added");
+                    context.UniqueViewers.UpdateRange(usersToAdd);
+                    await context.SaveChangesAsync();
+
+                    Log.Information($"[Stream Stats] {viewCount} view count added and {usersToAdd.Count} unique viewers added");
+                }
             }
         }
 
-        //todo: this method
         public static async Task CalculateEndStreamData()
         {
             long followerCount = 0;

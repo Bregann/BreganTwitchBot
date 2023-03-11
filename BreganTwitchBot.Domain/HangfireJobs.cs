@@ -26,9 +26,9 @@ namespace BreganTwitchBot.Domain
             RecurringJob.AddOrUpdate("BigBenBong", () => BigBenBong(), "0 * * * *");
             RecurringJob.AddOrUpdate("CheckDailyPointsStreamStatus", () => CheckDailyPointsStreamStatus(), "*/30 * * * * *");
             RecurringJob.AddOrUpdate("RefreshApi", () => RefreshApi(), "45 * * * *");
-            RecurringJob.AddOrUpdate("TimeTrackerHoursUpdate", () => TimeTrackerHoursUpdate(), "* * * * *");
+            RecurringJob.AddOrUpdate("TimeTrackerHoursUpdate", () => TimeTrackerHoursUpdate(), "* * * * *"); //every minute
             RecurringJob.AddOrUpdate("GetStreamStatus", () => GetStreamStatus(), "*/20 * * * * *");
-            RecurringJob.AddOrUpdate("StreamStatsViewerUpdate", () => StreamStatsViewerUpdate(), "* * * * *");
+            RecurringJob.AddOrUpdate("StreamStatsViewerUpdate", () => StreamStatsViewerUpdate(), "* * * * *"); //every minute
             RecurringJob.AddOrUpdate("AnnounceDiscord", () => AnnounceDiscord(), "30 * * * *");
             RecurringJob.AddOrUpdate("ClearWarnedUsers", () => ClearWarnedUsers(), "*/5 * * * *");
             RecurringJob.AddOrUpdate("ResetMinutes", () => ResetMinutes(), "0 3 * * *");

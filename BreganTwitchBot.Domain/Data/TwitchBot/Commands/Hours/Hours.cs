@@ -152,7 +152,6 @@ namespace BreganTwitchBot.Domain.Data.TwitchBot.Commands.Hours
             }
         }
 
-        //todo: make the rank names a config variable or enum
         private static string GetTimeTillNextRank(string userId)
         {
             using (var context = new DatabaseContext())

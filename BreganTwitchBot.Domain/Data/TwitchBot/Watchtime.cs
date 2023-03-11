@@ -56,7 +56,6 @@ namespace BreganTwitchBot.Domain.Data.TwitchBot
             }
         }
 
-        //todo: refactor this method
         private static async Task CheckForRankUps()
         {
             Log.Information("[Discord Ranks] Discord ranks started");

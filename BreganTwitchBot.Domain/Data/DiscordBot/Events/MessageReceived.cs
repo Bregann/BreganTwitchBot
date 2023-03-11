@@ -222,24 +222,5 @@ namespace BreganTwitchBot.Domain.Data.DiscordBot.Events
                 await DiscordHelper.SendMessage(message.Channel.Id, command.CommandText);
             }
         }
-
-        //todo: remove this and replace it with a slash command
-        public static async Task SendGiveawayMessage(SocketMessage message)
-        {
-            if (message.Channel.Id == AppConfig.DiscordGiveawayChannelID)
-            {
-                var builder = new ComponentBuilder()
-                    .WithButton(new ButtonBuilder()
-                    {
-                        Style = ButtonStyle.Primary,
-                        CustomId = message.Id.ToString(),
-                        Emote = Emoji.Parse("👶"),
-                        Label = "omg hypixel rank"
-                    });
-
-                var channel = await DiscordConnection.DiscordClient.GetChannelAsync(AppConfig.DiscordGiveawayChannelID) as IMessageChannel;
-                await channel.SendMessageAsync("click the button to role the giveaway", components: builder.Build());
-            }
-        }
     }
 }

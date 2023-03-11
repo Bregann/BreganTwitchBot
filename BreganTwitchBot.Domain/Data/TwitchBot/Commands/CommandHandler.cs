@@ -17,7 +17,7 @@ namespace BreganTwitchBot.Domain.Data.TwitchBot.Commands
             await StreamStatsService.UpdateStreamStat(1, StatTypes.CommandsSent);
             Log.Information($"[Twitch Commands] !{command.Command.CommandText.ToLower()} receieved from {command.Command.ChatMessage.Username}");
 
-            //todo: do custom ! commands
+            await HandleCustomCommand(command.Command.CommandText.ToLower(), command.Command.ChatMessage.Username, command.Command.ChatMessage.UserId);
 
             switch (command.Command.CommandText.ToLower())
             {
@@ -214,13 +214,7 @@ namespace BreganTwitchBot.Domain.Data.TwitchBot.Commands
 
         public static async Task HandleCustomCommand(string? commandName, string username, string userId)
         {
-            //Commands beginning with ! are already handled below
             if (commandName == null)
-            {
-                return;
-            }
-
-            if (commandName.StartsWith("!"))
             {
                 return;
             }

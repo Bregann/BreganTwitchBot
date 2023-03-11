@@ -90,7 +90,7 @@ namespace BreganTwitchBot.Domain.Data.TwitchBot.Commands.DailyPoints
                         AppConfig.UpdateDailyPointsCollecting(true);
 
                         TwitchHelper.SendMessage($"Don't forget to claim your daily {AppConfig.PointsName} with !daily PogChamp");
-                        //todo: check that this works
+
                         var message = "The top 5 lost streaks are: ";
 
                         foreach (var user in top5LostStreaks)
