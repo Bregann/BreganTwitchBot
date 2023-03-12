@@ -11,24 +11,24 @@ namespace BreganTwitchBot
     {
         //Hardcoded config
         //Fields are loaded from DB
-        public static string BroadcasterName { get; private set; }
+        public static string BroadcasterName { get; private set; } = "";
 
-        public static string BroadcasterOAuth { get; private set; }
-        public static string BroadcasterRefresh { get; private set; }
+        public static string BroadcasterOAuth { get; private set; } = "";
+        public static string BroadcasterRefresh { get; private set; } = "";
         public static bool DailyPointsCollectingAllowed { get; private set; } = false;
         public static bool StreamAnnounced { get; private set; } = false;
         public static bool StreamerLive { get; private set; } = false;
         public static TimeSpan SubathonTime { get; private set; }
-        public static string PinnedStreamMessage { get; private set; }
+        public static string PinnedStreamMessage { get; private set; } = "";
         public static ulong PinnedStreamMessageId { get; private set; }
         public static DateTime PinnedMessageDate { get; private set; }
-        public static string BotName { get; private set; }
-        public static string PointsName { get; private set; }
-        public static string TwitchChannelID { get; private set; }
-        public static string BotOAuth { get; private set; }
-        public static string TwitchAPIClientID { get; private set; }
-        public static string TwitchAPISecret { get; private set; }
-        public static string DiscordAPIKey { get; private set; }
+        public static string BotName { get; private set; } = "";
+        public static string PointsName { get; private set; } = "";
+        public static string TwitchChannelID { get; private set; } = "";
+        public static string BotOAuth { get; private set; } = "";
+        public static string TwitchAPIClientID { get; private set; } = "";
+        public static string TwitchAPISecret { get; private set; } = "";
+        public static string DiscordAPIKey { get; private set; } = "";
         public static ulong DiscordGuildOwnerID { get; private set; }
         public static ulong DiscordEventChannelID { get; private set; }
         public static ulong DiscordStreamAnnouncementChannelID { get; private set; }
@@ -42,11 +42,11 @@ namespace BreganTwitchBot
         public static ulong DiscordGuildID { get; private set; }
         public static ulong DiscordBanRole { get; private set; }
         public static long PrestigeCap { get; private set; }
-        public static string HFConnectionString { get; private set; }
-        public static string ProjectMonitorApiKey { get; private set; }
-        public static string TwitchBotApiKey { get; private set; }
-        public static string TwitchBotApiRefresh { get; private set; }
-        public static string BotChannelId { get; private set; }
+        public static string HFConnectionString { get; private set; } = "";
+        public static string ProjectMonitorApiKey { get; private set; } = "";
+        public static string TwitchBotApiKey { get; private set; } = "";
+        public static string TwitchBotApiRefresh { get; private set; } = "";
+        public static string BotChannelId { get; private set; } = "";
         public static bool AiEnabled { get; private set; }
         public static bool SubathonActive { get; private set; }
 

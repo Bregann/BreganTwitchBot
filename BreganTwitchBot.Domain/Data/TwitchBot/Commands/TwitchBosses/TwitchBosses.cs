@@ -4,9 +4,14 @@ using TwitchLib.Client.Extensions;
 
 namespace BreganTwitchBot.Domain.Data.TwitchBot.Commands.TwitchBosses
 {
+    public class TwitchBossDto
+    {
+        public string UserId { get; set; } = "";
+        public string Username { get; set; } = "";
+    }
     public class TwitchBosses
     {
-        private static Dictionary<string, string> _viewersJoined = new();
+        private static List<TwitchBossDto> _viewersJoined = new();
         private static List<string> _twitchModsAndVIPs = new();
         private static bool _bossCountdownEnabled;
         private static bool _bossInProgress;
@@ -53,7 +58,7 @@ namespace BreganTwitchBot.Domain.Data.TwitchBot.Commands.TwitchBosses
                 //Start the fight - stage 1
                 await Task.Delay(5000);
                 var randomUserToDie = rnd.Next(0, _viewersJoined.Count);
-                TwitchHelper.SendMessage($"FeelsBadMan {_viewersJoined[randomUserToDie]} has fallen due to the strength of {bossName} :( They are the first player to die");
+                TwitchHelper.SendMessage($"FeelsBadMan {_viewersJoined[randomUserToDie].UserId} has fallen due to the strength of {bossName} :( They are the first player to die");
                 _viewersJoined.RemoveAt(randomUserToDie);
 
                 //Stage 2
@@ -75,18 +80,23 @@ namespace BreganTwitchBot.Domain.Data.TwitchBot.Commands.TwitchBosses
                 var rndRandomUserKEKW = rnd.Next(0, _viewersJoined.Count);
                 var randomUserToBeKEKWd = _viewersJoined[rndRandomUserKEKW];
 
-                TwitchHelper.SendMessage($"PogChamp {randomUserToBeKEKWd} has done the final hit and destroyed the boss {bossName}!");
+                TwitchHelper.SendMessage($"PogChamp {randomUserToBeKEKWd.Username} has done the final hit and destroyed the boss {bossName}!");
                 await Task.Delay(5000);
-                TwitchHelper.SendMessage($"but wait... the boss has just fallen ontop of {randomUserToBeKEKWd} and they have died KEKW ! KEKW in the chat for {randomUserToBeKEKWd}");
+
+                if (rnd.Next(0, 2) == 1)
+                {
+                    TwitchHelper.SendMessage($"but wait... the boss has just fallen ontop of {randomUserToBeKEKWd} and they have died KEKW ! KEKW in the chat for {randomUserToBeKEKWd}");
+                    _viewersJoined.Remove(randomUserToBeKEKWd);
+                }
 
                 //the loot
-                var rndPointAmount = rnd.Next(0, 500);
-                var amountToDistribute = 50000 + _viewersJoined.Count * rndPointAmount + 73;
+                var rndPointAmount = rnd.Next(500, 2500);
+                var amountToDistribute = (rndPointAmount * _viewersJoined.Count) + 7373;
                 await Task.Delay(7000);
 
                 foreach (var viewer in _viewersJoined)
                 {
-                    await PointsHelper.AddUserPoints(viewer.Key, amountToDistribute);
+                    await PointsHelper.AddUserPoints(viewer.UserId, amountToDistribute);
                 }
 
                 TwitchHelper.SendMessage($"All {_viewersJoined.Count} people who survived the fight against {bossName} have won a grand total of {amountToDistribute:N0} {AppConfig.PointsName} each PogChamp");
@@ -133,19 +143,19 @@ namespace BreganTwitchBot.Domain.Data.TwitchBot.Commands.TwitchBosses
                 return;
             }
 
-            if (_viewersJoined.ContainsKey(userId))
+            if (_viewersJoined.Any(x => x.UserId == userId))
             {
                 return;
             }
 
-            _viewersJoined.Add(userId, twitchUsername);
+            _viewersJoined.Add(new TwitchBossDto { UserId = userId, Username = twitchUsername });
             Log.Information($"[Twitch Bosses] {twitchUsername} added to the boss list");
             return;
         }
 
         public static void StartBossFightCountdown()
         {
-            _viewersJoined = new Dictionary<string, string>();
+            _viewersJoined = new List<TwitchBossDto>();
             Log.Information("[Twitch Bosses] Twitch boss countdown started");
             HangfireJobs.StartTwitchBossFight();
             _bossCountdownEnabled = true;

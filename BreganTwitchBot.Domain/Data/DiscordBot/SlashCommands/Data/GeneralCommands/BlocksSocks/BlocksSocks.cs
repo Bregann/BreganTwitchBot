@@ -70,6 +70,14 @@ namespace BreganTwitchBot.Domain.Data.DiscordBot.SlashCommands.Data.GeneralComma
 
                 var responseDeserialized = JsonConvert.DeserializeObject<ProfileResponse>(response.Content);
 
+                if (responseDeserialized == null)
+                {
+                    Log.Fatal($"[BlocksSocks] There has been an error getting the profile data");
+                    embedBuilder.Title = "There was an error getting your profile info. Make sure you've put in a Minecraft username";
+                    embedBuilder.Color = new Discord.Color(255, 17, 0);
+                    return embedBuilder;
+                }
+
                 //add the uuid
                 base64Data = responseDeserialized.Properties[0].Value;
             }
@@ -87,6 +95,13 @@ namespace BreganTwitchBot.Domain.Data.DiscordBot.SlashCommands.Data.GeneralComma
 
             var skinResponse = JsonConvert.DeserializeObject<DecodedResponse>(decoded);
 
+            if (skinResponse == null)
+            {
+                embedBuilder.Title = "Error getting skin";
+                embedBuilder.Color = new Discord.Color(255, 17, 0);
+                return embedBuilder;
+            }
+
             if (skinResponse.Textures.Skin == null)
             {
                 embedBuilder.Title = "That user doesn't have a skin";
@@ -94,10 +109,12 @@ namespace BreganTwitchBot.Domain.Data.DiscordBot.SlashCommands.Data.GeneralComma
                 return embedBuilder;
             }
 
-            using (WebClient client = new())
-            {
-                client.DownloadFile(skinResponse.Textures.Skin.Url, $"Skins/{uuid}.png");
-            }
+            var httpClient = new HttpClient();
+
+            var httpResult = await httpClient.GetAsync(skinResponse.Textures.Skin.Url);
+            using var resultStream = await httpResult.Content.ReadAsStreamAsync();
+            using var fileStream = File.Create($"Skins/{uuid}.png");
+            resultStream.CopyTo(fileStream);
 
             //check if right size
             var bmp = Image.Load($"Skins/{uuid}.png");
@@ -142,7 +159,7 @@ namespace BreganTwitchBot.Domain.Data.DiscordBot.SlashCommands.Data.GeneralComma
 
             using (var socksFs = new FileStream($"Skins/{uuid}-socks.png", FileMode.Open))
             {
-                await channel.SendFileAsync(socksFs, $"Skins/{uuid}-socks.png");
+                await channel!.SendFileAsync(socksFs, $"Skins/{uuid}-socks.png");
                 embedBuilder.Title = "Your socks have been added";
                 embedBuilder.Color = new Discord.Color(34, 255, 0);
                 return embedBuilder;
@@ -153,48 +170,48 @@ namespace BreganTwitchBot.Domain.Data.DiscordBot.SlashCommands.Data.GeneralComma
     public class ProfileResponse
     {
         [JsonProperty("id")]
-        public string Id { get; set; }
+        public required string Id { get; set; }
 
         [JsonProperty("name")]
-        public string Name { get; set; }
+        public required string Name { get; set; }
 
         [JsonProperty("properties")]
-        public List<Property> Properties { get; set; }
+        public required List<Property> Properties { get; set; }
     }
 
     public class Property
     {
         [JsonProperty("name")]
-        public string Name { get; set; }
+        public required string Name { get; set; }
 
         [JsonProperty("value")]
-        public string Value { get; set; }
+        public required string Value { get; set; }
     }
 
     public class DecodedResponse
     {
         [JsonProperty("timestamp")]
-        public long Timestamp { get; set; }
+        public required long Timestamp { get; set; }
 
         [JsonProperty("profileId")]
-        public string ProfileId { get; set; }
+        public required string ProfileId { get; set; }
 
         [JsonProperty("profileName")]
-        public string ProfileName { get; set; }
+        public required string ProfileName { get; set; }
 
         [JsonProperty("textures")]
-        public Textures Textures { get; set; }
+        public required Textures Textures { get; set; }
     }
 
     public class Textures
     {
         [JsonProperty("SKIN")]
-        public Skin Skin { get; set; }
+        public required Skin Skin { get; set; }
     }
 
     public class Skin
     {
         [JsonProperty("url")]
-        public Uri Url { get; set; }
+        public required Uri Url { get; set; }
     }
 }
