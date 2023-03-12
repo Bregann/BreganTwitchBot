@@ -1,5 +1,4 @@
-﻿using BreganTwitchBot.Domain;
-using BreganTwitchBot.Domain.Data.DiscordBot.Events;
+﻿using BreganTwitchBot.Domain.Data.DiscordBot.Events;
 using BreganTwitchBot.Domain.Data.DiscordBot.Helpers;
 using Discord;
 using Discord.Interactions;

@@ -1,17 +1,12 @@
 ﻿using BreganTwitchBot.Domain.Data.DiscordBot.Helpers;
 using Discord;
 using Serilog;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace BreganTwitchBot.Domain.Data.DiscordBot.Events
 {
     public class MessageDeletedEvent
     {
-        public static async Task SendDeletedMessageToEvents(Cacheable<IMessage, ulong> oldMessage, Cacheable<IMessageChannel, ulong> channel) 
+        public static async Task SendDeletedMessageToEvents(Cacheable<IMessage, ulong> oldMessage, Cacheable<IMessageChannel, ulong> channel)
         {
             await oldMessage.GetOrDownloadAsync();
             if (oldMessage.Value.Content == null || oldMessage.Value.Author.Id == DiscordConnection.DiscordClient.CurrentUser.Id)

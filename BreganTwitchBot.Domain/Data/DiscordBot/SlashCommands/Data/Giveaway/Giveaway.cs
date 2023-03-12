@@ -1,6 +1,5 @@
 ﻿using BreganTwitchBot.Infrastructure.Database.Context;
 using Microsoft.EntityFrameworkCore;
-using System.Security.Cryptography.X509Certificates;
 
 namespace BreganTwitchBot.Domain.Data.DiscordBot.SlashCommands.Data.Giveaway
 {
@@ -20,7 +19,7 @@ namespace BreganTwitchBot.Domain.Data.DiscordBot.SlashCommands.Data.Giveaway
                 //Roll the giveaway winner if its the owner
                 if (userIdWhoPressed == AppConfig.DiscordGuildOwnerID)
                 {
-                    using(var context = new DatabaseContext())
+                    using (var context = new DatabaseContext())
                     {
                         var entries = context.DiscordGiveaways.Where(x => x.EligbleToWin == true && x.GiveawayId == interactionId.Replace("-enter", "")).Select(x => x.DiscordUserId).ToList();
                         var rnd = new Random();
@@ -37,8 +36,8 @@ namespace BreganTwitchBot.Domain.Data.DiscordBot.SlashCommands.Data.Giveaway
 
                 if (timesEntered == 0)
                 {
-                    return new GiveawayDataDto 
-                    { 
+                    return new GiveawayDataDto
+                    {
                         Response = "don't be silly, you have already entered the giveaway!",
                         Ephemeral = true
                     };
@@ -71,7 +70,7 @@ namespace BreganTwitchBot.Domain.Data.DiscordBot.SlashCommands.Data.Giveaway
 
         private static async Task<int> AddUserToGiveaway(ulong userId, string interactionId)
         {
-            using(var context = new DatabaseContext())
+            using (var context = new DatabaseContext())
             {
                 //Check if they're already in the giveaway
                 if (context.DiscordGiveaways.Any(x => x.GiveawayId == interactionId && x.DiscordUserId == userId))
@@ -112,7 +111,7 @@ namespace BreganTwitchBot.Domain.Data.DiscordBot.SlashCommands.Data.Giveaway
 
         private static int CheckentriesForUser(ulong userId, string interactionId)
         {
-            using(var context = new DatabaseContext())
+            using (var context = new DatabaseContext())
             {
                 return context.DiscordGiveaways.Where(x => x.DiscordUserId == userId && x.GiveawayId == interactionId).Count();
             }

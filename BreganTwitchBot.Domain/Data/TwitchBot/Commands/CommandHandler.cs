@@ -10,7 +10,7 @@ namespace BreganTwitchBot.Domain.Data.TwitchBot.Commands
 {
     public class CommandHandler
     {
-        public static List<string> Commands = new ();
+        public static List<string> Commands = new();
 
         public static async Task HandleCommand(OnChatCommandReceivedArgs command)
         {
@@ -252,7 +252,7 @@ namespace BreganTwitchBot.Domain.Data.TwitchBot.Commands
 
         public static void LoadCommandNamesFromDatabase()
         {
-            using(var context = new DatabaseContext())
+            using (var context = new DatabaseContext())
             {
                 Commands = context.Commands.Select(x => x.CommandName).ToList();
                 Log.Information($"[Commands] Loaded {Commands.Count} commands from the database");

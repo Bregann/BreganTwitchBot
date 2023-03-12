@@ -1,5 +1,4 @@
-﻿using BreganTwitchBot.Domain.Data.DiscordBot;
-using BreganTwitchBot.Domain.Data.DiscordBot.Helpers;
+﻿using BreganTwitchBot.Domain.Data.DiscordBot.Helpers;
 using BreganTwitchBot.Domain.Data.TwitchBot;
 using BreganTwitchBot.Infrastructure.Database.Context;
 using BreganTwitchBot.Infrastructure.Database.Models;
@@ -65,8 +64,8 @@ namespace BreganTwitchBot.Domain.Data.DiscordBot.SlashCommands.Data.Linking
                         BossesPointsWon = 0,
                         TimeoutStrikes = 0,
                         WarnStrikes = 0,
-                        DailyPoints = new DailyPoints 
-                        { 
+                        DailyPoints = new DailyPoints
+                        {
                             CurrentStreak = 0,
                             DiscordDailyClaimed = false,
                             DiscordDailyStreak = 0,
@@ -84,7 +83,7 @@ namespace BreganTwitchBot.Domain.Data.DiscordBot.SlashCommands.Data.Linking
                             DiscordXp = 0,
                             PrestigeLevel = 0
                         },
-                        UserGambleStats = new UserGambleStats 
+                        UserGambleStats = new UserGambleStats
                         {
                             JackpotWins = 0,
                             PointsGambled = 0,

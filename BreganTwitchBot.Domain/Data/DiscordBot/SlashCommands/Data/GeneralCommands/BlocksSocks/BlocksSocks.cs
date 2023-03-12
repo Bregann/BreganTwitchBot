@@ -1,5 +1,4 @@
-﻿using BreganTwitchBot.Domain.Data.DiscordBot;
-using Discord;
+﻿using Discord;
 using Newtonsoft.Json;
 using RestSharp;
 using Serilog;

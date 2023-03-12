@@ -1,13 +1,8 @@
 ﻿using BreganTwitchBot.Infrastructure.Database.Context;
 using Discord;
-using Humanizer.Localisation;
-using Humanizer;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Discord.WebSocket;
+using Humanizer;
+using Humanizer.Localisation;
 using Microsoft.EntityFrameworkCore;
 
 namespace BreganTwitchBot.Domain.Data.DiscordBot.Events

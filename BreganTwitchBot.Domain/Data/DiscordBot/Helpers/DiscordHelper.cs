@@ -1,5 +1,4 @@
-﻿using BreganTwitchBot.Domain.Data.DiscordBot;
-using BreganTwitchBot.Infrastructure.Database.Context;
+﻿using BreganTwitchBot.Infrastructure.Database.Context;
 using BreganTwitchBot.Infrastructure.Database.Models;
 using Discord;
 using Serilog;
@@ -105,7 +104,7 @@ namespace BreganTwitchBot.Domain.Data.DiscordBot.Helpers
             {
                 var user = context.Users.Where(x => x.DiscordUserId == discordId).FirstOrDefault();
 
-                if(user != null)
+                if (user != null)
                 {
                     user.Points += pointsToAdd;
                     await context.SaveChangesAsync();

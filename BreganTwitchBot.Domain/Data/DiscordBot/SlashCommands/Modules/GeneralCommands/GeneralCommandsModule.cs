@@ -1,8 +1,6 @@
-﻿using BreganTwitchBot.Domain.Data.DiscordBot;
-using BreganTwitchBot.Domain.Data.DiscordBot.Helpers;
+﻿using BreganTwitchBot.Domain.Data.DiscordBot.Helpers;
 using BreganTwitchBot.Domain.Data.DiscordBot.SlashCommands.Data.GeneralCommands.BlocksSocks;
 using BreganTwitchBot.Domain.Data.DiscordBot.SlashCommands.Data.GeneralCommands.Whois;
-using BreganTwitchBot.Domain.Data.DiscordBot.SlashCommands.Data.Giveaway;
 using BreganTwitchBot.Domain.Data.TwitchBot;
 using BreganTwitchBot.Infrastructure.Database.Context;
 using BreganTwitchBot.Infrastructure.Database.Models;

@@ -6,14 +6,8 @@ using BreganTwitchBot.Infrastructure.Database.Enums;
 using Discord;
 using Discord.WebSocket;
 using Hangfire;
-using Hangfire.Annotations;
 using Serilog;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 
 namespace BreganTwitchBot.Domain.Data.DiscordBot.Events
 {
@@ -209,7 +203,7 @@ namespace BreganTwitchBot.Domain.Data.DiscordBot.Events
                 return;
             }
 
-            using(var context = new DatabaseContext())
+            using (var context = new DatabaseContext())
             {
                 var command = context.Commands.First(x => x.CommandName == commandName);
 

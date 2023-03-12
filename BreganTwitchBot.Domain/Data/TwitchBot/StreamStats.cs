@@ -4,8 +4,6 @@ using BreganTwitchBot.Infrastructure.Database.Context;
 using BreganTwitchBot.Infrastructure.Database.Models;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
-using TwitchLib.Api.Core.Models.Undocumented.Chatters;
-using TwitchLib.Api.Helix.Models.Chat.GetChatters;
 
 namespace BreganTwitchBot.Domain.Data.TwitchBot
 {

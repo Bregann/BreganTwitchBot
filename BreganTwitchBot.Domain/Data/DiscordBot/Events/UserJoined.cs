@@ -1,11 +1,6 @@
-﻿using BreganTwitchBot.Domain.Data.TwitchBot.Enums;
-using BreganTwitchBot.Domain.Data.TwitchBot;
+﻿using BreganTwitchBot.Domain.Data.TwitchBot;
+using BreganTwitchBot.Domain.Data.TwitchBot.Enums;
 using Discord;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Discord.WebSocket;
 
 namespace BreganTwitchBot.Domain.Data.DiscordBot.Events

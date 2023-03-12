@@ -1,8 +1,6 @@
 ﻿using BreganTwitchBot.Domain.Data.DiscordBot.SlashCommands.Data.Leaderboards.Enums;
 using BreganTwitchBot.Infrastructure.Database.Context;
-using BreganTwitchBot.Infrastructure.Database.Models;
 using Microsoft.EntityFrameworkCore;
-using System.Security.Cryptography.X509Certificates;
 
 namespace BreganTwitchBot.Domain.Data.DiscordBot.SlashCommands.Data.Leaderboards
 {

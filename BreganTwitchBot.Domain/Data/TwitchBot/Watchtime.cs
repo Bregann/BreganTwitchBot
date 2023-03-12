@@ -2,7 +2,6 @@
 using BreganTwitchBot.Domain.Data.TwitchBot.Enums;
 using BreganTwitchBot.Domain.Data.TwitchBot.Helpers;
 using BreganTwitchBot.Infrastructure.Database.Context;
-using BreganTwitchBot.Infrastructure.Database.Models;
 using BreganUtils.ProjectMonitor.Projects;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
@@ -67,7 +66,7 @@ namespace BreganTwitchBot.Domain.Data.TwitchBot
                 var rank3Users = context.Users.Include(x => x.Watchtime).Where(x => x.Watchtime.MinutesInStream == 6000 && x.Watchtime.Rank3Applied == false).ToList();
                 var rank4Users = context.Users.Include(x => x.Watchtime).Where(x => x.Watchtime.MinutesInStream == 15000 && x.Watchtime.Rank4Applied == false).ToList();
                 var rank5Users = context.Users.Include(x => x.Watchtime).Where(x => x.Watchtime.MinutesInStream == 30000 && x.Watchtime.Rank5Applied == false).ToList();
-            
+
                 var rankUps = 0;
                 var ranksApplied = 0;
 
