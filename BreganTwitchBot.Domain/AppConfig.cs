@@ -29,7 +29,7 @@ namespace BreganTwitchBot
         public static string TwitchAPIClientID { get; private set; }
         public static string TwitchAPISecret { get; private set; }
         public static string DiscordAPIKey { get; private set; }
-        public static ulong DiscordGuildOwner { get; private set; }
+        public static ulong DiscordGuildOwnerID { get; private set; }
         public static ulong DiscordEventChannelID { get; private set; }
         public static ulong DiscordStreamAnnouncementChannelID { get; private set; }
         public static ulong DiscordLinkingChannelID { get; private set; }
@@ -74,7 +74,7 @@ namespace BreganTwitchBot
                 TwitchAPIClientID = configVariables.TwitchAPIClientID;
                 TwitchAPISecret = configVariables.TwitchAPISecret;
                 DiscordAPIKey = configVariables.DiscordAPIKey;
-                DiscordGuildOwner = configVariables.DiscordGuildOwner;
+                DiscordGuildOwnerID = configVariables.DiscordGuildOwner;
                 DiscordEventChannelID = configVariables.DiscordEventChannelID;
                 DiscordStreamAnnouncementChannelID = configVariables.DiscordStreamAnnouncementChannelID;
                 DiscordLinkingChannelID = configVariables.DiscordLinkingChannelID;

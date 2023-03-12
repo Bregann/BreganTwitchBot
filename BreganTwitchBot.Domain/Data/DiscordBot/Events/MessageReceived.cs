@@ -129,7 +129,7 @@ namespace BreganTwitchBot.Domain.Data.DiscordBot.Events
 
         public static async Task CheckStreamLiveMessages(SocketMessage message)
         {
-            if (message.Content.ToLower().StartsWith("stream starts") && message.Author.Id == AppConfig.DiscordGuildOwner)
+            if (message.Content.ToLower().StartsWith("stream starts") && message.Author.Id == AppConfig.DiscordGuildOwnerID)
             {
                 var msg = message as IUserMessage;
 
@@ -146,7 +146,7 @@ namespace BreganTwitchBot.Domain.Data.DiscordBot.Events
                     return;
                 }
 
-                if (message.Author.Id == AppConfig.DiscordGuildOwner)
+                if (message.Author.Id == AppConfig.DiscordGuildOwnerID)
                 {
                     await DiscordHelper.SendMessage(message.Channel.Id, "https://i.imgur.com/pEjmRjb.png");
                     return;

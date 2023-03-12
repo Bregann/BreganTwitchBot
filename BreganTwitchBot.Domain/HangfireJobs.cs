@@ -404,7 +404,7 @@ namespace BreganTwitchBot.Domain
 
                 foreach (var user in birthdays)
                 {
-                    if (user.DiscordId == AppConfig.DiscordGuildOwner)
+                    if (user.DiscordId == AppConfig.DiscordGuildOwnerID)
                     {
                         await DiscordHelper.SendMessage(AppConfig.DiscordGeneralChannel, $"@everyone It's <@{user.DiscordId}> dumble birthday today! Happy Birthday <@{user.DiscordId}>! Make sure to ask him if he needs a nero :)");
                     }

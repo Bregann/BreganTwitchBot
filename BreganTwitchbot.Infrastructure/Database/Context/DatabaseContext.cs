@@ -23,6 +23,7 @@ namespace BreganTwitchBot.Infrastructure.Database.Context
         public DbSet<DiscordUserStats> DiscordUserStats { get; set; }
         public DbSet<UserGambleStats> UserGambleStats { get; set; }
         public DbSet<Watchtime> Watchtime { get; set; }
+        public DbSet<DiscordGiveaways> DiscordGiveaways { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
             => optionsBuilder.UseNpgsql(_connectionString);

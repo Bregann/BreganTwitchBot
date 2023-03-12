@@ -1,8 +1,8 @@
 ﻿using BreganTwitchBot.Domain.Data.DiscordBot;
 using BreganTwitchBot.Domain.Data.DiscordBot.Helpers;
 using BreganTwitchBot.Domain.Data.DiscordBot.SlashCommands.Data.GeneralCommands.BlocksSocks;
-using BreganTwitchBot.Domain.Data.DiscordBot.SlashCommands.Data.GeneralCommands.Giveaway;
 using BreganTwitchBot.Domain.Data.DiscordBot.SlashCommands.Data.GeneralCommands.Whois;
+using BreganTwitchBot.Domain.Data.DiscordBot.SlashCommands.Data.Giveaway;
 using BreganTwitchBot.Domain.Data.TwitchBot;
 using BreganTwitchBot.Infrastructure.Database.Context;
 using BreganTwitchBot.Infrastructure.Database.Models;
@@ -75,68 +75,6 @@ namespace BreganTwitchBot.Domain.Data.DiscordBot.SlashCommands.Modules.GeneralCo
         {
             var botUptime = DateTime.UtcNow - Process.GetCurrentProcess().StartTime.ToUniversalTime();
             await RespondAsync($"The bot has been up for {botUptime.Humanize(maxUnit: TimeUnit.Year, minUnit: TimeUnit.Second, precision: 7)}");
-        }
-
-        /*
-        [Command("refresh"), ChannelCheck()]
-        public async Task RefreshApi(CommandContext ctx)
-        {
-            if (ctx.User.Id == 196695995868774400 || ctx.User.Id == 219623957957967872)
-            {
-                try
-                {
-                    var refresh = await TwitchApiConnection.ApiClient.Auth.RefreshAuthTokenAsync(Config.BroadcasterRefresh, Config.TwitchApiSecret, Config.TwitchAPIOAuth);
-                    TwitchApiConnection.ApiClient.Settings.AccessToken = refresh.AccessToken;
-                    Config.BroadcasterRefresh = refresh.RefreshToken;
-                    Config.BroadcasterOAuth = refresh.AccessToken;
-
-                    var config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
-                    config.AppSettings.Settings["BroadcasterRefresh"].Value = refresh.RefreshToken;
-                    config.AppSettings.Settings["BroadcasterOAuth"].Value = refresh.AccessToken;
-                    config.Save(ConfigurationSaveMode.Modified);
-                    ConfigurationManager.RefreshSection("appSettings");
-                    Log.Information($"[Refresh Job] Token {refresh.AccessToken} successfully refreshed! Expires in: {refresh.ExpiresIn} | Refresh: {refresh.RefreshToken}");
-                }
-                catch (Exception e)
-                {
-                    Log.Fatal($"[Refresh Job] Error refreshing {e}");
-                    return;
-                }
-
-                //reset pusub
-                try
-                {
-                    PubSubConnection.PubSubClient.Disconnect();
-                    PubSubConnection.PubSubClient.ListenToBitsEventsV2(Config.TwitchChannelID);
-                    PubSubConnection.PubSubClient.ListenToFollows(Config.TwitchChannelID);
-                    PubSubConnection.PubSubClient.ListenToSubscriptions(Config.TwitchChannelID);
-                    PubSubConnection.PubSubClient.ListenToChannelPoints(Config.TwitchChannelID);
-                    PubSubConnection.PubSubClient.Connect();
-                }
-                catch (AggregateException e)
-                {
-                    Log.Fatal($"[Refresh Job] Error disconnecting from pubsub {e}");
-                    var pubSub = new PubSubConnection();
-                    pubSub.Connect();
-                }
-            }
-        }*/
-
-        [SlashCommand("winner", "omg hypixel rank")]
-        public async Task GIVEAWAY([Summary("messageid", "the message ID the bot gave you when starting the giveaway")] string msgId)
-        {
-            ulong.TryParse(msgId, out ulong convertedMsgId);
-            await DeferAsync();
-
-            var response = await Task.Run(async () => await GiveawayData.HandleGiveawayCommand(Context, convertedMsgId));
-
-            if (response == "lol")
-            {
-                await FollowupAsync($"And the winner is... <@{Context.User.Id}>");
-                return;
-            }
-
-            await FollowupAsync(response);
         }
 
         [SlashCommand("mute", "mute that melvin")]

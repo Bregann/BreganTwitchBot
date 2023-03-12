@@ -1,5 +1,5 @@
 ﻿using BreganTwitchBot.Domain.Data.DiscordBot.Helpers;
-using BreganTwitchBot.Domain.Data.DiscordBot.SlashCommands.Data.GeneralCommands.Giveaway;
+using BreganTwitchBot.Domain.Data.DiscordBot.SlashCommands.Data.Giveaway;
 using Discord.WebSocket;
 using Serilog;
 using System;
@@ -161,23 +161,13 @@ namespace BreganTwitchBot.Domain.Data.DiscordBot.Events
             }
         }
 
-        //todo: redo the giveaway system
-        public static async Task HandleGiveawayButton(SocketMessageComponent arg)
+        public static async Task HandleGiveawayButtons(SocketMessageComponent arg)
         {
             if (arg.Channel.Id == AppConfig.DiscordGiveawayChannelID)
             {
-                var winner = await GiveawayData.HandleGiveawayButton(arg.User.Id, ulong.Parse(arg.Data.CustomId));
+                var response = await GiveawayData.HandleGiveawayButtonPressed(arg.User.Id, arg.Data.CustomId);
 
-                if (winner == "lol")
-                {
-                    await arg.FollowupAsync($"You silly goose obviously you can't roll the giveaway winner! what were you expecting? A message saying you won the rank? I would never say such a thing", ephemeral: true);
-                    Log.Information($"[Discord Giveaway] Jebaited user - {arg.User.Username}");
-                }
-                else
-                {
-                    await arg.FollowupAsync(winner);
-                    Log.Information($"[Discord Giveaway] Real user rolled");
-                }
+                await arg.FollowupAsync(response.Response, ephemeral: response.Ephemeral);
             }
         }
     }

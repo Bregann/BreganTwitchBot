@@ -1,5 +1,4 @@
-﻿using BreganTwitchBot.Core.DiscordBot.Services;
-using BreganTwitchBot.Domain;
+﻿using BreganTwitchBot.Domain;
 using BreganTwitchBot.Domain.Data.DiscordBot.Events;
 using BreganTwitchBot.Domain.Data.DiscordBot.Helpers;
 using Discord;
@@ -95,7 +94,7 @@ namespace BreganTwitchBot.Domain.Data.DiscordBot
             {
                 await ButtonPressedEvent.HandleButtonRoles(arg);
                 await ButtonPressedEvent.HandleNameEmojiButtons(arg);
-                await ButtonPressedEvent.HandleGiveawayButton(arg);
+                await ButtonPressedEvent.HandleGiveawayButtons(arg);
             }
             catch (Exception e)
             {
@@ -130,7 +129,7 @@ namespace BreganTwitchBot.Domain.Data.DiscordBot
                 Log.Information($"[Discord Message Received] Username: {arg.Author.Username} Message: {arg.Content} Channel: {arg.Channel.Name}");
                 await MessageReceivedEvent.CheckBlacklistedWords(arg);
                 await MessageReceivedEvent.CheckStreamLiveMessages(arg);
-                await MessageReceivedEvent.SendGiveawayMessage(arg);
+                await MessageReceivedEvent.HandleCustomCommand(arg);
                 MessageReceivedEvent.AddDiscordXp(arg);
             }
             catch (Exception e)
@@ -248,8 +247,6 @@ namespace BreganTwitchBot.Domain.Data.DiscordBot
                 Log.Information("[Discord Connection] Discord client already setup");
                 return;
             }
-
-            CustomCommands.SetupCustomCommands();
 
             await DiscordClient.SetGameAsync("many users", type: ActivityType.Watching);
             await DiscordClient.DownloadUsersAsync(DiscordClient.Guilds);

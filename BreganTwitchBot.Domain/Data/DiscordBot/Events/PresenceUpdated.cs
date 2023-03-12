@@ -32,7 +32,7 @@ namespace BreganTwitchBot.Domain.Data.DiscordBot.Events
             var previousStatusData = previous.Activities?.Where(x => x.Type == ActivityType.CustomStatus).FirstOrDefault() as CustomStatusGame;
             var newStatusData = newUserUpdate.Activities.Where(x => x.Type == ActivityType.CustomStatus).FirstOrDefault() as CustomStatusGame;
 
-            if (user.Id == AppConfig.DiscordGuildOwner)
+            if (user.Id == AppConfig.DiscordGuildOwnerID)
             {
                 //Check if the new status data is the same as the known current one
                 if (newStatusData != null)
