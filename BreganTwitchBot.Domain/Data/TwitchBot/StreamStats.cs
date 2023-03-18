@@ -145,7 +145,13 @@ namespace BreganTwitchBot.Domain.Data.TwitchBot
 
             using (var context = new DatabaseContext())
             {
-                var streamId = context.StreamStats.OrderBy(x => x.StreamId).Last().StreamId;
+                long streamId = 0;
+
+                if (context.StreamStats.Any())
+                {
+                    streamId = context.StreamStats.OrderBy(x => x.StreamId).Last().StreamId;
+                }
+
                 var newStreamId = streamId + 1;
 
                 //Clear out the tables

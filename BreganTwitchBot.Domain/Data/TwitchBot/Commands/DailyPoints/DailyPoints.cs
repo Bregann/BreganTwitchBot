@@ -63,7 +63,12 @@ namespace BreganTwitchBot.Domain.Data.TwitchBot.Commands.DailyPoints
                     using (var context = new DatabaseContext())
                     {
                         var usersToReset = context.DailyPoints.Where(x => x.PointsClaimedThisStream == false && x.CurrentStreak > 0);
-                        var top5LostStreaks = context.DailyPoints.Include(x => x.User).Where(x => x.PointsClaimedThisStream == false && x.CurrentStreak > 0).OrderByDescending(x => x.CurrentStreak).Take(5).ToList();
+                        var top5LostStreaks = context.DailyPoints
+                            .Include(x => x.User)
+                            .Where(x => x.PointsClaimedThisStream == false && x.CurrentStreak > 0)
+                            .OrderByDescending(x => x.CurrentStreak)
+                            .Take(5)
+                            .ToDictionary(x => x.User.Username, x => x.CurrentStreak);
                         var usersToAllowCollecting = context.DailyPoints.Where(x => x.PointsClaimedThisStream == true);
 
                         foreach (var user in usersToReset)
@@ -95,10 +100,10 @@ namespace BreganTwitchBot.Domain.Data.TwitchBot.Commands.DailyPoints
 
                         foreach (var user in top5LostStreaks)
                         {
-                            message += ($"{user.User.Username} - {user.CurrentStreak} day streak, ");
+                            message += ($"{user.Key} - {user.Value} day streak, ");
                         }
 
-                        TwitchHelper.SendMessage(message.Remove(message.Length - 1, 1));
+                        TwitchHelper.SendMessage(message.Remove(message.Length - 2, 2));
 
                         Log.Information("[Daily Points] Daily points reminder started and point collecting is allowed");
                         return;

@@ -92,6 +92,8 @@ namespace BreganTwitchBot.Infrastructure.Database.Context
                 BotChannelId = "",
                 AiEnabled = false,
                 SubathonActive = false,
+                HangfireUsername = "",
+                HangfirePassword = ""
             });
 
             modelBuilder.Entity<SlotMachine>().HasData(new SlotMachine

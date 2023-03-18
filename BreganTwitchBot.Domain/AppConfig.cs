@@ -51,7 +51,8 @@ namespace BreganTwitchBot
         public static bool SubathonActive { get; private set; }
 
         private static bool _doublePingJobStarted = false;
-
+        public static string HFUsername { get; private set; } = "";
+        public static string HFPassword { get; private set; } = "";
         public static void LoadConfig()
         {
             using (var context = new DatabaseContext())
@@ -94,6 +95,8 @@ namespace BreganTwitchBot
                 BotChannelId = configVariables.BotChannelId;
                 AiEnabled = configVariables.AiEnabled;
                 SubathonActive = configVariables.SubathonActive;
+                HFUsername = configVariables.HangfireUsername;
+                HFPassword = configVariables.HangfirePassword;
             }
         }
 

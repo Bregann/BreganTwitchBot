@@ -11,7 +11,6 @@ namespace BreganTwitchBot.Domain.Data.DiscordBot.SlashCommands.Data.Giveaway
 
     public class GiveawayData
     {
-
         public static async Task<GiveawayDataDto> HandleGiveawayButtonPressed(ulong userIdWhoPressed, string interactionId)
         {
             if (interactionId.EndsWith("-enter"))
@@ -26,7 +25,7 @@ namespace BreganTwitchBot.Domain.Data.DiscordBot.SlashCommands.Data.Giveaway
 
                         return new GiveawayDataDto
                         {
-                            Response = $"The winner of the giveaway is... <@{entries[rnd.Next(0, entries.Count + 1)]}>",
+                            Response = $"The winner of the giveaway is... <@{entries[rnd.Next(0, entries.Count)]}>",
                             Ephemeral = false
                         };
                     }
@@ -46,7 +45,7 @@ namespace BreganTwitchBot.Domain.Data.DiscordBot.SlashCommands.Data.Giveaway
                 {
                     return new GiveawayDataDto
                     {
-                        Response = $"You have entered the giveaway! You have {timesEntered} entries in the giveaway. You can earn more entries by watching the stream for longer",
+                        Response = $"You have entered the giveaway! You have **{timesEntered}** entries in the giveaway. You can earn more entries by watching the stream for longer",
                         Ephemeral = true
                     };
                 }
@@ -54,15 +53,15 @@ namespace BreganTwitchBot.Domain.Data.DiscordBot.SlashCommands.Data.Giveaway
 
             if (interactionId.EndsWith("-check"))
             {
-                var giveawayId = interactionId.Replace("-enter", "-check");
+                var giveawayId = interactionId.Replace("-check", "");
 
                 if (userIdWhoPressed == AppConfig.DiscordGuildOwnerID)
                 {
-                    return new GiveawayDataDto { Response = $"There are currently {GetUsersEntered(giveawayId)} people in the giveaway with a total of {GetTotalEntries(giveawayId)} entries", Ephemeral = true };
+                    return new GiveawayDataDto { Response = $"There are currently **{GetUsersEntered(giveawayId)}** people in the giveaway with a total of **{GetTotalEntries(giveawayId)}** entries", Ephemeral = true };
                 }
 
                 var entries = CheckentriesForUser(userIdWhoPressed, giveawayId);
-                return entries == 0 ? new GiveawayDataDto { Response = "You haven't entered the giveaway yet! Try clicking the other button", Ephemeral = true } : new GiveawayDataDto { Response = $"You have entered the giveaway! You have {entries} in the giveaway", Ephemeral = true };
+                return entries == 0 ? new GiveawayDataDto { Response = "You haven't entered the giveaway yet! Try clicking the other button", Ephemeral = true } : new GiveawayDataDto { Response = $"You have entered the giveaway! You have **{entries}** entries in the giveaway", Ephemeral = true };
             }
 
             return new GiveawayDataDto { Response = "", Ephemeral = true };
@@ -90,6 +89,7 @@ namespace BreganTwitchBot.Domain.Data.DiscordBot.SlashCommands.Data.Giveaway
                         EligbleToWin = false
                     });
 
+                    await context.SaveChangesAsync();
                     return 1;
                 }
 

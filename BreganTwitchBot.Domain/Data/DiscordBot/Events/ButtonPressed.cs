@@ -45,7 +45,7 @@ namespace BreganTwitchBot.Domain.Data.DiscordBot.Events
                         emojiToAdd = "";
                         break;
                     default:
-                        break;
+                        return;
                 }
 
                 var guild = DiscordConnection.DiscordClient.GetGuild(AppConfig.DiscordGuildID);
@@ -141,7 +141,7 @@ namespace BreganTwitchBot.Domain.Data.DiscordBot.Events
                         break;
 
                     default:
-                        break;
+                        return;
                 }
 
                 if (addedOrRemoved == true)
