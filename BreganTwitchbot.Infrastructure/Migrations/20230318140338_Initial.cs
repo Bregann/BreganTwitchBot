@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore.Migrations;
+﻿using System;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
@@ -34,7 +35,7 @@ namespace BreganTwitchBot.Infrastructure.Migrations
                 columns: table => new
                 {
                     Word = table.Column<string>(type: "text", nullable: false),
-                    WordType = table.Column<string>(type: "text", nullable: false)
+                    WordType = table.Column<int>(type: "integer", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -95,11 +96,29 @@ namespace BreganTwitchBot.Infrastructure.Migrations
                     ProjectMonitorApiKey = table.Column<string>(type: "text", nullable: false),
                     TwitchBotApiKey = table.Column<string>(type: "text", nullable: false),
                     TwitchBotApiRefresh = table.Column<string>(type: "text", nullable: false),
-                    BotChannelId = table.Column<string>(type: "text", nullable: false)
+                    BotChannelId = table.Column<string>(type: "text", nullable: false),
+                    AiEnabled = table.Column<bool>(type: "boolean", nullable: false),
+                    SubathonActive = table.Column<bool>(type: "boolean", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Config", x => x.BroadcasterName);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "DiscordGiveaways",
+                schema: "twitchbot_new",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    GiveawayId = table.Column<string>(type: "text", nullable: false),
+                    EligbleToWin = table.Column<bool>(type: "boolean", nullable: false),
+                    DiscordUserId = table.Column<decimal>(type: "numeric(20,0)", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_DiscordGiveaways", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -393,8 +412,8 @@ namespace BreganTwitchBot.Infrastructure.Migrations
             migrationBuilder.InsertData(
                 schema: "twitchbot_new",
                 table: "Config",
-                columns: new[] { "BroadcasterName", "BotChannelId", "BotName", "BotOAuth", "BroadcasterOAuth", "BroadcasterRefresh", "DailyPointsCollectingAllowed", "DiscordAPIKey", "DiscordBanRole", "DiscordCommandsChannelID", "DiscordEventChannelID", "DiscordGeneralChannel", "DiscordGiveawayChannelID", "DiscordGuildID", "DiscordGuildOwner", "DiscordLinkingChannelID", "DiscordRankUpAnnouncementChannelID", "DiscordReactionRoleChannelID", "DiscordSocksChannelID", "DiscordStreamAnnouncementChannelID", "HFConnectionString", "LastDailyPointsAllowed", "PinnedStreamDate", "PinnedStreamMessage", "PinnedStreamMessageId", "PointsName", "PrestigeCap", "ProjectMonitorApiKey", "StreamAnnounced", "SubathonTime", "TwitchAPIClientID", "TwitchAPISecret", "TwitchBotApiKey", "TwitchBotApiRefresh", "TwitchChannelID" },
-                values: new object[] { "", "", "", "", "", "", false, "", 0m, 0m, 0m, 0m, 0m, 0m, 0m, 0m, 0m, 0m, 0m, 0m, "", new DateTime(2023, 2, 20, 21, 54, 29, 559, DateTimeKind.Utc).AddTicks(7857), new DateTime(2023, 2, 20, 21, 54, 29, 559, DateTimeKind.Utc).AddTicks(7854), "", 0m, "", 0L, "", false, new TimeSpan(0, 0, 0, 0, 0), "", "", "", "", "" });
+                columns: new[] { "BroadcasterName", "AiEnabled", "BotChannelId", "BotName", "BotOAuth", "BroadcasterOAuth", "BroadcasterRefresh", "DailyPointsCollectingAllowed", "DiscordAPIKey", "DiscordBanRole", "DiscordCommandsChannelID", "DiscordEventChannelID", "DiscordGeneralChannel", "DiscordGiveawayChannelID", "DiscordGuildID", "DiscordGuildOwner", "DiscordLinkingChannelID", "DiscordRankUpAnnouncementChannelID", "DiscordReactionRoleChannelID", "DiscordSocksChannelID", "DiscordStreamAnnouncementChannelID", "HFConnectionString", "LastDailyPointsAllowed", "PinnedStreamDate", "PinnedStreamMessage", "PinnedStreamMessageId", "PointsName", "PrestigeCap", "ProjectMonitorApiKey", "StreamAnnounced", "SubathonActive", "SubathonTime", "TwitchAPIClientID", "TwitchAPISecret", "TwitchBotApiKey", "TwitchBotApiRefresh", "TwitchChannelID" },
+                values: new object[] { "", false, "", "", "", "", "", false, "", 0m, 0m, 0m, 0m, 0m, 0m, 0m, 0m, 0m, 0m, 0m, 0m, "", new DateTime(2023, 3, 17, 14, 3, 38, 354, DateTimeKind.Utc).AddTicks(7752), new DateTime(2023, 3, 17, 14, 3, 38, 354, DateTimeKind.Utc).AddTicks(7748), "", 0m, "", 0L, "", false, false, new TimeSpan(0, 0, 0, 0, 0), "", "", "", "", "" });
 
             migrationBuilder.InsertData(
                 schema: "twitchbot_new",
@@ -452,6 +471,10 @@ namespace BreganTwitchBot.Infrastructure.Migrations
 
             migrationBuilder.DropTable(
                 name: "DailyPoints",
+                schema: "twitchbot_new");
+
+            migrationBuilder.DropTable(
+                name: "DiscordGiveaways",
                 schema: "twitchbot_new");
 
             migrationBuilder.DropTable(

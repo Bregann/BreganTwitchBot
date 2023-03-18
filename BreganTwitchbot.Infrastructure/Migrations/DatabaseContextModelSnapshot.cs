@@ -45,9 +45,8 @@ namespace BreganTwitchBot.Infrastructure.Migrations
                     b.Property<string>("Word")
                         .HasColumnType("text");
 
-                    b.Property<string>("WordType")
-                        .IsRequired()
-                        .HasColumnType("text");
+                    b.Property<int>("WordType")
+                        .HasColumnType("integer");
 
                     b.HasKey("Word");
 
@@ -78,6 +77,9 @@ namespace BreganTwitchBot.Infrastructure.Migrations
                 {
                     b.Property<string>("BroadcasterName")
                         .HasColumnType("text");
+
+                    b.Property<bool>("AiEnabled")
+                        .HasColumnType("boolean");
 
                     b.Property<string>("BotChannelId")
                         .IsRequired()
@@ -173,6 +175,9 @@ namespace BreganTwitchBot.Infrastructure.Migrations
                     b.Property<bool>("StreamAnnounced")
                         .HasColumnType("boolean");
 
+                    b.Property<bool>("SubathonActive")
+                        .HasColumnType("boolean");
+
                     b.Property<TimeSpan>("SubathonTime")
                         .HasColumnType("interval");
 
@@ -204,6 +209,7 @@ namespace BreganTwitchBot.Infrastructure.Migrations
                         new
                         {
                             BroadcasterName = "",
+                            AiEnabled = false,
                             BotChannelId = "",
                             BotName = "",
                             BotOAuth = "",
@@ -224,14 +230,15 @@ namespace BreganTwitchBot.Infrastructure.Migrations
                             DiscordSocksChannelID = 0m,
                             DiscordStreamAnnouncementChannelID = 0m,
                             HFConnectionString = "",
-                            LastDailyPointsAllowed = new DateTime(2023, 2, 20, 21, 54, 29, 559, DateTimeKind.Utc).AddTicks(7857),
-                            PinnedStreamDate = new DateTime(2023, 2, 20, 21, 54, 29, 559, DateTimeKind.Utc).AddTicks(7854),
+                            LastDailyPointsAllowed = new DateTime(2023, 3, 17, 14, 3, 38, 354, DateTimeKind.Utc).AddTicks(7752),
+                            PinnedStreamDate = new DateTime(2023, 3, 17, 14, 3, 38, 354, DateTimeKind.Utc).AddTicks(7748),
                             PinnedStreamMessage = "",
                             PinnedStreamMessageId = 0m,
                             PointsName = "",
                             PrestigeCap = 0L,
                             ProjectMonitorApiKey = "",
                             StreamAnnounced = false,
+                            SubathonActive = false,
                             SubathonTime = new TimeSpan(0, 0, 0, 0, 0),
                             TwitchAPIClientID = "",
                             TwitchAPISecret = "",
@@ -286,6 +293,29 @@ namespace BreganTwitchBot.Infrastructure.Migrations
                         .IsUnique();
 
                     b.ToTable("DailyPoints", "twitchbot_new");
+                });
+
+            modelBuilder.Entity("BreganTwitchBot.Infrastructure.Database.Models.DiscordGiveaways", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<decimal>("DiscordUserId")
+                        .HasColumnType("numeric(20,0)");
+
+                    b.Property<bool>("EligbleToWin")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("GiveawayId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("DiscordGiveaways", "twitchbot_new");
                 });
 
             modelBuilder.Entity("BreganTwitchBot.Infrastructure.Database.Models.DiscordLinkRequests", b =>

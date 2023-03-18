@@ -15,7 +15,7 @@ namespace BreganTwitchBot.Domain.Data.TwitchBot.Commands.TwitchBosses
         private static List<string> _twitchModsAndVIPs = new();
         private static bool _bossCountdownEnabled;
         private static bool _bossInProgress;
-        //todo: make the boss fight a bit more random or just redo it tbh
+
         public static async Task StartBossFight()
         {
             try
