@@ -7,14 +7,14 @@ namespace BreganTwitchBot.Domain.Data.DiscordBot.SlashCommands.Modules.Leaderboa
 {
     public class LeaderboardsModule : InteractionModuleBase<SocketInteractionContext>
     {
-        [SlashCommand("pointslb", "Get top 25 user points")]
+        [SlashCommand("pointslb", "Get top 24 user points")]
         public async Task GetPointsLb()
         {
             var dict = DiscordLeaderboards.GetLeaderboard(DiscordLeaderboardType.Points);
             var embed = new EmbedBuilder
             {
                 Title = $"{AppConfig.PointsName} Leaderboard",
-                Description = "Top 250 found at http://bot.bregan.me"
+                Description = "Top 250 found at https://bot.bregan.me"
             };
 
             for (int i = 0; i < dict.Count; i++)
@@ -25,14 +25,14 @@ namespace BreganTwitchBot.Domain.Data.DiscordBot.SlashCommands.Modules.Leaderboa
             await RespondAsync(embed: embed.Build());
         }
 
-        [SlashCommand("hourslb", "Get top 25 user hours")]
+        [SlashCommand("hourslb", "Get top 24 user hours")]
         public async Task GetHoursLb()
         {
             var dict = DiscordLeaderboards.GetHoursLeaderboard(DiscordLeaderboardType.AllTimeHours);
             var embed = new EmbedBuilder
             {
                 Title = $"Hours Leaderboard",
-                Description = "Top 250 found at http://bot.bregan.me"
+                Description = "Top 250 found at https://bot.bregan.me"
             };
 
             for (int i = 0; i < dict.Count; i++)
@@ -44,7 +44,7 @@ namespace BreganTwitchBot.Domain.Data.DiscordBot.SlashCommands.Modules.Leaderboa
             await RespondAsync(embed: embed.Build());
         }
 
-        [SlashCommand("marbleslb", "Get top 25 marbles wins")]
+        [SlashCommand("marbleslb", "Get top 24 marbles wins")]
         public async Task GetMarblesWinsLb()
         {
             //await ctx.TriggerTypingAsync();
@@ -52,7 +52,7 @@ namespace BreganTwitchBot.Domain.Data.DiscordBot.SlashCommands.Modules.Leaderboa
             var embed = new EmbedBuilder
             {
                 Title = $"Marbles Wins Leaderboard",
-                Description = "Top 250 found at http://bot.bregan.me"
+                Description = "Top 250 found at https://bot.bregan.me"
             };
 
             for (int i = 0; i < dict.Count; i++)
@@ -63,7 +63,7 @@ namespace BreganTwitchBot.Domain.Data.DiscordBot.SlashCommands.Modules.Leaderboa
             await RespondAsync(embed: embed.Build());
         }
 
-        [SlashCommand("dailystreaklb", "Get top 25 twitch daily streaks")]
+        [SlashCommand("dailystreaklb", "Get top 24 twitch daily streaks")]
         public async Task GetStreakLb()
         {
             //await ctx.TriggerTypingAsync();
@@ -71,7 +71,7 @@ namespace BreganTwitchBot.Domain.Data.DiscordBot.SlashCommands.Modules.Leaderboa
             var embed = new EmbedBuilder
             {
                 Title = $"Current Daily Streak Leaderboard",
-                Description = "Top 250 found at http://bot.bregan.me"
+                Description = "Top 250 found at https://bot.bregan.me"
             };
 
             for (int i = 0; i < dict.Count; i++)
@@ -82,7 +82,7 @@ namespace BreganTwitchBot.Domain.Data.DiscordBot.SlashCommands.Modules.Leaderboa
             await RespondAsync(embed: embed.Build());
         }
 
-        [SlashCommand("discordlevellb", "Get top 25 discord user levels")]
+        [SlashCommand("discordlevellb", "Get top 24 discord user levels")]
         public async Task GetDiscordLevelLb()
         {
             //await ctx.TriggerTypingAsync();
@@ -90,7 +90,7 @@ namespace BreganTwitchBot.Domain.Data.DiscordBot.SlashCommands.Modules.Leaderboa
             var embed = new EmbedBuilder
             {
                 Title = $"Discord Level Leaderboard",
-                Description = "Top 250 found at http://bot.bregan.me"
+                Description = "Top 250 found at https://bot.bregan.me"
             };
 
             for (int i = 0; i < dict.Count; i++)
@@ -101,7 +101,7 @@ namespace BreganTwitchBot.Domain.Data.DiscordBot.SlashCommands.Modules.Leaderboa
             await RespondAsync(embed: embed.Build());
         }
 
-        [SlashCommand("discordxplb", "Get top 25 discord user xp")]
+        [SlashCommand("discordxplb", "Get top 24 discord user xp")]
         public async Task GetDiscordXPLb()
         {
             //await ctx.TriggerTypingAsync();
@@ -109,7 +109,7 @@ namespace BreganTwitchBot.Domain.Data.DiscordBot.SlashCommands.Modules.Leaderboa
             var embed = new EmbedBuilder
             {
                 Title = $"Discord XP Leaderboard",
-                Description = "Top 250 found at http://bot.bregan.me"
+                Description = "Top 250 found at https://bot.bregan.me"
             };
 
             for (int i = 0; i < dict.Count; i++)
@@ -120,7 +120,7 @@ namespace BreganTwitchBot.Domain.Data.DiscordBot.SlashCommands.Modules.Leaderboa
             await RespondAsync(embed: embed.Build());
         }
 
-        [SlashCommand("streamhourslb", "Get top 25 current twitch stream hours")]
+        [SlashCommand("streamhourslb", "Get top 24 current twitch stream hours")]
         public async Task GetStreamHoursLb()
         {
             //await ctx.TriggerTypingAsync();
@@ -128,7 +128,7 @@ namespace BreganTwitchBot.Domain.Data.DiscordBot.SlashCommands.Modules.Leaderboa
             var embed = new EmbedBuilder
             {
                 Title = $"Stream Hours Leaderboard",
-                Description = "Top 250 found at http://bot.bregan.me"
+                Description = "Top 250 found at https://bot.bregan.me"
             };
 
             for (int i = 0; i < dict.Count; i++)
@@ -140,7 +140,7 @@ namespace BreganTwitchBot.Domain.Data.DiscordBot.SlashCommands.Modules.Leaderboa
             await RespondAsync(embed: embed.Build());
         }
 
-        [SlashCommand("weeklyhourslb", "Get top 25 weekly twitch stream hours")]
+        [SlashCommand("weeklyhourslb", "Get top 24 weekly twitch stream hours")]
         public async Task GetWeeklyHoursLb()
         {
             //await ctx.TriggerTypingAsync();
@@ -148,7 +148,7 @@ namespace BreganTwitchBot.Domain.Data.DiscordBot.SlashCommands.Modules.Leaderboa
             var embed = new EmbedBuilder
             {
                 Title = $"Weekly Stream Hours Leaderboard",
-                Description = "Top 250 found at http://bot.bregan.me"
+                Description = "Top 250 found at https://bot.bregan.me"
             };
 
             for (int i = 0; i < dict.Count; i++)
@@ -160,7 +160,7 @@ namespace BreganTwitchBot.Domain.Data.DiscordBot.SlashCommands.Modules.Leaderboa
             await RespondAsync(embed: embed.Build());
         }
 
-        [SlashCommand("monthlyhourslb", "Get top 25 monthly twitch stream hours")]
+        [SlashCommand("monthlyhourslb", "Get top 24 monthly twitch stream hours")]
         public async Task GetMonthlyHoursLb()
         {
             //await ctx.TriggerTypingAsync();
@@ -168,7 +168,7 @@ namespace BreganTwitchBot.Domain.Data.DiscordBot.SlashCommands.Modules.Leaderboa
             var embed = new EmbedBuilder
             {
                 Title = $"Monthly Stream Hours Leaderboard",
-                Description = "Top 250 found at http://bot.bregan.me"
+                Description = "Top 250 found at https://bot.bregan.me"
             };
 
             for (int i = 0; i < dict.Count; i++)
