@@ -1,14 +1,13 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using BreganTwitchBot.Infrastructure.Database.Enums;
+using System.ComponentModel.DataAnnotations;
 
 namespace BreganTwitchBot.Infrastructure.Database.Models
 {
     public class Blacklist
     {
         [Key]
-        [Required]
-        public string Word { get; set; }
+        public required string Word { get; set; }
 
-        [Required]
-        public string WordType { get; set; }
+        public required WordTypes WordType { get; set; }
     }
 }

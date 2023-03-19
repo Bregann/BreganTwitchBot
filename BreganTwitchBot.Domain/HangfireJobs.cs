@@ -1,24 +1,17 @@
-﻿using BreganTwitchBot.Core.DiscordBot.Services;
+﻿using BreganTwitchBot.Domain.Data.DiscordBot;
+using BreganTwitchBot.Domain.Data.DiscordBot.Helpers;
+using BreganTwitchBot.Domain.Data.TwitchBot;
+using BreganTwitchBot.Domain.Data.TwitchBot.Commands.DailyPoints;
+using BreganTwitchBot.Domain.Data.TwitchBot.Commands.TwitchBosses;
+using BreganTwitchBot.Domain.Data.TwitchBot.Helpers;
+using BreganTwitchBot.Domain.Data.TwitchBot.WordBlacklist;
 using BreganTwitchBot.Infrastructure.Database.Context;
-using BreganTwitchBot.DiscordBot.Helpers;
-using BreganTwitchBot.Domain.Bot.Twitch.Commands.Modules.DailyPoints;
-using BreganTwitchBot.Domain.Bot.Twitch.Commands.Modules.TwitchBosses;
-using BreganTwitchBot.Domain.Bot.Twitch.Commands.Modules.WordBlacklist;
-using BreganTwitchBot.Domain.Bot.Twitch.Helpers;
-using BreganTwitchBot.Domain.Bot.Twitch.Services;
-using BreganTwitchBot.Domain.Bot.Twitch.Services.Stats;
 using BreganUtils;
 using BreganUtils.ProjectMonitor.Projects;
 using Discord;
 using Hangfire;
 using Serilog;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using TwitchLib.Client.Extensions;
-using BreganTwitchBot.Services;
 
 namespace BreganTwitchBot.Domain
 {
@@ -33,9 +26,9 @@ namespace BreganTwitchBot.Domain
             RecurringJob.AddOrUpdate("BigBenBong", () => BigBenBong(), "0 * * * *");
             RecurringJob.AddOrUpdate("CheckDailyPointsStreamStatus", () => CheckDailyPointsStreamStatus(), "*/30 * * * * *");
             RecurringJob.AddOrUpdate("RefreshApi", () => RefreshApi(), "45 * * * *");
-            RecurringJob.AddOrUpdate("TimeTrackerHoursUpdate", () => TimeTrackerHoursUpdate(), "* * * * *");
+            RecurringJob.AddOrUpdate("TimeTrackerHoursUpdate", () => TimeTrackerHoursUpdate(), "* * * * *"); //every minute
             RecurringJob.AddOrUpdate("GetStreamStatus", () => GetStreamStatus(), "*/20 * * * * *");
-            RecurringJob.AddOrUpdate("StreamStatsViewerUpdate", () => StreamStatsViewerUpdate(), "* * * * *");
+            RecurringJob.AddOrUpdate("StreamStatsViewerUpdate", () => StreamStatsViewerUpdate(), "* * * * *"); //every minute
             RecurringJob.AddOrUpdate("AnnounceDiscord", () => AnnounceDiscord(), "30 * * * *");
             RecurringJob.AddOrUpdate("ClearWarnedUsers", () => ClearWarnedUsers(), "*/5 * * * *");
             RecurringJob.AddOrUpdate("ResetMinutes", () => ResetMinutes(), "0 3 * * *");
@@ -45,13 +38,10 @@ namespace BreganTwitchBot.Domain
             RecurringJob.AddOrUpdate("UpdateLeaderboardRoles", () => UpdateLeaderboardRoles(), "0 2 * * *");
             RecurringJob.AddOrUpdate("DiscordDailyReset", () => DiscordDailyReset(), "0 3 * * *");
             RecurringJob.AddOrUpdate("CheckBirthdays", () => CheckBirthdays(), "0 6 * * *");
-            Log.Information("[Job Scheduler] Job Scheduler Setup");
-        }
+            RecurringJob.AddOrUpdate("DailyPointsReminder", () => DailyPointsAnnouncementJob(), "20 * * * *");
 
-        public static void CreateDailyPointsReminder()
-        {
-            TwitchHelper.SendMessage($"Don't forget to claim your daily {AppConfig.PointsName} with !daily PogChamp");
-            RecurringJob.AddOrUpdate("DailyPointsReminder", () => TwitchHelper.SendMessage($"Don't forget to claim your daily {AppConfig.PointsName} with !daily PogChamp"), "20 * * * *");
+            //todo: add a job for every 5 mins, get active chatters and update users in stream
+            Log.Information("[Job Scheduler] Job Scheduler Setup");
         }
 
         public static void DeleteDailyPointsReminderJob()
@@ -73,6 +63,14 @@ namespace BreganTwitchBot.Domain
             BackgroundJob.Schedule(() => TurnFollowersOn(), TimeSpan.FromMinutes(2));
 
             _raidFollowersJobStarted = true;
+        }
+
+        public static void DailyPointsAnnouncementJob()
+        {
+            if (AppConfig.DailyPointsCollectingAllowed)
+            {
+                TwitchHelper.SendMessage($"Don't forget to claim your daily {AppConfig.PointsName} with !daily PogChamp");
+            }
         }
 
         public static void StartDoublePingPreventionJob()
@@ -232,7 +230,7 @@ namespace BreganTwitchBot.Domain
 
         public static void ClearWarnedUsers()
         {
-            WordBlacklist.ClearOutWarnedUsers();
+            WordBlacklistData.ClearOutWarnedUsers();
         }
 
         public static void ResetMinutes()
@@ -241,7 +239,7 @@ namespace BreganTwitchBot.Domain
             {
                 using (var dbContext = new DatabaseContext())
                 {
-                    var usersToReset = dbContext.Users.Where(x => x.MinutesWatchedThisMonth != 0).ToList();
+                    var usersToReset = dbContext.Watchtime.Where(x => x.MinutesWatchedThisMonth != 0).ToList();
 
                     foreach (var user in usersToReset)
                     {
@@ -257,7 +255,7 @@ namespace BreganTwitchBot.Domain
             {
                 using (var dbContext = new DatabaseContext())
                 {
-                    var usersToReset = dbContext.Users.Where(x => x.MinutesWatchedThisWeek != 0).ToList();
+                    var usersToReset = dbContext.Watchtime.Where(x => x.MinutesWatchedThisWeek != 0).ToList();
 
                     foreach (var user in usersToReset)
                     {
@@ -271,7 +269,7 @@ namespace BreganTwitchBot.Domain
 
             using (var dbContext = new DatabaseContext())
             {
-                var usersToReset = dbContext.Users.Where(x => x.MinutesWatchedThisStream != 0).ToList();
+                var usersToReset = dbContext.Watchtime.Where(x => x.MinutesWatchedThisStream != 0).ToList();
 
                 foreach (var user in usersToReset)
                 {
@@ -345,7 +343,11 @@ namespace BreganTwitchBot.Domain
                 messageEmbed.AddField("Change", (newFollowerCount.TotalFollows - _currentFollowerCount).ToString());
 
                 var channel = await DiscordConnection.DiscordClient.GetChannelAsync(AppConfig.DiscordEventChannelID) as IMessageChannel;
-                await channel.SendMessageAsync(embed: messageEmbed.Build());
+
+                if (channel != null)
+                {
+                    await channel.SendMessageAsync(embed: messageEmbed.Build());
+                }
 
                 _currentFollowerCount = newFollowerCount.TotalFollows;
             }
@@ -375,14 +377,13 @@ namespace BreganTwitchBot.Domain
         {
             using (var dbContext = new DatabaseContext())
             {
-                var usersToUpdate = dbContext.Users.Where(x => x.DiscordDailyClaimed == true).ToList();
+                var usersToUpdate = dbContext.DailyPoints.Where(x => x.DiscordDailyClaimed == true).ToList();
 
                 foreach (var user in usersToUpdate)
                 {
                     user.DiscordDailyClaimed = false;
                 }
 
-                dbContext.Users.UpdateRange(usersToUpdate);
                 dbContext.SaveChanges();
             }
 
@@ -403,7 +404,7 @@ namespace BreganTwitchBot.Domain
 
                 foreach (var user in birthdays)
                 {
-                    if (user.DiscordId == AppConfig.DiscordGuildOwner)
+                    if (user.DiscordId == AppConfig.DiscordGuildOwnerID)
                     {
                         await DiscordHelper.SendMessage(AppConfig.DiscordGeneralChannel, $"@everyone It's <@{user.DiscordId}> dumble birthday today! Happy Birthday <@{user.DiscordId}>! Make sure to ask him if he needs a nero :)");
                     }

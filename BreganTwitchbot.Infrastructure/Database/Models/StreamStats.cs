@@ -5,127 +5,86 @@ namespace BreganTwitchBot.Infrastructure.Database.Models
     public class StreamStats
     {
         [Key]
-        [Required]
-        public long StreamId { get; set; }
+        public required long StreamId { get; set; }
 
-        [Required]
         public double AvgViewCount { get; set; }
 
-        [Required]
         public long PeakViewerCount { get; set; }
 
-        [Required]
-        public long BitsDonated { get; set; }
+        public required long BitsDonated { get; set; }
 
-        [Required]
-        public long CommandsSent { get; set; }
+        public required long CommandsSent { get; set; }
 
-        [Required]
-        public long DiscordRanksEarnt { get; set; }
+        public required long DiscordRanksEarnt { get; set; }
 
-        [Required]
-        public long StartingFollowerCount { get; set; }
+        public required long StartingFollowerCount { get; set; }
 
-        [Required]
-        public long EndingFollowerCount { get; set; }
+        public required long EndingFollowerCount { get; set; }
 
-        [Required]
-        public long StartingSubscriberCount { get; set; }
+        public required long StartingSubscriberCount { get; set; }
 
-        [Required]
-        public long EndingSubscriberCount { get; set; }
+        public required long EndingSubscriberCount { get; set; }
 
-        [Required]
-        public long MessagesReceived { get; set; }
+        public required long MessagesReceived { get; set; }
 
-        [Required]
-        public long NewFollowers { get; set; }
+        public required long NewFollowers { get; set; }
 
-        [Required]
-        public long NewSubscribers { get; set; }
+        public required long NewSubscribers { get; set; }
 
-        [Required]
-        public long PointsGainedSubscribing { get; set; }
+        public required long PointsGainedSubscribing { get; set; }
 
-        [Required]
-        public long PointsGainedWatching { get; set; }
+        public required long PointsGainedWatching { get; set; }
 
-        [Required]
-        public long PointsGambled { get; set; }
+        public required long PointsGambled { get; set; }
 
-        [Required]
-        public long PointsLost { get; set; }
+        public required long PointsLost { get; set; }
 
-        [Required]
-        public long PointsWon { get; set; }
+        public required long PointsWon { get; set; }
 
-        [Required]
-        public long SongRequestsBlacklisted { get; set; }
+        public required long SongRequestsBlacklisted { get; set; }
 
-        [Required]
-        public long SongRequestsLiked { get; set; }
+        public required long SongRequestsLiked { get; set; }
 
-        [Required]
-        public long SongRequestsSent { get; set; }
+        public required long SongRequestsSent { get; set; }
 
-        [Required]
-        public long TotalBans { get; set; }
+        public required long TotalBans { get; set; }
 
-        [Required]
-        public long TotalTimeouts { get; set; }
+        public required long TotalTimeouts { get; set; }
 
-        [Required]
-        public long NewGiftedSubs { get; set; }
+        public required long NewGiftedSubs { get; set; }
 
-        [Required]
-        public long UniquePeople { get; set; }
+        public required long UniquePeople { get; set; }
 
-        [Required]
         public TimeSpan Uptime { get; set; }
 
-        [Required]
-        public DateTime StreamStarted { get; set; }
+        public required DateTime StreamStarted { get; set; }
 
-        [Required]
         public DateTime StreamEnded { get; set; }
 
-        [Required]
-        public long GiftedPoints { get; set; }
+        public required long GiftedPoints { get; set; }
 
-        [Required]
-        public long TotalSpins { get; set; }
+        public required long TotalSpins { get; set; }
 
-        [Required]
-        public long KappaWins { get; set; }
+        public required long KappaWins { get; set; }
 
-        [Required]
-        public long ForeheadWins { get; set; }
+        public required long ForeheadWins { get; set; }
 
-        [Required]
-        public long LulWins { get; set; }
+        public required long LulWins { get; set; }
 
-        [Required]
-        public long SmorcWins { get; set; }
+        public required long SmorcWins { get; set; }
 
-        [Required]
-        public long JackpotWins { get; set; }
+        public required long JackpotWins { get; set; }
 
-        [Required]
-        public long TotalUsersClaimed { get; set; }
+        public required long TotalUsersClaimed { get; set; }
 
-        [Required]
-        public long TotalPointsClaimed { get; set; }
+        public required long TotalPointsClaimed { get; set; }
 
-        [Required]
-        public long AmountOfUsersReset { get; set; }
+        public required long AmountOfUsersReset { get; set; }
 
-        [Required]
-        public long AmountOfRewardsRedeemed { get; set; }
+        public required long AmountOfRewardsRedeemed { get; set; }
 
-        [Required]
-        public long RewardRedeemCost { get; set; }
+        public required long RewardRedeemCost { get; set; }
 
-        [Required]
-        public long AmountOfDiscordUsersJoined { get; set; }
+        public required long AmountOfDiscordUsersJoined { get; set; }
     }
 }

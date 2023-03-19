@@ -5,7 +5,7 @@ namespace BreganTwitchBot.Infrastructure.Database.Context
 {
     public class DatabaseContext : DbContext
     {
-        private static readonly string _connectionString = Environment.GetEnvironmentVariable("BTBConnString");
+        private static readonly string _connectionString = Environment.GetEnvironmentVariable("BTBConnString")!;
 
         public DbSet<Blacklist> Blacklist { get; set; }
         public DbSet<Commands> Commands { get; set; }
@@ -19,12 +19,39 @@ namespace BreganTwitchBot.Infrastructure.Database.Context
         public DbSet<Subathon> Subathon { get; set; }
         public DbSet<Birthdays> Birthdays { get; set; }
         public DbSet<RankBeggar> RankBeggar { get; set; }
+        public DbSet<DailyPoints> DailyPoints { get; set; }
+        public DbSet<DiscordUserStats> DiscordUserStats { get; set; }
+        public DbSet<UserGambleStats> UserGambleStats { get; set; }
+        public DbSet<Watchtime> Watchtime { get; set; }
+        public DbSet<DiscordGiveaways> DiscordGiveaways { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
             => optionsBuilder.UseNpgsql(_connectionString);
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            modelBuilder.HasDefaultSchema("twitchbot_new");
+
+            modelBuilder.Entity<Users>()
+                .HasOne(b => b.DailyPoints)
+                .WithOne(i => i.User)
+                .HasForeignKey<DailyPoints>(b => b.TwitchUserId);
+
+            modelBuilder.Entity<Users>()
+                .HasOne(b => b.DiscordUserStats)
+                .WithOne(i => i.User)
+                .HasForeignKey<DiscordUserStats>(b => b.TwitchUserId);
+
+            modelBuilder.Entity<Users>()
+                .HasOne(b => b.UserGambleStats)
+                .WithOne(i => i.User)
+                .HasForeignKey<UserGambleStats>(b => b.TwitchUserId);
+
+            modelBuilder.Entity<Users>()
+                .HasOne(b => b.Watchtime)
+                .WithOne(i => i.User)
+                .HasForeignKey<Watchtime>(b => b.TwitchUserId);
+
             //Seed in the data
             modelBuilder.Entity<Config>().HasData(new Config
             {
@@ -62,7 +89,11 @@ namespace BreganTwitchBot.Infrastructure.Database.Context
                 HFConnectionString = "",
                 TwitchBotApiKey = "",
                 TwitchBotApiRefresh = "",
-                BotChannelId = ""
+                BotChannelId = "",
+                AiEnabled = false,
+                SubathonActive = false,
+                HangfireUsername = "",
+                HangfirePassword = ""
             });
 
             modelBuilder.Entity<SlotMachine>().HasData(new SlotMachine

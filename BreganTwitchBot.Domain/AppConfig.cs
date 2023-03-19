@@ -1,11 +1,9 @@
-﻿using BreganTwitchBot.Core;
+﻿using BreganTwitchBot.Domain;
+using BreganTwitchBot.Domain.Data.DiscordBot.Helpers;
+using BreganTwitchBot.Domain.Data.TwitchBot;
 using BreganTwitchBot.Infrastructure.Database.Context;
-using BreganTwitchBot.DiscordBot.Helpers;
-using BreganTwitchBot.Domain.Bot.Twitch.Services;
-using BreganTwitchBot.Domain.Bot.Twitch.Services.Stats;
 using BreganUtils.ProjectMonitor.Projects;
 using Serilog;
-using BreganTwitchBot.Domain;
 
 namespace BreganTwitchBot
 {
@@ -13,25 +11,25 @@ namespace BreganTwitchBot
     {
         //Hardcoded config
         //Fields are loaded from DB
-        public static string BroadcasterName { get; private set; }
+        public static string BroadcasterName { get; private set; } = "";
 
-        public static string BroadcasterOAuth { get; private set; }
-        public static string BroadcasterRefresh { get; private set; }
+        public static string BroadcasterOAuth { get; private set; } = "";
+        public static string BroadcasterRefresh { get; private set; } = "";
         public static bool DailyPointsCollectingAllowed { get; private set; } = false;
         public static bool StreamAnnounced { get; private set; } = false;
         public static bool StreamerLive { get; private set; } = false;
         public static TimeSpan SubathonTime { get; private set; }
-        public static string PinnedStreamMessage { get; private set; }
+        public static string PinnedStreamMessage { get; private set; } = "";
         public static ulong PinnedStreamMessageId { get; private set; }
         public static DateTime PinnedMessageDate { get; private set; }
-        public static string BotName { get; private set; }
-        public static string PointsName { get; private set; }
-        public static string TwitchChannelID { get; private set; }
-        public static string BotOAuth { get; private set; }
-        public static string TwitchAPIClientID { get; private set; }
-        public static string TwitchAPISecret { get; private set; }
-        public static string DiscordAPIKey { get; private set; }
-        public static ulong DiscordGuildOwner { get; private set; }
+        public static string BotName { get; private set; } = "";
+        public static string PointsName { get; private set; } = "";
+        public static string TwitchChannelID { get; private set; } = "";
+        public static string BotOAuth { get; private set; } = "";
+        public static string TwitchAPIClientID { get; private set; } = "";
+        public static string TwitchAPISecret { get; private set; } = "";
+        public static string DiscordAPIKey { get; private set; } = "";
+        public static ulong DiscordGuildOwnerID { get; private set; }
         public static ulong DiscordEventChannelID { get; private set; }
         public static ulong DiscordStreamAnnouncementChannelID { get; private set; }
         public static ulong DiscordLinkingChannelID { get; private set; }
@@ -44,16 +42,17 @@ namespace BreganTwitchBot
         public static ulong DiscordGuildID { get; private set; }
         public static ulong DiscordBanRole { get; private set; }
         public static long PrestigeCap { get; private set; }
-        public static string HFConnectionString { get; private set; }
-        public static string ProjectMonitorApiKey { get; private set; }
-        public static string TwitchBotApiKey { get; private set; }
-        public static string TwitchBotApiRefresh { get; private set; }
-        public static string BotChannelId { get; private set; }
-
+        public static string HFConnectionString { get; private set; } = "";
+        public static string ProjectMonitorApiKey { get; private set; } = "";
+        public static string TwitchBotApiKey { get; private set; } = "";
+        public static string TwitchBotApiRefresh { get; private set; } = "";
+        public static string BotChannelId { get; private set; } = "";
+        public static bool AiEnabled { get; private set; }
+        public static bool SubathonActive { get; private set; }
 
         private static bool _doublePingJobStarted = false;
-        public static readonly bool SubathonActive = false;
-
+        public static string HFUsername { get; private set; } = "";
+        public static string HFPassword { get; private set; } = "";
         public static void LoadConfig()
         {
             using (var context = new DatabaseContext())
@@ -76,7 +75,7 @@ namespace BreganTwitchBot
                 TwitchAPIClientID = configVariables.TwitchAPIClientID;
                 TwitchAPISecret = configVariables.TwitchAPISecret;
                 DiscordAPIKey = configVariables.DiscordAPIKey;
-                DiscordGuildOwner = configVariables.DiscordGuildOwner;
+                DiscordGuildOwnerID = configVariables.DiscordGuildOwner;
                 DiscordEventChannelID = configVariables.DiscordEventChannelID;
                 DiscordStreamAnnouncementChannelID = configVariables.DiscordStreamAnnouncementChannelID;
                 DiscordLinkingChannelID = configVariables.DiscordLinkingChannelID;
@@ -94,6 +93,10 @@ namespace BreganTwitchBot
                 TwitchBotApiKey = configVariables.TwitchBotApiKey;
                 TwitchBotApiRefresh = configVariables.TwitchBotApiRefresh;
                 BotChannelId = configVariables.BotChannelId;
+                AiEnabled = configVariables.AiEnabled;
+                SubathonActive = configVariables.SubathonActive;
+                HFUsername = configVariables.HangfireUsername;
+                HFPassword = configVariables.HangfirePassword;
             }
         }
 
@@ -110,6 +113,13 @@ namespace BreganTwitchBot
             }
         }
 
+        /*
+         * https://id.twitch.tv/oauth2/authorize?response_type=code
+                &client_id=
+                &redirect_uri=http://localhost
+                &scope=bits%3Aread%20channel%3Amanage%3Abroadcast%20channel%3Amanage%3Apolls%20channel%3Amanage%3Apredictions%20channel%3Amanage%3Aredemptions%20channel%3Aread%3Ahype_train%20channel%3Aread%3Apolls%20channel%3Aread%3Apredictions%20channel%3Aread%3Aredemptions%20channel%3Aread%3Asubscriptions%20channel%3Aread%3Avips%20channel%3Amanage%3Avips%20moderation%3Aread%20user%3Amanage%3Ablocked_users
+         */
+
         public static void UpdateStreamerApiCredentials(string refreshToken, string accessToken)
         {
             using (var context = new DatabaseContext())
@@ -125,7 +135,7 @@ namespace BreganTwitchBot
         }
 
 
-        /*
+        /* for the bot
          * https://id.twitch.tv/oauth2/authorize
                 ?response_type=code
                 &client_id=
@@ -224,6 +234,7 @@ namespace BreganTwitchBot
         public static void SetStreamAnnouncedToFalse() //this is only needed by the job scheduler for double pings
         {
             StreamAnnounced = false;
+            _doublePingJobStarted = false;
             ProjectMonitorBreganTwitchBot.SendStreamAnnouncedUpdate(false);
 
             using (var context = new DatabaseContext())
@@ -233,7 +244,7 @@ namespace BreganTwitchBot
             }
         }
 
-        public static void AddSubathonTime(TimeSpan tsToAdd)
+        public static async Task AddSubathonTime(TimeSpan tsToAdd)
         {
             SubathonTime += tsToAdd;
             Log.Information($"[Subathon Time] {SubathonTime}");
@@ -241,10 +252,15 @@ namespace BreganTwitchBot
             using (var context = new DatabaseContext())
             {
                 context.Config.First().SubathonTime = SubathonTime;
-                context.SaveChanges();
+                await context.SaveChangesAsync();
             }
 
             Log.Information($"[Subathon Time] {tsToAdd} added");
+        }
+
+        public static void ToggleAiEnabled()
+        {
+            AiEnabled = AiEnabled != true;
         }
     }
 }
