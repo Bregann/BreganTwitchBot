@@ -11,7 +11,7 @@ namespace BreganTwitchBot.Domain.Data.TwitchBot.Commands.Hours
         {
             if (message.ToLower() == "!hours" || message.ToLower() == "!hrs" || message.ToLower() == "!houres" || message.ToLower() == "!watchtime")
             {
-                var hours = GetUserTime(username, HoursWatchTypes.AllTime);
+                var hours = GetUserTime(userId, HoursWatchTypes.AllTime);
                 var hoursWatchedThisStream = GetUserTime(userId, HoursWatchTypes.Stream);
 
                 TwitchHelper.SendMessage($"@{username} => You have {hours.TotalMinutes} minutes (about {Math.Round(hours.TotalMinutes / 60, 2)} hours) in the stream. You are {GetTimeTillNextRank(userId)} (Minutes watched this stream - {hoursWatchedThisStream.TotalMinutes} (about {Math.Round(hoursWatchedThisStream.TotalMinutes / 60, 2)} hours)) Rank: {GetHoursWatchedRank(userId, HoursWatchTypes.AllTime)}");

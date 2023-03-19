@@ -104,8 +104,7 @@ namespace BreganTwitchBot.Domain.Data.TwitchBot.Helpers
                     return null;
                 }
 
-                return user.Username;
-
+                return user.TwitchUserId;
             }
         }
     }
