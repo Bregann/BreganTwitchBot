@@ -29,9 +29,16 @@ AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
 
 var builder = WebApplication.CreateBuilder(args);
 
-#if RELEASE
-builder.WebHost.UseUrls("http://localhost:5005");
-#endif
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy(name: "allowUrls",
+                      policy =>
+                      {
+                          policy.WithOrigins("http://localhost:3002", "https://botapi.bregan.me", "https://bot.bregan.me");
+                          policy.WithHeaders("Content-Type");
+                          policy.WithMethods("GET", "POST", "DELETE");
+                      });
+});
 
 // Add services to the container.
 JobStorage.Current = new PostgreSqlStorage(AppConfig.HFConnectionString, new PostgreSqlStorageOptions { SchemaName = "twitchbot" });
@@ -61,6 +68,8 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+
+app.UseCors("AllowAnyOrigin");
 
 app.UseHttpsRedirection();
 
