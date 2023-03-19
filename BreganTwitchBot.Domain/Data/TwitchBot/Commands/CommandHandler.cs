@@ -57,7 +57,7 @@ namespace BreganTwitchBot.Domain.Data.TwitchBot.Commands
                 case "delcmd" when TwitchHelper.IsUserSupermod(command.Command.ChatMessage.UserId):
                 case "cmddel" when command.Command.ChatMessage.IsModerator:
                 case "cmddel" when TwitchHelper.IsUserSupermod(command.Command.ChatMessage.UserId):
-                    await CustomCommands.CustomCommands.HandleRemoveCommand(command.Command.ChatMessage.Username, command.Command.CommandText.ToLower());
+                    await CustomCommands.CustomCommands.HandleRemoveCommand(command.Command.ChatMessage.Username, command.Command.CommandText.ToLower(), command.Command.ArgumentsAsList);
                     break;
                 case "editcmd" when command.Command.ChatMessage.IsModerator:
                 case "editcmd" when TwitchHelper.IsUserSupermod(command.Command.ChatMessage.UserId):

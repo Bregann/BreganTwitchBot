@@ -49,7 +49,7 @@ namespace BreganTwitchBot.Domain.Data.TwitchBot.Commands.CustomCommands
             return;
         }
 
-        public static async Task HandleRemoveCommand(string username, string commandName)
+        public static async Task HandleRemoveCommand(string username, string commandName, List<string> commandNameList)
         {
             //check if command has parameters
             if (commandName == "!delcmd" || commandName == "!cmddel")
@@ -61,7 +61,7 @@ namespace BreganTwitchBot.Domain.Data.TwitchBot.Commands.CustomCommands
 
             using (var context = new DatabaseContext())
             {
-                var commandAmountDeleted = await context.Commands.Where(x => x.CommandName == commandName).ExecuteDeleteAsync();
+                var commandAmountDeleted = await context.Commands.Where(x => x.CommandName == commandNameList[0].ToLower()).ExecuteDeleteAsync();
 
                 if (commandAmountDeleted == 0)
                 {
