@@ -78,7 +78,7 @@ namespace BreganTwitchBot.Domain.Data.DiscordBot.SlashCommands.Data.GeneralComma
 
                     using (var dbContext = new DatabaseContext())
                     {
-                        dbContext.Users.Where(x => x.DiscordUserId == context.User.Id).First().DailyPoints.DiscordDailyStreak = -1; //-1 as we set it again later (just lazy lol)
+                        dbContext.Users.Include(x => x.DailyPoints).Where(x => x.DiscordUserId == context.User.Id).First().DailyPoints.DiscordDailyStreak = -1; //-1 as we set it again later (just lazy lol)
                         dbContext.SaveChanges();
                     }
                     break;
