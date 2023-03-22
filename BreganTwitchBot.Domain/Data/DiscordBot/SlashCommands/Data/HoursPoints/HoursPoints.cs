@@ -9,7 +9,7 @@ namespace BreganTwitchBot.Domain.Data.DiscordBot.SlashCommands.Data.HoursPoints
 {
     public class HoursPointsData
     {
-        public static async Task<EmbedBuilder> HandleHoursCommand(SocketInteractionContext ctx, string optUsername, IUser discordUser)
+        public static EmbedBuilder HandleHoursCommand(SocketInteractionContext ctx, string optUsername, IUser discordUser)
         {
             var embed = new EmbedBuilder()
             {
@@ -90,7 +90,7 @@ namespace BreganTwitchBot.Domain.Data.DiscordBot.SlashCommands.Data.HoursPoints
             return embed;
         }
 
-        public static async Task<EmbedBuilder> HandlePointsCommand(SocketInteractionContext ctx, string optUsername, IUser discordUser)
+        public static EmbedBuilder HandlePointsCommand(SocketInteractionContext ctx, string optUsername, IUser discordUser)
         {
             var embed = new EmbedBuilder()
             {

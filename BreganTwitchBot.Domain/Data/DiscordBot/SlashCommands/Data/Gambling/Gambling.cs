@@ -147,6 +147,14 @@ namespace BreganTwitchBot.Domain.Data.DiscordBot.SlashCommands.Data.Gambling
                 user = dbContext.Users.Where(x => x.DiscordUserId == context.User.Id).FirstOrDefault();
             }
 
+            if (user == null)
+            {
+                embed.Title = "❌ Invalid user";
+                embed.Color = new Color(255, 0, 0);
+                embed.Description = "You don't exist apparently";
+                return embed;
+            }
+
             if (user.Points < convertedPoints)
             {
                 embed.Title = $"❌ Not enough {AppConfig.PointsName}";

@@ -10,7 +10,7 @@ namespace BreganTwitchBot.Domain.Data.DiscordBot.SlashCommands.Modules.HoursPoin
         public async Task GetUserHours([Summary("TwitchUsername", "Twitch username of user")] string twitchName = null, [Summary("DiscordUser", "the discord user")] IUser discordUser = null)
         {
             await DeferAsync();
-            var response = await Task.Run(async () => await HoursPointsData.HandleHoursCommand(Context, twitchName, discordUser));
+            var response = HoursPointsData.HandleHoursCommand(Context, twitchName, discordUser);
 
             if (response == null)
             {
@@ -25,7 +25,7 @@ namespace BreganTwitchBot.Domain.Data.DiscordBot.SlashCommands.Modules.HoursPoin
         public async Task GetUserPoints([Summary("TwitchUsername", "Twitch username of user")] string twitchName = null, [Summary("DiscordUser", "the discord user")] IUser discordUser = null)
         {
             await DeferAsync();
-            var response = await Task.Run(async () => await HoursPointsData.HandlePointsCommand(Context, twitchName, discordUser));
+            var response = HoursPointsData.HandlePointsCommand(Context, twitchName, discordUser);
 
             if (response == null)
             {
