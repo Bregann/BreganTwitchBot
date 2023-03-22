@@ -1,4 +1,4 @@
-﻿using BreganTwitchBot.Domain.Data.DiscordBot.SlashCommands.Data.GeneralCommands.DailyPoints;
+﻿using BreganTwitchBot.Domain.Data.DiscordBot.SlashCommands.Data.DailyPoints;
 using Discord.Interactions;
 
 namespace BreganTwitchBot.Domain.Data.DiscordBot.SlashCommands.Modules.DailyPoints
