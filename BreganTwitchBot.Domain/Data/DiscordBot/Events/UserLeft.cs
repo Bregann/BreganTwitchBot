@@ -30,7 +30,7 @@ namespace BreganTwitchBot.Domain.Data.DiscordBot.Events
                 {
                     var userTime = TimeSpan.FromMinutes(userFromDb.Watchtime.MinutesInStream);
 
-                    messageEmbed.AddField("Twitch username", user.Username);
+                    messageEmbed.AddField("Twitch username", userFromDb.Username);
                     messageEmbed.AddField("Minutes watched", userTime.Humanize(maxUnit: TimeUnit.Year, minUnit: TimeUnit.Second, precision: 7), true);
                     messageEmbed.AddField("Last in stream", userFromDb.LastSeenDate, true);
 
@@ -39,7 +39,7 @@ namespace BreganTwitchBot.Domain.Data.DiscordBot.Events
                 }
             }
 
-            messageEmbed.AddField("Userleft", user.Username, true);
+            messageEmbed.AddField("Discord username", user.Username, true);
 
 
 
