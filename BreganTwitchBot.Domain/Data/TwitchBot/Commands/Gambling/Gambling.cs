@@ -177,7 +177,9 @@ namespace BreganTwitchBot.Domain.Data.TwitchBot.Commands.Gambling
                 default:
                     TwitchHelper.SendMessage($"@{username} => You have spun {emoteList[0]} | {emoteList[1]} | {emoteList[2]} . No win :(");
                     var jackpotAmountCheck = GetJackpotAmount();
+
                     AddLossToJackpotAndUser(userId, pointsGambled, pointsGambled / 100 * 60);
+                    await PointsHelper.RemoveUserPoints(userId, pointsGambled);
                     await StreamStatsService.UpdateStreamStat(1, StatTypes.PointsLost);
                     break;
             }
