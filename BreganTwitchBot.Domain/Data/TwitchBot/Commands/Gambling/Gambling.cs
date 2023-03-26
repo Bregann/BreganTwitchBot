@@ -36,7 +36,7 @@ namespace BreganTwitchBot.Domain.Data.TwitchBot.Commands.Gambling
             //check if they're gambling them all or if they are gambling a set amount
             if (message.ToLower() == "!spin all")
             {
-                points = PointsHelper.GetUserPoints(username.ToLower());
+                points = PointsHelper.GetUserPoints(userId);
             }
             else
             {
@@ -55,7 +55,7 @@ namespace BreganTwitchBot.Domain.Data.TwitchBot.Commands.Gambling
                 return;
             }
 
-            var userPoints = PointsHelper.GetUserPoints(username.ToLower());
+            var userPoints = PointsHelper.GetUserPoints(userId);
 
             if (userPoints < points)
             {

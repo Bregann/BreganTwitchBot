@@ -82,7 +82,6 @@ namespace BreganTwitchBot.Domain.Data.DiscordBot.SlashCommands.Data.Giveaway
                 }
 
                 var user = context.Users.Include(x => x.Watchtime).Where(x => x.DiscordUserId == userId).First();
-                var timesToAdd = user.Watchtime.MinutesInStream / 6000;
 
                 if (user.Watchtime.MinutesInStream < 3600)
                 {
@@ -97,6 +96,8 @@ namespace BreganTwitchBot.Domain.Data.DiscordBot.SlashCommands.Data.Giveaway
                     Log.Information($"[Discord Giveaways] User {userId} has been fake entered");
                     return 1;
                 }
+
+                var timesToAdd = user.Watchtime.MinutesInStream / 3600;
 
                 for (int i = 0; i < timesToAdd; i++)
                 {
