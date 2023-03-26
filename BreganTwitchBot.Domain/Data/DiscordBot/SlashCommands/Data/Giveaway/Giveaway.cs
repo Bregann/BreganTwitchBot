@@ -128,7 +128,7 @@ namespace BreganTwitchBot.Domain.Data.DiscordBot.SlashCommands.Data.Giveaway
         {
             using (var context = new DatabaseContext())
             {
-                return context.DiscordGiveaways.Where(x => x.GiveawayId == interactionId).DistinctBy(x => x.DiscordUserId).Count();
+                return context.DiscordGiveaways.Where(x => x.GiveawayId == interactionId).Select(x => x.DiscordUserId).Distinct().Count();
             }
         }
 
