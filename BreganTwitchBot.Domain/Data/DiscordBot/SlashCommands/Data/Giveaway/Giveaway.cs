@@ -63,7 +63,7 @@ namespace BreganTwitchBot.Domain.Data.DiscordBot.SlashCommands.Data.Giveaway
                     return new GiveawayDataDto { Response = $"There are currently **{GetUsersEntered(giveawayId)}** people in the giveaway with a total of **{GetTotalEntries(giveawayId)}** entries", Ephemeral = true };
                 }
 
-                var entries = CheckentriesForUser(userIdWhoPressed, giveawayId);
+                var entries = CheckEntriesForUser(userIdWhoPressed, giveawayId);
                 return entries == 0 ? new GiveawayDataDto { Response = "You haven't entered the giveaway yet! Try clicking the other button", Ephemeral = true } : new GiveawayDataDto { Response = $"You have entered the giveaway! You have **{entries}** entries in the giveaway", Ephemeral = true };
             }
 
@@ -116,7 +116,7 @@ namespace BreganTwitchBot.Domain.Data.DiscordBot.SlashCommands.Data.Giveaway
             }
         }
 
-        private static int CheckentriesForUser(ulong userId, string interactionId)
+        private static int CheckEntriesForUser(ulong userId, string interactionId)
         {
             using (var context = new DatabaseContext())
             {
@@ -128,7 +128,7 @@ namespace BreganTwitchBot.Domain.Data.DiscordBot.SlashCommands.Data.Giveaway
         {
             using (var context = new DatabaseContext())
             {
-                return context.DiscordGiveaways.Where(x => x.GiveawayId == interactionId).Distinct().Count();
+                return context.DiscordGiveaways.Where(x => x.GiveawayId == interactionId).DistinctBy(x => x.DiscordUserId).Count();
             }
         }
 
