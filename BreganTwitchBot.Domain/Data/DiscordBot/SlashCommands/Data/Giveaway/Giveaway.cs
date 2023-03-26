@@ -1,5 +1,6 @@
 ﻿using BreganTwitchBot.Infrastructure.Database.Context;
 using Microsoft.EntityFrameworkCore;
+using Serilog;
 
 namespace BreganTwitchBot.Domain.Data.DiscordBot.SlashCommands.Data.Giveaway
 {
@@ -13,6 +14,8 @@ namespace BreganTwitchBot.Domain.Data.DiscordBot.SlashCommands.Data.Giveaway
     {
         public static async Task<GiveawayDataDto> HandleGiveawayButtonPressed(ulong userIdWhoPressed, string interactionId)
         {
+            Log.Information($"[Discord Giveaways] Giveaway button pressed  - ID: {userIdWhoPressed} | Interaction ID: {interactionId}");
+
             if (interactionId.EndsWith("-enter"))
             {
                 //Roll the giveaway winner if its the owner
@@ -74,6 +77,7 @@ namespace BreganTwitchBot.Domain.Data.DiscordBot.SlashCommands.Data.Giveaway
                 //Check if they're already in the giveaway
                 if (context.DiscordGiveaways.Any(x => x.GiveawayId == interactionId && x.DiscordUserId == userId))
                 {
+                    Log.Information($"[Discord Giveaways] User {userId} has already entered the giveaway with id {interactionId}");
                     return 0;
                 }
 
@@ -90,6 +94,7 @@ namespace BreganTwitchBot.Domain.Data.DiscordBot.SlashCommands.Data.Giveaway
                     });
 
                     await context.SaveChangesAsync();
+                    Log.Information($"[Discord Giveaways] User {userId} has been fake entered");
                     return 1;
                 }
 
@@ -105,6 +110,7 @@ namespace BreganTwitchBot.Domain.Data.DiscordBot.SlashCommands.Data.Giveaway
 
                 await context.SaveChangesAsync();
 
+                Log.Information($"[Discord Giveaways] User {userId} has been entered {timesToAdd} times");
                 return timesToAdd;
             }
         }
