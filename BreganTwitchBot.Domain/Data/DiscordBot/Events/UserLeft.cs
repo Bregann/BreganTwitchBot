@@ -23,6 +23,7 @@ namespace BreganTwitchBot.Domain.Data.DiscordBot.Events
                 var userFromDb = context.Users.Include(x => x.Watchtime).Where(x => x.DiscordUserId == user.Id).FirstOrDefault();
                 if (userFromDb == null)
                 {
+                    messageEmbed.AddField("Discord username", user.Username);
                     messageEmbed.AddField("Was Linked?", "false", true);
                     messageEmbed.AddField("Twitch username", "n/a", true);
                 }
@@ -30,7 +31,8 @@ namespace BreganTwitchBot.Domain.Data.DiscordBot.Events
                 {
                     var userTime = TimeSpan.FromMinutes(userFromDb.Watchtime.MinutesInStream);
 
-                    messageEmbed.AddField("Twitch username", userFromDb.Username);
+                    messageEmbed.AddField("Discord username", user.Username, true);
+                    messageEmbed.AddField("Twitch username", userFromDb.Username, true);
                     messageEmbed.AddField("Minutes watched", userTime.Humanize(maxUnit: TimeUnit.Year, minUnit: TimeUnit.Second, precision: 7), true);
                     messageEmbed.AddField("Last in stream", userFromDb.LastSeenDate, true);
 
@@ -38,10 +40,6 @@ namespace BreganTwitchBot.Domain.Data.DiscordBot.Events
                     await context.SaveChangesAsync();
                 }
             }
-
-            messageEmbed.AddField("Discord username", user.Username, true);
-
-
 
             var channel = await DiscordConnection.DiscordClient.GetChannelAsync(AppConfig.DiscordEventChannelID) as IMessageChannel;
 
