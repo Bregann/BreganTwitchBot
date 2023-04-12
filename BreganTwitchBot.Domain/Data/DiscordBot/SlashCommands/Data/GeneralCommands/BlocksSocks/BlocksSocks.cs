@@ -109,12 +109,13 @@ namespace BreganTwitchBot.Domain.Data.DiscordBot.SlashCommands.Data.GeneralComma
                 return embedBuilder;
             }
 
-            var httpClient = new HttpClient();
-
-            var httpResult = await httpClient.GetAsync(skinResponse.Textures.Skin.Url);
-            using var resultStream = await httpResult.Content.ReadAsStreamAsync();
-            using var fileStream = File.Create($"Skins/{uuid}.png");
-            resultStream.CopyTo(fileStream);
+            using(var httpClient = new HttpClient())
+            {
+                var httpResult = await httpClient.GetAsync(skinResponse.Textures.Skin.Url);
+                using var resultStream = await httpResult.Content.ReadAsStreamAsync();
+                using var fileStream = File.Create($"Skins/{uuid}.png");
+                resultStream.CopyTo(fileStream);
+            }
 
             //check if right size
             var bmp = Image.Load($"Skins/{uuid}.png");
