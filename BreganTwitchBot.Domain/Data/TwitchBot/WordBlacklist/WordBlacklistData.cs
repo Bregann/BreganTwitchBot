@@ -91,7 +91,7 @@ namespace BreganTwitchBot.Domain.Data.TwitchBot.WordBlacklist
                 // Make a single prediction on the sample data and print results
                 var predictionResult = RankBeggar.Predict(sampleData);
 
-                if (predictionResult.AiResult == 1 || _strikeWords.Any(rankBeggarRegex.Contains))
+                if (predictionResult.PredictedLabel == 1 || _strikeWords.Any(rankBeggarRegex.Contains))
                 {
                     using (var context = new DatabaseContext())
                     {
