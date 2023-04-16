@@ -23,11 +23,11 @@ namespace BreganTwitchBot.Domain.Data.TwitchBot.WordBlacklist
         private static string _lastMessage = "";
         private static string _lastUser = "";
 
-        public static void UpdateAi()
+        public static async Task UpdateAi()
         {
             using(var context = new DatabaseContext())
             {
-                var list = context.RankBeggar.ToList();
+                var list = await context.RankBeggar.ToListAsync();
 
 
                 foreach (var item in list)
@@ -43,10 +43,12 @@ namespace BreganTwitchBot.Domain.Data.TwitchBot.WordBlacklist
                     item.AiResult = (int)predictionResult.PredictedLabel;
 
                     Console.WriteLine($"{item.Message} is {predictionResult.PredictedLabel}");
-                    
+
+                    await context.SaveChangesAsync();
+
                 }
 
-                context.SaveChanges();
+                
             }
         }
 
