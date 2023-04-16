@@ -2,6 +2,7 @@ using BreganTwitchBot;
 using BreganTwitchBot.Domain;
 using BreganTwitchBot.Domain.Data.DiscordBot;
 using BreganTwitchBot.Domain.Data.TwitchBot;
+using BreganTwitchBot.Domain.Data.TwitchBot.WordBlacklist;
 using BreganUtils.ProjectMonitor;
 using Hangfire;
 using Hangfire.Dashboard.BasicAuthorization;
@@ -18,7 +19,7 @@ await DiscordConnection.StartDiscordBot();
 
 //Setup project monitor
 #if DEBUG
-//ProjectMonitorConfig.SetupMonitor("debug", AppConfig.ProjectMonitorApiKey);
+ProjectMonitorConfig.SetupMonitor("debug", AppConfig.ProjectMonitorApiKey);
 #else
 ProjectMonitorConfig.SetupMonitor("release", AppConfig.ProjectMonitorApiKey);
 #endif
@@ -97,5 +98,7 @@ app.MapHangfireDashboard("/hangfire", new DashboardOptions
 {
     Authorization = auth
 }, JobStorage.Current);
+
+WordBlacklistData.UpdateAi();
 
 app.Run();

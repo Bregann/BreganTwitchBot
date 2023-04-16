@@ -23,6 +23,33 @@ namespace BreganTwitchBot.Domain.Data.TwitchBot.WordBlacklist
         private static string _lastMessage = "";
         private static string _lastUser = "";
 
+        public static void UpdateAi()
+        {
+            using(var context = new DatabaseContext())
+            {
+                var list = context.RankBeggar.ToList();
+
+
+                foreach (var item in list)
+                {
+                    RankBeggar.ModelInput sampleData = new RankBeggar.ModelInput()
+                    {
+                        Message = item.Message
+                    };
+
+                    // Make a single prediction on the sample data and print results
+                    var predictionResult = RankBeggar.Predict(sampleData);
+
+                    item.AiResult = (int)predictionResult.PredictedLabel;
+
+                    Console.WriteLine($"{item.Message} is {predictionResult.PredictedLabel}");
+                    
+                }
+
+                context.SaveChanges();
+            }
+        }
+
         public static void LoadBlacklistedWords()
         {
             using (var context = new DatabaseContext())
