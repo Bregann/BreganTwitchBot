@@ -99,6 +99,6 @@ app.MapHangfireDashboard("/hangfire", new DashboardOptions
     Authorization = auth
 }, JobStorage.Current);
 
-WordBlacklistData.UpdateAi();
+
 
 app.Run();
