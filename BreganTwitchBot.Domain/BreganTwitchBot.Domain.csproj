@@ -3,7 +3,7 @@
     <TargetFramework>net7.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-	<PublishSingleFile>true</PublishSingleFile>
+    <PublishSingleFile>true</PublishSingleFile>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Discord.Net" Version="3.9.0" />
@@ -43,6 +43,18 @@
     </None>
     <None Update="Data\TwitchBot\WordBlacklist\RankBeggar.zip">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+  <ItemGroup Label="RankBeggar">
+    <None Include="RankBeggar.consumption.cs">
+      <DependentUpon>RankBeggar.mbconfig</DependentUpon>
+    </None>
+    <None Include="RankBeggar.training.cs">
+      <DependentUpon>RankBeggar.mbconfig</DependentUpon>
+    </None>
+    <None Include="RankBeggar.zip">
+      <DependentUpon>RankBeggar.mbconfig</DependentUpon>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
 </Project>

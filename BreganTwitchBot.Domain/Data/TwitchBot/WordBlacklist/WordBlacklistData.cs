@@ -23,35 +23,6 @@ namespace BreganTwitchBot.Domain.Data.TwitchBot.WordBlacklist
         private static string _lastMessage = "";
         private static string _lastUser = "";
 
-        public static async Task UpdateAi()
-        {
-            using(var context = new DatabaseContext())
-            {
-                var list = await context.RankBeggar.ToListAsync();
-
-
-                foreach (var item in list)
-                {
-                    RankBeggar.ModelInput sampleData = new RankBeggar.ModelInput()
-                    {
-                        Message = item.Message
-                    };
-
-                    // Make a single prediction on the sample data and print results
-                    var predictionResult = RankBeggar.Predict(sampleData);
-
-                    item.AiResult = (int)predictionResult.PredictedLabel;
-
-                    Console.WriteLine($"{item.Message} is {predictionResult.PredictedLabel}");
-
-                    await context.SaveChangesAsync();
-
-                }
-
-                
-            }
-        }
-
         public static void LoadBlacklistedWords()
         {
             using (var context = new DatabaseContext())
@@ -133,7 +104,7 @@ namespace BreganTwitchBot.Domain.Data.TwitchBot.WordBlacklist
                         await context.SaveChangesAsync();
                     }
 
-                    if (predictionResult.Score[1] < 0.70)
+                    if (predictionResult.Score[1] < 0.80)
                     {
                         Log.Information($"[Word Blacklist] Did not time out {e.ChatMessage.Username} for begging, bot is unsure. Message - {e.ChatMessage.Message}");
                         return;
