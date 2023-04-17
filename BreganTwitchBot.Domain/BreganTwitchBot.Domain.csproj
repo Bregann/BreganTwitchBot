@@ -45,16 +45,4 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>
-  <ItemGroup Label="RankBeggar">
-    <None Include="RankBeggar.consumption.cs">
-      <DependentUpon>RankBeggar.mbconfig</DependentUpon>
-    </None>
-    <None Include="RankBeggar.training.cs">
-      <DependentUpon>RankBeggar.mbconfig</DependentUpon>
-    </None>
-    <None Include="RankBeggar.zip">
-      <DependentUpon>RankBeggar.mbconfig</DependentUpon>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-  </ItemGroup>
 </Project>
