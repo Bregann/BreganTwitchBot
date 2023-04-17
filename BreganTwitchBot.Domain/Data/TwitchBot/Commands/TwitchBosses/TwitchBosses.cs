@@ -85,7 +85,7 @@ namespace BreganTwitchBot.Domain.Data.TwitchBot.Commands.TwitchBosses
 
                 if (rnd.Next(0, 2) == 1)
                 {
-                    TwitchHelper.SendMessage($"but wait... the boss has just fallen ontop of {randomUserToBeKEKWd} and they have died KEKW ! KEKW in the chat for {randomUserToBeKEKWd}");
+                    TwitchHelper.SendMessage($"but wait... the boss has just fallen ontop of {randomUserToBeKEKWd.Username} and they have died KEKW ! KEKW in the chat for {randomUserToBeKEKWd.Username}");
                     _viewersJoined.Remove(randomUserToBeKEKWd);
                 }
 

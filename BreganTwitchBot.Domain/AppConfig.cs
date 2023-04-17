@@ -261,6 +261,12 @@ namespace BreganTwitchBot
         public static void ToggleAiEnabled()
         {
             AiEnabled = AiEnabled != true;
+
+            using(var context = new DatabaseContext())
+            {
+                context.Config.First().AiEnabled = AiEnabled;
+                context.SaveChanges();
+            }
         }
     }
 }
