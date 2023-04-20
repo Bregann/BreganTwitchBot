@@ -83,6 +83,9 @@ namespace BreganTwitchBot.Domain.Data.DiscordBot.SlashCommands.Data.Giveaway
 
                 var user = context.Users.Include(x => x.Watchtime).Where(x => x.DiscordUserId == userId).First();
 
+                var rankUpsGained = Convert.ToInt32(user.Watchtime.Rank1Applied) + Convert.ToInt32(user.Watchtime.Rank2Applied) + Convert.ToInt32(user.Watchtime.Rank3Applied) + Convert.ToInt32(user.Watchtime.Rank4Applied) + Convert.ToInt32(user.Watchtime.Rank5Applied);
+                Log.Information($"[Discord Giveaways] User {userId} has {rankUpsGained} extra entries from discord rank ups");
+
                 if (user.Watchtime.MinutesInStream < 3600)
                 {
                     context.DiscordGiveaways.Add(new Infrastructure.Database.Models.DiscordGiveaways
@@ -94,10 +97,10 @@ namespace BreganTwitchBot.Domain.Data.DiscordBot.SlashCommands.Data.Giveaway
 
                     await context.SaveChangesAsync();
                     Log.Information($"[Discord Giveaways] User {userId} has been fake entered");
-                    return 1;
+                    return 1 + rankUpsGained;
                 }
 
-                var timesToAdd = user.Watchtime.MinutesInStream / 3600;
+                var timesToAdd = (user.Watchtime.MinutesInStream / 3600) + rankUpsGained;
 
                 for (int i = 0; i < timesToAdd; i++)
                 {
