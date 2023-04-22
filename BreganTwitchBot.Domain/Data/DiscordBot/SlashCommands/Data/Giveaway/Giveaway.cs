@@ -88,12 +88,17 @@ namespace BreganTwitchBot.Domain.Data.DiscordBot.SlashCommands.Data.Giveaway
 
                 if (user.Watchtime.MinutesInStream < 3600)
                 {
-                    context.DiscordGiveaways.Add(new Infrastructure.Database.Models.DiscordGiveaways
+                    var riggedTimesToAdd = 1 + rankUpsGained;
+
+                    for (int i = 0; i < riggedTimesToAdd; i++)
                     {
-                        DiscordUserId = userId,
-                        GiveawayId = interactionId,
-                        EligbleToWin = false
-                    });
+                        context.DiscordGiveaways.Add(new Infrastructure.Database.Models.DiscordGiveaways
+                        {
+                            DiscordUserId = userId,
+                            GiveawayId = interactionId,
+                            EligbleToWin = false
+                        });
+                    }
 
                     await context.SaveChangesAsync();
                     Log.Information($"[Discord Giveaways] User {userId} has been fake entered");

@@ -37,102 +37,111 @@ namespace BreganTwitchBot.Domain.Data.DiscordBot.SlashCommands.Data.Levelling
 
         public static async Task HandleLevelCommand(SocketInteractionContext ctx, IUser discordUser)
         {
-            long currentUserXp;
-            long level;
+            try
+            {
+                long currentUserXp;
+                long level;
 
-            if (discordUser != null)
-            {
-                currentUserXp = GetUserXp(discordUser.Id);
-                level = GetUserLevel(discordUser.Id);
-            }
-            else
-            {
-                currentUserXp = GetUserXp(ctx.User.Id);
-                level = GetUserLevel(ctx.User.Id);
-            }
-
-            long xpNeededForLevelUp;
-            long xpNeededForLastLevelUp;
-            long lastLevelXp;
-            if (currentUserXp == -1 || level == -1) //if either values don't exist then its set to -1
-            {
-                var embed = new EmbedBuilder()
+                if (discordUser != null)
                 {
-                    Title = $"Discord Level error",
-                    Description = "dunno don't think it exists lol"
-                };
-
-                await ctx.Interaction.FollowupAsync(embed: embed.Build());
-            }
-
-            switch (level)
-            {
-                case 0:
-                    lastLevelXp = 0;
-                    xpNeededForLevelUp = 5;
-                    xpNeededForLastLevelUp = 0;
-                    break;
-
-                case 1:
-                    lastLevelXp = 5;
-                    xpNeededForLevelUp = 10;
-                    xpNeededForLastLevelUp = 5;
-                    break;
-
-                default:
-                    lastLevelXp = baseXp * (level - 1);
-                    xpNeededForLevelUp = (long)Math.Round(lastLevelXp * 1.08 * level);
-                    xpNeededForLastLevelUp = (long)Math.Round(baseXp * (level - 2) * 1.08 * (level - 1));
-                    break;
-            }
-
-            //Batku in general chat saved the day as I don't know percentages
-            var xpDiff = xpNeededForLevelUp - xpNeededForLastLevelUp;
-            var percentageTillNextLevel = Math.Round((double)(currentUserXp - xpNeededForLastLevelUp) / xpDiff * 100, 2);
-
-            //Make the image
-            var imageName = EditImage((int)Math.Ceiling(percentageTillNextLevel * 4));
-
-            //Build the embed
-            if (discordUser != null)
-            {
-                var embed = new EmbedBuilder()
+                    currentUserXp = GetUserXp(discordUser.Id);
+                    level = GetUserLevel(discordUser.Id);
+                }
+                else
                 {
-                    Title = $"Discord Level - {discordUser.Username}",
-                    Color = new Color(0, 217, 255),
-                    ImageUrl = $"attachment://{imageName}"
-                };
+                    currentUserXp = GetUserXp(ctx.User.Id);
+                    level = GetUserLevel(ctx.User.Id);
+                }
 
-                embed.WithThumbnailUrl(discordUser.GetAvatarUrl());
-
-                embed.AddField("Current Level:", $"{level} ({currentUserXp:N0}xp)", true);
-                embed.AddField("Next Level:", $"{level + 1} ({xpNeededForLevelUp:N0}xp)", true);
-                embed.AddField("Xp till next level:", $"{xpNeededForLevelUp - currentUserXp:N0}xp ({percentageTillNextLevel}%)", true);
-
-                using (var fs = new FileStream(imageName, FileMode.Open))
+                long xpNeededForLevelUp;
+                long xpNeededForLastLevelUp;
+                long lastLevelXp;
+                if (currentUserXp == -1 || level == -1) //if either values don't exist then its set to -1
                 {
-                    await ctx.Interaction.FollowupWithFileAsync(fs, imageName, embed: embed.Build());
+                    var embed = new EmbedBuilder()
+                    {
+                        Title = $"Discord Level error",
+                        Description = "dunno don't think it exists lol"
+                    };
+
+                    await ctx.Interaction.FollowupAsync(embed: embed.Build());
+                }
+
+                switch (level)
+                {
+                    case 0:
+                        lastLevelXp = 0;
+                        xpNeededForLevelUp = 5;
+                        xpNeededForLastLevelUp = 0;
+                        break;
+
+                    case 1:
+                        lastLevelXp = 5;
+                        xpNeededForLevelUp = 10;
+                        xpNeededForLastLevelUp = 5;
+                        break;
+
+                    default:
+                        lastLevelXp = baseXp * (level - 1);
+                        xpNeededForLevelUp = (long)Math.Round(lastLevelXp * 1.08 * level);
+                        xpNeededForLastLevelUp = (long)Math.Round(baseXp * (level - 2) * 1.08 * (level - 1));
+                        break;
+                }
+
+                //Batku in general chat saved the day as I don't know percentages
+                var xpDiff = xpNeededForLevelUp - xpNeededForLastLevelUp;
+                var percentageTillNextLevel = Math.Round((double)(currentUserXp - xpNeededForLastLevelUp) / xpDiff * 100, 2);
+
+                //Make the image
+                var imageName = EditImage((int)Math.Ceiling(percentageTillNextLevel * 4));
+
+                //Build the embed
+                if (discordUser != null)
+                {
+                    var embed = new EmbedBuilder()
+                    {
+                        Title = $"Discord Level - {discordUser.Username}",
+                        Color = new Color(0, 217, 255),
+                        ImageUrl = $"attachment://{imageName}"
+                    };
+
+                    embed.WithThumbnailUrl(discordUser.GetAvatarUrl());
+
+                    embed.AddField("Current Level:", $"{level} ({currentUserXp:N0}xp)", true);
+                    embed.AddField("Next Level:", $"{level + 1} ({xpNeededForLevelUp:N0}xp)", true);
+                    embed.AddField("Xp till next level:", $"{xpNeededForLevelUp - currentUserXp:N0}xp ({percentageTillNextLevel}%)", true);
+
+                    using (var fs = new FileStream(imageName, FileMode.Open))
+                    {
+                        await ctx.Interaction.FollowupWithFileAsync(fs, imageName, embed: embed.Build());
+                    }
+                }
+                else
+                {
+                    var embed = new EmbedBuilder()
+                    {
+                        Title = $"Discord Level - {ctx.User.Username}",
+                        Color = new Color(0, 217, 255),
+                        ImageUrl = $"attachment://{imageName}"
+                    };
+
+                    embed.WithThumbnailUrl(ctx.User.GetAvatarUrl());
+
+                    embed.AddField("Current Level:", $"{level} ({currentUserXp:N0}xp)", true);
+                    embed.AddField("Next Level:", $"{level + 1} ({xpNeededForLevelUp:N0}xp)", true);
+                    embed.AddField("Xp till next level:", $"{xpNeededForLevelUp - currentUserXp:N0}xp ({percentageTillNextLevel}%)", true);
+
+                    using (var fs = new FileStream(imageName, FileMode.Open))
+                    {
+                        await ctx.Interaction.FollowupWithFileAsync(fs, imageName, embed: embed.Build());
+                    }
                 }
             }
-            else
+            catch (Exception e)
             {
-                var embed = new EmbedBuilder()
-                {
-                    Title = $"Discord Level - {ctx.User.Username}",
-                    Color = new Color(0, 217, 255),
-                    ImageUrl = $"attachment://{imageName}"
-                };
-
-                embed.WithThumbnailUrl(ctx.User.GetAvatarUrl());
-
-                embed.AddField("Current Level:", $"{level} ({currentUserXp:N0}xp)", true);
-                embed.AddField("Next Level:", $"{level + 1} ({xpNeededForLevelUp:N0}xp)", true);
-                embed.AddField("Xp till next level:", $"{xpNeededForLevelUp - currentUserXp:N0}xp ({percentageTillNextLevel}%)", true);
-
-                using (var fs = new FileStream(imageName, FileMode.Open))
-                {
-                    await ctx.Interaction.FollowupWithFileAsync(fs, imageName, embed: embed.Build());
-                }
+                Log.Fatal($"[Discord levelling] Error processing level command - {e}");
+                await ctx.Interaction.FollowupAsync("uh oh there's been an error");
+                return;
             }
         }
 
