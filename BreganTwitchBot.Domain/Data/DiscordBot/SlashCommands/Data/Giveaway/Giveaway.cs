@@ -48,7 +48,7 @@ namespace BreganTwitchBot.Domain.Data.DiscordBot.SlashCommands.Data.Giveaway
                 {
                     return new GiveawayDataDto
                     {
-                        Response = $"You have entered the giveaway! You have **{timesEntered}** entries in the giveaway. You can earn more entries by watching the stream for longer",
+                        Response = $"You have entered the giveaway! You have **{timesEntered}** entries in the giveaway. You can earn more entries by earning watchtime ranks in the stream and levelling up in the Discord. Every 1,000 discord xp will award you with an extra entry (up to 30k xp)",
                         Ephemeral = true
                     };
                 }
@@ -81,14 +81,15 @@ namespace BreganTwitchBot.Domain.Data.DiscordBot.SlashCommands.Data.Giveaway
                     return 0;
                 }
 
-                var user = context.Users.Include(x => x.Watchtime).Where(x => x.DiscordUserId == userId).First();
+                var user = context.Users.Include(x => x.Watchtime).Include(x => x.DiscordUserStats).Where(x => x.DiscordUserId == userId).First();
 
                 var rankUpsGained = Convert.ToInt32(user.Watchtime.Rank1Applied) + Convert.ToInt32(user.Watchtime.Rank2Applied) + Convert.ToInt32(user.Watchtime.Rank3Applied) + Convert.ToInt32(user.Watchtime.Rank4Applied) + Convert.ToInt32(user.Watchtime.Rank5Applied);
-                Log.Information($"[Discord Giveaways] User {userId} has {rankUpsGained} extra entries from discord rank ups");
+                var discordXpEntries = user.DiscordUserStats.DiscordXp >= 30000 ? 30 : user.DiscordUserStats.DiscordXp / 1000;
+                Log.Information($"[Discord Giveaways] User {userId} has {rankUpsGained} extra entries from discord rank ups and {discordXpEntries} from discord xp");
 
                 if (user.Watchtime.MinutesInStream < 3600)
                 {
-                    var riggedTimesToAdd = 1 + rankUpsGained;
+                    var riggedTimesToAdd = 1 + rankUpsGained + discordXpEntries;
 
                     for (int i = 0; i < riggedTimesToAdd; i++)
                     {
@@ -105,7 +106,7 @@ namespace BreganTwitchBot.Domain.Data.DiscordBot.SlashCommands.Data.Giveaway
                     return 1 + rankUpsGained;
                 }
 
-                var timesToAdd = (user.Watchtime.MinutesInStream / 3600) + rankUpsGained;
+                var timesToAdd = (user.Watchtime.MinutesInStream / 3600) + rankUpsGained + +discordXpEntries;
 
                 for (int i = 0; i < timesToAdd; i++)
                 {
