@@ -170,7 +170,7 @@ namespace BreganTwitchBot.Domain.Data.DiscordBot.SlashCommands.Modules.GeneralCo
 
             // Make a single prediction on the sample data and print results
             var predictionResult = BreganTwitchBot_Domain.RankBeggar.Predict(sampleData);
-            await RespondAsync($"Message: {message} \n Prediction result: {predictionResult.AiResult} \n 0: {predictionResult.Score[0]}% \n 1: {predictionResult.Score[1]}%");
+            await RespondAsync($"Message: {message} \n Prediction result: {predictionResult.PredictedLabel} \n 0: {predictionResult.Score[0]}% \n 1: {predictionResult.Score[1]}%");
         }
 
         [SlashCommand("birthday", "Set your birthday to get a Happy Birthday announcement")]
