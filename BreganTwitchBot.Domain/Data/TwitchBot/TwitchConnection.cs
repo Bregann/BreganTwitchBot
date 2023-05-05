@@ -1,4 +1,6 @@
-﻿using BreganUtils.ProjectMonitor.Projects;
+﻿using BreganTwitchBot.Domain.Data.DiscordBot;
+using BreganTwitchBot.Domain.Data.DiscordBot.Helpers;
+using BreganUtils.ProjectMonitor.Projects;
 using Serilog;
 using TwitchLib.Api;
 using TwitchLib.Api.Core.Exceptions;
@@ -20,18 +22,8 @@ namespace BreganTwitchBot.Domain.Data.TwitchBot
 
         internal async Task Connect()
         {
-            var clientOptions = new ClientOptions
-            {
-                MessagesAllowedInPeriod = 100,
-                ThrottlingPeriod = TimeSpan.FromSeconds(30),
-                ReconnectionPolicy = new ReconnectionPolicy(5, 5),
-                ClientType = ClientType.Chat
-            };
-
-            var customClient = new WebSocketClient(clientOptions);
-
             Log.Information("[Twitch Client] Attempting to connect to twitch chat");
-            Client = new TwitchClient(customClient, ClientProtocol.TCP);
+            Client = new TwitchClient();
             Client.Initialize(Credentials, AppConfig.BroadcasterName);
             Client.Connect();
 
@@ -41,6 +33,11 @@ namespace BreganTwitchBot.Domain.Data.TwitchBot
             Client.OnError += ClientOnError;
 
             await Task.Delay(-1);
+        }
+
+        private void ClientOnReconnected(object? sender, TwitchLib.Client.Events.OnConnectedArgs e)
+        {
+            Log.Warning($"[Twitch Client] Reconnected to the channel.");
         }
 
         private void ClientOnConnected(object? sender, TwitchLib.Client.Events.OnConnectedArgs e)
@@ -55,11 +52,6 @@ namespace BreganTwitchBot.Domain.Data.TwitchBot
         {
             ProjectMonitorBreganTwitchBot.SendTwitchIRCConnectionStateUpdate(false);
             Log.Warning($"[Twitch Client] Bot disconnected from channel. Reason: {e}");
-        }
-
-        private void ClientOnReconnected(object? sender, OnReconnectedEventArgs e)
-        {
-            Log.Information("[Twitch Client] Bot reconnected to channel.");
         }
 
         private void ClientOnError(object? sender, OnErrorEventArgs e)
@@ -87,12 +79,11 @@ namespace BreganTwitchBot.Domain.Data.TwitchBot
             PubSubClient.Connect();
         }
 
-        private void PubSubClientPubSubServiceClosed(object? sender, EventArgs e)
+        private async void PubSubClientPubSubServiceClosed(object? sender, EventArgs e)
         {
             Log.Warning("[Twitch PubSub] PubSub Service Closed");
             ProjectMonitorBreganTwitchBot.SendTwitchPubSubConnectionStateUpdate(false);
 
-            //:15 each hour the token is refreshed and reconnected - try connecting
             try
             {
                 PubSubClient.ListenToBitsEventsV2(AppConfig.TwitchChannelID);
@@ -105,8 +96,9 @@ namespace BreganTwitchBot.Domain.Data.TwitchBot
             }
             catch (Exception pubSubEx) //if its not recoverable, force the bot to quit
             {
+                await DiscordHelper.SendMessage(AppConfig.DiscordEventChannelID, "pubsub?");
                 Log.Fatal($"[Twitch PubSub] Error Reconnecting - {pubSubEx}");
-                throw;
+                return;
             }
         }
 

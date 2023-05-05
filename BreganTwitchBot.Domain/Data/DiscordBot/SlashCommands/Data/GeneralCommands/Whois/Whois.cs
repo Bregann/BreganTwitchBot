@@ -21,7 +21,7 @@ namespace BreganTwitchBot.Domain.Data.DiscordBot.SlashCommands.Data.GeneralComma
             {
                 Title = "Who is Discord",
                 Timestamp = DateTime.Now,
-                Color = new Color(238, 255, 46)
+                Color = new Discord.Color(238, 255, 46)
             };
 
             DateTime? timeInStream;

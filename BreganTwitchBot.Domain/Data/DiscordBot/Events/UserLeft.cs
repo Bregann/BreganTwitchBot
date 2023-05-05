@@ -15,7 +15,7 @@ namespace BreganTwitchBot.Domain.Data.DiscordBot.Events
             {
                 Title = "User Left",
                 Timestamp = DateTime.Now,
-                Color = new Color(255, 112, 51)
+                Color = new Discord.Color(255, 112, 51)
             };
 
             using (var context = new DatabaseContext())

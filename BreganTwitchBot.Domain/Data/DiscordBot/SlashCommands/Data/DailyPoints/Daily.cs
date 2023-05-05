@@ -16,7 +16,7 @@ namespace BreganTwitchBot.Domain.Data.DiscordBot.SlashCommands.Data.DailyPoints
             var embed = new EmbedBuilder()
             {
                 Timestamp = DateTime.Now,
-                Color = new Color(0, 237, 63)
+                Color = new Discord.Color(0, 237, 63)
             };
 
             embed.WithAuthor($"Daily Points - {context.User.Username}", null, context.User.GetAvatarUrl());
@@ -30,7 +30,7 @@ namespace BreganTwitchBot.Domain.Data.DiscordBot.SlashCommands.Data.DailyPoints
                 if (user.DailyPoints.DiscordDailyClaimed)
                 {
                     embed.Title = "❌ Already Claimed";
-                    embed.Color = new Color(255, 0, 0);
+                    embed.Color = new Discord.Color(255, 0, 0);
                     embed.Description = "Don't be silly you have already claimed your points today";
                     return embed;
                 }

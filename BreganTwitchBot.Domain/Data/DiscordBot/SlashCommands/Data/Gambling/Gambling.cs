@@ -19,7 +19,7 @@ namespace BreganTwitchBot.Domain.Data.DiscordBot.SlashCommands.Data.Gambling
             var embed = new EmbedBuilder()
             {
                 Timestamp = DateTime.Now,
-                Color = new Color(0, 237, 63)
+                Color = new Discord.Color(0, 237, 63)
             };
 
             //Check if user is gambling all their points
@@ -39,7 +39,7 @@ namespace BreganTwitchBot.Domain.Data.DiscordBot.SlashCommands.Data.Gambling
                 if (user.Points < 1000)
                 {
                     embed.Title = $"❌ Not enough {AppConfig.PointsName}";
-                    embed.Color = new Color(255, 0, 0);
+                    embed.Color = new Discord.Color(255, 0, 0);
                     embed.Description = $"You only have **{user.Points:N0}** {AppConfig.PointsName}";
                     return embed;
                 }
@@ -127,7 +127,7 @@ namespace BreganTwitchBot.Domain.Data.DiscordBot.SlashCommands.Data.Gambling
             if (convertedPoints <= 0)
             {
                 embed.Title = "❌ Invalid input";
-                embed.Color = new Color(255, 0, 0);
+                embed.Color = new Discord.Color(255, 0, 0);
                 embed.Description = "You need to specify a number or do **!spin all** to risk it all!";
                 return embed;
             }
@@ -136,7 +136,7 @@ namespace BreganTwitchBot.Domain.Data.DiscordBot.SlashCommands.Data.Gambling
             if (convertedPoints < 1000)
             {
                 embed.Title = "❌ Not enough gambled";
-                embed.Color = new Color(255, 0, 0);
+                embed.Color = new Discord.Color(255, 0, 0);
                 embed.Description = $"It is **1,000** {AppConfig.PointsName} minimum!";
                 return embed;
             }
@@ -150,7 +150,7 @@ namespace BreganTwitchBot.Domain.Data.DiscordBot.SlashCommands.Data.Gambling
             if (user == null)
             {
                 embed.Title = "❌ Invalid user";
-                embed.Color = new Color(255, 0, 0);
+                embed.Color = new Discord.Color(255, 0, 0);
                 embed.Description = "You don't exist apparently";
                 return embed;
             }
@@ -158,7 +158,7 @@ namespace BreganTwitchBot.Domain.Data.DiscordBot.SlashCommands.Data.Gambling
             if (user.Points < convertedPoints)
             {
                 embed.Title = $"❌ Not enough {AppConfig.PointsName}";
-                embed.Color = new Color(255, 0, 0);
+                embed.Color = new Discord.Color(255, 0, 0);
                 embed.Description = $"You only have **{user.Points:N0}** {AppConfig.PointsName}";
                 return embed;
             }
@@ -167,7 +167,7 @@ namespace BreganTwitchBot.Domain.Data.DiscordBot.SlashCommands.Data.Gambling
             if (user.Points > 1000000 && 5000 > convertedPoints)
             {
                 embed.Title = $"❌ Not enough gambled";
-                embed.Color = new Color(255, 0, 0);
+                embed.Color = new Discord.Color(255, 0, 0);
                 embed.Description = $"You only have to gamble at least 5,000 of your {AppConfig.PointsName}";
                 return embed;
             }
@@ -177,7 +177,7 @@ namespace BreganTwitchBot.Domain.Data.DiscordBot.SlashCommands.Data.Gambling
             if (user.Points > 10000000 && onePercentOfUserPoints > convertedPoints)
             {
                 embed.Title = $"❌ Not enough gambled";
-                embed.Color = new Color(255, 0, 0);
+                embed.Color = new Discord.Color(255, 0, 0);
                 embed.Description = $"You only have to gamble at least 1% of your {AppConfig.PointsName} ({user.Points / 100:N0})";
                 return embed;
             }

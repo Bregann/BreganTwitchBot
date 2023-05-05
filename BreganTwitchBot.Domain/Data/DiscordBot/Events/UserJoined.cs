@@ -20,7 +20,7 @@ namespace BreganTwitchBot.Domain.Data.DiscordBot.Events
             {
                 Title = "User Joined",
                 Timestamp = DateTime.Now,
-                Color = new Color(3, 207, 252)
+                Color = new Discord.Color(3, 207, 252)
             };
 
             messageEmbed.AddField("Discord Username", userJoined.Username);

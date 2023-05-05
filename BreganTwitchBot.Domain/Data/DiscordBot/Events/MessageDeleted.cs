@@ -33,7 +33,7 @@ namespace BreganTwitchBot.Domain.Data.DiscordBot.Events
             {
                 Title = "Deleted message",
                 Timestamp = DateTime.Now,
-                Color = new Color(250, 53, 27)
+                Color = new Discord.Color(250, 53, 27)
             };
 
             messageEmbed.AddField("Message Deleted", oldMessage.Value.Content.Replace("@everyone", "").Replace("@here", ""));

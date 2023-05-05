@@ -335,7 +335,7 @@ namespace BreganTwitchBot.Domain
                 {
                     Title = "Follow count",
                     Timestamp = DateTime.Now,
-                    Color = new Color(0, 217, 22)
+                    Color = new Discord.Color(0, 217, 22)
                 };
 
                 messageEmbed.AddField("Before follower count", _currentFollowerCount.ToString());

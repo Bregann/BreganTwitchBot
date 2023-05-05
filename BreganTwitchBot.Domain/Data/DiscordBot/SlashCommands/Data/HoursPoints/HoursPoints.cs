@@ -15,7 +15,7 @@ namespace BreganTwitchBot.Domain.Data.DiscordBot.SlashCommands.Data.HoursPoints
             {
                 Title = "Hours check",
                 Timestamp = DateTime.Now,
-                Color = new Color(238, 255, 46)
+                Color = new Discord.Color(238, 255, 46)
             };
 
             if (optUsername != null)
@@ -96,7 +96,7 @@ namespace BreganTwitchBot.Domain.Data.DiscordBot.SlashCommands.Data.HoursPoints
             {
                 Title = $"{AppConfig.PointsName} check",
                 Timestamp = DateTime.Now,
-                Color = new Color(238, 255, 46)
+                Color = new Discord.Color(238, 255, 46)
             };
 
             if (optUsername != null)
