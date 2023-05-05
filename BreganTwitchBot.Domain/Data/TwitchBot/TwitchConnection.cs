@@ -29,15 +29,15 @@ namespace BreganTwitchBot.Domain.Data.TwitchBot
 
             Client.OnConnected += ClientOnConnected;
             Client.OnDisconnected += ClientOnDisconnected;
-            Client.OnReconnected += ClientOnReconnected;
+            Client.OnReconnected += ClientOnReconnected; ;
             Client.OnError += ClientOnError;
 
             await Task.Delay(-1);
         }
 
-        private void ClientOnReconnected(object? sender, TwitchLib.Client.Events.OnConnectedArgs e)
+        private void ClientOnReconnected(object? sender, OnReconnectedEventArgs e)
         {
-            Log.Warning($"[Twitch Client] Reconnected to the channel.");
+            Log.Information("[Twitch Client] Connected to Twitch Chat");
         }
 
         private void ClientOnConnected(object? sender, TwitchLib.Client.Events.OnConnectedArgs e)
