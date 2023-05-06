@@ -38,7 +38,7 @@ namespace BreganTwitchBot_Domain
                                     .Append(mlContext.Transforms.Concatenate(@"Features", new []{@"Message"}))      
                                     .Append(mlContext.Transforms.Conversion.MapValueToKey(outputColumnName:@"AiResult",inputColumnName:@"AiResult"))      
                                     .Append(mlContext.Transforms.NormalizeMinMax(@"Features", @"Features"))      
-                                    .Append(mlContext.MulticlassClassification.Trainers.LbfgsMaximumEntropy(new LbfgsMaximumEntropyMulticlassTrainer.Options(){L1Regularization=0.03125F,L2Regularization=0.6175458F,LabelColumnName=@"AiResult",FeatureColumnName=@"Features"}))      
+                                    .Append(mlContext.MulticlassClassification.Trainers.OneVersusAll(binaryEstimator: mlContext.BinaryClassification.Trainers.LbfgsLogisticRegression(new LbfgsLogisticRegressionBinaryTrainer.Options(){L1Regularization=0.03125F,L2Regularization=0.03125F,LabelColumnName=@"AiResult",FeatureColumnName=@"Features"}), labelColumnName:@"AiResult"))      
                                     .Append(mlContext.Transforms.Conversion.MapKeyToValue(outputColumnName:@"PredictedLabel",inputColumnName:@"PredictedLabel"));
 
             return pipeline;
