@@ -53,6 +53,7 @@ namespace BreganTwitchBot
         private static bool _doublePingJobStarted = false;
         public static string HFUsername { get; private set; } = "";
         public static string HFPassword { get; private set; } = "";
+        public static readonly DateTime SubathonStartTime  = new DateTime(2023, 2, 26, 11, 0, 0);
         public static void LoadConfig()
         {
             using (var context = new DatabaseContext())
