@@ -14,8 +14,8 @@ Log.Logger = new LoggerConfiguration().WriteTo.Async(x => x.File("Logs/log.log",
 Log.Information("Logger Setup");
 AppConfig.LoadConfig();
 
-await SetupBot.SetupTwitchBot();
-await DiscordConnection.StartDiscordBot();
+//await SetupBot.SetupTwitchBot();
+//await DiscordConnection.StartDiscordBot();
 
 //Setup project monitor
 #if DEBUG
@@ -61,7 +61,7 @@ builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
-HangfireJobs.SetupHangfireJobs();
+//HangfireJobs.SetupHangfireJobs();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
