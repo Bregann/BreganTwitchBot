@@ -11,17 +11,25 @@ namespace BreganTwitchBot.Core.Controllers
     public class LeaderboardsController : ControllerBase
     {
         [HttpGet("{type}")]
-        public List<LeaderboardDto> GetLeaderboard([FromRoute] LeaderboardType type)
+        public GetLeaderboardDto GetLeaderboard([FromRoute] LeaderboardType type)
         {
             if (type == LeaderboardType.AllTimeHours ||
                 type == LeaderboardType.MonthlyHours ||
                 type == LeaderboardType.WeeklyHours ||
                 type == LeaderboardType.StreamHours)
             {
-                return LeaderboardsData.GetHourLeaderboard(type);
+                return new GetLeaderboardDto
+                {
+                    LeaderboardName = type.ToString(),
+                    Leaderboards = LeaderboardsData.GetHourLeaderboard(type)
+                };
             }
 
-            return LeaderboardsData.GetLeaderboard(type);
+            return new GetLeaderboardDto
+            {
+                LeaderboardName = type.ToString(),
+                Leaderboards = LeaderboardsData.GetLeaderboard(type)
+            };
         }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using BreganTwitchBot.Domain.Data.Api;
+using BreganTwitchBot.Domain.Data.Api.Dtos;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -12,6 +13,12 @@ namespace BreganTwitchBot.Core.Controllers
         public string GetSubathonTimeLeft()
         {
             return SubathonData.GetSubathonTimeLeft();
+        }
+
+        [HttpGet]
+        public GetSubathonLeaderboardsDto GetSubathonLeaderboards()
+        {
+            return SubathonData.GetSubathonLeaderboards();
         }
     }
 }

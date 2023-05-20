@@ -1,4 +1,7 @@
-﻿using Humanizer;
+﻿using BreganTwitchBot.Domain.Data.Api.Dtos;
+using BreganTwitchBot.Domain.Data.TwitchBot.Commands.StreamInfo;
+using BreganTwitchBot.Infrastructure.Database.Context;
+using Humanizer;
 using Humanizer.Localisation;
 
 namespace BreganTwitchBot.Domain.Data.Api
@@ -17,6 +20,21 @@ namespace BreganTwitchBot.Domain.Data.Api
             }
 
             return timeDiff.Humanize(maxUnit: TimeUnit.Year, minUnit: TimeUnit.Second, precision: 7);
+        }
+
+        public static GetSubathonLeaderboardsDto GetSubathonLeaderboards()
+        {
+            using (var context = new DatabaseContext())
+            {
+                var subsLb = context.Subathon.OrderByDescending(x => x.SubsGifted).Take(10).ToList();
+                var bitsLb = context.Subathon.OrderByDescending(x => x.BitsDonated).Take(10).ToList();
+
+                return new GetSubathonLeaderboardsDto 
+                { 
+                    BitsLeaderboard= bitsLb, 
+                    SubsLeaderboard = subsLb 
+                };
+            }
         }
     }
 }

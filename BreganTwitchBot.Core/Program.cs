@@ -35,14 +35,14 @@ builder.Services.AddCors(options =>
     options.AddPolicy(name: "allowUrls",
                       policy =>
                       {
-                          policy.WithOrigins("http://localhost:3002", "https://botapi.bregan.me", "https://bot.bregan.me");
+                          policy.WithOrigins("http://localhost:3000", "https://botapi.bregan.me", "https://bot.bregan.me");
                           policy.WithHeaders("Content-Type");
                           policy.WithMethods("GET", "POST", "DELETE");
                       });
 });
 
 // Add services to the container.
-JobStorage.Current = new PostgreSqlStorage(AppConfig.HFConnectionString, new PostgreSqlStorageOptions { SchemaName = "twitchbot" });
+//JobStorage.Current = new PostgreSqlStorage(AppConfig.HFConnectionString, new PostgreSqlStorageOptions { SchemaName = "twitchbot" });
 
 builder.Services.AddHangfire(configuration => configuration
         .SetDataCompatibilityLevel(CompatibilityLevel.Version_170)
@@ -52,7 +52,7 @@ builder.Services.AddHangfire(configuration => configuration
         .UseDarkDashboard()
         );
 
-builder.Services.AddHangfireServer(options => options.SchedulePollingInterval = TimeSpan.FromSeconds(10));
+//builder.Services.AddHangfireServer(options => options.SchedulePollingInterval = TimeSpan.FromSeconds(10));
 
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
@@ -93,12 +93,12 @@ var auth = new[] { new BasicAuthAuthorizationFilter(new BasicAuthAuthorizationFi
         }
     }
 })};
-
+/*
 app.MapHangfireDashboard("/hangfire", new DashboardOptions
 {
     Authorization = auth
 }, JobStorage.Current);
-
+*/
 //await WordBlacklistData.UpdateAi();
 
 app.Run();
