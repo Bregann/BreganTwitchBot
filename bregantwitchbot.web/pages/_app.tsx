@@ -16,9 +16,9 @@ export default function App(props: AppProps) {
           <title>BreganTwitchBot</title>
           <meta name="viewport" content="minimum-scale=1, initial-scale=1, width=device-width" />
           <link rel="icon" href="/favicon.ico" />
-          <meta property="og:title" content="RetroTrack" />
+          <meta property="og:title" content="BlocksWOT website" />
           <meta property="og:type" content="website" />
-          <meta property="og:url" content="https://retrotrack.bregan.me" />
+          <meta property="og:url" content="https://bot.bregan.me/" />
           <meta property="og:image" content="/rt.png" />
           <meta property="og:description" content="BlocksWOT bot website" />
           <meta name="twitter:card" content="summary_large_image" />
