@@ -5,8 +5,7 @@ on:
     branches:
       - 'main'
     paths:
-      - 'BreganTwitchBot.Web/**'
-      - 'BreganTwitchBot.Infrastructure/**'
+      - 'bregantwitchbot.web/**'
 
 jobs:
   build:
