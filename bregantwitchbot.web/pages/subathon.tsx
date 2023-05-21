@@ -5,13 +5,18 @@ import { useEffect, useState } from 'react';
 
 interface SubathonProps {
     data: GetSubathonLeaderboardsDto | null;
-    timeLeft: string;
+    timeLeft: GetSubathonTimeLeftDto;
 }
 
 
 interface GetSubathonLeaderboardsDto {
     subsLeaderboard: Leaderboard[];
     bitsLeaderboard: Leaderboard[];
+}
+
+interface GetSubathonTimeLeftDto {
+    timeLeft: string;
+    playSound: boolean;
 }
 
 export interface Leaderboard {
@@ -28,16 +33,22 @@ const Subathon = (props: SubathonProps) => {
         setInterval(async () => {
             try {
                 const timeLeftApiRes = await DoGet('/api/Subathon/GetSubathonTimeLeft');
-
+        
                 if (timeLeftApiRes.ok) {
-                    setTimeLeft(await timeLeftApiRes.text());
+                    setTimeLeft(await timeLeftApiRes.json());
                 }
                 else {
-                    setTimeLeft("Error getting time - " + timeLeftApiRes.status);
+                    setTimeLeft({
+                        timeLeft: "Error getting time - " + timeLeftApiRes.status,
+                        playSound: false
+                    });
                 }
-
+        
             } catch (error) {
-                setTimeLeft("Error getting time - " + error);
+                setTimeLeft({
+                    timeLeft: "Error getting time - " + error,
+                    playSound: false
+                });
             }
         }, 3000);
 
@@ -61,9 +72,15 @@ const Subathon = (props: SubathonProps) => {
 
     return (
         <>
+            {timeLeft.playSound &&
+                <audio autoPlay>
+                    <source src="/quack.mp3" type="audio/mpeg" />
+                </audio>
+            }
+
             <Text size={60} weight={500} align='center'>Subathon</Text>
             <Text size={30} weight={400} align='center' pt={20}>The subathon will end in...</Text>
-            <Text size={30} weight={400} align='center' pt={20}>{timeLeft}</Text>
+            <Text size={30} weight={400} align='center' pt={20}>{timeLeft.timeLeft}</Text>
 
             <Text size={35} weight={500} align='center' pt={50} pb={20}>Top 10 Gifters/Cheerers</Text>
 
@@ -132,7 +149,10 @@ const Subathon = (props: SubathonProps) => {
 
 export const getServerSideProps: GetServerSideProps<SubathonProps> = async () => {
     let propsRes: SubathonProps = {
-        timeLeft: "",
+        timeLeft: {
+            timeLeft: "",
+            playSound: false
+        },
         data: null
     };
 
@@ -140,14 +160,20 @@ export const getServerSideProps: GetServerSideProps<SubathonProps> = async () =>
         const timeLeftApiRes = await DoGet('/api/Subathon/GetSubathonTimeLeft');
 
         if (timeLeftApiRes.ok) {
-            propsRes.timeLeft = await timeLeftApiRes.text();
+            propsRes.timeLeft = await timeLeftApiRes.json();
         }
         else {
-            propsRes.timeLeft = "Error getting time - " + timeLeftApiRes.status;
+            propsRes.timeLeft = {
+                timeLeft: "Error getting time - " + timeLeftApiRes.status,
+                playSound: false
+            };
         }
 
     } catch (error) {
-        propsRes.timeLeft = "Error getting time - " + error;
+        propsRes.timeLeft = {
+            timeLeft: "Error getting time - " + error,
+            playSound: false
+        };
     }
 
     try {

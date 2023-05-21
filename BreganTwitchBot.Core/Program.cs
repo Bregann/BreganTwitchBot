@@ -35,7 +35,7 @@ builder.Services.AddCors(options =>
     options.AddPolicy(name: "allowUrls",
                       policy =>
                       {
-                          policy.WithOrigins("http://localhost:3000", "https://botapi.bregan.me", "https://bot.bregan.me");
+                          policy.WithOrigins("http://localhost:3000", "localhost:3000", "localhost", "https://botapi.bregan.me", "https://bot.bregan.me");
                           policy.WithHeaders("Content-Type");
                           policy.WithMethods("GET", "POST", "DELETE");
                       });
@@ -70,7 +70,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseCors("AllowAnyOrigin");
+app.UseCors("allowUrls");
 
 app.UseHttpsRedirection();
 

@@ -1,51 +1,47 @@
-import { DoGet } from "@/helpers/webFetchHelper";
-import { GetServerSideProps } from "next";
+import { DoGet } from '@/helpers/webFetchHelper';
 import { Container, Text, TextInput } from '@mantine/core';
-import { useEffect, useState } from "react";
-import { DataTable, DataTableSortStatus } from "mantine-datatable";
-import { useDebouncedValue } from "@mantine/hooks";
-import { IconSearch } from "@tabler/icons-react";
-import sortBy from 'lodash/sortBy';
+import { useDebouncedValue } from '@mantine/hooks';
+import { IconSearch } from '@tabler/icons-react';
+import { sortBy } from 'lodash';
+import { DataTableSortStatus, DataTable } from 'mantine-datatable';
+import { GetServerSideProps } from 'next';
+import { useState, useEffect } from 'react';
 
-interface LeaderboardProps {
-    data:  GetLeaderboardDto | null;
+interface CommandsProps {
+    data:  GetCommandsDto[] | null;
     error: string | null;
 }
 
-interface GetLeaderboardDto {
-    leaderboardName: string;
-    leaderboards:    LeaderboardData[];
+interface GetCommandsDto {
+    commandName: string;
+    commandText: string;
+    lastUsed:    string;
+    timesUsed:   number;
 }
 
-interface LeaderboardData {
-    position: number;
-    username: string;
-    amount:   string;
-}
-
-const Leaderboards = (props: LeaderboardProps) => {
+const Commands = (props: CommandsProps) => {
     const PAGE_SIZES = [10, 25, 50];
     
     const [sortStatus, setSortStatus] = useState<DataTableSortStatus>({ columnAccessor: 'name', direction: 'asc' });
     const [pageSize, setPageSize] = useState(PAGE_SIZES[1]);
     const [page, setPage] = useState(1);
-    const [records, setRecords] = useState(props.data?.leaderboards.slice(0, pageSize));
+    const [records, setRecords] = useState(props.data?.slice(0, pageSize));
     const [query, setQuery] = useState('');
     const [debouncedQuery] = useDebouncedValue(query, 200);
 
     useEffect(() => {
         const from = (page - 1) * pageSize;
         const to = from + pageSize;
-        setRecords(props.data?.leaderboards.slice(from, to));
+        setRecords(props.data?.slice(from, to));
 
-        const data = sortBy(props.data?.leaderboards, sortStatus.columnAccessor);
+        const data = sortBy(props.data, sortStatus.columnAccessor);
         const sortedData = sortStatus.direction === 'desc' ? data.reverse() : data;
         setRecords(sortedData);
 
-        let filteredGames = sortedData.filter(({username}) => {
+        let filteredGames = sortedData.filter(({commandName, commandText}) => {
             if(
                 debouncedQuery !== '' &&
-                !`${username}`
+                !`${commandName} ${commandText}`
                     .toLowerCase()
                     .includes(debouncedQuery.trim().toLowerCase())
             ) {
@@ -57,17 +53,18 @@ const Leaderboards = (props: LeaderboardProps) => {
 
         setRecords(filteredGames.slice(from, to));
 
-      }, [page, props.data?.leaderboards, pageSize, sortStatus.columnAccessor, sortStatus.direction, debouncedQuery]);
-
+      }, [page, props.data, pageSize, sortStatus.columnAccessor, sortStatus.direction, debouncedQuery]);
+      
     return ( 
         <>
+            <Text size={60} weight={500} align='center' pb={30}>Commands</Text>
+
             {props.error && 
                 <Text>{props.error}</Text>
             }
             
             {props.data &&
             <Container size="lg">
-                <Text size={60} weight={500} align='center' pb={30}>{props.data.leaderboardName}  Leaderboard</Text>
 
                 <TextInput
                     sx={{ flexBasis: '60%' }}
@@ -81,11 +78,12 @@ const Leaderboards = (props: LeaderboardProps) => {
                     withBorder
                     records={records}
                     columns={[
-                        {accessor: 'position', title: 'Position' ,sortable: true},
-                        {accessor: 'username', title: 'Username'},
-                        {accessor: 'amount', title: 'Amount' },
+                        {accessor: 'commandName', title: 'Command Name', sortable: true},
+                        {accessor: 'commandText', title: 'Command Text'},
+                        {accessor: 'lastUsed', title: 'Last Used' },
+                        {accessor: 'timesUsed', title: 'Times Used', sortable: true},
                     ]}
-                    totalRecords={props.data.leaderboards.length}
+                    totalRecords={props.data.length}
                     paginationColor="grape"
                     recordsPerPage={pageSize}
                     page={page}
@@ -100,12 +98,11 @@ const Leaderboards = (props: LeaderboardProps) => {
         </>
      );
 }
- 
-export const getServerSideProps: GetServerSideProps<LeaderboardProps> = async(context) => {
-    const { type } = context.query;
+
+export const getServerSideProps: GetServerSideProps<CommandsProps> = async() => {
 
     try {
-        const apiRes = await DoGet('/api/Leaderboards/GetLeaderboard/' + type);
+        const apiRes = await DoGet('/api/Commands/GetCommands');
 
         if(apiRes.ok) {
             return {
@@ -133,4 +130,4 @@ export const getServerSideProps: GetServerSideProps<LeaderboardProps> = async(co
     }
 }
 
-export default Leaderboards;
+export default Commands;

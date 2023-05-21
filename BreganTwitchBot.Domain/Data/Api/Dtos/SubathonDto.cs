@@ -12,4 +12,10 @@ namespace BreganTwitchBot.Domain.Data.Api.Dtos
         public required List<Subathon> SubsLeaderboard { get; set; }
         public required List<Subathon> BitsLeaderboard { get; set; }
     }
+
+    public class GetSubathonTimeLeftDto 
+    {
+        public required string TimeLeft { get; set; }
+        public required bool PlaySound { get; set; }
+    }
 }

@@ -20,7 +20,7 @@ namespace BreganTwitchBot.Domain.Data.Api
                 {
                     CommandName = command.CommandName,
                     CommandText = command.CommandText,
-                    LastUsed = command.LastUsed,
+                    LastUsed = command.LastUsed.ToString(),
                     TimesUsed = command.TimesUsed
                 })).ToList();
             }

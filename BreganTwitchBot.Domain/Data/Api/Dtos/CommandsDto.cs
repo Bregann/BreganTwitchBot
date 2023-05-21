@@ -8,9 +8,9 @@ namespace BreganTwitchBot.Domain.Data.Api.Dtos
 {
     public class CustomCommandsDto
     {
-        public string CommandName { get; set; }
-        public string CommandText { get; set; }
-        public DateTime LastUsed { get; set; }
-        public long TimesUsed { get; set; }
+        public required string CommandName { get; set; }
+        public required string CommandText { get; set; }
+        public required string LastUsed { get; set; }
+        public required long TimesUsed { get; set; }
     }
 }
