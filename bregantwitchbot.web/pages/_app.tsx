@@ -2,7 +2,7 @@ import type { AppProps } from 'next/app'
 import Head from 'next/head';
 import { ButtonStylesParams, MantineProvider } from '@mantine/core';
 import { ToastContainer } from 'react-toastify';
-import Navigation from '@/components/nav/Navigation';
+import Navigation from '@/components/Navigation';
 import 'react-toastify/dist/ReactToastify.css';
 
 export default function App(props: AppProps) {
