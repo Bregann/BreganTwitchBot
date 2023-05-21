@@ -50,7 +50,7 @@ const Subathon = (props: SubathonProps) => {
                     playSound: false
                 });
             }
-        }, 3000);
+        }, 1000);
 
         setInterval(async () => {
             try {
