@@ -12,25 +12,41 @@ namespace BreganTwitchBot.Domain.Data.Api
 
         public static GetSubathonTimeLeftDto GetSubathonTimeLeft()
         {
+            var timeUpdated = false;
+            var playSound = false;
+
+            if (_subathonTime != AppConfig.SubathonTime)
+            {
+                timeUpdated = true;
+
+                if (_subathonTime.TotalSeconds + 60 < AppConfig.SubathonTime.TotalSeconds)
+                {
+                    playSound = true;
+                }
+
+            }
+
             _subathonTime = AppConfig.SubathonTime;
 
             var startTime = AppConfig.SubathonStartTime;
             var endTimeDT = startTime.Add(AppConfig.SubathonTime);
-            var timeDiff = endTimeDT - DateTime.Now;
+            var timeDiff = endTimeDT - DateTime.UtcNow;
 
             if (timeDiff.TotalMicroseconds < 0)
             {
                 return new GetSubathonTimeLeftDto
                 {
-                    TimeLeft = "Subathon is over!",
-                    PlaySound = false
+                    SecondsLeft = 0,
+                    PlaySound = false,
+                    TimeUpdated = true
                 };
             }
 
             return new GetSubathonTimeLeftDto
             {
-                TimeLeft = timeDiff.Humanize(maxUnit: TimeUnit.Year, minUnit: TimeUnit.Second, precision: 7),
-                PlaySound = timeDiff != _subathonTime
+                SecondsLeft = (int)Math.Round(timeDiff.TotalSeconds),
+                PlaySound = playSound,
+                TimeUpdated = timeUpdated
             };
         }
 

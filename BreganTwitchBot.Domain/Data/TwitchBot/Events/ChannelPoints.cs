@@ -11,8 +11,8 @@ namespace BreganTwitchBot.Domain.Data.TwitchBot.Events
             try
             {
                 Log.Information($"[ChannelPoints] Name: {rewardTitle} Cost: {rewardCost} User who redeemed: {userRedeemed}");
-                await StreamStatsService.UpdateStreamStat(1, StatTypes.AmountOfRewardsRedeemd);
-                await StreamStatsService.UpdateStreamStat(rewardCost, StatTypes.RewardRedeemCost);
+                StreamStatsService.UpdateStreamStat(1, StatTypes.AmountOfRewardsRedeemd);
+                StreamStatsService.UpdateStreamStat(rewardCost, StatTypes.RewardRedeemCost);
 
                 if (redemptionStatus == "ACTION_TAKEN")
                 {

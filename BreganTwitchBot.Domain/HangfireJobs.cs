@@ -6,6 +6,7 @@ using BreganTwitchBot.Domain.Data.TwitchBot.Commands.TwitchBosses;
 using BreganTwitchBot.Domain.Data.TwitchBot.Helpers;
 using BreganTwitchBot.Domain.Data.TwitchBot.WordBlacklist;
 using BreganTwitchBot.Infrastructure.Database.Context;
+using BreganTwitchBot.Infrastructure.Database.Models;
 using BreganUtils;
 using BreganUtils.ProjectMonitor.Projects;
 using Discord;
@@ -39,6 +40,7 @@ namespace BreganTwitchBot.Domain
             RecurringJob.AddOrUpdate("DiscordDailyReset", () => DiscordDailyReset(), "0 3 * * *");
             RecurringJob.AddOrUpdate("CheckBirthdays", () => CheckBirthdays(), "0 6 * * *");
             RecurringJob.AddOrUpdate("DailyPointsReminder", () => DailyPointsAnnouncementJob(), "20 * * * *");
+            RecurringJob.AddOrUpdate("UpdateStatsInDatabase", () => UpdateStatsInDatabase(), "*/20 * * * * *");
 
             //todo: add a job for every 5 mins, get active chatters and update users in stream
             Log.Information("[Job Scheduler] Job Scheduler Setup");
@@ -168,7 +170,7 @@ namespace BreganTwitchBot.Domain
 
         public static async Task CheckDailyPointsStreamStatus()
         {
-            await DailyPoints.CheckLiveStreamStatus();
+            await Data.TwitchBot.Commands.DailyPoints.DailyPoints.CheckLiveStreamStatus();
             return;
         }
 
@@ -201,7 +203,7 @@ namespace BreganTwitchBot.Domain
 
         public static async Task TimeTrackerHoursUpdate()
         {
-            await Watchtime.UpdateUserWatchtime();
+            await Data.TwitchBot.Watchtime.UpdateUserWatchtime();
         }
 
         public static async Task GetStreamStatus()
@@ -446,6 +448,11 @@ namespace BreganTwitchBot.Domain
         public static void SendDiscordConnectionStatusToProjectMonitor()
         {
             ProjectMonitorBreganTwitchBot.SendDiscordConnectionStateUpdate(DiscordConnection.ConnectionStatus);
+        }
+
+        public static async Task UpdateStatsInDatabase()
+        {
+            await StreamStatsService.UpdateStatsInDatabase();
         }
     }
 }

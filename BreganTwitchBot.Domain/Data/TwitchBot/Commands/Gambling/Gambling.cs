@@ -85,7 +85,7 @@ namespace BreganTwitchBot.Domain.Data.TwitchBot.Commands.Gambling
 
         private static async Task SpinSlotMachine(string username, string userId, long pointsGambled)
         {
-            await StreamStatsService.UpdateStreamStat(pointsGambled, StatTypes.PointsGambled);
+            StreamStatsService.UpdateStreamStat(pointsGambled, StatTypes.PointsGambled);
             await PointsHelper.RemoveUserPoints(username, pointsGambled);
 
             var random = new Random();
@@ -121,8 +121,8 @@ namespace BreganTwitchBot.Domain.Data.TwitchBot.Commands.Gambling
             {
                 case "Kappa" when emoteList[1] == "Kappa" && emoteList[2] == "Kappa":
                     await PointsHelper.AddUserPoints(userId, pointsGambled * 10);
-                    await StreamStatsService.UpdateStreamStat(pointsGambled * 10, StatTypes.PointsWon);
-                    await StreamStatsService.UpdateStreamStat(1, StatTypes.KappaWins);
+                    StreamStatsService.UpdateStreamStat(pointsGambled * 10, StatTypes.PointsWon);
+                    StreamStatsService.UpdateStreamStat(1, StatTypes.KappaWins);
                     AddWinToSlotMachineAndUser(userId, "tier1Wins", pointsGambled, pointsGambled * 10);
                     TwitchHelper.SendMessage($"@{username} => You have spun {emoteList[0]} | {emoteList[1]} | {emoteList[2]} . You have won {pointsGambled * 10:N0} {AppConfig.PointsName}!");
                     Log.Information($"[Slot Machine] {username} got a Kappa win!");
@@ -130,8 +130,8 @@ namespace BreganTwitchBot.Domain.Data.TwitchBot.Commands.Gambling
 
                 case "4Head" when emoteList[1] == "4Head" && emoteList[2] == "4Head":
                     await PointsHelper.AddUserPoints(userId, pointsGambled * 20);
-                    await StreamStatsService.UpdateStreamStat(pointsGambled * 20, StatTypes.PointsWon);
-                    await StreamStatsService.UpdateStreamStat(1, StatTypes.ForeheadWins);
+                    StreamStatsService.UpdateStreamStat(pointsGambled * 20, StatTypes.PointsWon);
+                    StreamStatsService.UpdateStreamStat(1, StatTypes.ForeheadWins);
                     AddWinToSlotMachineAndUser(userId, "tier2Wins", pointsGambled, pointsGambled * 20);
                     TwitchHelper.SendMessage($"@{username} => You have spun {emoteList[0]} | {emoteList[1]} | {emoteList[2]} . You have won {pointsGambled * 20:N0} {AppConfig.PointsName}!");
                     Log.Information($"[Slot Machine] {username} got a 4Head win!");
@@ -139,8 +139,8 @@ namespace BreganTwitchBot.Domain.Data.TwitchBot.Commands.Gambling
 
                 case "LUL" when emoteList[1] == "LUL" && emoteList[2] == "LUL":
                     await PointsHelper.AddUserPoints(userId, pointsGambled * 40);
-                    await StreamStatsService.UpdateStreamStat(pointsGambled * 40, StatTypes.PointsWon);
-                    await StreamStatsService.UpdateStreamStat(1, StatTypes.LULWins);
+                    StreamStatsService.UpdateStreamStat(pointsGambled * 40, StatTypes.PointsWon);
+                    StreamStatsService.UpdateStreamStat(1, StatTypes.LULWins);
                     AddWinToSlotMachineAndUser(userId, "tier3Wins", pointsGambled, pointsGambled * 40);
                     TwitchHelper.SendMessage($"@{username} => You have spun {emoteList[0]} | {emoteList[1]} | {emoteList[2]} . You have won {pointsGambled * 40:N0} {AppConfig.PointsName}!");
                     Log.Information($"[Slot Machine] {username} got a LUL win!");
@@ -151,8 +151,8 @@ namespace BreganTwitchBot.Domain.Data.TwitchBot.Commands.Gambling
                         var jackpotAmount = GetJackpotAmount();
                         await PointsHelper.AddUserPoints(userId, jackpotAmount);
                         AddWinToSlotMachineAndUser(userId, "jackpotWins", pointsGambled, jackpotAmount);
-                        await StreamStatsService.UpdateStreamStat(jackpotAmount, StatTypes.PointsWon);
-                        await StreamStatsService.UpdateStreamStat(1, StatTypes.jackpotWins);
+                        StreamStatsService.UpdateStreamStat(jackpotAmount, StatTypes.PointsWon);
+                        StreamStatsService.UpdateStreamStat(1, StatTypes.jackpotWins);
 
                         using (var context = new DatabaseContext())
                         {
@@ -168,7 +168,7 @@ namespace BreganTwitchBot.Domain.Data.TwitchBot.Commands.Gambling
                     {
                         await PointsHelper.AddUserPoints(userId, 1);
                         AddWinToSlotMachineAndUser(userId, "smorcWins", pointsGambled, 1);
-                        await StreamStatsService.UpdateStreamStat(1, StatTypes.SMOrcWins);
+                        StreamStatsService.UpdateStreamStat(1, StatTypes.SMOrcWins);
                         TwitchHelper.SendMessage($"@{username} => You have spun {emoteList[0]} | {emoteList[1]} | {emoteList[2]} . DING DING DING BUDGET JACKPOT!!! You have won the grand total of 1 WHOLE {AppConfig.PointsName} PogChamp PogChamp PogChamp PogChamp PogChamp PogChamp PogChamp PogChamp PogChamp PogChamp PogChamp PogChamp PogChamp PogChamp ");
                         Log.Information($"[Slot Machine] {username} won the budget SMOrc jackpot!");
                         break;
@@ -180,11 +180,11 @@ namespace BreganTwitchBot.Domain.Data.TwitchBot.Commands.Gambling
 
                     AddLossToJackpotAndUser(userId, pointsGambled, pointsGambled / 100 * 60);
                     await PointsHelper.RemoveUserPoints(userId, pointsGambled);
-                    await StreamStatsService.UpdateStreamStat(1, StatTypes.PointsLost);
+                    StreamStatsService.UpdateStreamStat(1, StatTypes.PointsLost);
                     break;
             }
 
-            await StreamStatsService.UpdateStreamStat(1, StatTypes.TotalSpins);
+            StreamStatsService.UpdateStreamStat(1, StatTypes.TotalSpins);
         }
 
         private static void AddWinToSlotMachineAndUser(string userId, string winType, long pointsGambled, long pointsWon)

@@ -88,7 +88,7 @@ namespace BreganTwitchBot.Domain.Data.TwitchBot.Commands.DailyPoints
 
 
                         Log.Information($"[Daily Points] Missed streaks reset - {amountOfUsersReset} users reset");
-                        await StreamStatsService.UpdateStreamStat(amountOfUsersReset, StatTypes.AmountOfUsersReset);
+                        StreamStatsService.UpdateStreamStat(amountOfUsersReset, StatTypes.AmountOfUsersReset);
                         Log.Information("[Daily Points] Points claimed set to false");
 
                         //Allow the point collecting
@@ -194,8 +194,8 @@ namespace BreganTwitchBot.Domain.Data.TwitchBot.Commands.DailyPoints
                     pointsToAdd = roundedStreakAmount * 200;
                 }
 
-                await StreamStatsService.UpdateStreamStat(1, StatTypes.TotalUsersClaimed);
-                await StreamStatsService.UpdateStreamStat(pointsToAdd, StatTypes.TotalPointsClaimed);
+                StreamStatsService.UpdateStreamStat(1, StatTypes.TotalUsersClaimed);
+                StreamStatsService.UpdateStreamStat(pointsToAdd, StatTypes.TotalPointsClaimed);
 
                 await PointsHelper.AddUserPoints(userId, pointsToAdd);
                 user.PointsLastClaimed = DateTime.UtcNow;

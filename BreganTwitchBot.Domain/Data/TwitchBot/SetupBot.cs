@@ -87,7 +87,7 @@ namespace BreganTwitchBot.Domain.Data.TwitchBot
                 await CommandHandler.HandleCustomCommand(e.ChatMessage.Message.Split(' ').FirstOrDefault(), e.ChatMessage.Username, e.ChatMessage.UserId);
                 await WordBlacklist.WordBlacklistData.HandleMessageChecks(e);
                 await Message.HandleUserAddingOrUpdating(e.ChatMessage.Username, e.ChatMessage.UserId, e.ChatMessage.IsSubscriber);
-                await StreamStatsService.UpdateStreamStat(1, StatTypes.MessagesReceived);
+                StreamStatsService.UpdateStreamStat(1, StatTypes.MessagesReceived);
 
             }
             catch (Exception ex)
@@ -99,13 +99,13 @@ namespace BreganTwitchBot.Domain.Data.TwitchBot
 
         private static async void UserBanned(object? sender, OnUserBannedArgs e)
         {
-            await StreamStatsService.UpdateStreamStat(1, StatTypes.TotalBans);
+            StreamStatsService.UpdateStreamStat(1, StatTypes.TotalBans);
             Log.Information($"[User Banned in Stream] User banned: {e.UserBan.Username}");
         }
 
         private static async void UserTimedOut(object? sender, OnUserTimedoutArgs e)
         {
-            await StreamStatsService.UpdateStreamStat(1, StatTypes.TotalTimeouts);
+            StreamStatsService.UpdateStreamStat(1, StatTypes.TotalTimeouts);
             Log.Information($"[User Timed out in Stream] User banned: {e.UserTimeout.Username} Duration: {e.UserTimeout.TimeoutDuration} Reason: {e.UserTimeout.TimeoutReason}");
         }
 

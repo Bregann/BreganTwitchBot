@@ -1,4 +1,5 @@
 ﻿using BreganTwitchBot.Domain.Data.TwitchBot.Commands.StreamInfo;
+using BreganTwitchBot.Domain.Data.TwitchBot.Commands.Subathon;
 using BreganTwitchBot.Domain.Data.TwitchBot.Commands.WordBlacklist;
 using BreganTwitchBot.Domain.Data.TwitchBot.Enums;
 using BreganTwitchBot.Domain.Data.TwitchBot.Helpers;
@@ -14,7 +15,7 @@ namespace BreganTwitchBot.Domain.Data.TwitchBot.Commands
 
         public static async Task HandleCommand(OnChatCommandReceivedArgs command)
         {
-            await StreamStatsService.UpdateStreamStat(1, StatTypes.CommandsSent);
+            StreamStatsService.UpdateStreamStat(1, StatTypes.CommandsSent);
             Log.Information($"[Twitch Commands] !{command.Command.CommandText.ToLower()} receieved from {command.Command.ChatMessage.Username}");
 
             await HandleCustomCommand(command.Command.CommandText.ToLower(), command.Command.ChatMessage.Username, command.Command.ChatMessage.UserId);
@@ -209,6 +210,9 @@ namespace BreganTwitchBot.Domain.Data.TwitchBot.Commands
                 case "dumblethon":
                     Subathon.Subathon.HandleSubathonCommand(command.Command.ChatMessage.Username);
                     break;
+                case "addtime" when TwitchHelper.IsUserSupermod(command.Command.ChatMessage.UserId):
+                    await Subathon.Subathon.HandleAddTimeCommand(command.Command.ArgumentsAsList);
+                    break;
             }
         }
 
@@ -236,7 +240,7 @@ namespace BreganTwitchBot.Domain.Data.TwitchBot.Commands
                     return;
                 }
 
-                await StreamStatsService.UpdateStreamStat(1, StatTypes.CommandsSent);
+                StreamStatsService.UpdateStreamStat(1, StatTypes.CommandsSent);
 
                 //Send the message
                 TwitchHelper.SendMessage(command.CommandText.Replace("[count]", command.TimesUsed.ToString("N0")).Replace("[user]", username));

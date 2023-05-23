@@ -3,8 +3,6 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.0.32126.317
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BreganTwitchBot.Web", "BreganTwitchBot.WebOld\BreganTwitchBot.Web.csproj", "{0AED50FE-E158-4E93-96B5-23CA9D6F1E41}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BreganTwitchBot.Domain", "BreganTwitchBot.Domain\BreganTwitchBot.Domain.csproj", "{CAF5F7B4-4D10-40D5-833C-80833AA4ED24}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BreganTwitchBot.Infrastructure", "BreganTwitchbot.Infrastructure\BreganTwitchBot.Infrastructure.csproj", "{DF23A2AE-F8B9-4877-A0FC-7877B67647B3}"
@@ -17,10 +15,6 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{0AED50FE-E158-4E93-96B5-23CA9D6F1E41}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{0AED50FE-E158-4E93-96B5-23CA9D6F1E41}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{0AED50FE-E158-4E93-96B5-23CA9D6F1E41}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{0AED50FE-E158-4E93-96B5-23CA9D6F1E41}.Release|Any CPU.Build.0 = Release|Any CPU
 		{CAF5F7B4-4D10-40D5-833C-80833AA4ED24}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{CAF5F7B4-4D10-40D5-833C-80833AA4ED24}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{CAF5F7B4-4D10-40D5-833C-80833AA4ED24}.Release|Any CPU.ActiveCfg = Release|Any CPU

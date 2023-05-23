@@ -15,8 +15,9 @@ interface GetSubathonLeaderboardsDto {
 }
 
 interface GetSubathonTimeLeftDto {
-    timeLeft: string;
+    secondsLeft: number;
     playSound: boolean;
+    timeUpdated: boolean;
 }
 
 export interface Leaderboard {
@@ -28,6 +29,7 @@ export interface Leaderboard {
 const Subathon = (props: SubathonProps) => {
     const [timeLeft, setTimeLeft] = useState(props.timeLeft);
     const [leaderboardData, setLeaderboardData] = useState(props.data);
+    const [secondsLeft, setSecondsLeft] = useState(props.timeLeft.secondsLeft);
 
     useEffect(() => {
         setInterval(async () => {
@@ -35,22 +37,31 @@ const Subathon = (props: SubathonProps) => {
                 const timeLeftApiRes = await DoGet('/api/Subathon/GetSubathonTimeLeft');
         
                 if (timeLeftApiRes.ok) {
-                    setTimeLeft(await timeLeftApiRes.json());
+                    const resData: GetSubathonTimeLeftDto = await timeLeftApiRes.json();
+                    setTimeLeft(resData);
+
+                    if(resData.timeUpdated){
+                        setSecondsLeft(resData.secondsLeft);
+                    }
                 }
                 else {
+                    console.error(timeLeftApiRes.statusText);
                     setTimeLeft({
-                        timeLeft: "Error getting time - " + timeLeftApiRes.status,
-                        playSound: false
+                        secondsLeft: -1,
+                        playSound: false,
+                        timeUpdated: false
                     });
                 }
         
             } catch (error) {
+                console.error(error);
                 setTimeLeft({
-                    timeLeft: "Error getting time - " + error,
-                    playSound: false
+                    secondsLeft: -1,
+                    playSound: false,
+                    timeUpdated: false
                 });
             }
-        }, 1000);
+        }, 5000);
 
         setInterval(async () => {
             try {
@@ -70,6 +81,20 @@ const Subathon = (props: SubathonProps) => {
         }, 60000);
     }, []);
 
+    useEffect(() => {
+        setInterval(() => {
+            setSecondsLeft(seconds => seconds - 1);
+        }, 1000);
+      }, []);
+
+    const convertSecondsToTime = () => {
+        const hours = Math.floor(secondsLeft / 3600);
+        const minutes = Math.floor((secondsLeft % 3600) / 60);
+        const seconds = Math.floor(secondsLeft % 60);
+    
+        return `${hours} ${hours === 1 ? 'Hour' : 'Hours'} ${minutes} ${hours === 1 ? 'Minute' : 'Minutes'} ${seconds} ${hours === 1 ? 'Second' : 'Seconds'}`;
+      };
+
     return (
         <>
             {timeLeft.playSound &&
@@ -80,7 +105,7 @@ const Subathon = (props: SubathonProps) => {
 
             <Text size={60} weight={500} align='center'>Subathon</Text>
             <Text size={30} weight={400} align='center' pt={20}>The subathon will end in...</Text>
-            <Text size={30} weight={400} align='center' pt={20}>{timeLeft.timeLeft}</Text>
+            <Text size={30} weight={400} align='center' pt={20}>{convertSecondsToTime()}</Text>
 
             <Text size={35} weight={500} align='center' pt={50} pb={20}>Top 10 Gifters/Cheerers</Text>
 
@@ -150,8 +175,9 @@ const Subathon = (props: SubathonProps) => {
 export const getServerSideProps: GetServerSideProps<SubathonProps> = async () => {
     let propsRes: SubathonProps = {
         timeLeft: {
-            timeLeft: "",
-            playSound: false
+            secondsLeft: -1,
+            playSound: false,
+            timeUpdated: false
         },
         data: null
     };
@@ -163,16 +189,22 @@ export const getServerSideProps: GetServerSideProps<SubathonProps> = async () =>
             propsRes.timeLeft = await timeLeftApiRes.json();
         }
         else {
+            console.error(timeLeftApiRes.status);
+
             propsRes.timeLeft = {
-                timeLeft: "Error getting time - " + timeLeftApiRes.status,
-                playSound: false
+                secondsLeft: -1,
+                playSound: false,
+                timeUpdated: false
             };
         }
 
     } catch (error) {
+        console.error(error);
+
         propsRes.timeLeft = {
-            timeLeft: "Error getting time - " + error,
-            playSound: false
+            secondsLeft: -1,
+            playSound: false,
+            timeUpdated: false
         };
     }
 

@@ -2,6 +2,7 @@
 using BreganTwitchBot.Domain.Data.TwitchBot.Enums;
 using BreganTwitchBot.Domain.Data.TwitchBot.Helpers;
 using BreganTwitchBot.Infrastructure.Database.Context;
+using BreganTwitchBot.Infrastructure.Database.Models;
 using BreganUtils.ProjectMonitor.Projects;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
@@ -10,6 +11,7 @@ namespace BreganTwitchBot.Domain.Data.TwitchBot
 {
     public class Watchtime
     {
+        private static List<Users> _usersBeingUpdated = new();
         public static async Task UpdateUserWatchtime()
         {
             if (!AppConfig.StreamerLive)
@@ -18,13 +20,14 @@ namespace BreganTwitchBot.Domain.Data.TwitchBot
             }
 
             Log.Information("[User Update] User update started");
+            _usersBeingUpdated.Clear();
 
             using (var context = new DatabaseContext())
             {
-                var usersBeingUpdated = context.Users.Include(x => x.Watchtime).Where(x => x.InStream == true).ToList();
+                _usersBeingUpdated = context.Users.Include(x => x.Watchtime).Where(x => x.InStream == true).ToList();
                 int totalPointsAdded = 0;
 
-                foreach (var user in usersBeingUpdated)
+                foreach (var user in _usersBeingUpdated)
                 {
                     user.Watchtime.MinutesInStream++;
                     user.Watchtime.MinutesWatchedThisStream++;
@@ -46,12 +49,14 @@ namespace BreganTwitchBot.Domain.Data.TwitchBot
 
                 context.SaveChanges();
 
-                await StreamStatsService.UpdateStreamStat(totalPointsAdded, StatTypes.PointsGainedWatching);
+                StreamStatsService.UpdateStreamStat(totalPointsAdded, StatTypes.PointsGainedWatching);
                 ProjectMonitorBreganTwitchBot.SendLastHoursUpdateUpdate();
-                ProjectMonitorBreganTwitchBot.SendUsersInStreamUpdate(usersBeingUpdated.Count);
+                ProjectMonitorBreganTwitchBot.SendUsersInStreamUpdate(_usersBeingUpdated.Count);
 
-                Log.Information($"[User Update] User update complete. {usersBeingUpdated.Count} users updated. {totalPointsAdded} points added");
+                Log.Information($"[User Update] User update complete. {_usersBeingUpdated.Count} users updated. {totalPointsAdded} points added");
                 await CheckForRankUps();
+
+                _usersBeingUpdated.Clear();
             }
         }
 
@@ -79,7 +84,7 @@ namespace BreganTwitchBot.Domain.Data.TwitchBot
                         if (rankUps >= 1)
                         {
                             user.Watchtime.Rank1Applied = true;
-                            await StreamStatsService.UpdateStreamStat(1, StatTypes.DiscordRanksEarnt);
+                            StreamStatsService.UpdateStreamStat(1, StatTypes.DiscordRanksEarnt);
                             continue;
                         }
                         else
@@ -166,7 +171,7 @@ namespace BreganTwitchBot.Domain.Data.TwitchBot
 
                 if (ranksApplied != 0)
                 {
-                    await StreamStatsService.UpdateStreamStat(ranksApplied, StatTypes.DiscordRanksEarnt);
+                    StreamStatsService.UpdateStreamStat(ranksApplied, StatTypes.DiscordRanksEarnt);
                     await context.SaveChangesAsync();
                 }
 

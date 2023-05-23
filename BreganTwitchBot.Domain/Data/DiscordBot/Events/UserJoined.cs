@@ -14,7 +14,7 @@ namespace BreganTwitchBot.Domain.Data.DiscordBot.Events
                 return;
             }
 
-            await StreamStatsService.UpdateStreamStat(1, StatTypes.AmountOfDiscordUsersJoined);
+            StreamStatsService.UpdateStreamStat(1, StatTypes.AmountOfDiscordUsersJoined);
 
             var messageEmbed = new EmbedBuilder()
             {
