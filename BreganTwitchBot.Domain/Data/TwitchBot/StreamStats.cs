@@ -163,7 +163,7 @@ namespace BreganTwitchBot.Domain.Data.TwitchBot
             
             using(var context = new DatabaseContext())
             {
-                var lastStream = context.StreamStats.Last();
+                var lastStream = context.StreamStats.OrderBy(x => x.StreamId).Last();
 
                 lastStream.AmountOfDiscordUsersJoined += _streamData.AmountOfDiscordUsersJoined;
                 lastStream.AmountOfRewardsRedeemed += _streamData.AmountOfRewardsRedeemed;
