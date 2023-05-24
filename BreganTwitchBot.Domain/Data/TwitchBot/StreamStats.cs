@@ -156,6 +156,11 @@ namespace BreganTwitchBot.Domain.Data.TwitchBot
 
         public static async Task UpdateStatsInDatabase()
         {
+            if (!AppConfig.StreamerLive)
+            {
+                return;
+            }
+            
             using(var context = new DatabaseContext())
             {
                 var lastStream = context.StreamStats.Last();
