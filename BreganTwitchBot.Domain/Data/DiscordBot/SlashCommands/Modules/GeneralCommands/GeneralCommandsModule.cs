@@ -151,28 +151,6 @@ namespace BreganTwitchBot.Domain.Data.DiscordBot.SlashCommands.Modules.GeneralCo
             }
         }
 
-        [SlashCommand("aitest", "Test the rank begging AI (mod only)")]
-        public async Task AIPredict([Summary("message", "message to AI test")] string message)
-        {
-            var user = DiscordConnection.DiscordClient.GetGuild(AppConfig.DiscordGuildID).GetUser(Context.User.Id);
-            var isMod = user.Roles.FirstOrDefault(x => x.Name == "Twitch Mot");
-
-            if (isMod == null)
-            {
-                await RespondAsync("beep boop error you're probably a rank begger anyway lol", ephemeral: true);
-                return;
-            }
-
-            var sampleData = new BreganTwitchBot_Domain.RankBeggar.ModelInput()
-            {
-                Message = message.Replace("'", ""),
-            };
-
-            // Make a single prediction on the sample data and print results
-            var predictionResult = BreganTwitchBot_Domain.RankBeggar.Predict(sampleData);
-            await RespondAsync($"Message: {message} \n Prediction result: {predictionResult.PredictedLabel} \n 0: {predictionResult.Score[0]}% \n 1: {predictionResult.Score[1]}%");
-        }
-
         [SlashCommand("birthday", "Set your birthday to get a Happy Birthday announcement")]
         public async Task Birthday([Summary("day", "the day you were born (number)")] int day, [Summary("month", "the month you were born (number)")] int month)
         {
