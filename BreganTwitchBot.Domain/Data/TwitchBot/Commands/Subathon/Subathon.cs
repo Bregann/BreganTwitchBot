@@ -22,7 +22,7 @@ namespace BreganTwitchBot.Domain.Data.TwitchBot.Commands.Subathon
             }
 
             //Get the stream uptime
-            var startTime = new DateTime(2022, 9, 25, 11, 35, 0);
+            var startTime = AppConfig.SubathonStartTime;
 
             var endTimeDT = startTime.Add(AppConfig.SubathonTime);
             var timeLeft = endTimeDT - DateTime.UtcNow;
