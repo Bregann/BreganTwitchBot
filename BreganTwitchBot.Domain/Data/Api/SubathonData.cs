@@ -17,7 +17,7 @@ namespace BreganTwitchBot.Domain.Data.Api
             var timeUpdated = false;
             var playSound = false;
 
-            if (AppConfig.PrevSubathonTime != AppConfig.SubathonTime)
+            if (AppConfig.PrevSubathonTime.TotalSeconds < AppConfig.SubathonTime.TotalSeconds)
             {
                 timeUpdated = true;
 
