@@ -38,7 +38,8 @@ namespace BreganTwitchBot.Domain.Data.Api
                 {
                     SecondsLeft = 0,
                     PlaySound = false,
-                    TimeUpdated = true
+                    TimeUpdated = true,
+                    TimeExtended = AppConfig.SubathonTime.Humanize(maxUnit: TimeUnit.Year, minUnit: TimeUnit.Second, precision: 7)
                 };
             }
 
@@ -46,7 +47,8 @@ namespace BreganTwitchBot.Domain.Data.Api
             {
                 SecondsLeft = (int)Math.Round(timeDiff.TotalSeconds),
                 PlaySound = playSound,
-                TimeUpdated = timeUpdated
+                TimeUpdated = timeUpdated,
+                TimeExtended = AppConfig.SubathonTime.Humanize(maxUnit: TimeUnit.Year, minUnit: TimeUnit.Second, precision: 7)
             };
         }
 

@@ -16,6 +16,7 @@ namespace BreganTwitchBot.Domain.Data.Api.Dtos
     public class GetSubathonTimeLeftDto 
     {
         public required double SecondsLeft { get; set; }
+        public required string TimeExtended { get; set; }
         public required bool PlaySound { get; set; }
         public required bool TimeUpdated { get; set; }
     }

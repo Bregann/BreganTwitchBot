@@ -18,6 +18,7 @@ interface GetSubathonTimeLeftDto {
     secondsLeft: number;
     playSound: boolean;
     timeUpdated: boolean;
+    timeExtended: string;
 }
 
 export interface Leaderboard {
@@ -49,7 +50,8 @@ const Subathon = (props: SubathonProps) => {
                     setTimeLeft({
                         secondsLeft: -1,
                         playSound: false,
-                        timeUpdated: false
+                        timeUpdated: false,
+                        timeExtended: ""
                     });
                 }
         
@@ -58,7 +60,8 @@ const Subathon = (props: SubathonProps) => {
                 setTimeLeft({
                     secondsLeft: -1,
                     playSound: false,
-                    timeUpdated: false
+                    timeUpdated: false,
+                    timeExtended: ""
                 });
             }
         }, 5000);
@@ -106,7 +109,7 @@ const Subathon = (props: SubathonProps) => {
             <Text size={60} weight={500} align='center'>Subathon</Text>
             <Text size={30} weight={400} align='center' pt={20}>The subathon will end in...</Text>
             <Text size={30} weight={400} align='center' pt={20}>{convertSecondsToTime()}</Text>
-
+            <Text size={20} weight={400} align='center' pt={20}>Time extended: {timeLeft.timeExtended}</Text>
             <Text size={35} weight={500} align='center' pt={50} pb={20}>Top 10 Gifters/Cheerers</Text>
 
             <Container size='xl'>
@@ -177,7 +180,8 @@ export const getServerSideProps: GetServerSideProps<SubathonProps> = async () =>
         timeLeft: {
             secondsLeft: -1,
             playSound: false,
-            timeUpdated: false
+            timeUpdated: false,
+            timeExtended: ""
         },
         data: null
     };
@@ -194,7 +198,8 @@ export const getServerSideProps: GetServerSideProps<SubathonProps> = async () =>
             propsRes.timeLeft = {
                 secondsLeft: -1,
                 playSound: false,
-                timeUpdated: false
+                timeUpdated: false,
+                timeExtended: ""
             };
         }
 
@@ -204,7 +209,8 @@ export const getServerSideProps: GetServerSideProps<SubathonProps> = async () =>
         propsRes.timeLeft = {
             secondsLeft: -1,
             playSound: false,
-            timeUpdated: false
+            timeUpdated: false,
+            timeExtended: ""
         };
     }
 
