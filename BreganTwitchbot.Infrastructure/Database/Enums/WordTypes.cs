@@ -5,6 +5,6 @@
         PermBanWord = 0,
         TempBanWord = 1,
         WarningWord = 2,
-        StrikeWord = 3
+        StrikeWord = 3,
     }
 }
