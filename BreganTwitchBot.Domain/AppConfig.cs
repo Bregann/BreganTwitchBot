@@ -19,6 +19,7 @@ namespace BreganTwitchBot
         public static bool StreamAnnounced { get; private set; } = false;
         public static bool StreamerLive { get; private set; } = false;
         public static TimeSpan SubathonTime { get; private set; }
+        public static TimeSpan PrevSubathonTime { get; private set; }
         public static string PinnedStreamMessage { get; private set; } = "";
         public static ulong PinnedStreamMessageId { get; private set; }
         public static DateTime PinnedMessageDate { get; private set; }
@@ -247,8 +248,10 @@ namespace BreganTwitchBot
 
         public static async Task AddSubathonTime(TimeSpan tsToAdd)
         {
+            PrevSubathonTime = SubathonTime;
             SubathonTime += tsToAdd;
-            Log.Information($"[Subathon Time] {SubathonTime}");
+            Log.Information($"[Subathon Time] Prev subathon time {PrevSubathonTime}");
+            Log.Information($"[Subathon Time] Current subathon time {SubathonTime}");
 
             using (var context = new DatabaseContext())
             {

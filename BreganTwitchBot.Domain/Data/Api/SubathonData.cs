@@ -8,29 +8,25 @@ namespace BreganTwitchBot.Domain.Data.Api
 {
     public class SubathonData
     {
-        private static TimeSpan _subathonTime = AppConfig.SubathonTime;
-
         public static GetSubathonTimeLeftDto GetSubathonTimeLeft()
         {
+            var startTime = AppConfig.SubathonStartTime;
+            var endTimeDT = startTime.Add(AppConfig.SubathonTime);
+            var timeDiff = endTimeDT - DateTime.UtcNow;
+
             var timeUpdated = false;
             var playSound = false;
 
-            if (_subathonTime != AppConfig.SubathonTime)
+            if (AppConfig.PrevSubathonTime != AppConfig.SubathonTime)
             {
                 timeUpdated = true;
 
-                if (_subathonTime.TotalSeconds + 60 < AppConfig.SubathonTime.TotalSeconds)
+                if (AppConfig.PrevSubathonTime.TotalSeconds + 60 < AppConfig.SubathonTime.TotalSeconds)
                 {
                     playSound = true;
                 }
 
             }
-
-            _subathonTime = AppConfig.SubathonTime;
-
-            var startTime = AppConfig.SubathonStartTime;
-            var endTimeDT = startTime.Add(AppConfig.SubathonTime);
-            var timeDiff = endTimeDT - DateTime.UtcNow;
 
             if (timeDiff.TotalMicroseconds < 0)
             {
