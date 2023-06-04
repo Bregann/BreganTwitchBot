@@ -20,6 +20,7 @@ namespace BreganTwitchBot
         public static bool StreamerLive { get; private set; } = false;
         public static TimeSpan SubathonTime { get; private set; }
         public static TimeSpan PrevSubathonTime { get; private set; }
+        public static bool PlaySubathonSound { get; private set; }
         public static string PinnedStreamMessage { get; private set; } = "";
         public static ulong PinnedStreamMessageId { get; private set; }
         public static DateTime PinnedMessageDate { get; private set; }
@@ -100,6 +101,9 @@ namespace BreganTwitchBot
                 HFUsername = configVariables.HangfireUsername;
                 HFPassword = configVariables.HangfirePassword;
             }
+
+            PrevSubathonTime = SubathonTime;
+            PlaySubathonSound = false;
         }
 
         public static void UpdateDailyPointsCollecting(bool status)
@@ -259,6 +263,11 @@ namespace BreganTwitchBot
                 await context.SaveChangesAsync();
             }
 
+            if (PrevSubathonTime.TotalSeconds + 60 < SubathonTime.TotalSeconds)
+            {
+                PlaySubathonSound = true;
+            }
+
             Log.Information($"[Subathon Time] {tsToAdd} added");
         }
 
@@ -271,6 +280,11 @@ namespace BreganTwitchBot
                 context.Config.First().AiEnabled = AiEnabled;
                 context.SaveChanges();
             }
+        }
+
+        public static void ToggleSubathonSoundOff()
+        {
+            PlaySubathonSound = false;
         }
     }
 }

@@ -3,6 +3,7 @@ using BreganTwitchBot.Domain.Data.TwitchBot.Commands.StreamInfo;
 using BreganTwitchBot.Infrastructure.Database.Context;
 using Humanizer;
 using Humanizer.Localisation;
+using Serilog;
 
 namespace BreganTwitchBot.Domain.Data.Api
 {
@@ -15,17 +16,11 @@ namespace BreganTwitchBot.Domain.Data.Api
             var timeDiff = endTimeDT - DateTime.UtcNow;
 
             var timeUpdated = false;
-            var playSound = false;
+            var playSound = AppConfig.PlaySubathonSound;
 
             if (AppConfig.PrevSubathonTime.TotalSeconds < AppConfig.SubathonTime.TotalSeconds)
             {
                 timeUpdated = true;
-
-                if (AppConfig.PrevSubathonTime.TotalSeconds + 60 < AppConfig.SubathonTime.TotalSeconds)
-                {
-                    playSound = true;
-                }
-
             }
 
             if (timeDiff.TotalMicroseconds < 0)
@@ -38,6 +33,8 @@ namespace BreganTwitchBot.Domain.Data.Api
                     TimeExtended = AppConfig.SubathonTime.Humanize(maxUnit: TimeUnit.Year, minUnit: TimeUnit.Second, precision: 7)
                 };
             }
+
+            AppConfig.ToggleSubathonSoundOff();
 
             return new GetSubathonTimeLeftDto
             {
