@@ -1,10 +1,5 @@
 ﻿using BreganTwitchBot.Domain.Data.Api.Dtos;
 using BreganTwitchBot.Infrastructure.Database.Context;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace BreganTwitchBot.Domain.Data.Api
 {

@@ -1,5 +1,4 @@
-﻿using BreganTwitchBot.Domain.Data.DiscordBot.Helpers;
-using BreganTwitchBot.Infrastructure.Database.Context;
+﻿using BreganTwitchBot.Infrastructure.Database.Context;
 using Serilog;
 using TwitchLib.Api.Helix.Models.Moderation.BanUser;
 
@@ -53,9 +52,6 @@ namespace BreganTwitchBot.Domain.Data.TwitchBot.Helpers
 
                 await TwitchApiConnection.ApiClient.Helix.Moderation.BanUserAsync(AppConfig.TwitchChannelID, AppConfig.BotChannelId, banRequest, AppConfig.TwitchBotApiKey);
                 Log.Information($"[Twitch Ban] {userId} permanently banned from the twitch dot television livestream");
-
-                //Send over to discord for an inspection
-                await DiscordHelper.InformDiscordIfUserBanned(userId);
             }
             catch (Exception e)
             {

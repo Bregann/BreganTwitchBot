@@ -1,5 +1,4 @@
-﻿using BreganTwitchBot.Domain.Data.DiscordBot.Helpers;
-using BreganTwitchBot.Domain.Data.TwitchBot.Helpers;
+﻿using BreganTwitchBot.Domain.Data.TwitchBot.Helpers;
 using BreganTwitchBot.Infrastructure.Database.Context;
 using BreganTwitchBot.Infrastructure.Database.Enums;
 using BreganTwitchBot.Infrastructure.Database.Models;
@@ -98,8 +97,6 @@ namespace BreganTwitchBot.Domain.Data.TwitchBot.WordBlacklist
 
                         var totalStrikes = GetTotalTimeoutStrikes(e.ChatMessage.Username);
                         var totalWarns = GetTotalWarns(e.ChatMessage.Username);
-
-                        await DiscordHelper.SendMessage(AppConfig.DiscordEventChannelID, $"{e.ChatMessage.Username} timed out \n Total Strikes So Far: {totalStrikes:N0} \n Total Warns: {totalWarns} \n Total Messages: {totalMessages}");
                     }
                     else
                     {
@@ -111,8 +108,6 @@ namespace BreganTwitchBot.Domain.Data.TwitchBot.WordBlacklist
 
                         var totalStrikes = GetTotalTimeoutStrikes(e.ChatMessage.UserId);
                         var totalWarns = GetTotalWarns(e.ChatMessage.UserId);
-
-                        await DiscordHelper.SendMessage(928407056086605845, $"{e.ChatMessage.Username} warned \n Total Strikes So Far: {totalStrikes:N0} \n Total Warns: {totalWarns} \n Total Messages: {totalMessages}");
                     }
                 }
             }

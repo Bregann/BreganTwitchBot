@@ -1,5 +1,4 @@
-﻿using BreganTwitchBot.Domain.Data.DiscordBot.SlashCommands.Data.Linking;
-using BreganTwitchBot.Domain.Data.TwitchBot.Enums;
+﻿using BreganTwitchBot.Domain.Data.TwitchBot.Enums;
 using BreganTwitchBot.Domain.Data.TwitchBot.Helpers;
 using BreganTwitchBot.Infrastructure.Database.Context;
 using BreganTwitchBot.Infrastructure.Database.Models;
@@ -89,14 +88,13 @@ namespace BreganTwitchBot.Domain.Data.TwitchBot
                         }
                         else
                         {
-                            TwitchHelper.SendMessage($"@{user.Username} => Hey congrats you got the Melvin Rank on discord! Make sure to join the discord ( https://discord.gg/jAjKtHZ ) and connect your Twitch account!");
+                            TwitchHelper.SendMessage($"@{user.Username} => Hey congrats you got the Melvin Rank on discord!");
                             user.Watchtime.Rank1Applied = true;
                         }
                     }
                     else
                     {
                         TwitchHelper.SendMessage($"@{user.Username} => Hey congrats you got the Melvin Rank on Discord! Your rank has been applied!");
-                        await DiscordLinking.ApplyDiscordRankUp(user);
                         user.Watchtime.Rank1Applied = true;
                     }
                 }
@@ -107,13 +105,12 @@ namespace BreganTwitchBot.Domain.Data.TwitchBot
 
                     if (user.DiscordUserId == 0)
                     {
-                        TwitchHelper.SendMessage($"@{user.Username} => Hey congrats you got the WOT Crew Rank on discord! Make sure to join the discord ( https://discord.gg/jAjKtHZ ) and connect your Twitch account!");
+                        TwitchHelper.SendMessage($"@{user.Username} => Hey congrats you got the WOT Crew Rank on discord!");
                         user.Watchtime.Rank2Applied = true;
                     }
                     else
                     {
                         TwitchHelper.SendMessage($"@{user.Username} => Hey congrats you got the WOT Crew Rank on Discord! Your rank has been applied!");
-                        await DiscordLinking.ApplyDiscordRankUp(user);
                         user.Watchtime.Rank2Applied = true;
                     }
                 }
@@ -124,13 +121,12 @@ namespace BreganTwitchBot.Domain.Data.TwitchBot
 
                     if (user.DiscordUserId == 0)
                     {
-                        TwitchHelper.SendMessage($"@{user.Username} => Hey congrats you got the BLOCKS Crew Rank on discord! Make sure to join the discord ( https://discord.gg/jAjKtHZ ) and connect your Twitch account!");
+                        TwitchHelper.SendMessage($"@{user.Username} => Hey congrats you got the BLOCKS Crew Rank on discord!");
                         user.Watchtime.Rank3Applied = true;
                     }
                     else
                     {
                         TwitchHelper.SendMessage($"@{user.Username} => Hey congrats you got the BLOCKS Crew Rank on Discord! Your rank has been applied!");
-                        await DiscordLinking.ApplyDiscordRankUp(user);
                         user.Watchtime.Rank3Applied = true;
                     }
                 }
@@ -141,13 +137,12 @@ namespace BreganTwitchBot.Domain.Data.TwitchBot
 
                     if (user.DiscordUserId == 0)
                     {
-                        TwitchHelper.SendMessage($"@{user.Username} => Hey congrats you got the The Name of Legends Rank on discord! Make sure to join the discord ( https://discord.gg/jAjKtHZ ) and connect your Twitch account!");
+                        TwitchHelper.SendMessage($"@{user.Username} => Hey congrats you got the The Name of Legends Rank on discord!");
                         user.Watchtime.Rank4Applied = true;
                     }
                     else
                     {
                         TwitchHelper.SendMessage($"@{user.Username} => Hey congrats you got the The Name of Legends Rank on Discord! Your rank has been applied!");
-                        await DiscordLinking.ApplyDiscordRankUp(user);
                         user.Watchtime.Rank4Applied = true;
                     }
                 }
@@ -158,13 +153,12 @@ namespace BreganTwitchBot.Domain.Data.TwitchBot
 
                     if (user.DiscordUserId == 0)
                     {
-                        TwitchHelper.SendMessage($"@{user.Username} => Hey congrats you got the The King of The Stream Rank on discord! Make sure to join the discord ( https://discord.gg/jAjKtHZ ) and connect your Twitch account!");
+                        TwitchHelper.SendMessage($"@{user.Username} => Hey congrats you got the The King of The Stream Rank on discord!");
                         user.Watchtime.Rank5Applied = true;
                     }
                     else
                     {
                         TwitchHelper.SendMessage($"@{user.Username} => Hey congrats you got the The King of The Stream Rank on Discord! Your rank has been applied!");
-                        await DiscordLinking.ApplyDiscordRankUp(user);
                         user.Watchtime.Rank5Applied = true;
                     }
                 }

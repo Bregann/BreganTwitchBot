@@ -1,15 +1,10 @@
-﻿using BreganTwitchBot.Domain.Data.DiscordBot;
-using BreganTwitchBot.Domain.Data.DiscordBot.Helpers;
-using BreganTwitchBot.Domain.Data.TwitchBot;
-using BreganTwitchBot.Domain.Data.TwitchBot.Commands.DailyPoints;
+﻿using BreganTwitchBot.Domain.Data.TwitchBot;
 using BreganTwitchBot.Domain.Data.TwitchBot.Commands.TwitchBosses;
 using BreganTwitchBot.Domain.Data.TwitchBot.Helpers;
 using BreganTwitchBot.Domain.Data.TwitchBot.WordBlacklist;
 using BreganTwitchBot.Infrastructure.Database.Context;
-using BreganTwitchBot.Infrastructure.Database.Models;
 using BreganUtils;
 using BreganUtils.ProjectMonitor.Projects;
-using Discord;
 using Hangfire;
 using Serilog;
 using TwitchLib.Client.Extensions;
@@ -33,12 +28,6 @@ namespace BreganTwitchBot.Domain
             RecurringJob.AddOrUpdate("AnnounceDiscord", () => AnnounceDiscord(), "30 * * * *");
             RecurringJob.AddOrUpdate("ClearWarnedUsers", () => ClearWarnedUsers(), "*/5 * * * *");
             RecurringJob.AddOrUpdate("ResetMinutes", () => ResetMinutes(), "0 3 * * *");
-            RecurringJob.AddOrUpdate("CheckBotConnectionState", () => CheckBotConnectionState(), "*/10 * * * * *");
-            RecurringJob.AddOrUpdate("FollowerCheck", () => FollowerCheck(), "0 * * * *");
-            RecurringJob.AddOrUpdate("GetDiscordMemberCount", () => GetDiscordMemberCount(), "*/10 * * * *");
-            RecurringJob.AddOrUpdate("UpdateLeaderboardRoles", () => UpdateLeaderboardRoles(), "0 2 * * *");
-            RecurringJob.AddOrUpdate("DiscordDailyReset", () => DiscordDailyReset(), "0 3 * * *");
-            RecurringJob.AddOrUpdate("CheckBirthdays", () => CheckBirthdays(), "0 6 * * *");
             RecurringJob.AddOrUpdate("DailyPointsReminder", () => DailyPointsAnnouncementJob(), "20 * * * *");
             RecurringJob.AddOrUpdate("UpdateStatsInDatabase", () => UpdateStatsInDatabase(), "*/20 * * * * *");
 
@@ -283,143 +272,6 @@ namespace BreganTwitchBot.Domain
             }
         }
 
-        public static async Task CheckBotConnectionState()
-        {
-            if (TwitchBotConnection.Client.JoinedChannels.Count != 0)
-            {
-                _connectionsAttempt = 0;
-                return;
-            }
-
-            while (_connectionsAttempt != 5)
-            {
-                try
-                {
-                    if (TwitchBotConnection.Client.JoinedChannels.Count == 0)
-                    {
-                        TwitchBotConnection.Client.Disconnect();
-                        Log.Warning("[Disconnect Job] Bot has lost connection from the channel - disconnected in hope of reconnecting");
-                        TwitchBotConnection.Client.Connect();
-                        _connectionsAttempt++;
-                    }
-                }
-                catch (Exception e)
-                {
-                    Log.Error($"[Disconnect Job] Bot an error reconnecting to the Twitch chat - {e}");
-                    _connectionsAttempt++;
-                }
-            }
-
-            if (_connectionsAttempt == 5 && TwitchBotConnection.Client.JoinedChannels.Count == 0)
-            {
-                Log.Information("Bot will shutdown");
-                await DiscordConnection.DiscordClient.LogoutAsync();
-                await Task.Delay(10000);
-                Environment.Exit(0);
-                return;
-            }
-        }
-
-        public static async Task FollowerCheck()
-        {
-            try
-            {
-                var newFollowerCount = await TwitchApiConnection.ApiClient.Helix.Users.GetUsersFollowsAsync(toId: AppConfig.TwitchChannelID);
-
-                if (newFollowerCount.TotalFollows - _currentFollowerCount == 0)
-                {
-                    Log.Information($"[Hourly Follow Count Checker] No follower change. Current follower count -> {_currentFollowerCount}");
-                    _currentFollowerCount = newFollowerCount.TotalFollows;
-                    return;
-                }
-
-                var messageEmbed = new EmbedBuilder()
-                {
-                    Title = "Follow count",
-                    Timestamp = DateTime.Now,
-                    Color = new Discord.Color(0, 217, 22)
-                };
-
-                messageEmbed.AddField("Before follower count", _currentFollowerCount.ToString());
-                messageEmbed.AddField("Current follower count", newFollowerCount.TotalFollows.ToString());
-                messageEmbed.AddField("Change", (newFollowerCount.TotalFollows - _currentFollowerCount).ToString());
-
-                var channel = await DiscordConnection.DiscordClient.GetChannelAsync(AppConfig.DiscordEventChannelID) as IMessageChannel;
-
-                if (channel != null)
-                {
-                    await channel.SendMessageAsync(embed: messageEmbed.Build());
-                }
-
-                _currentFollowerCount = newFollowerCount.TotalFollows;
-            }
-            catch (Exception e)
-            {
-                Log.Fatal($"[Hourly Follow Count Checker] An error has occured {e}");
-                return;
-            }
-
-            return;
-        }
-
-        public static async Task GetDiscordMemberCount()
-        {
-            var guildMembers = DiscordConnection.DiscordClient.GetGuild(AppConfig.DiscordGuildID);
-            await DiscordConnection.DiscordClient.SetGameAsync($"{guildMembers.MemberCount} members", null, ActivityType.Watching);
-            Log.Information($"[Discord Member Count] Discord member status updated to {guildMembers} members");
-            return;
-        }
-
-        public static async Task UpdateLeaderboardRoles()
-        {
-            await Leaderboards.UpdateTheRanks();
-        }
-
-        public static async Task DiscordDailyReset()
-        {
-            using (var dbContext = new DatabaseContext())
-            {
-                var usersToUpdate = dbContext.DailyPoints.Where(x => x.DiscordDailyClaimed == true).ToList();
-
-                foreach (var user in usersToUpdate)
-                {
-                    user.DiscordDailyClaimed = false;
-                }
-
-                dbContext.SaveChanges();
-            }
-
-            //Also prune the discord lol
-            await DiscordConnection.DiscordClient.GetGuild(AppConfig.DiscordGuildID).PruneUsersAsync(7);
-        }
-
-        public static async Task CheckBirthdays()
-        {
-            using (var dbContext = new DatabaseContext())
-            {
-                var birthdays = dbContext.Birthdays.Where(x => x.Day == DateTime.UtcNow.Day && x.Month == DateTime.UtcNow.Month).ToList();
-
-                if (birthdays.Count == 0)
-                {
-                    return;
-                }
-
-                foreach (var user in birthdays)
-                {
-                    if (user.DiscordId == AppConfig.DiscordGuildOwnerID)
-                    {
-                        await DiscordHelper.SendMessage(AppConfig.DiscordGeneralChannel, $"@everyone It's <@{user.DiscordId}> dumble birthday today! Happy Birthday <@{user.DiscordId}>! Make sure to ask him if he needs a nero :)");
-                    }
-                    else
-                    {
-                        await DiscordHelper.SendMessage(AppConfig.DiscordGeneralChannel, $"It's <@{user.DiscordId}> birthday today! Happy Birthday <@{user.DiscordId}>!");
-                    }
-                }
-            }
-
-            return;
-        }
-
         public static void StartTwitchBossFight()
         {
             BackgroundJob.Schedule(() => TwitchBosses.StartBossFight(), TimeSpan.FromMinutes(2));
@@ -443,11 +295,6 @@ namespace BreganTwitchBot.Domain
             TwitchBotConnection.Client.FollowersOnlyOn(AppConfig.BroadcasterName, TimeSpan.FromSeconds(0));
             _raidFollowersJobStarted = false;
             Log.Information("[Raid Job] Followers only turned on");
-        }
-
-        public static void SendDiscordConnectionStatusToProjectMonitor()
-        {
-            ProjectMonitorBreganTwitchBot.SendDiscordConnectionStateUpdate(DiscordConnection.ConnectionStatus);
         }
 
         public static async Task UpdateStatsInDatabase()

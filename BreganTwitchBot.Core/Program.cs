@@ -1,8 +1,6 @@
 using BreganTwitchBot;
 using BreganTwitchBot.Domain;
-using BreganTwitchBot.Domain.Data.DiscordBot;
 using BreganTwitchBot.Domain.Data.TwitchBot;
-using BreganTwitchBot.Domain.Data.TwitchBot.WordBlacklist;
 using BreganUtils.ProjectMonitor;
 using Hangfire;
 using Hangfire.Dashboard.BasicAuthorization;
@@ -15,7 +13,6 @@ Log.Information("Logger Setup");
 AppConfig.LoadConfig();
 
 await SetupBot.SetupTwitchBot();
-await DiscordConnection.StartDiscordBot();
 
 //Setup project monitor
 #if DEBUG

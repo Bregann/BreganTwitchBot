@@ -1,7 +1,6 @@
 ﻿using BreganTwitchBot.Domain.Data.Api;
 using BreganTwitchBot.Domain.Data.Api.Dtos;
 using BreganTwitchBot.Domain.Data.Api.Enums;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BreganTwitchBot.Core.Controllers

@@ -1,5 +1,4 @@
 ﻿using BreganTwitchBot.Domain.Data.TwitchBot.Commands.StreamInfo;
-using BreganTwitchBot.Domain.Data.TwitchBot.Commands.Subathon;
 using BreganTwitchBot.Domain.Data.TwitchBot.Commands.WordBlacklist;
 using BreganTwitchBot.Domain.Data.TwitchBot.Enums;
 using BreganTwitchBot.Domain.Data.TwitchBot.Helpers;
@@ -199,9 +198,6 @@ namespace BreganTwitchBot.Domain.Data.TwitchBot.Commands
                     break;
                 case "boss":
                     TwitchBosses.TwitchBosses.AddUser(command.Command.ChatMessage.Username, command.Command.ChatMessage.UserId);
-                    break;
-                case "link":
-                    await Linking.Linking.HandleLinkingCommand(command.Command.ChatMessage.Username);
                     break;
                 case "addmarbleswin" when TwitchHelper.IsUserSupermod(command.Command.ChatMessage.UserId):
                     await Marbles.Marbles.HandleAddMarblesWinCommand(command.Command.ChatMessage.Username, command.Command.ChatMessage.Message, command.Command.ArgumentsAsList);

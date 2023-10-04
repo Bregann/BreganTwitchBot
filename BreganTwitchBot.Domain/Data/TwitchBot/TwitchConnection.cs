@@ -1,16 +1,10 @@
-﻿using BreganTwitchBot.Domain.Data.DiscordBot;
-using BreganTwitchBot.Domain.Data.DiscordBot.Helpers;
-using BreganUtils.ProjectMonitor.Projects;
+﻿using BreganUtils.ProjectMonitor.Projects;
 using Serilog;
 using TwitchLib.Api;
 using TwitchLib.Api.Core.Exceptions;
 using TwitchLib.Client;
-using TwitchLib.Client.Enums;
 using TwitchLib.Client.Models;
-using TwitchLib.Communication.Clients;
-using TwitchLib.Communication.Enums;
 using TwitchLib.Communication.Events;
-using TwitchLib.Communication.Models;
 using TwitchLib.PubSub;
 
 namespace BreganTwitchBot.Domain.Data.TwitchBot
@@ -96,7 +90,6 @@ namespace BreganTwitchBot.Domain.Data.TwitchBot
             }
             catch (Exception pubSubEx) //if its not recoverable, force the bot to quit
             {
-                await DiscordHelper.SendMessage(AppConfig.DiscordEventChannelID, "pubsub?");
                 Log.Fatal($"[Twitch PubSub] Error Reconnecting - {pubSubEx}");
                 return;
             }

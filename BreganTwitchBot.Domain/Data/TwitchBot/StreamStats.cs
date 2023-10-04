@@ -1,5 +1,4 @@
-﻿using BreganTwitchBot.Domain.Data.DiscordBot.Helpers;
-using BreganTwitchBot.Domain.Data.TwitchBot.Enums;
+﻿using BreganTwitchBot.Domain.Data.TwitchBot.Enums;
 using BreganTwitchBot.Infrastructure.Database.Context;
 using BreganTwitchBot.Infrastructure.Database.Models;
 using Microsoft.EntityFrameworkCore;
@@ -41,7 +40,7 @@ namespace BreganTwitchBot.Domain.Data.TwitchBot
             UniquePeople = 0
         };
 
-        private static List<UniqueViewers> _usersToAdd = new ();
+        private static List<UniqueViewers> _usersToAdd = new();
 
         public static void UpdateStreamStat(long amount, StatTypes statType)
         {
@@ -160,8 +159,8 @@ namespace BreganTwitchBot.Domain.Data.TwitchBot
             {
                 return;
             }
-            
-            using(var context = new DatabaseContext())
+
+            using (var context = new DatabaseContext())
             {
                 var lastStream = context.StreamStats.OrderBy(x => x.StreamId).Last();
 
@@ -401,8 +400,6 @@ namespace BreganTwitchBot.Domain.Data.TwitchBot
                 streamStats.NewFollowers = followerCount - streamStats.StartingFollowerCount;
                 context.SaveChanges();
             }
-
-            await DiscordHelper.SendStreamStats();
         }
     }
 

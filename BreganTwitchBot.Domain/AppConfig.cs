@@ -1,5 +1,4 @@
 ﻿using BreganTwitchBot.Domain;
-using BreganTwitchBot.Domain.Data.DiscordBot.Helpers;
 using BreganTwitchBot.Domain.Data.TwitchBot;
 using BreganTwitchBot.Infrastructure.Database.Context;
 using BreganUtils.ProjectMonitor.Projects;
@@ -55,7 +54,7 @@ namespace BreganTwitchBot
         private static bool _doublePingJobStarted = false;
         public static string HFUsername { get; private set; } = "";
         public static string HFPassword { get; private set; } = "";
-        public static readonly DateTime SubathonStartTime  = new DateTime(2023, 6, 4, 10, 0, 0);
+        public static readonly DateTime SubathonStartTime = new DateTime(2023, 6, 4, 10, 0, 0);
         public static void LoadConfig()
         {
             using (var context = new DatabaseContext())
@@ -214,7 +213,6 @@ namespace BreganTwitchBot
                     StreamAnnounced = true;
                     ProjectMonitorBreganTwitchBot.SendStreamAnnouncedUpdate(true);
                     await StreamStatsService.AddNewStream();
-                    await DiscordHelper.AnnounceStream();
                     HangfireJobs.StartTwitchBossStreamAnnounceJob();
                     return;
                 }
@@ -275,7 +273,7 @@ namespace BreganTwitchBot
         {
             AiEnabled = AiEnabled != true;
 
-            using(var context = new DatabaseContext())
+            using (var context = new DatabaseContext())
             {
                 context.Config.First().AiEnabled = AiEnabled;
                 context.SaveChanges();
