@@ -8,12 +8,6 @@ namespace BreganTwitchBot.Domain.Data.TwitchBot.Commands.WordBlacklist
 {
     public class WordBlacklistCommand
     {
-        public static void HandleToggleAiCommand(string username)
-        {
-            AppConfig.ToggleAiEnabled();
-            TwitchHelper.SendMessage($"@{username} => The AI rank begging has been set to {AppConfig.AiEnabled}!");
-        }
-
         public static async Task HandleAddWordCommand(string username, string commandName, string commandArguments)
         {
             if (commandArguments == "")

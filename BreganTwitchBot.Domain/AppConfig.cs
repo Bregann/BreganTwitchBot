@@ -11,7 +11,6 @@ namespace BreganTwitchBot
         //Hardcoded config
         //Fields are loaded from DB
         public static string BroadcasterName { get; private set; } = "";
-
         public static string BroadcasterOAuth { get; private set; } = "";
         public static string BroadcasterRefresh { get; private set; } = "";
         public static bool DailyPointsCollectingAllowed { get; private set; } = false;
@@ -20,35 +19,18 @@ namespace BreganTwitchBot
         public static TimeSpan SubathonTime { get; private set; }
         public static TimeSpan PrevSubathonTime { get; private set; }
         public static bool PlaySubathonSound { get; private set; }
-        public static string PinnedStreamMessage { get; private set; } = "";
-        public static ulong PinnedStreamMessageId { get; private set; }
-        public static DateTime PinnedMessageDate { get; private set; }
         public static string BotName { get; private set; } = "";
         public static string PointsName { get; private set; } = "";
         public static string TwitchChannelID { get; private set; } = "";
         public static string BotOAuth { get; private set; } = "";
         public static string TwitchAPIClientID { get; private set; } = "";
         public static string TwitchAPISecret { get; private set; } = "";
-        public static string DiscordAPIKey { get; private set; } = "";
-        public static ulong DiscordGuildOwnerID { get; private set; }
-        public static ulong DiscordEventChannelID { get; private set; }
-        public static ulong DiscordStreamAnnouncementChannelID { get; private set; }
-        public static ulong DiscordLinkingChannelID { get; private set; }
-        public static ulong DiscordCommandsChannelID { get; private set; }
-        public static ulong DiscordRankUpAnnouncementChannelID { get; private set; }
-        public static ulong DiscordGiveawayChannelID { get; private set; }
-        public static ulong DiscordSocksChannelID { get; private set; }
-        public static ulong DiscordReactionRoleChannelID { get; private set; }
-        public static ulong DiscordGeneralChannel { get; private set; }
-        public static ulong DiscordGuildID { get; private set; }
-        public static ulong DiscordBanRole { get; private set; }
         public static long PrestigeCap { get; private set; }
         public static string HFConnectionString { get; private set; } = "";
         public static string ProjectMonitorApiKey { get; private set; } = "";
         public static string TwitchBotApiKey { get; private set; } = "";
         public static string TwitchBotApiRefresh { get; private set; } = "";
         public static string BotChannelId { get; private set; } = "";
-        public static bool AiEnabled { get; private set; }
         public static bool SubathonActive { get; private set; }
 
         private static bool _doublePingJobStarted = false;
@@ -67,35 +49,18 @@ namespace BreganTwitchBot
                 DailyPointsCollectingAllowed = configVariables.DailyPointsCollectingAllowed;
                 StreamAnnounced = configVariables.StreamAnnounced;
                 SubathonTime = configVariables.SubathonTime;
-                PinnedStreamMessage = configVariables.PinnedStreamMessage;
-                PinnedStreamMessageId = configVariables.PinnedStreamMessageId;
-                PinnedMessageDate = configVariables.PinnedStreamDate;
                 BotName = configVariables.BotName;
                 PointsName = configVariables.PointsName;
                 TwitchChannelID = configVariables.TwitchChannelID;
                 BotOAuth = configVariables.BotOAuth;
                 TwitchAPIClientID = configVariables.TwitchAPIClientID;
                 TwitchAPISecret = configVariables.TwitchAPISecret;
-                DiscordAPIKey = configVariables.DiscordAPIKey;
-                DiscordGuildOwnerID = configVariables.DiscordGuildOwner;
-                DiscordEventChannelID = configVariables.DiscordEventChannelID;
-                DiscordStreamAnnouncementChannelID = configVariables.DiscordStreamAnnouncementChannelID;
-                DiscordLinkingChannelID = configVariables.DiscordLinkingChannelID;
-                DiscordCommandsChannelID = configVariables.DiscordCommandsChannelID;
-                DiscordRankUpAnnouncementChannelID = configVariables.DiscordRankUpAnnouncementChannelID;
-                DiscordGiveawayChannelID = configVariables.DiscordGiveawayChannelID;
-                DiscordSocksChannelID = configVariables.DiscordSocksChannelID;
-                DiscordReactionRoleChannelID = configVariables.DiscordReactionRoleChannelID;
-                DiscordGeneralChannel = configVariables.DiscordGeneralChannel;
-                DiscordGuildID = configVariables.DiscordGuildID;
-                DiscordBanRole = configVariables.DiscordBanRole;
                 PrestigeCap = configVariables.PrestigeCap;
                 HFConnectionString = configVariables.HFConnectionString;
                 ProjectMonitorApiKey = configVariables.ProjectMonitorApiKey;
                 TwitchBotApiKey = configVariables.TwitchBotApiKey;
                 TwitchBotApiRefresh = configVariables.TwitchBotApiRefresh;
                 BotChannelId = configVariables.BotChannelId;
-                AiEnabled = configVariables.AiEnabled;
                 SubathonActive = configVariables.SubathonActive;
                 HFUsername = configVariables.HangfireUsername;
                 HFPassword = configVariables.HangfirePassword;
@@ -159,21 +124,6 @@ namespace BreganTwitchBot
 
             TwitchBotApiKey = accessToken;
             TwitchBotApiRefresh = refreshToken;
-        }
-
-        public static void UpdatePinnedMessageAndMessageId(string newMessage, ulong id)
-        {
-            using (var context = new DatabaseContext())
-            {
-                context.Config.First().PinnedStreamMessage = newMessage;
-                context.Config.First().PinnedStreamMessageId = id;
-                context.Config.First().PinnedStreamDate = DateTime.UtcNow;
-                context.SaveChanges();
-            }
-
-            PinnedStreamMessage = newMessage;
-            PinnedStreamMessageId = id;
-            PinnedMessageDate = DateTime.UtcNow;
         }
 
         public static async Task CheckAndUpdateIfStreamIsLive()
@@ -267,17 +217,6 @@ namespace BreganTwitchBot
             }
 
             Log.Information($"[Subathon Time] {tsToAdd} added");
-        }
-
-        public static void ToggleAiEnabled()
-        {
-            AiEnabled = AiEnabled != true;
-
-            using (var context = new DatabaseContext())
-            {
-                context.Config.First().AiEnabled = AiEnabled;
-                context.SaveChanges();
-            }
         }
 
         public static void ToggleSubathonSoundOff()

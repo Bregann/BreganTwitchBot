@@ -78,23 +78,15 @@ namespace BreganTwitchBot.Domain.Data.TwitchBot
                 {
                     ranksApplied++;
 
-                    if (user.DiscordUserId == 0)
+                    if (rankUps >= 1)
                     {
-                        if (rankUps >= 1)
-                        {
-                            user.Watchtime.Rank1Applied = true;
-                            StreamStatsService.UpdateStreamStat(1, StatTypes.DiscordRanksEarnt);
-                            continue;
-                        }
-                        else
-                        {
-                            TwitchHelper.SendMessage($"@{user.Username} => Hey congrats you got the Melvin Rank on discord!");
-                            user.Watchtime.Rank1Applied = true;
-                        }
+                        user.Watchtime.Rank1Applied = true;
+                        StreamStatsService.UpdateStreamStat(1, StatTypes.DiscordRanksEarnt);
+                        continue;
                     }
                     else
                     {
-                        TwitchHelper.SendMessage($"@{user.Username} => Hey congrats you got the Melvin Rank on Discord! Your rank has been applied!");
+                        TwitchHelper.SendMessage($"@{user.Username} => Hey congrats you got the Pirate Kitty rank for watching 1 hour!");
                         user.Watchtime.Rank1Applied = true;
                     }
                 }
@@ -103,64 +95,32 @@ namespace BreganTwitchBot.Domain.Data.TwitchBot
                 {
                     ranksApplied++;
 
-                    if (user.DiscordUserId == 0)
-                    {
-                        TwitchHelper.SendMessage($"@{user.Username} => Hey congrats you got the WOT Crew Rank on discord!");
-                        user.Watchtime.Rank2Applied = true;
-                    }
-                    else
-                    {
-                        TwitchHelper.SendMessage($"@{user.Username} => Hey congrats you got the WOT Crew Rank on Discord! Your rank has been applied!");
-                        user.Watchtime.Rank2Applied = true;
-                    }
+                    TwitchHelper.SendMessage($"@{user.Username} => Hey congrats you got the High Tempo rank for watching 25 hours!");
+                    user.Watchtime.Rank2Applied = true;
                 }
 
                 foreach (var user in rank3Users)
                 {
                     ranksApplied++;
 
-                    if (user.DiscordUserId == 0)
-                    {
-                        TwitchHelper.SendMessage($"@{user.Username} => Hey congrats you got the BLOCKS Crew Rank on discord!");
-                        user.Watchtime.Rank3Applied = true;
-                    }
-                    else
-                    {
-                        TwitchHelper.SendMessage($"@{user.Username} => Hey congrats you got the BLOCKS Crew Rank on Discord! Your rank has been applied!");
-                        user.Watchtime.Rank3Applied = true;
-                    }
+                    TwitchHelper.SendMessage($"@{user.Username} => Hey congrats you got the Never Lucky rank for watching 100 hours!");
+                    user.Watchtime.Rank3Applied = true;
                 }
 
                 foreach (var user in rank4Users)
                 {
                     ranksApplied++;
 
-                    if (user.DiscordUserId == 0)
-                    {
-                        TwitchHelper.SendMessage($"@{user.Username} => Hey congrats you got the The Name of Legends Rank on discord!");
-                        user.Watchtime.Rank4Applied = true;
-                    }
-                    else
-                    {
-                        TwitchHelper.SendMessage($"@{user.Username} => Hey congrats you got the The Name of Legends Rank on Discord! Your rank has been applied!");
-                        user.Watchtime.Rank4Applied = true;
-                    }
+                    TwitchHelper.SendMessage($"@{user.Username} => Hey congrats you got the Bob Enjoyer rank for watching 250 hours!");
+                    user.Watchtime.Rank4Applied = true;
                 }
 
                 foreach (var user in rank5Users)
                 {
                     ranksApplied++;
 
-                    if (user.DiscordUserId == 0)
-                    {
-                        TwitchHelper.SendMessage($"@{user.Username} => Hey congrats you got the The King of The Stream Rank on discord!");
-                        user.Watchtime.Rank5Applied = true;
-                    }
-                    else
-                    {
-                        TwitchHelper.SendMessage($"@{user.Username} => Hey congrats you got the The King of The Stream Rank on Discord! Your rank has been applied!");
-                        user.Watchtime.Rank5Applied = true;
-                    }
+                    TwitchHelper.SendMessage($"@{user.Username} => Hey congrats you got the The Ultimate Fireball Champion Rank for watching 500 hours!");
+                    user.Watchtime.Rank5Applied = true;
                 }
 
                 if (ranksApplied != 0)

@@ -119,10 +119,6 @@ namespace BreganTwitchBot.Domain.Data.TwitchBot.Commands
                 case "removestrikeword" when TwitchHelper.IsUserSupermod(command.Command.ChatMessage.UserId):
                     await WordBlacklistCommand.HandleRemoveWordCommand(command.Command.ChatMessage.Username, command.Command.CommandText, command.Command.ArgumentsAsString);
                     break;
-                case "aitoggle" when TwitchHelper.IsUserSupermod(command.Command.ChatMessage.UserId):
-                case "toggleai" when TwitchHelper.IsUserSupermod(command.Command.ChatMessage.UserId):
-                    WordBlacklistCommand.HandleToggleAiCommand(command.Command.ChatMessage.Username);
-                    break;
                 case "spin":
                 case "slots":
                 case "gamble":

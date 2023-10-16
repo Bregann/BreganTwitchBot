@@ -9,8 +9,6 @@ namespace BreganTwitchBot.Infrastructure.Database.Models
 
         public required string Username { get; set; }
 
-        public required ulong DiscordUserId { get; set; }
-
         public required long Points { get; set; }
 
         public required int TotalMessages { get; set; }
@@ -38,8 +36,6 @@ namespace BreganTwitchBot.Infrastructure.Database.Models
         public required int WarnStrikes { get; set; }
 
         public required DailyPoints DailyPoints { get; set; }
-
-        public required DiscordUserStats DiscordUserStats { get; set; }
 
         public required UserGambleStats UserGambleStats { get; set; }
 

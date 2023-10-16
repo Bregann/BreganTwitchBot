@@ -160,35 +160,35 @@ namespace BreganTwitchBot.Domain.Data.TwitchBot.Commands.Hours
 
                 if (user == null)
                 {
-                    return "60 minutes away from melvin rank!";
+                    return "60 minutes away from Pirate Kitty rank!";
                 }
 
                 if (user.MinutesInStream < 60)
                 {
-                    return $"{60 - user.MinutesInStream} minutes away from melvin rank!";
+                    return $"{60 - user.MinutesInStream} minutes away from Pirate Kitty rank!";
                 }
 
                 if (user.MinutesInStream >= 60 && user.MinutesInStream <= 1500)
                 {
-                    return $"{Math.Round((1500 - (double)user.MinutesInStream) / 60, 2)} hours away from WOT Crew!";
+                    return $"{Math.Round((1500 - (double)user.MinutesInStream) / 60, 2)} hours away from High Tempo rank!";
                 }
 
                 if (user.MinutesInStream >= 1500 && user.MinutesInStream <= 6000)
                 {
-                    return $"{Math.Round((6000 - (double)user.MinutesInStream) / 60, 2)} hours away from BLOCKS Crew!";
+                    return $"{Math.Round((6000 - (double)user.MinutesInStream) / 60, 2)} hours away from Never Lucky rank!";
                 }
 
                 if (user.MinutesInStream >= 6000 && user.MinutesInStream <= 15000)
                 {
-                    return $"{Math.Round((15000 - (double)user.MinutesInStream) / 60, 2)} hours away from The Name of Legends!";
+                    return $"{Math.Round((15000 - (double)user.MinutesInStream) / 60, 2)} hours away from Bob Enjoyer rank!";
                 }
 
                 if (user.MinutesInStream >= 15000 && user.MinutesInStream <= 30000)
                 {
-                    return $"{Math.Round((30000 - (double)user.MinutesInStream) / 60, 2)} hours away from King of The Stream!";
+                    return $"{Math.Round((30000 - (double)user.MinutesInStream) / 60, 2)} hours away from The Ultimate Fireball Champion rank!";
                 }
 
-                return "in the stream too much lol (max rank)";
+                return "in the stream too much lol (max rank for now ;) )";
             }
         }
     }

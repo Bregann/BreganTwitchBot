@@ -46,12 +46,6 @@ namespace BreganTwitchBot.Domain.Data.Api
                     case LeaderboardType.DiscordStreak:
                         users = context.Users.Include(x => x.DailyPoints).OrderByDescending(x => x.DailyPoints.DiscordDailyTotalClaims).Take(250).ToDictionary(x => x.Username, x => (long)x.DailyPoints.DiscordDailyTotalClaims);
                         break;
-                    case LeaderboardType.Discordlevel:
-                        users = context.Users.Include(x => x.DiscordUserStats).OrderByDescending(x => x.DiscordUserStats.DiscordLevel).Take(250).ToDictionary(x => x.Username, x => (long)x.DiscordUserStats.DiscordLevel);
-                        break;
-                    case LeaderboardType.DiscordXP:
-                        users = context.Users.Include(x => x.DiscordUserStats).OrderByDescending(x => x.DiscordUserStats.DiscordXp).Take(250).ToDictionary(x => x.Username, x => (long)x.DiscordUserStats.DiscordXp);
-                        break;
                     case LeaderboardType.DiscordTotalClaims:
                         users = context.Users.Include(x => x.DailyPoints).OrderByDescending(x => x.DailyPoints.DiscordDailyTotalClaims).Take(250).ToDictionary(x => x.Username, x => (long)x.DailyPoints.DiscordDailyTotalClaims);
                         break;

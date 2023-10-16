@@ -57,61 +57,6 @@ namespace BreganTwitchBot.Domain.Data.TwitchBot.WordBlacklist
                 return;
             }
 
-
-            if (AppConfig.AiEnabled)
-            {
-                if (_strikeWords.Any(rankBeggarRegex.Contains))
-                {
-                    var totalMessages = GetTotalMessages(e.ChatMessage.UserId);
-
-                    if (totalMessages < 10)
-                    {
-                        TwitchHelper.SendMessage("It's quite rude to join and beg within your first few messages blocksBANNED");
-                        await TwitchHelper.BanUser(e.ChatMessage.UserId, "Joining and begging");
-                        return;
-                    }
-
-                    if (totalMessages < 20)
-                    {
-                        if (_strikedUsers.Contains(e.ChatMessage.Username))
-                        {
-                            TwitchHelper.SendMessage("Warned once and continued to beg, very naughty blocksBANNED");
-                            await TwitchHelper.BanUser(e.ChatMessage.UserId, "continued to beg after being warned for begging at low message count");
-                            return;
-                        }
-
-                        TwitchHelper.SendMessage("How about you don't join the stream and start begging for ranks :) blocksBANNED");
-                        await TwitchHelper.TimeoutUser(e.ChatMessage.UserId, 600, "blocksWOT automated AI rule - joining and begging");
-                        await AddTimeoutStrike(e.ChatMessage.UserId);
-
-                        _strikedUsers.Add(e.ChatMessage.Username);
-                        Log.Information($"[Word Blacklist] Timed out {e.ChatMessage.Username} for begging with low message count");
-                    }
-                    else if (_warnedUsers.Contains(e.ChatMessage.Username.ToLower()))
-                    {
-                        TwitchHelper.SendMessage("I told you once not to beg and you do it again blocksRage blocksBANNED");
-                        await TwitchHelper.TimeoutUser(e.ChatMessage.UserId, 600, "blocksWOT automated AI rule - multiple warnings");
-
-                        Log.Information($"[Word Blacklist] Timed out {e.ChatMessage.Username} for begging");
-                        await AddTimeoutStrike(e.ChatMessage.UserId);
-
-                        var totalStrikes = GetTotalTimeoutStrikes(e.ChatMessage.Username);
-                        var totalWarns = GetTotalWarns(e.ChatMessage.Username);
-                    }
-                    else
-                    {
-                        await TwitchHelper.DeleteMessage(e.ChatMessage.Id);
-                        TwitchHelper.SendMessage("Please don't beg for ranks/ask for an f add! :) blocksBANNED");
-                        _warnedUsers.Add(e.ChatMessage.Username.ToLower());
-                        Log.Information($"[Word Blacklist] Warned {e.ChatMessage.Username} for begging/f add");
-                        await AddWarn(e.ChatMessage.UserId);
-
-                        var totalStrikes = GetTotalTimeoutStrikes(e.ChatMessage.UserId);
-                        var totalWarns = GetTotalWarns(e.ChatMessage.UserId);
-                    }
-                }
-            }
-
             if (e.ChatMessage.Username.ToLower() == _lastUser && e.ChatMessage.Message.ToLower() == _lastMessage)
             {
                 _messagesInARow++;

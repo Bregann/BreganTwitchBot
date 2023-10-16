@@ -47,14 +47,6 @@ namespace BreganTwitchBot.Domain.Data.TwitchBot.Events
                             TotalPointsClaimed = 0,
                             TotalTimesClaimed = 0
                         },
-                        DiscordUserId = 0,
-                        DiscordUserStats = new DiscordUserStats
-                        {
-                            DiscordLevel = 0,
-                            DiscordLevelUpNotifsEnabled = true,
-                            DiscordXp = 0,
-                            PrestigeLevel = 0,
-                        },
                         GiftedSubsThisMonth = 0,
                         InStream = true,
                         IsSub = isSubscriber,
