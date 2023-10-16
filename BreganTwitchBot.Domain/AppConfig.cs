@@ -87,7 +87,7 @@ namespace BreganTwitchBot
          * https://id.twitch.tv/oauth2/authorize?response_type=code
                 &client_id=
                 &redirect_uri=http://localhost
-                &scope=bits%3Aread%20channel%3Amanage%3Abroadcast%20channel%3Amanage%3Apolls%20channel%3Amanage%3Apredictions%20channel%3Amanage%3Aredemptions%20channel%3Aread%3Ahype_train%20channel%3Aread%3Apolls%20channel%3Aread%3Apredictions%20channel%3Aread%3Aredemptions%20channel%3Aread%3Asubscriptions%20channel%3Aread%3Avips%20channel%3Amanage%3Avips%20moderation%3Aread%20user%3Amanage%3Ablocked_users
+                &scope=bits%3Aread%20channel%3Amanage%3Abroadcast%20channel%3Amanage%3Apolls%20channel%3Amanage%3Apredictions%20channel%3Amanage%3Aredemptions%20channel%3Aread%3Ahype_train%20channel%3Aread%3Apolls%20channel%3Aread%3Apredictions%20channel%3Aread%3Aredemptions%20channel%3Aread%3Asubscriptions%20channel%3Aread%3Avips%20channel%3Amanage%3Avips%20moderation%3Aread%20user%3Amanage%3Ablocked_users%20moderator%3Aread%3Achatters%20moderator%3Aread%3Afollowers
          */
 
         public static void UpdateStreamerApiCredentials(string refreshToken, string accessToken)
