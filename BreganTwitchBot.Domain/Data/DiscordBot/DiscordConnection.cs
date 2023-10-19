@@ -129,6 +129,7 @@ namespace BreganTwitchBot.Domain.Data.DiscordBot
                 await MessageReceivedEvent.CheckBlacklistedWords(arg);
                 await MessageReceivedEvent.CheckStreamLiveMessages(arg);
                 await MessageReceivedEvent.HandleCustomCommand(arg);
+                await MessageReceivedEvent.PingFoodEnjoyerOnImage(arg);
                 MessageReceivedEvent.AddDiscordXp(arg);
             }
             catch (Exception e)

@@ -2,7 +2,6 @@ using BreganTwitchBot;
 using BreganTwitchBot.Domain;
 using BreganTwitchBot.Domain.Data.DiscordBot;
 using BreganTwitchBot.Domain.Data.TwitchBot;
-using BreganTwitchBot.Domain.Data.TwitchBot.WordBlacklist;
 using BreganUtils.ProjectMonitor;
 using Hangfire;
 using Hangfire.Dashboard.BasicAuthorization;

@@ -216,5 +216,13 @@ namespace BreganTwitchBot.Domain.Data.DiscordBot.Events
                 await DiscordHelper.SendMessage(message.Channel.Id, command.CommandText);
             }
         }
+
+        public static async Task PingFoodEnjoyerOnImage(SocketMessage message)
+        {
+            if (message.Author.Id == 153974235809710081 && message.Channel.Id == 1153032190234464347 && message.Attachments.Count != 0)
+            {
+                await DiscordHelper.SendMessage(1153032190234464347, "<@&1164590388296810648> some banging new food just dropped by the legend himself");
+            }
+        }
     }
 }

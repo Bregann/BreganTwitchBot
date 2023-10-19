@@ -1,5 +1,4 @@
 ﻿using BreganTwitchBot.Domain.Data.TwitchBot.Commands.StreamInfo;
-using BreganTwitchBot.Domain.Data.TwitchBot.Commands.Subathon;
 using BreganTwitchBot.Domain.Data.TwitchBot.Commands.WordBlacklist;
 using BreganTwitchBot.Domain.Data.TwitchBot.Enums;
 using BreganTwitchBot.Domain.Data.TwitchBot.Helpers;

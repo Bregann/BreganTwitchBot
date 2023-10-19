@@ -1,9 +1,7 @@
 ﻿using BreganTwitchBot.Domain.Data.Api.Dtos;
-using BreganTwitchBot.Domain.Data.TwitchBot.Commands.StreamInfo;
 using BreganTwitchBot.Infrastructure.Database.Context;
 using Humanizer;
 using Humanizer.Localisation;
-using Serilog;
 
 namespace BreganTwitchBot.Domain.Data.Api
 {
@@ -52,10 +50,10 @@ namespace BreganTwitchBot.Domain.Data.Api
                 var subsLb = context.Subathon.OrderByDescending(x => x.SubsGifted).Take(10).ToList();
                 var bitsLb = context.Subathon.OrderByDescending(x => x.BitsDonated).Take(10).ToList();
 
-                return new GetSubathonLeaderboardsDto 
-                { 
-                    BitsLeaderboard= bitsLb, 
-                    SubsLeaderboard = subsLb 
+                return new GetSubathonLeaderboardsDto
+                {
+                    BitsLeaderboard = bitsLb,
+                    SubsLeaderboard = subsLb
                 };
             }
         }

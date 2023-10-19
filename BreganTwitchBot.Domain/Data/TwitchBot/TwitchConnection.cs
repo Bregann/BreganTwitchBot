@@ -1,16 +1,11 @@
-﻿using BreganTwitchBot.Domain.Data.DiscordBot;
-using BreganTwitchBot.Domain.Data.DiscordBot.Helpers;
+﻿using BreganTwitchBot.Domain.Data.DiscordBot.Helpers;
 using BreganUtils.ProjectMonitor.Projects;
 using Serilog;
 using TwitchLib.Api;
 using TwitchLib.Api.Core.Exceptions;
 using TwitchLib.Client;
-using TwitchLib.Client.Enums;
 using TwitchLib.Client.Models;
-using TwitchLib.Communication.Clients;
-using TwitchLib.Communication.Enums;
 using TwitchLib.Communication.Events;
-using TwitchLib.Communication.Models;
 using TwitchLib.PubSub;
 
 namespace BreganTwitchBot.Domain.Data.TwitchBot

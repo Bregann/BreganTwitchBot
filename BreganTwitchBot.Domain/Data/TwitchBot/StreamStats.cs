@@ -41,7 +41,7 @@ namespace BreganTwitchBot.Domain.Data.TwitchBot
             UniquePeople = 0
         };
 
-        private static List<UniqueViewers> _usersToAdd = new ();
+        private static List<UniqueViewers> _usersToAdd = new();
 
         public static void UpdateStreamStat(long amount, StatTypes statType)
         {
@@ -160,8 +160,8 @@ namespace BreganTwitchBot.Domain.Data.TwitchBot
             {
                 return;
             }
-            
-            using(var context = new DatabaseContext())
+
+            using (var context = new DatabaseContext())
             {
                 var lastStream = context.StreamStats.OrderBy(x => x.StreamId).Last();
 

@@ -1,9 +1,4 @@
 ﻿using BreganTwitchBot.Infrastructure.Database.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace BreganTwitchBot.Domain.Data.Api.Dtos
 {
@@ -13,7 +8,7 @@ namespace BreganTwitchBot.Domain.Data.Api.Dtos
         public required List<Subathon> BitsLeaderboard { get; set; }
     }
 
-    public class GetSubathonTimeLeftDto 
+    public class GetSubathonTimeLeftDto
     {
         public required double SecondsLeft { get; set; }
         public required string TimeExtended { get; set; }

@@ -230,7 +230,6 @@ namespace BreganTwitchBot.Domain.Data.DiscordBot.SlashCommands.Modules.GeneralCo
         [SlashCommand("christmas", "get yourself some Christmas emojis for your name")]
         public async Task ChristmasName()
         {
-
             var builder = new ComponentBuilder()
                 .WithButton(" ", "christmas-snowman", ButtonStyle.Danger, new Emoji("⛄"))
                 .WithButton(" ", "christmas-gift", ButtonStyle.Success, new Emoji("🎁"))
@@ -269,6 +268,23 @@ namespace BreganTwitchBot.Domain.Data.DiscordBot.SlashCommands.Modules.GeneralCo
 
             await user.ModifyAsync(user => user.Nickname = nickNameToSet);
             await RespondAsync("Your nickname has been set!");
+        }
+
+        [SlashCommand("roles", "Give you all the buttons of the roles available")]
+        public async Task RoleSelection()
+        {
+            var builder = new ComponentBuilder()
+                .WithButton("Marbles On Stream", "marbolsRole", ButtonStyle.Primary, new Emoji("⚪"))
+                .WithButton("Pets", "petsRole", ButtonStyle.Primary, new Emoji("🐱"))
+                .WithButton("Programmer", "programmerRole", ButtonStyle.Primary, new Emoji("🖥️"))
+                .WithButton("Free Games Ping", "freeGamesRole", ButtonStyle.Primary, new Emoji("🎮"))
+                .WithButton("Photography", "photographyRole", ButtonStyle.Primary, new Emoji("📷"))
+                .WithButton("Bot Updates", "botUpdatesRole", ButtonStyle.Primary, new Emoji("🤖"))
+                .WithButton("Horror Game Ping", "horrorGameRole", ButtonStyle.Primary, new Emoji("😨"))
+                .WithButton("Other Games Ping", "otherGamesRole", ButtonStyle.Primary, new Emoji("❓"))
+                .WithButton("Food Enjoyer", "foodEnjoyerRole", ButtonStyle.Primary, new Emoji("🤮"));
+
+            await RespondAsync("Click the buttons to add a christmas emoji onto your name!", components: builder.Build());
         }
     }
 }

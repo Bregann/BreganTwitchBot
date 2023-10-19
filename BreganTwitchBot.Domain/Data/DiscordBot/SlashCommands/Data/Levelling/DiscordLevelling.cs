@@ -4,9 +4,7 @@ using Discord;
 using Discord.Interactions;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
-using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Drawing.Processing;
-using SixLabors.ImageSharp.Processing;
 using Color = Discord.Color;
 using Image = SixLabors.ImageSharp.Image;
 

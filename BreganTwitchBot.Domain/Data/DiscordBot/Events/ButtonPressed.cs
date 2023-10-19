@@ -89,55 +89,49 @@ namespace BreganTwitchBot.Domain.Data.DiscordBot.Events
                         addedOrRemoved = await DiscordHelper.AddOrRemoveRole("Marbles On Stream", arg.User.Id);
                         roleName = "Marbles On Stream";
                         break;
-
                     case "weebRole":
                         addedOrRemoved = await DiscordHelper.AddOrRemoveRole("Weeb", arg.User.Id);
                         roleName = "Weeb";
                         break;
-
                     case "petsRole":
                         addedOrRemoved = await DiscordHelper.AddOrRemoveRole("Pets", arg.User.Id);
                         roleName = "Pets";
                         break;
-
                     case "programmerRole":
                         addedOrRemoved = await DiscordHelper.AddOrRemoveRole("Programmer", arg.User.Id);
                         roleName = "Programmer";
                         break;
-
                     case "susRole":
                         addedOrRemoved = await DiscordHelper.AddOrRemoveRole("Among Us", arg.User.Id);
                         roleName = "Among Us (sus)";
                         break;
-
                     case "freeGamesRole":
                         addedOrRemoved = await DiscordHelper.AddOrRemoveRole("Free Games", arg.User.Id);
                         roleName = "Free Games";
                         break;
-
                     case "politcsRole":
                         addedOrRemoved = await DiscordHelper.AddOrRemoveRole("Politics", arg.User.Id);
                         roleName = "Politics";
                         break;
-
                     case "photographyRole":
                         addedOrRemoved = await DiscordHelper.AddOrRemoveRole("Photography", arg.User.Id);
                         roleName = "Photography";
                         break;
-
                     case "botUpdatesRole":
                         addedOrRemoved = await DiscordHelper.AddOrRemoveRole("Bot Updates", arg.User.Id);
                         roleName = "Bot Updates";
                         break;
-
                     case "horrorGameRole":
                         addedOrRemoved = await DiscordHelper.AddOrRemoveRole("Horror Game Pings", arg.User.Id);
                         roleName = "Horror Game Pings";
                         break;
-
                     case "otherGamesRole":
                         addedOrRemoved = await DiscordHelper.AddOrRemoveRole("Other Games Pings", arg.User.Id);
                         roleName = "Other Games Pings";
+                        break;
+                    case "foodEnjoyerRole":
+                        addedOrRemoved = await DiscordHelper.AddOrRemoveRole("Food Enjoyer", arg.User.Id);
+                        roleName = "Food Enjoyer";
                         break;
 
                     default:

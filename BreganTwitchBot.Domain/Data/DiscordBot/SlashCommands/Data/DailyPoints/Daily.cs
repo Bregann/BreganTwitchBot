@@ -1,7 +1,6 @@
 ﻿using BreganTwitchBot.Domain.Data.DiscordBot.Helpers;
 using BreganTwitchBot.Domain.Data.DiscordBot.SlashCommands.Data.Levelling;
 using BreganTwitchBot.Infrastructure.Database.Context;
-using BreganTwitchBot.Infrastructure.Database.Models;
 using Discord;
 using Discord.Interactions;
 using Hangfire;
@@ -24,8 +23,8 @@ namespace BreganTwitchBot.Domain.Data.DiscordBot.SlashCommands.Data.DailyPoints
 
             using (var dbContext = new DatabaseContext())
             {
-               var user = dbContext.Users.Include(x => x.DailyPoints).Where(x => x.DiscordUserId == context.User.Id).First();
-            
+                var user = dbContext.Users.Include(x => x.DailyPoints).Where(x => x.DiscordUserId == context.User.Id).First();
+
                 //Check if user has claimed their points - yes spark you wont get past this
                 if (user.DailyPoints.DiscordDailyClaimed)
                 {

@@ -55,7 +55,7 @@ namespace BreganTwitchBot
         private static bool _doublePingJobStarted = false;
         public static string HFUsername { get; private set; } = "";
         public static string HFPassword { get; private set; } = "";
-        public static readonly DateTime SubathonStartTime  = new DateTime(2023, 6, 4, 10, 0, 0);
+        public static readonly DateTime SubathonStartTime = new DateTime(2023, 6, 4, 10, 0, 0);
         public static void LoadConfig()
         {
             using (var context = new DatabaseContext())
@@ -275,7 +275,7 @@ namespace BreganTwitchBot
         {
             AiEnabled = AiEnabled != true;
 
-            using(var context = new DatabaseContext())
+            using (var context = new DatabaseContext())
             {
                 context.Config.First().AiEnabled = AiEnabled;
                 context.SaveChanges();

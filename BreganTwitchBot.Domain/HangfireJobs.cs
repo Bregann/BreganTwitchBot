@@ -1,12 +1,10 @@
 ﻿using BreganTwitchBot.Domain.Data.DiscordBot;
 using BreganTwitchBot.Domain.Data.DiscordBot.Helpers;
 using BreganTwitchBot.Domain.Data.TwitchBot;
-using BreganTwitchBot.Domain.Data.TwitchBot.Commands.DailyPoints;
 using BreganTwitchBot.Domain.Data.TwitchBot.Commands.TwitchBosses;
 using BreganTwitchBot.Domain.Data.TwitchBot.Helpers;
 using BreganTwitchBot.Domain.Data.TwitchBot.WordBlacklist;
 using BreganTwitchBot.Infrastructure.Database.Context;
-using BreganTwitchBot.Infrastructure.Database.Models;
 using BreganUtils;
 using BreganUtils.ProjectMonitor.Projects;
 using Discord;

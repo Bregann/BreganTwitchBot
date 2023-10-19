@@ -2,11 +2,7 @@
 using Newtonsoft.Json;
 using RestSharp;
 using Serilog;
-using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Drawing.Processing;
-using SixLabors.ImageSharp.PixelFormats;
-using SixLabors.ImageSharp.Processing;
-using System.Net;
 using System.Text;
 using Color = System.Drawing.Color;
 using Image = SixLabors.ImageSharp.Image;
@@ -109,7 +105,7 @@ namespace BreganTwitchBot.Domain.Data.DiscordBot.SlashCommands.Data.GeneralComma
                 return embedBuilder;
             }
 
-            using(var httpClient = new HttpClient())
+            using (var httpClient = new HttpClient())
             {
                 var httpResult = await httpClient.GetAsync(skinResponse.Textures.Skin.Url);
                 using var resultStream = await httpResult.Content.ReadAsStreamAsync();
