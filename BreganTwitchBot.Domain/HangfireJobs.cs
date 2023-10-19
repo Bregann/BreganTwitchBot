@@ -212,9 +212,6 @@ namespace BreganTwitchBot.Domain
             if (AppConfig.StreamerLive)
             {
                 TwitchHelper.SendMessage("💬 Make sure to join the Discord! https://discord.gg/jAjKtHZ");
-
-                //I am lazy so sellout here🚨
-                TwitchHelper.SendMessage("🚨🚨 Remember you can use code 'blocks' in the Hypixel store to support @blocksssssss 🚨🚨");
                 return;
             }
         }
