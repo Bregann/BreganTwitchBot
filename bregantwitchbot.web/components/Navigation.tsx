@@ -4,7 +4,6 @@ import { signOut, useSession } from "next-auth/react";
 import { AppProps } from "next/app";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { toast } from "react-toastify";
 
 const useStyles = createStyles((theme) => ({
     header: {
