@@ -8,72 +8,70 @@ namespace BreganTwitchBot.Domain.Data.DiscordBot.Events
     {
         public static async Task HandleNameEmojiButtons(SocketMessageComponent arg)
         {
-            if (arg.Channel.Id == AppConfig.DiscordCommandsChannelID)
+            var emojiToAdd = "";
+
+            switch (arg.Data.CustomId)
             {
-                var emojiToAdd = "";
-
-                switch (arg.Data.CustomId)
-                {
-                    case "christmas-snowman":
-                        emojiToAdd = "⛄";
-                        break;
-                    case "christmas-gift":
-                        emojiToAdd = "🎁";
-                        break;
-                    case "christmas-tree":
-                        emojiToAdd = "🎄";
-                        break;
-                    case "christmas-santa":
-                        emojiToAdd = "🎅";
-                        break;
-                    case "christmas-mrsanta":
-                        emojiToAdd = "🤶";
-                        break;
-                    case "christmas-star":
-                        emojiToAdd = "🌟";
-                        break;
-                    case "christmas-socks":
-                        emojiToAdd = "🧦";
-                        break;
-                    case "christmas-bell":
-                        emojiToAdd = "🔔";
-                        break;
-                    case "christmas-deer":
-                        emojiToAdd = "🦌";
-                        break;
-                    case "christmas-resetusername":
-                        emojiToAdd = "";
-                        break;
-                    default:
-                        return;
-                }
-
-                var guild = DiscordConnection.DiscordClient.GetGuild(AppConfig.DiscordGuildID);
-                var user = guild.GetUser(arg.User.Id);
-
-                if (emojiToAdd == "")
-                {
-                    await user.ModifyAsync(user => user.Nickname = null);
-                    await arg.FollowupAsync("Your nickname has been cleared!", ephemeral: true);
+                case "christmas-snowman":
+                    emojiToAdd = "⛄";
+                    break;
+                case "christmas-gift":
+                    emojiToAdd = "🎁";
+                    break;
+                case "christmas-tree":
+                    emojiToAdd = "🎄";
+                    break;
+                case "christmas-santa":
+                    emojiToAdd = "🎅";
+                    break;
+                case "christmas-mrsanta":
+                    emojiToAdd = "🤶";
+                    break;
+                case "christmas-star":
+                    emojiToAdd = "🌟";
+                    break;
+                case "christmas-socks":
+                    emojiToAdd = "🧦";
+                    break;
+                case "christmas-bell":
+                    emojiToAdd = "🔔";
+                    break;
+                case "christmas-deer":
+                    emojiToAdd = "🦌";
+                    break;
+                case "christmas-resetusername":
+                    emojiToAdd = "";
+                    break;
+                default:
                     return;
+            }
+
+            var guild = DiscordConnection.DiscordClient.GetGuild(AppConfig.DiscordGuildID);
+            var user = guild.GetUser(arg.User.Id);
+
+            if (emojiToAdd == "")
+            {
+                var nickNameToSet = user.Nickname.Replace("⛄", "").Replace("🎁", "").Replace("🎄", "").Replace("🎅", "").Replace("🤶", "").Replace("🌟", "").Replace("🧦", "").Replace("🔔", "").Replace("🦌", "");
+                await user.ModifyAsync(user => user.Nickname = nickNameToSet);
+                await arg.FollowupAsync("Your nickname has been cleared!", ephemeral: true);
+                return;
+            }
+            else
+            {
+                string nickNameToSet = "";
+
+                if (user.Nickname != null)
+                {
+                    nickNameToSet = emojiToAdd + user.Nickname + emojiToAdd;
                 }
                 else
                 {
-                    string nickNameToSet = "";
-
-                    if (user.Nickname != null)
-                    {
-                        nickNameToSet = emojiToAdd + user.Nickname + emojiToAdd;
-                    }
-                    else
-                    {
-                        nickNameToSet = emojiToAdd + user.Username + emojiToAdd;
-                    }
-
-                    await user.ModifyAsync(user => user.Nickname = nickNameToSet);
-                    await arg.FollowupAsync("Your nickname has been set!", ephemeral: true);
-                    return;
+                    nickNameToSet = emojiToAdd + user.Username + emojiToAdd;
                 }
+
+                await user.ModifyAsync(user => user.Nickname = nickNameToSet);
+                await arg.FollowupAsync("Your nickname has been set!", ephemeral: true);
+                return;
             }
         }
         public static async Task HandleButtonRoles(SocketMessageComponent arg)

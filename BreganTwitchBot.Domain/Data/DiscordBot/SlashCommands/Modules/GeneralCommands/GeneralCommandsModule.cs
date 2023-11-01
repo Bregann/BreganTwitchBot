@@ -270,6 +270,31 @@ namespace BreganTwitchBot.Domain.Data.DiscordBot.SlashCommands.Modules.GeneralCo
             await RespondAsync("Your nickname has been set!");
         }
 
+        [SlashCommand("firework", "Give yourself some fireworks to celebrate fireworks night!")]
+        public async Task FireworksName()
+        {
+            if (DateTime.UtcNow.Month != 11)
+            {
+                await RespondAsync("You silly firework it's not November!");
+            }
+
+            var guild = DiscordConnection.DiscordClient.GetGuild(AppConfig.DiscordGuildID);
+            var user = guild.GetUser(Context.User.Id);
+            string nickNameToSet = "";
+
+            if (user.Nickname != null)
+            {
+                nickNameToSet = "🎆" + user.Nickname + "🎇";
+            }
+            else
+            {
+                nickNameToSet = "🎆" + user.Username + "🎇";
+            }
+
+            await user.ModifyAsync(user => user.Nickname = nickNameToSet);
+            await RespondAsync("Your nickname has been set!");
+        }
+
         [SlashCommand("roles", "Give you all the buttons of the roles available")]
         public async Task RoleSelection()
         {
@@ -301,6 +326,22 @@ namespace BreganTwitchBot.Domain.Data.DiscordBot.SlashCommands.Modules.GeneralCo
             }
 
             await RespondAsync("You have been unspooked!");
+        }
+
+        [SlashCommand("unfirework", "remove your fireworks name")]
+        public async Task UnfireworkName()
+        {
+            var guild = DiscordConnection.DiscordClient.GetGuild(AppConfig.DiscordGuildID);
+            var user = guild.GetUser(Context.User.Id);
+            string nickNameToSet = "";
+
+            if (user.Nickname != null)
+            {
+                nickNameToSet = user.Nickname.Replace("🎆", "").Replace("🎇", "");
+                await user.ModifyAsync(user => user.Nickname = nickNameToSet);
+            }
+
+            await RespondAsync("You have been unfireworked!");
         }
     }
 }
