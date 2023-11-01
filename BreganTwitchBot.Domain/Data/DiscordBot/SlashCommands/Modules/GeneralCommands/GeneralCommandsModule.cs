@@ -286,5 +286,21 @@ namespace BreganTwitchBot.Domain.Data.DiscordBot.SlashCommands.Modules.GeneralCo
 
             await RespondAsync("Click the buttons to add a christmas emoji onto your name!", components: builder.Build());
         }
+
+        [SlashCommand("unspook", "remove your spooky name")]
+        public async Task UnspookName()
+        {
+            var guild = DiscordConnection.DiscordClient.GetGuild(AppConfig.DiscordGuildID);
+            var user = guild.GetUser(Context.User.Id);
+            string nickNameToSet = "";
+
+            if (user.Nickname != null)
+            {
+                nickNameToSet = user.Nickname.Replace("🎃", "").Replace("👻", "");
+                await user.ModifyAsync(user => user.Nickname = nickNameToSet);
+            }
+
+            await RespondAsync("You have been unspooked!");
+        }
     }
 }
