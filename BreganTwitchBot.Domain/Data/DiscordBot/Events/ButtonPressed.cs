@@ -60,9 +60,9 @@ namespace BreganTwitchBot.Domain.Data.DiscordBot.Events
             {
                 string nickNameToSet = "";
 
-                if (user.Nickname != null)
+                if (user.DisplayName != null)
                 {
-                    nickNameToSet = emojiToAdd + user.Nickname + emojiToAdd;
+                    nickNameToSet = emojiToAdd + user.DisplayName + emojiToAdd;
                 }
                 else
                 {
