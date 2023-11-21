@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net7.0</TargetFramework>
+    <TargetFramework>net8.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <PublishSingleFile>true</PublishSingleFile>
@@ -20,10 +20,6 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\BreganTwitchbot.Infrastructure\BreganTwitchBot.Infrastructure.csproj" />
-  </ItemGroup>
-  <ItemGroup>
-    <Reference Include="BreganUtils">
-      <HintPath>..\Utils\BreganUtils.dll</HintPath>
-    </Reference>
+    <ProjectReference Include="..\Utils\BreganUtils\BreganUtils.csproj" />
   </ItemGroup>
 </Project>
