@@ -1,4 +1,3 @@
-using BreganTwitchBot.Domain.Data.DiscordBot.Helpers;
 using BreganUtils.ProjectMonitor.Projects;
 using Serilog;
 using TwitchLib.Api;
