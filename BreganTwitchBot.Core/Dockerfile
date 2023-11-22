@@ -10,7 +10,6 @@ WORKDIR /src
 COPY ["BreganTwitchBot.Core/BreganTwitchBot.Core.csproj", "BreganTwitchBot.Core/"]
 COPY ["BreganTwitchBot.Domain/BreganTwitchBot.Domain.csproj", "BreganTwitchBot.Domain/"]
 COPY ["BreganTwitchbot.Infrastructure/BreganTwitchBot.Infrastructure.csproj", "BreganTwitchbot.Infrastructure/"]
-COPY ["Util/BreganUtils/BreganUtils.csproj", "Util/"]
 RUN dotnet restore "BreganTwitchBot.Core/BreganTwitchBot.Core.csproj"
 COPY . .
 WORKDIR "/src/BreganTwitchBot.Core"
