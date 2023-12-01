@@ -27,7 +27,7 @@ jobs:
         docker save twitchbotbot > twitchbotbot.tar
 
     - name: Upload Docker Image
-      uses: appleboy/scp-action@v0.1.3
+      uses: appleboy/scp-action@v0.1.4
       with:
         host: ${{ secrets.SSH_HOST }}
         username: ${{ secrets.SSH_USERNAME }}
@@ -59,7 +59,7 @@ jobs:
         username: ${{ secrets.SSH_USERNAME }}
         key: ${{ secrets.KEY }}
         script: |
-          docker run -d -p 5005:80 --mount type=bind,source="${{ secrets.BOT_FILE_PATH_LOGS }}",target=/app/Logs --mount type=bind,source="${{ secrets.BOT_FILE_PATH_SKINS }}",target=/app/Skins --mount type=bind,source="${{ secrets.BOT_FILE_PATH_BARS }}",target=/app/ProgressBars --env BTBConnString='${{ secrets.ENV }}' --name twitchbotbot twitchbotbot:latest --restart unless-stopped
+          docker run -d -p 5005:8080 --mount type=bind,source="${{ secrets.BOT_FILE_PATH_LOGS }}",target=/app/Logs --mount type=bind,source="${{ secrets.BOT_FILE_PATH_SKINS }}",target=/app/Skins --mount type=bind,source="${{ secrets.BOT_FILE_PATH_BARS }}",target=/app/ProgressBars --env BTBConnString='${{ secrets.ENV }}' --name twitchbotbot twitchbotbot:latest --restart unless-stopped
 
     - name: Clean Up The Tar File
       uses: appleboy/ssh-action@v0.1.7
