@@ -34,6 +34,11 @@ namespace BreganTwitchBot.Domain.Data.TwitchBot.WordBlacklist
 
             _warnedUsers = new List<string>();
             _strikedUsers = new List<string>();
+
+            Log.Information($"[Word Blacklist] {_warningWords.Count} warning words loaded");
+            Log.Information($"[Word Blacklist] {_tempBanWords.Count} temp ban words loaded");
+            Log.Information($"[Word Blacklist] {_permBanWords.Count} perm ban words loaded");
+            Log.Information($"[Word Blacklist] {_strikeWords.Count} strike words loaded");
         }
 
         public static async Task HandleMessageChecks(OnMessageReceivedArgs e)
@@ -57,7 +62,6 @@ namespace BreganTwitchBot.Domain.Data.TwitchBot.WordBlacklist
             {
                 return;
             }
-
 
             if (AppConfig.AiEnabled)
             {
