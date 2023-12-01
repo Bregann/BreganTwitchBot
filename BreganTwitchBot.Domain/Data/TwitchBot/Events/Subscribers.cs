@@ -55,7 +55,7 @@ namespace BreganTwitchBot.Domain.Data.TwitchBot.Events
                 Log.Information($"[Sub Leaderboard] +1 to {gifterUsername}");
 
                 StreamStatsService.UpdateStreamStat(1, StatTypes.NewGiftedSubs);
-                TwitchHelper.SendMessage($"Thank you {gifterUsername} for gifting {recipientUsername} a {subName} subscription PogChamp <3 blocksGuinea1 blocksGuinea2 blocksGuinea3 blocksW blocksOK blocksGuinea blocksMarge blocksBitrate blocksSWIRL blocksFail blocksWOT blocksBANNED blocksJ0F blocksWOTG blocksGuineaG blocksEcho");
+                TwitchHelper.SendMessage($"Thank you {gifterUsername} for gifting {recipientUsername} a {subName} subscription PogChamp <3 bounty");
             }
 
             catch (Exception ex)
@@ -72,25 +72,25 @@ namespace BreganTwitchBot.Domain.Data.TwitchBot.Events
             {
                 case TwitchLib.Client.Enums.SubscriptionPlan.NotSet:
                 case TwitchLib.Client.Enums.SubscriptionPlan.Tier1:
-                    subName = "tier 1 subscription PogChamp <3 blocksGuinea1 blocksGuinea2 blocksGuinea3 blocksW blocksOK blocksGuinea blocksMarge blocksBitrate blocksSWIRL blocksFail blocksWOT blocksEcho blocksEcho";
+                    subName = "tier 1 subscription PogChamp <3 bounty";
                     await PointsHelper.AddUserPoints(userId, 20000);
                     StreamStatsService.UpdateStreamStat(20000, StatTypes.PointsGainedSubscribing);
                     break;
 
                 case TwitchLib.Client.Enums.SubscriptionPlan.Prime:
-                    subName = "TWITCH PRIME SUBSCRIPTION!!!! ANY PRIMERS? <3 <3 PogChamp blocksGuinea1 blocksGuinea2 blocksGuinea3 blocksW blocksOK blocksGuinea blocksMarge blocksBitrate blocksSWIRL blocksFail blocksWOT blocksEcho blocksEcho";
+                    subName = "TWITCH PRIME SUBSCRIPTION!!!! ANY PRIMERS? <3 <3 PogChamp bounty";
                     await PointsHelper.AddUserPoints(userId, 30000);
                     StreamStatsService.UpdateStreamStat(30000, StatTypes.PointsGainedSubscribing);
                     break;
 
                 case TwitchLib.Client.Enums.SubscriptionPlan.Tier2:
-                    subName = "tier 2 subscription PogChamp PogChamp <3 blocksGuinea1 blocksGuinea2 blocksGuinea3 blocksW blocksOK blocksGuinea blocksMarge blocksBitrate blocksSWIRL blocksFail blocksWOT blocksBANNED blocksEcho blocksEcho";
+                    subName = "tier 2 subscription PogChamp PogChamp <3 bounty DIESTOGHOST";
                     await PointsHelper.AddUserPoints(userId, 40000);
                     StreamStatsService.UpdateStreamStat(40000, StatTypes.PointsGainedSubscribing);
                     break;
 
                 case TwitchLib.Client.Enums.SubscriptionPlan.Tier3:
-                    subName = "tier 3 subscription PogChamp PogChamp PogChamp <3 blocksGuinea1 blocksGuinea2 blocksGuinea3 blocksW blocksOK blocksGuinea blocksMarge blocksBitrate blocksSWIRL blocksFail blocksWOT blocksBANNED blocksJ0F blocksWOTG blocksGuineaG blocksEcho blocksEcho";
+                    subName = "tier 3 subscription PogChamp PogChamp PogChamp <3 bounty DIESTOGHOST Joel";
                     await PointsHelper.AddUserPoints(userId, 100000);
                     StreamStatsService.UpdateStreamStat(100000, StatTypes.PointsGainedSubscribing);
                     break;
@@ -106,8 +106,7 @@ namespace BreganTwitchBot.Domain.Data.TwitchBot.Events
             int.TryParse(cumulativeMonthsSubscribed, out var months);
             int.TryParse(streakMonthsSubscribed, out var streakMonths);
 
-
-            var sharedStreakMessage = streakMonths == 0 ? "they did not share their sub streak :(" : $"They are on a {streakMonths} month sub streak <3 PogChamp blocksGuinea1 blocksGuinea2 blocksGuinea3 blocksW blocksOK blocksGuinea blocksMarge blocksBitrate blocksSWIRL blocksFail blocksWOT blocksEcho";
+            var sharedStreakMessage = streakMonths == 0 ? "they did not share their sub streak :(" : $"They are on a {streakMonths} month sub streak <3 PogChamp bounty";
 
             switch (subType)
             {
@@ -137,7 +136,7 @@ namespace BreganTwitchBot.Domain.Data.TwitchBot.Events
                     break;
             }
 
-            TwitchHelper.SendMessage($"Welcome back {username} for {months} months with a {subName} subscription! {sharedStreakMessage}");
+            TwitchHelper.SendMessage($"Welcome back {username} for {months} months with a {subName} subscription! {sharedStreakMessage} PogChamp <3 bounty");
         }
     }
 }

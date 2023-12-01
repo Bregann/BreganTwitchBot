@@ -58,7 +58,7 @@ namespace BreganTwitchBot.Domain.Data.TwitchBot.Commands.TwitchBosses
                 //Start the fight - stage 1
                 await Task.Delay(5000);
                 var randomUserToDie = rnd.Next(0, _viewersJoined.Count);
-                TwitchHelper.SendMessage($"FeelsBadMan {_viewersJoined[randomUserToDie].UserId} has fallen due to the strength of {bossName} :( They are the first player to die");
+                TwitchHelper.SendMessage($"FeelsBadMan {_viewersJoined[randomUserToDie].Username} has fallen due to the strength of {bossName} :( They are the first player to die");
                 _viewersJoined.RemoveAt(randomUserToDie);
 
                 //Stage 2
