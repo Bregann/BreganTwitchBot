@@ -119,7 +119,7 @@ namespace BreganTwitchBot.Domain.Data.TwitchBot.Commands.DailyPoints
             }
         }
 
-        public static async Task HandleClaimPointsCommand(string username, string userId)
+        public static async Task HandleClaimPointsCommand(string username, string userId, PointsClaimType pointsClaimType)
         {
             if (!AppConfig.DailyPointsCollectingAllowed)
             {
@@ -141,71 +141,198 @@ namespace BreganTwitchBot.Domain.Data.TwitchBot.Commands.DailyPoints
                     return;
                 }
 
-                if (user.PointsClaimedThisStream)
-                {
-                    TwitchHelper.SendMessage($"@{username} => You have already claimed your {AppConfig.PointsName} today!");
-                    Log.Information("[Twitch Commands] !daily command handled (clamed already)");
-                    return;
-                }
-
-                //handle the points claim
-                user.CurrentStreak++;
-                user.TotalTimesClaimed++;
-
                 var pointsToAdd = 0;
-
-                //Update the users highest streak
-                if (user.CurrentStreak > user.HighestStreak)
-                {
-                    user.HighestStreak = user.CurrentStreak;
-                }
-
-                var randomPointAmount = new Random();
-                var roundedStreakAmount = (int)(Math.Ceiling((decimal)user.CurrentStreak / 5) * 5);
+                var randomPoints = 0;
                 var bonusPointsMessage = "";
+                var randomPointAmount = new Random();
 
-                //See if they are on a bonus
-                if (user.TotalTimesClaimed % 100 == 0)
+                switch (pointsClaimType)
                 {
-                    var randomPoints = randomPointAmount.Next(200000, 400000);
-                    pointsToAdd = roundedStreakAmount * 300 + randomPoints;
-                    bonusPointsMessage = $"As this is your {user.TotalTimesClaimed}th time claiming you have been gifted an extra {randomPoints:N0} points PogChamp";
-                }
-                else if (user.TotalTimesClaimed % 50 == 0)
-                {
-                    var randomPoints = randomPointAmount.Next(100000, 200000);
-                    pointsToAdd = roundedStreakAmount * 300 + randomPoints;
-                    bonusPointsMessage = $"As this is your {user.TotalTimesClaimed}th time claiming you have been gifted an extra {randomPoints:N0} points PogChamp";
-                }
-                else if (user.TotalTimesClaimed % 25 == 0)
-                {
-                    var randomPoints = randomPointAmount.Next(50000, 100000);
-                    pointsToAdd = roundedStreakAmount * 300 + randomPoints;
-                    bonusPointsMessage = $"As this is your {user.TotalTimesClaimed}th time claiming you have been gifted an extra {randomPoints:N0} points PogChamp";
-                }
-                else if (user.TotalTimesClaimed % 10 == 0)
-                {
-                    var randomPoints = randomPointAmount.Next(10000, 50000);
-                    pointsToAdd = roundedStreakAmount * 300 + randomPoints;
-                    bonusPointsMessage = $"As this is your {user.TotalTimesClaimed}th time claiming you have been gifted an extra {randomPoints:N0} points PogChamp";
-                }
-                else
-                {
-                    pointsToAdd = roundedStreakAmount * 200;
-                }
+                    case PointsClaimType.DailyPoints:
+                        if (user.PointsClaimedThisStream)
+                        {
+                            TwitchHelper.SendMessage($"@{username} => You have already claimed your daily {AppConfig.PointsName} today!");
+                            Log.Information("[Twitch Commands] !daily command handled (clamed already)");
+                            return;
+                        }
 
-                StreamStatsService.UpdateStreamStat(1, StatTypes.TotalUsersClaimed);
-                StreamStatsService.UpdateStreamStat(pointsToAdd, StatTypes.TotalPointsClaimed);
+                        //handle the points claim
+                        user.CurrentStreak++;
+                        user.TotalTimesClaimed++;
 
-                await PointsHelper.AddUserPoints(userId, pointsToAdd);
-                user.PointsLastClaimed = DateTime.UtcNow;
-                user.PointsClaimedThisStream = true;
-                user.TotalPointsClaimed += pointsToAdd;
 
-                context.SaveChanges();
+                        //Update the users highest streak
+                        if (user.CurrentStreak > user.HighestStreak)
+                        {
+                            user.HighestStreak = user.CurrentStreak;
+                        }
 
-                TwitchHelper.SendMessage($"@{username} => You have claimed your daily {roundedStreakAmount * 100:N0} {AppConfig.PointsName}! {bonusPointsMessage} You are currently on a {user.CurrentStreak:N0} day streak");
-                Log.Information($"[Daily Points] {username} has claimed their points. Amount: {pointsToAdd}");
+                        var roundedStreakAmount = (int)(Math.Ceiling((decimal)user.CurrentStreak / 5) * 5);
+
+                        //See if they are on a bonus
+                        if (user.TotalTimesClaimed % 100 == 0)
+                        {
+                            randomPoints = randomPointAmount.Next(200000, 400000);
+                            pointsToAdd = roundedStreakAmount * 300 + randomPoints;
+                            bonusPointsMessage = $"As this is your {user.TotalTimesClaimed}th time claiming you have been gifted an extra {randomPoints:N0} points PogChamp";
+                        }
+                        else if (user.TotalTimesClaimed % 50 == 0)
+                        {
+                            randomPoints = randomPointAmount.Next(100000, 200000);
+                            pointsToAdd = roundedStreakAmount * 300 + randomPoints;
+                            bonusPointsMessage = $"As this is your {user.TotalTimesClaimed}th time claiming you have been gifted an extra {randomPoints:N0} points PogChamp";
+                        }
+                        else if (user.TotalTimesClaimed % 25 == 0)
+                        {
+                            randomPoints = randomPointAmount.Next(50000, 100000);
+                            pointsToAdd = roundedStreakAmount * 300 + randomPoints;
+                            bonusPointsMessage = $"As this is your {user.TotalTimesClaimed}th time claiming you have been gifted an extra {randomPoints:N0} points PogChamp";
+                        }
+                        else if (user.TotalTimesClaimed % 10 == 0)
+                        {
+                            randomPoints = randomPointAmount.Next(10000, 50000);
+                            pointsToAdd = roundedStreakAmount * 300 + randomPoints;
+                            bonusPointsMessage = $"As this is your {user.TotalTimesClaimed}th time claiming you have been gifted an extra {randomPoints:N0} points PogChamp";
+                        }
+                        else
+                        {
+                            pointsToAdd = roundedStreakAmount * 500;
+                        }
+
+                        StreamStatsService.UpdateStreamStat(1, StatTypes.TotalUsersClaimed);
+                        StreamStatsService.UpdateStreamStat(pointsToAdd, StatTypes.TotalPointsClaimed);
+
+                        await PointsHelper.AddUserPoints(userId, pointsToAdd);
+                        user.PointsLastClaimed = DateTime.UtcNow;
+                        user.PointsClaimedThisStream = true;
+                        user.TotalPointsClaimed += pointsToAdd;
+
+                        context.SaveChanges();
+
+                        TwitchHelper.SendMessage($"@{username} => You have claimed your daily {pointsToAdd:N0} {AppConfig.PointsName}! {bonusPointsMessage} You are currently on a {user.CurrentStreak:N0} day streak");
+                        Log.Information($"[Daily Points] {username} has claimed their points. Amount: {pointsToAdd}");
+                        return;
+                    case PointsClaimType.WeeklyPoints:
+                        if (user.WeeklyClaimed)
+                        {
+                            TwitchHelper.SendMessage($"@{username} => You have already claimed your weekly {AppConfig.PointsName} this week!");
+                            Log.Information("[Twitch Commands] !weekly command handled (clamed already)");
+                            return;
+                        }
+
+                        //handle the points claim
+                        user.CurrentWeeklyStreak++;
+                        user.TotalWeeklyClaimed++;
+
+                        //Update the users highest streak
+                        if (user.CurrentWeeklyStreak > user.HighestWeeklyStreak)
+                        {
+                            user.HighestWeeklyStreak = user.CurrentWeeklyStreak;
+                        }
+
+                        //Users get a bonus for every 10 weeks claimed
+                        if(user.TotalWeeklyClaimed % 10 == 0)
+                        {
+                            randomPoints = randomPointAmount.Next(100000, 250000);
+                            pointsToAdd = user.TotalWeeklyClaimed * 200 + randomPoints;
+                            bonusPointsMessage = $"As this is your {user.TotalWeeklyClaimed}th time claiming you have been gifted an extra {randomPoints:N0} points PogChamp";
+                        }
+                        else
+                        {
+                            pointsToAdd = user.CurrentWeeklyStreak * 1000;
+                        }
+
+                        StreamStatsService.UpdateStreamStat(1, StatTypes.TotalUsersClaimed);
+                        StreamStatsService.UpdateStreamStat(pointsToAdd, StatTypes.TotalPointsClaimed);
+
+                        await PointsHelper.AddUserPoints(userId, pointsToAdd);
+                        user.PointsLastClaimed = DateTime.UtcNow;
+                        user.WeeklyClaimed = true;
+                        user.TotalPointsClaimed += pointsToAdd;
+
+                        context.SaveChanges();
+
+                        TwitchHelper.SendMessage($"@{username} => You have claimed your weekly {pointsToAdd:N0} {AppConfig.PointsName}! {bonusPointsMessage} You are currently on a {user.CurrentWeeklyStreak:N0} week streak");
+                        Log.Information($"[Daily Points] {username} has claimed their points. Amount: {pointsToAdd}");
+                        return;
+                    case PointsClaimType.MonthlyPoints:
+                        if (user.MonthlyClaimed)
+                        {
+                            TwitchHelper.SendMessage($"@{username} => You have already claimed your monthly {AppConfig.PointsName} this month!");
+                            Log.Information("[Twitch Commands] !monthly command handled (clamed already)");
+                            return;
+                        }
+
+                        //handle the points claim
+                        user.CurrentMonthlyStreak++;
+                        user.TotalMonthlyClaimed++;
+
+                        //Update the users highest streak
+                        if (user.CurrentMonthlyStreak > user.HighestMonthlyStreak)
+                        {
+                            user.HighestMonthlyStreak = user.CurrentMonthlyStreak;
+                        }
+
+                        //Users get a bonus for every 6 months claimed
+                        if (user.TotalMonthlyClaimed % 6 == 0)
+                        {
+                            randomPoints = randomPointAmount.Next(250000, 500000);
+                            pointsToAdd = user.TotalMonthlyClaimed * 200 + randomPoints;
+                            bonusPointsMessage = $"As this is your {user.TotalMonthlyClaimed}th time claiming you have been gifted an extra {randomPoints:N0} points PogChamp";
+                        }
+                        else
+                        {
+                            pointsToAdd = user.TotalMonthlyClaimed * 2000;
+                        }
+
+                        StreamStatsService.UpdateStreamStat(1, StatTypes.TotalUsersClaimed);
+                        StreamStatsService.UpdateStreamStat(pointsToAdd, StatTypes.TotalPointsClaimed);
+
+                        await PointsHelper.AddUserPoints(userId, pointsToAdd);
+                        user.PointsLastClaimed = DateTime.UtcNow;
+                        user.WeeklyClaimed = true;
+                        user.TotalPointsClaimed += pointsToAdd;
+
+                        context.SaveChanges();
+
+                        TwitchHelper.SendMessage($"@{username} => You have claimed your monthly {pointsToAdd:N0} {AppConfig.PointsName}! {bonusPointsMessage} You are currently on a {user.CurrentMonthlyStreak:N0} month streak");
+                        Log.Information($"[Daily Points] {username} has claimed their points. Amount: {pointsToAdd}");
+                        return;
+                    case PointsClaimType.YearlyPoints:
+                        if (user.YearlyClaimed)
+                        {
+                            TwitchHelper.SendMessage($"@{username} => You have already claimed your yearly {AppConfig.PointsName} this year!");
+                            Log.Information("[Twitch Commands] !yearly command handled (clamed already)");
+                            return;
+                        }
+
+                        //handle the points claim
+                        user.CurrentYearlyStreak++;
+
+                        //Update the users highest streak
+                        if (user.CurrentYearlyStreak > user.HighestYearlyStreak)
+                        {
+                            user.HighestYearlyStreak = user.CurrentYearlyStreak;
+                        }
+
+                        //Users get a bonus every year
+                        randomPoints = randomPointAmount.Next(1, 1000000);
+                        pointsToAdd = (user.TotalYearlyClaimed * 10000) + randomPoints;
+
+                        StreamStatsService.UpdateStreamStat(1, StatTypes.TotalUsersClaimed);
+                        StreamStatsService.UpdateStreamStat(pointsToAdd, StatTypes.TotalPointsClaimed);
+
+                        await PointsHelper.AddUserPoints(userId, pointsToAdd);
+                        user.PointsLastClaimed = DateTime.UtcNow;
+                        user.WeeklyClaimed = true;
+                        user.TotalPointsClaimed += pointsToAdd;
+
+                        context.SaveChanges();
+
+                        TwitchHelper.SendMessage($"@{username} => You have claimed your yearly {pointsToAdd:N0} {AppConfig.PointsName}! {bonusPointsMessage} You are currently on a {user.CurrentYearlyStreak:N0} year streak (you got {randomPoints} bonus points)");
+                        Log.Information($"[Daily Points] {username} has claimed their points. Amount: {pointsToAdd}");
+                        return;
+                }
             }
         }
 

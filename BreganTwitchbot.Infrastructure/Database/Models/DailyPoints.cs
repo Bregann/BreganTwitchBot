@@ -33,14 +33,14 @@ namespace BreganTwitchBot.Infrastructure.Database.Models
         public required bool WeeklyClaimed {  get; set; }
         public required int CurrentWeeklyStreak { get; set; }
         public required int HighestWeeklyStreak { get; set; }
-        public required bool TotalWeeklyClaimed { get; set; }
+        public required int TotalWeeklyClaimed { get; set; }
         public required bool MonthlyClaimed { get; set; }
         public required int CurrentMonthlyStreak { get; set; }
         public required int HighestMonthlyStreak { get; set; }
-        public required bool TotalMonthlyClaimed { get; set; }
+        public required int TotalMonthlyClaimed { get; set; }
         public required bool YearlyClaimed { get; set; }
         public required int CurrentYearlyStreak { get; set; }
         public required int HighestYearlyStreak { get; set; }
-        public required bool TotalYearlyClaimed { get; set; }
+        public required int TotalYearlyClaimed { get; set; }
     }
 }
