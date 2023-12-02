@@ -33,7 +33,6 @@ namespace BreganTwitchBot.Domain.Data.TwitchBot.Commands.DailyPoints
             }
 
             //If the timespan is over 30 minutes then allow daily points collecting
-
             if (uptime != null)
             {
                 if (uptime > TimeSpan.FromMinutes(30) && !AppConfig.DailyPointsCollectingAllowed)
@@ -53,7 +52,7 @@ namespace BreganTwitchBot.Domain.Data.TwitchBot.Commands.DailyPoints
 
                         //Allow the point collecting
                         AppConfig.UpdateDailyPointsCollecting(true);
-                        TwitchHelper.SendMessage($"Don't forget to claim your daily {AppConfig.PointsName} with !daily PogChamp (if you didn't collect them last stream :) )");
+                        TwitchHelper.SendMessage($"Don't forget to claim your daily, weekly, monthly and yearly {AppConfig.PointsName} with !daily, !weekly, !monthly and !yearly PogChamp KEKW (if you didn't collect them last stream :) )");
                         return;
                     }
 
@@ -94,7 +93,7 @@ namespace BreganTwitchBot.Domain.Data.TwitchBot.Commands.DailyPoints
                         //Allow the point collecting
                         AppConfig.UpdateDailyPointsCollecting(true);
 
-                        TwitchHelper.SendMessage($"Don't forget to claim your daily {AppConfig.PointsName} with !daily PogChamp");
+                        TwitchHelper.SendMessage($"Don't forget to claim your daily, weekly, monthly and yearly {AppConfig.PointsName} with !daily, !weekly, !monthly and !yearly PogChamp KEKW");
 
                         var message = "The top 5 lost streaks are: ";
 

@@ -9,6 +9,7 @@ using BreganUtils;
 using BreganUtils.ProjectMonitor.Projects;
 using Discord;
 using Hangfire;
+using Microsoft.EntityFrameworkCore;
 using Serilog;
 using TwitchLib.Client.Extensions;
 
@@ -39,6 +40,7 @@ namespace BreganTwitchBot.Domain
             RecurringJob.AddOrUpdate("CheckBirthdays", () => CheckBirthdays(), "0 6 * * *");
             RecurringJob.AddOrUpdate("DailyPointsReminder", () => DailyPointsAnnouncementJob(), "20 * * * *");
             RecurringJob.AddOrUpdate("UpdateStatsInDatabase", () => UpdateStatsInDatabase(), "*/20 * * * * *");
+            RecurringJob.AddOrUpdate("ResetTwitchStreaks", () => ResetTwitchStreaks(), "0 2 * * *");
 
             //todo: add a job for every 5 mins, get active chatters and update users in stream
             Log.Information("[Job Scheduler] Job Scheduler Setup");
@@ -451,6 +453,38 @@ namespace BreganTwitchBot.Domain
         public static async Task UpdateStatsInDatabase()
         {
             await StreamStatsService.UpdateStatsInDatabase();
+        }
+
+        public static async Task ResetTwitchStreaks()
+        {
+            using(var context = new DatabaseContext())
+            {
+                //Reset weekly streaks
+                if (DateTime.UtcNow.DayOfWeek == DayOfWeek.Monday)
+                {
+                    await context.DailyPoints.Where(x => x.WeeklyClaimed == false && x.CurrentWeeklyStreak != 0).ExecuteUpdateAsync(x => x.SetProperty(s => s.CurrentWeeklyStreak, 0));
+                    await context.DailyPoints.Where(x => x.WeeklyClaimed == true).ExecuteUpdateAsync(x => x.SetProperty(s => s.WeeklyClaimed, false));
+                    Log.Information("[Daily Points] Weekly streaks reset");
+                }
+
+                //Reset monthly streaks
+                if (DateTime.UtcNow.Day == 1)
+                {
+                    await context.DailyPoints.Where(x => x.MonthlyClaimed == false && x.CurrentMonthlyStreak != 0).ExecuteUpdateAsync(x => x.SetProperty(s => s.CurrentMonthlyStreak, 0));
+                    await context.DailyPoints.Where(x => x.MonthlyClaimed == true).ExecuteUpdateAsync(x => x.SetProperty(s => s.MonthlyClaimed, false));
+                    Log.Information("[Daily Points] Monthly streaks reset");
+                }
+
+                //Reset yearly streaks
+                if (DateTime.UtcNow.Day == 1 && DateTime.UtcNow.Month == 1)
+                {
+                    await context.DailyPoints.Where(x => x.YearlyClaimed == false && x.CurrentYearlyStreak != 0).ExecuteUpdateAsync(x => x.SetProperty(s => s.CurrentYearlyStreak, 0));
+                    await context.DailyPoints.Where(x => x.YearlyClaimed == true).ExecuteUpdateAsync(x => x.SetProperty(s => s.YearlyClaimed, false));
+                    Log.Information("[Daily Points] Yearly streaks reset");
+                }
+
+                await context.SaveChangesAsync();
+            }
         }
     }
 }
