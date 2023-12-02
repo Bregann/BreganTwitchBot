@@ -74,7 +74,19 @@ namespace BreganTwitchBot.Domain.Data.DiscordBot.SlashCommands.Data.Linking
                             PointsClaimedThisStream = false,
                             PointsLastClaimed = DateTime.UtcNow,
                             TotalPointsClaimed = 0,
-                            TotalTimesClaimed = 0
+                            TotalTimesClaimed = 0,
+                            WeeklyClaimed = false,
+                            MonthlyClaimed = false,
+                            YearlyClaimed = false,
+                            CurrentWeeklyStreak = 0,
+                            CurrentMonthlyStreak = 0,
+                            CurrentYearlyStreak = 0,
+                            HighestWeeklyStreak = 0,
+                            HighestMonthlyStreak = 0,
+                            HighestYearlyStreak = 0,
+                            TotalWeeklyClaimed = 0,
+                            TotalMonthlyClaimed = 0,
+                            TotalYearlyClaimed = 0,
                         },
                         DiscordUserStats = new DiscordUserStats
                         {

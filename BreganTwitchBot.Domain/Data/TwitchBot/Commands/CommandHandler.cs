@@ -136,7 +136,16 @@ namespace BreganTwitchBot.Domain.Data.TwitchBot.Commands
                 case "claim":
                 case "dailypoints":
                 case "collect":
-                    await DailyPoints.DailyPoints.HandleClaimPointsCommand(command.Command.ChatMessage.Username, command.Command.ChatMessage.UserId);
+                    await DailyPoints.DailyPoints.HandleClaimPointsCommand(command.Command.ChatMessage.Username, command.Command.ChatMessage.UserId, PointsClaimType.DailyPoints);
+                    break;
+                case "weekly":
+                    await DailyPoints.DailyPoints.HandleClaimPointsCommand(command.Command.ChatMessage.Username, command.Command.ChatMessage.UserId, PointsClaimType.WeeklyPoints);
+                    break;
+                case "monthly":
+                    await DailyPoints.DailyPoints.HandleClaimPointsCommand(command.Command.ChatMessage.Username, command.Command.ChatMessage.UserId, PointsClaimType.MonthlyPoints);
+                    break;
+                case "yearly":
+                    await DailyPoints.DailyPoints.HandleClaimPointsCommand(command.Command.ChatMessage.Username, command.Command.ChatMessage.UserId, PointsClaimType.YearlyPoints);
                     break;
                 case "streak":
                 case "steak":
