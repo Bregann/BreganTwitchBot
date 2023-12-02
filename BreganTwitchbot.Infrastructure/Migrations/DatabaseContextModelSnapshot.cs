@@ -18,7 +18,7 @@ namespace BreganTwitchBot.Infrastructure.Migrations
 #pragma warning disable 612, 618
             modelBuilder
                 .HasDefaultSchema("twitchbot_new")
-                .HasAnnotation("ProductVersion", "7.0.11")
+                .HasAnnotation("ProductVersion", "8.0.0")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
@@ -156,7 +156,7 @@ namespace BreganTwitchBot.Infrastructure.Migrations
                             HFConnectionString = "",
                             HangfirePassword = "",
                             HangfireUsername = "",
-                            LastDailyPointsAllowed = new DateTime(2023, 10, 15, 19, 23, 45, 233, DateTimeKind.Utc).AddTicks(6618),
+                            LastDailyPointsAllowed = new DateTime(2023, 12, 1, 14, 21, 35, 48, DateTimeKind.Utc).AddTicks(4440),
                             PointsName = "",
                             PrestigeCap = 0L,
                             ProjectMonitorApiKey = "",
@@ -179,7 +179,16 @@ namespace BreganTwitchBot.Infrastructure.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
+                    b.Property<int>("CurrentMonthlyStreak")
+                        .HasColumnType("integer");
+
                     b.Property<int>("CurrentStreak")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("CurrentWeeklyStreak")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("CurrentYearlyStreak")
                         .HasColumnType("integer");
 
                     b.Property<bool>("DiscordDailyClaimed")
@@ -191,8 +200,20 @@ namespace BreganTwitchBot.Infrastructure.Migrations
                     b.Property<int>("DiscordDailyTotalClaims")
                         .HasColumnType("integer");
 
+                    b.Property<int>("HighestMonthlyStreak")
+                        .HasColumnType("integer");
+
                     b.Property<int>("HighestStreak")
                         .HasColumnType("integer");
+
+                    b.Property<int>("HighestWeeklyStreak")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("HighestYearlyStreak")
+                        .HasColumnType("integer");
+
+                    b.Property<bool>("MonthlyClaimed")
+                        .HasColumnType("boolean");
 
                     b.Property<bool>("PointsClaimedThisStream")
                         .HasColumnType("boolean");
@@ -200,15 +221,30 @@ namespace BreganTwitchBot.Infrastructure.Migrations
                     b.Property<DateTime>("PointsLastClaimed")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<int>("TotalMonthlyClaimed")
+                        .HasColumnType("integer");
+
                     b.Property<long>("TotalPointsClaimed")
                         .HasColumnType("bigint");
 
                     b.Property<int>("TotalTimesClaimed")
                         .HasColumnType("integer");
 
+                    b.Property<int>("TotalWeeklyClaimed")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("TotalYearlyClaimed")
+                        .HasColumnType("integer");
+
                     b.Property<string>("TwitchUserId")
                         .IsRequired()
                         .HasColumnType("text");
+
+                    b.Property<bool>("WeeklyClaimed")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("YearlyClaimed")
+                        .HasColumnType("boolean");
 
                     b.HasKey("Id");
 

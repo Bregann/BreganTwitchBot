@@ -112,8 +112,8 @@ namespace BreganTwitchBot.Infrastructure.Migrations
                 table: "Config",
                 keyColumn: "BroadcasterName",
                 keyValue: "",
-                columns: new[] { "LastDailyPointsAllowed", "PinnedStreamDate" },
-                values: new object[] { new DateTime(2023, 12, 1, 14, 8, 25, 634, DateTimeKind.Utc).AddTicks(572), new DateTime(2023, 12, 1, 14, 8, 25, 634, DateTimeKind.Utc).AddTicks(563) });
+                column: "LastDailyPointsAllowed",
+                value: new DateTime(2023, 12, 1, 14, 21, 35, 48, DateTimeKind.Utc).AddTicks(4440));
         }
 
         /// <inheritdoc />
@@ -184,8 +184,8 @@ namespace BreganTwitchBot.Infrastructure.Migrations
                 table: "Config",
                 keyColumn: "BroadcasterName",
                 keyValue: "",
-                columns: new[] { "LastDailyPointsAllowed", "PinnedStreamDate" },
-                values: new object[] { new DateTime(2023, 3, 17, 14, 32, 30, 332, DateTimeKind.Utc).AddTicks(2093), new DateTime(2023, 3, 17, 14, 32, 30, 332, DateTimeKind.Utc).AddTicks(2087) });
+                column: "LastDailyPointsAllowed",
+                value: new DateTime(2023, 10, 15, 19, 23, 45, 233, DateTimeKind.Utc).AddTicks(6618));
         }
     }
 }
