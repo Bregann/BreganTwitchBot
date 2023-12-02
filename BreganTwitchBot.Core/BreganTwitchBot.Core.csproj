@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
@@ -28,7 +28,12 @@
 
   <ItemGroup>
     <ProjectReference Include="..\BreganTwitchBot.Domain\BreganTwitchBot.Domain.csproj" />
-    <ProjectReference Include="..\Utils\BreganUtils\BreganUtils.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="BreganUtils">
+      <HintPath>..\Utils\BreganUtils.dll</HintPath>
+    </Reference>
   </ItemGroup>
 
   <ItemGroup>

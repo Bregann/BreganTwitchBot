@@ -21,7 +21,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Utils\BreganUtils\BreganUtils.csproj" />
+    <Reference Include="BreganUtils">
+      <HintPath>..\Utils\BreganUtils.dll</HintPath>
+    </Reference>
   </ItemGroup>
 
 </Project>

@@ -21,6 +21,10 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\BreganTwitchbot.Infrastructure\BreganTwitchBot.Infrastructure.csproj" />
-    <ProjectReference Include="..\Utils\BreganUtils\BreganUtils.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="BreganUtils">
+      <HintPath>..\Utils\BreganUtils.dll</HintPath>
+    </Reference>
   </ItemGroup>
 </Project>
