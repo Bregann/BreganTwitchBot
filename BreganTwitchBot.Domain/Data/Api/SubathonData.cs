@@ -2,6 +2,7 @@
 using BreganTwitchBot.Infrastructure.Database.Context;
 using Humanizer;
 using Humanizer.Localisation;
+using Serilog;
 
 namespace BreganTwitchBot.Domain.Data.Api
 {
@@ -55,6 +56,27 @@ namespace BreganTwitchBot.Domain.Data.Api
                     BitsLeaderboard = bitsLb,
                     SubsLeaderboard = subsLb
                 };
+            }
+        }
+
+        public static async Task <bool> AddSubathonTime(long ticks, string secret)
+        {
+            //This is so jank but it works lol
+            if(secret != AppConfig.HFPassword)
+            {
+                Log.Warning($"[Subathon] Someone tried to add time with the wrong password - {secret}");
+                return false;
+            }
+
+            try
+            {
+                await AppConfig.AddSubathonTime(TimeSpan.FromTicks(ticks));
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Log.Warning($"[Subathon] There has been an error adding the time {ex}");
+                return false;
             }
         }
     }
