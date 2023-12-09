@@ -71,7 +71,7 @@ namespace BreganTwitchBot.Domain
         {
             if (AppConfig.DailyPointsCollectingAllowed)
             {
-                TwitchHelper.SendMessage($"Don't forget to claim your daily {AppConfig.PointsName} with !daily PogChamp");
+                TwitchHelper.SendMessage($"Don't forget to claim your daily {AppConfig.PointsName} with !daily, your weekly points with !weekly, your monthly points with !monthly and your yearly points with !yearly PogChamp");
             }
         }
 
