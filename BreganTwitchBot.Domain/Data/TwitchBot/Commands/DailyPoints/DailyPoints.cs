@@ -172,30 +172,30 @@ namespace BreganTwitchBot.Domain.Data.TwitchBot.Commands.DailyPoints
                         if (user.TotalTimesClaimed % 100 == 0)
                         {
                             randomPoints = randomPointAmount.Next(200000, 400000);
-                            pointsToAdd = (roundedStreakAmount * 500) + randomPoints;
+                            pointsToAdd = (roundedStreakAmount * 250) + randomPoints;
                             bonusPointsMessage = $"As this is your {user.TotalTimesClaimed}th time claiming you have been gifted an extra {randomPoints:N0} points PogChamp";
                         }
                         else if (user.TotalTimesClaimed % 50 == 0)
                         {
                             randomPoints = randomPointAmount.Next(100000, 200000);
-                            pointsToAdd = (roundedStreakAmount * 500) + randomPoints;
+                            pointsToAdd = (roundedStreakAmount * 250) + randomPoints;
                             bonusPointsMessage = $"As this is your {user.TotalTimesClaimed}th time claiming you have been gifted an extra {randomPoints:N0} points PogChamp";
                         }
                         else if (user.TotalTimesClaimed % 25 == 0)
                         {
                             randomPoints = randomPointAmount.Next(50000, 100000);
-                            pointsToAdd = (roundedStreakAmount * 500) + randomPoints;
+                            pointsToAdd = (roundedStreakAmount * 250) + randomPoints;
                             bonusPointsMessage = $"As this is your {user.TotalTimesClaimed}th time claiming you have been gifted an extra {randomPoints:N0} points PogChamp";
                         }
                         else if (user.TotalTimesClaimed % 10 == 0)
                         {
                             randomPoints = randomPointAmount.Next(10000, 50000);
-                            pointsToAdd = (roundedStreakAmount * 500) + randomPoints;
+                            pointsToAdd = (roundedStreakAmount * 250) + randomPoints;
                             bonusPointsMessage = $"As this is your {user.TotalTimesClaimed}th time claiming you have been gifted an extra {randomPoints:N0} points PogChamp";
                         }
                         else
                         {
-                            pointsToAdd = roundedStreakAmount * 500;
+                            pointsToAdd = roundedStreakAmount * 250;
                         }
 
                         StreamStatsService.UpdateStreamStat(1, StatTypes.TotalUsersClaimed);
@@ -328,7 +328,7 @@ namespace BreganTwitchBot.Domain.Data.TwitchBot.Commands.DailyPoints
 
                         context.SaveChanges();
 
-                        TwitchHelper.SendMessage($"@{username} => You have claimed your yearly {pointsToAdd:N0} {AppConfig.PointsName}! {bonusPointsMessage} You are currently on a {user.CurrentYearlyStreak:N0} year streak (you got {randomPoints} bonus points)");
+                        TwitchHelper.SendMessage($"@{username} => You have claimed your yearly {pointsToAdd:N0} {AppConfig.PointsName}! {bonusPointsMessage} You are currently on a {user.CurrentYearlyStreak:N0} year streak (you got {randomPoints:N0} bonus points)");
                         Log.Information($"[Daily Points] {username} has claimed their points. Amount: {pointsToAdd}");
                         return;
                 }

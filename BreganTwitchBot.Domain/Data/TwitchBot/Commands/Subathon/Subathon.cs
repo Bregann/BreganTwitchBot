@@ -28,6 +28,7 @@ namespace BreganTwitchBot.Domain.Data.TwitchBot.Commands.Subathon
             var timeLeft = endTimeDT - DateTime.UtcNow;
 
             TwitchHelper.SendMessage($"@{username} => The subathon has been extended to a total of {AppConfig.SubathonTime.Humanize(maxUnit: TimeUnit.Year, minUnit: TimeUnit.Second, precision: 7)}! The stream will end in {timeLeft.Humanize(maxUnit: TimeUnit.Year, minUnit: TimeUnit.Second, precision: 7)}. See all the info at https://bot.bregan.me/subathon");
+            TwitchHelper.SendMessage("You can extend the Subathon Timer by Subscribing, re-subscribing, gifting subs, using Twitch Prime & Cheering bits! The stream ends when the timer runs out!");
             _subathonCooldown = DateTime.UtcNow;
         }
 
