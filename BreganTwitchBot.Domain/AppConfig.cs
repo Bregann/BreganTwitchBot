@@ -1,7 +1,9 @@
 ﻿using BreganTwitchBot.Domain;
 using BreganTwitchBot.Domain.Data.TwitchBot;
+using BreganTwitchBot.Domain.Data.TwitchBot.Helpers;
 using BreganTwitchBot.Infrastructure.Database.Context;
 using BreganUtils.ProjectMonitor.Projects;
+using RestSharp;
 using Serilog;
 
 namespace BreganTwitchBot
@@ -36,7 +38,7 @@ namespace BreganTwitchBot
         private static bool _doublePingJobStarted = false;
         public static string HFUsername { get; private set; } = "";
         public static string HFPassword { get; private set; } = "";
-        public static readonly DateTime SubathonStartTime = new DateTime(2023, 6, 4, 10, 0, 0);
+        public static readonly DateTime SubathonStartTime = new DateTime(2023, 12, 10, 12, 0, 0);
         public static void LoadConfig()
         {
             using (var context = new DatabaseContext())
@@ -216,7 +218,20 @@ namespace BreganTwitchBot
                 PlaySubathonSound = true;
             }
 
-            Log.Information($"[Subathon Time] {tsToAdd} added");
+            var client = new RestClient("https://botapi.bregan.me");
+            var request = new RestRequest($"/api/Subathon/AddSubathonTime/{tsToAdd.Ticks}/{HFPassword}", Method.Post);
+
+            var res = await client.ExecuteAsync(request);
+
+            if (res.IsSuccessful)
+            {
+                Log.Information($"[Subathon Time] {tsToAdd} added");
+            }
+            else
+            {
+                Log.Warning($"[Subathon Time] {tsToAdd} not added");
+                TwitchHelper.SendMessage($"uh oh I have ewwored trying to add timey wimey :( {tsToAdd.TotalSeconds} seconds");
+            }
         }
 
         public static void ToggleSubathonSoundOff()
