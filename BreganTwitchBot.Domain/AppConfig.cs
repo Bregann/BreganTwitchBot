@@ -55,7 +55,7 @@ namespace BreganTwitchBot
         private static bool _doublePingJobStarted = false;
         public static string HFUsername { get; private set; } = "";
         public static string HFPassword { get; private set; } = "";
-        public static readonly DateTime SubathonStartTime = new DateTime(2023, 6, 4, 10, 0, 0);
+        public static readonly DateTime SubathonStartTime = new DateTime(2023, 12, 10, 12, 0, 0);
         public static void LoadConfig()
         {
             using (var context = new DatabaseContext())
@@ -265,7 +265,12 @@ namespace BreganTwitchBot
 
             if (PrevSubathonTime.TotalSeconds + 60 < SubathonTime.TotalSeconds)
             {
-                PlaySubathonSound = true;
+                var rnd = new Random();
+
+                if(rnd.Next(0, 101) == 73)
+                {
+                    PlaySubathonSound = true;
+                }
             }
 
             Log.Information($"[Subathon Time] {tsToAdd} added");
