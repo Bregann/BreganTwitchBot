@@ -460,7 +460,7 @@ namespace BreganTwitchBot.Domain
             using(var context = new DatabaseContext())
             {
                 //Reset weekly streaks
-                if (DateTime.UtcNow.DayOfWeek == DayOfWeek.Monday)
+                if (DateTime.UtcNow.DayOfWeek == DayOfWeek.Monday && AppConfig.StreamHappenedThisWeek)
                 {
                     await context.DailyPoints.Where(x => x.WeeklyClaimed == false && x.CurrentWeeklyStreak != 0).ExecuteUpdateAsync(x => x.SetProperty(s => s.CurrentWeeklyStreak, 0));
                     await context.DailyPoints.Where(x => x.WeeklyClaimed == true).ExecuteUpdateAsync(x => x.SetProperty(s => s.WeeklyClaimed, false));
@@ -485,6 +485,8 @@ namespace BreganTwitchBot.Domain
 
                 await context.SaveChangesAsync();
             }
+
+            await AppConfig.SetStreamThisWeekToFalse();
         }
     }
 }

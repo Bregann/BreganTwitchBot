@@ -13,8 +13,8 @@ Log.Logger = new LoggerConfiguration().WriteTo.Async(x => x.File("Logs/log.log",
 Log.Information("Logger Setup");
 AppConfig.LoadConfig();
 
-await SetupBot.SetupTwitchBot();
-await DiscordConnection.StartDiscordBot();
+//await SetupBot.SetupTwitchBot();
+//await DiscordConnection.StartDiscordBot();
 
 //Setup project monitor
 #if DEBUG

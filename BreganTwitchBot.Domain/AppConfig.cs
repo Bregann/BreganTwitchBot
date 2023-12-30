@@ -56,6 +56,8 @@ namespace BreganTwitchBot
         public static string HFUsername { get; private set; } = "";
         public static string HFPassword { get; private set; } = "";
         public static readonly DateTime SubathonStartTime = new DateTime(2023, 12, 10, 12, 0, 0);
+        public static bool StreamHappenedThisWeek { get; private set; }
+
         public static void LoadConfig()
         {
             using (var context = new DatabaseContext())
@@ -200,6 +202,7 @@ namespace BreganTwitchBot
                     using (var context = new DatabaseContext())
                     {
                         context.Config.First().StreamAnnounced = true;
+                        context.Config.First().StreamHappenedThisWeek = true;
 
                         var usersInStream = context.Users.Where(x => x.InStream).ToList();
 
@@ -212,6 +215,7 @@ namespace BreganTwitchBot
                     }
 
                     StreamAnnounced = true;
+                    StreamHappenedThisWeek = true;
                     ProjectMonitorBreganTwitchBot.SendStreamAnnouncedUpdate(true);
                     await StreamStatsService.AddNewStream();
                     await DiscordHelper.AnnounceStream();
@@ -247,6 +251,16 @@ namespace BreganTwitchBot
             {
                 context.Config.First().StreamAnnounced = false;
                 context.SaveChanges();
+            }
+        }
+
+        public static async Task SetStreamThisWeekToFalse()
+        {
+            using(var context = new DatabaseContext()) 
+            {
+                StreamHappenedThisWeek = false;
+                context.Config.First().StreamHappenedThisWeek = false;
+                await context.SaveChangesAsync();
             }
         }
 
