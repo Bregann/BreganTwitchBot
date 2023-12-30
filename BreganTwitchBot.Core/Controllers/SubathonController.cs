@@ -19,5 +19,11 @@ namespace BreganTwitchBot.Core.Controllers
         {
             return SubathonData.GetSubathonLeaderboards();
         }
+
+        [HttpPost("{ticksToAdd}/{secret}")]
+        public async Task<bool> AddSubathonTime([FromRoute] long ticksToAdd, [FromRoute] string secret)
+        {
+            return await SubathonData.AddSubathonTime(ticksToAdd, secret);
+        }
     }
 }
