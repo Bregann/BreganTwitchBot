@@ -6,6 +6,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <UserSecretsId>188bb040-65ea-4448-809f-c765b291b1ab</UserSecretsId>
     <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
+    <AssemblyName>blocksbregantwitchbot</AssemblyName>
   </PropertyGroup>
 
   <ItemGroup>
