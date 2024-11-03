@@ -1,5 +1,4 @@
 ﻿using BreganTwitchBot.Infrastructure.Database.Context;
-using BreganUtils.ProjectMonitor.Projects;
 using Discord;
 using Serilog;
 
@@ -123,7 +122,6 @@ namespace BreganTwitchBot.Domain.Data.DiscordBot
                 }
             }
 
-            ProjectMonitorBreganTwitchBot.SendDiscordLeaderboardUpdate();
             Log.Information("[Leaderboards] Leaderboards updated");
         }
     }

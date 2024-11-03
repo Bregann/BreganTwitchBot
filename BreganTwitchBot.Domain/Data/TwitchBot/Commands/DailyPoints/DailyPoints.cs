@@ -1,7 +1,6 @@
 ﻿using BreganTwitchBot.Domain.Data.TwitchBot.Enums;
 using BreganTwitchBot.Domain.Data.TwitchBot.Helpers;
 using BreganTwitchBot.Infrastructure.Database.Context;
-using BreganUtils.ProjectMonitor.Projects;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
 
@@ -23,7 +22,6 @@ namespace BreganTwitchBot.Domain.Data.TwitchBot.Commands.DailyPoints
                 else
                 {
                     uptime = DateTime.UtcNow - uptimeReq.Streams[0].StartedAt;
-                    ProjectMonitorBreganTwitchBot.SendStreamUptimeUpdate(DateTime.UtcNow - uptimeReq.Streams[0].StartedAt);
                 }
             }
             catch (Exception e)

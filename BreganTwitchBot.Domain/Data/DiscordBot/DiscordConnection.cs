@@ -182,7 +182,6 @@ namespace BreganTwitchBot.Domain.Data.DiscordBot
         {
             ConnectionStatus = false;
             Log.Warning("[Discord] Disconnected from Discord");
-            BackgroundJob.Schedule(() => HangfireJobs.SendDiscordConnectionStatusToProjectMonitor(), TimeSpan.FromMinutes(1));
             return Task.CompletedTask;
         }
 

@@ -2,7 +2,6 @@
 using BreganTwitchBot.Domain.Data.DiscordBot.Helpers;
 using BreganTwitchBot.Domain.Data.TwitchBot;
 using BreganTwitchBot.Infrastructure.Database.Context;
-using BreganUtils.ProjectMonitor.Projects;
 using Serilog;
 
 namespace BreganTwitchBot
@@ -111,7 +110,6 @@ namespace BreganTwitchBot
         public static void UpdateDailyPointsCollecting(bool status)
         {
             DailyPointsCollectingAllowed = status;
-            ProjectMonitorBreganTwitchBot.SendDiscordDailyPointsCollectingUpdate(status);
 
             using (var context = new DatabaseContext())
             {
@@ -187,12 +185,10 @@ namespace BreganTwitchBot
 
                 if (getStreams.Streams.Length == 0)
                 {
-                    ProjectMonitorBreganTwitchBot.SendStreamStatusUpdate(false);
                     StreamerLive = false;
                 }
                 else
                 {
-                    ProjectMonitorBreganTwitchBot.SendStreamStatusUpdate(true);
                     StreamerLive = true;
                 }
 
@@ -216,7 +212,6 @@ namespace BreganTwitchBot
 
                     StreamAnnounced = true;
                     StreamHappenedThisWeek = true;
-                    ProjectMonitorBreganTwitchBot.SendStreamAnnouncedUpdate(true);
                     await StreamStatsService.AddNewStream();
                     await DiscordHelper.AnnounceStream();
                     HangfireJobs.StartTwitchBossStreamAnnounceJob();
@@ -245,7 +240,6 @@ namespace BreganTwitchBot
         {
             StreamAnnounced = false;
             _doublePingJobStarted = false;
-            ProjectMonitorBreganTwitchBot.SendStreamAnnouncedUpdate(false);
 
             using (var context = new DatabaseContext())
             {

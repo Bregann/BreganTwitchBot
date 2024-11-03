@@ -2,28 +2,18 @@ using BreganTwitchBot;
 using BreganTwitchBot.Domain;
 using BreganTwitchBot.Domain.Data.DiscordBot;
 using BreganTwitchBot.Domain.Data.TwitchBot;
-using BreganUtils.ProjectMonitor;
 using Hangfire;
 using Hangfire.Dashboard.BasicAuthorization;
 using Hangfire.Dashboard.Dark;
 using Hangfire.PostgreSql;
 using Serilog;
 
-Log.Logger = new LoggerConfiguration().WriteTo.Async(x => x.File("Logs/log.log", retainedFileCountLimit: null, rollingInterval: RollingInterval.Day)).WriteTo.Console().CreateLogger();
+Log.Logger = new LoggerConfiguration().WriteTo.Async(x => x.File("/app/Logs/log.log", retainedFileCountLimit: 7, rollingInterval: RollingInterval.Day)).WriteTo.Console().CreateLogger();
 Log.Information("Logger Setup");
 AppConfig.LoadConfig();
 
 await SetupBot.SetupTwitchBot();
 await DiscordConnection.StartDiscordBot();
-
-//Setup project monitor
-#if DEBUG
-ProjectMonitorConfig.SetupMonitor("debug", AppConfig.ProjectMonitorApiKey);
-#else
-ProjectMonitorConfig.SetupMonitor("release", AppConfig.ProjectMonitorApiKey);
-#endif
-
-ProjectMonitorCommon.ReportProjectUp("twitchbot");
 
 AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
 

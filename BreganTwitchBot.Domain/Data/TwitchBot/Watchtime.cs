@@ -3,7 +3,6 @@ using BreganTwitchBot.Domain.Data.TwitchBot.Enums;
 using BreganTwitchBot.Domain.Data.TwitchBot.Helpers;
 using BreganTwitchBot.Infrastructure.Database.Context;
 using BreganTwitchBot.Infrastructure.Database.Models;
-using BreganUtils.ProjectMonitor.Projects;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
 
@@ -50,8 +49,6 @@ namespace BreganTwitchBot.Domain.Data.TwitchBot
                 context.SaveChanges();
 
                 StreamStatsService.UpdateStreamStat(totalPointsAdded, StatTypes.PointsGainedWatching);
-                ProjectMonitorBreganTwitchBot.SendLastHoursUpdateUpdate();
-                ProjectMonitorBreganTwitchBot.SendUsersInStreamUpdate(_usersBeingUpdated.Count);
 
                 Log.Information($"[User Update] User update complete. {_usersBeingUpdated.Count} users updated. {totalPointsAdded} points added");
                 await CheckForRankUps();

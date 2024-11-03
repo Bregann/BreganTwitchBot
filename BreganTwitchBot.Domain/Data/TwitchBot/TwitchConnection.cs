@@ -1,5 +1,4 @@
 ﻿using BreganTwitchBot.Domain.Data.DiscordBot.Helpers;
-using BreganUtils.ProjectMonitor.Projects;
 using Serilog;
 using TwitchLib.Api;
 using TwitchLib.Api.Core.Exceptions;
@@ -37,7 +36,6 @@ namespace BreganTwitchBot.Domain.Data.TwitchBot
 
         private void ClientOnConnected(object? sender, TwitchLib.Client.Events.OnConnectedArgs e)
         {
-            ProjectMonitorBreganTwitchBot.SendTwitchIRCConnectionStateUpdate(true);
             Client.JoinChannel(AppConfig.BroadcasterName);
             Client.SendMessage(AppConfig.BroadcasterName, "hello currys (Succesfully cOnnected!)");
             Log.Information("[Twitch Client] Connected to Twitch Chat");
@@ -45,7 +43,6 @@ namespace BreganTwitchBot.Domain.Data.TwitchBot
 
         private void ClientOnDisconnected(object? sender, OnDisconnectedEventArgs e)
         {
-            ProjectMonitorBreganTwitchBot.SendTwitchIRCConnectionStateUpdate(false);
             Log.Warning($"[Twitch Client] Bot disconnected from channel. Reason: {e}");
         }
 
@@ -77,7 +74,6 @@ namespace BreganTwitchBot.Domain.Data.TwitchBot
         private async void PubSubClientPubSubServiceClosed(object? sender, EventArgs e)
         {
             Log.Warning("[Twitch PubSub] PubSub Service Closed");
-            ProjectMonitorBreganTwitchBot.SendTwitchPubSubConnectionStateUpdate(false);
 
             try
             {
@@ -112,7 +108,6 @@ namespace BreganTwitchBot.Domain.Data.TwitchBot
         private void PubSubClientPubSubServiceConnected(object? sender, EventArgs e)
         {
             Log.Information("[Twitch PubSub] Connected");
-            ProjectMonitorBreganTwitchBot.SendTwitchPubSubConnectionStateUpdate(true);
             PubSubClient.SendTopics(AppConfig.BroadcasterOAuth);
         }
     }

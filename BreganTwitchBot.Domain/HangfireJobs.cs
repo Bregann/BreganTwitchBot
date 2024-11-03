@@ -6,7 +6,6 @@ using BreganTwitchBot.Domain.Data.TwitchBot.Helpers;
 using BreganTwitchBot.Domain.Data.TwitchBot.WordBlacklist;
 using BreganTwitchBot.Infrastructure.Database.Context;
 using BreganUtils;
-using BreganUtils.ProjectMonitor.Projects;
 using Discord;
 using Hangfire;
 using Microsoft.EntityFrameworkCore;
@@ -182,14 +181,12 @@ namespace BreganTwitchBot.Domain
                 TwitchApiConnection.ApiClient.Settings.AccessToken = streamerRefresh.AccessToken;
                 AppConfig.UpdateStreamerApiCredentials(streamerRefresh.RefreshToken, streamerRefresh.AccessToken);
 
-                ProjectMonitorBreganTwitchBot.SendTwitchAPIKeyRefreshUpdate();
                 Log.Information($"[Refresh Job] Streamer token {streamerRefresh.AccessToken} successfully refreshed! Expires in: {streamerRefresh.ExpiresIn} | Refresh: {streamerRefresh.RefreshToken}");
 
                 var botRefresh = await TwitchApiConnection.ApiClient.Auth.RefreshAuthTokenAsync(AppConfig.TwitchBotApiRefresh, AppConfig.TwitchAPISecret, AppConfig.TwitchAPIClientID);
                 TwitchApiConnection.ApiClient.Settings.AccessToken = botRefresh.AccessToken;
                 AppConfig.UpdateBotApiCredentials(botRefresh.RefreshToken, botRefresh.AccessToken);
 
-                ProjectMonitorBreganTwitchBot.SendTwitchAPIKeyRefreshUpdate();
                 Log.Information($"[Refresh Job] Bot token {botRefresh.AccessToken} successfully refreshed! Expires in: {botRefresh.ExpiresIn} | Refresh: {botRefresh.RefreshToken}");
             }
             catch (Exception e)
@@ -443,11 +440,6 @@ namespace BreganTwitchBot.Domain
             TwitchBotConnection.Client.FollowersOnlyOn(AppConfig.BroadcasterName, TimeSpan.FromSeconds(0));
             _raidFollowersJobStarted = false;
             Log.Information("[Raid Job] Followers only turned on");
-        }
-
-        public static void SendDiscordConnectionStatusToProjectMonitor()
-        {
-            ProjectMonitorBreganTwitchBot.SendDiscordConnectionStateUpdate(DiscordConnection.ConnectionStatus);
         }
 
         public static async Task UpdateStatsInDatabase()
