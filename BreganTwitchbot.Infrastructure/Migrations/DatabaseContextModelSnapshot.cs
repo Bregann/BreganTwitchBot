@@ -113,6 +113,9 @@ namespace BreganTwitchBot.Infrastructure.Migrations
                     b.Property<bool>("StreamAnnounced")
                         .HasColumnType("boolean");
 
+                    b.Property<bool>("StreamHappenedThisWeek")
+                        .HasColumnType("boolean");
+
                     b.Property<bool>("SubathonActive")
                         .HasColumnType("boolean");
 
@@ -156,11 +159,12 @@ namespace BreganTwitchBot.Infrastructure.Migrations
                             HFConnectionString = "",
                             HangfirePassword = "",
                             HangfireUsername = "",
-                            LastDailyPointsAllowed = new DateTime(2023, 12, 1, 14, 21, 35, 48, DateTimeKind.Utc).AddTicks(4440),
+                            LastDailyPointsAllowed = new DateTime(2024, 10, 13, 19, 33, 13, 263, DateTimeKind.Utc).AddTicks(9236),
                             PointsName = "",
                             PrestigeCap = 0L,
                             ProjectMonitorApiKey = "",
                             StreamAnnounced = false,
+                            StreamHappenedThisWeek = false,
                             SubathonActive = false,
                             SubathonTime = new TimeSpan(0, 0, 0, 0, 0),
                             TwitchAPIClientID = "",

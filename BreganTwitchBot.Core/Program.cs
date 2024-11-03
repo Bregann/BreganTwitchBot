@@ -8,11 +8,11 @@ using Hangfire.Dashboard.Dark;
 using Hangfire.PostgreSql;
 using Serilog;
 
-Log.Logger = new LoggerConfiguration().WriteTo.Async(x => x.File("Logs/log.log", retainedFileCountLimit: null, rollingInterval: RollingInterval.Day)).WriteTo.Console().CreateLogger();
+Log.Logger = new LoggerConfiguration().WriteTo.Async(x => x.File("/app/Logs/log.log", retainedFileCountLimit: null, rollingInterval: RollingInterval.Day)).WriteTo.Console().CreateLogger();
 Log.Information("Logger Setup");
 AppConfig.LoadConfig();
 
-await SetupBot.SetupTwitchBot();
+//await SetupBot.SetupTwitchBot();
 
 //Setup project monitor
 #if DEBUG
@@ -41,13 +41,13 @@ builder.Services.AddCors(options =>
 
 // Add services to the container
 
-GlobalConfiguration.Configuration.UsePostgreSqlStorage(c => c.UseNpgsqlConnection(Environment.GetEnvironmentVariable("QBConnString")));
+GlobalConfiguration.Configuration.UsePostgreSqlStorage(c => c.UseNpgsqlConnection(Environment.GetEnvironmentVariable("QBConnStringLive")));
 
 builder.Services.AddHangfire(configuration => configuration
         .SetDataCompatibilityLevel(CompatibilityLevel.Version_170)
         .UseSimpleAssemblyNameTypeSerializer()
         .UseRecommendedSerializerSettings()
-        .UsePostgreSqlStorage(c => c.UseNpgsqlConnection(Environment.GetEnvironmentVariable("QBConnString")))
+        .UsePostgreSqlStorage(c => c.UseNpgsqlConnection(Environment.GetEnvironmentVariable("QBConnStringLive")))
         .UseDarkDashboard()
         );
 

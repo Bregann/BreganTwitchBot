@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace BreganTwitchBot.Infrastructure.Migrations
 {
     /// <inheritdoc />
-    public partial class AddStreamHappenedThisWeekField : Migration
+    public partial class StreamHappenedThing : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -24,8 +24,8 @@ namespace BreganTwitchBot.Infrastructure.Migrations
                 table: "Config",
                 keyColumn: "BroadcasterName",
                 keyValue: "",
-                columns: new[] { "LastDailyPointsAllowed", "PinnedStreamDate", "StreamHappenedThisWeek" },
-                values: new object[] { new DateTime(2023, 12, 29, 19, 36, 57, 63, DateTimeKind.Utc).AddTicks(8889), new DateTime(2023, 12, 29, 19, 36, 57, 63, DateTimeKind.Utc).AddTicks(8884), false });
+                columns: new[] { "LastDailyPointsAllowed", "StreamHappenedThisWeek" },
+                values: new object[] { new DateTime(2024, 10, 13, 19, 33, 13, 263, DateTimeKind.Utc).AddTicks(9236), false });
         }
 
         /// <inheritdoc />
@@ -41,8 +41,8 @@ namespace BreganTwitchBot.Infrastructure.Migrations
                 table: "Config",
                 keyColumn: "BroadcasterName",
                 keyValue: "",
-                columns: new[] { "LastDailyPointsAllowed", "PinnedStreamDate" },
-                values: new object[] { new DateTime(2023, 12, 1, 14, 8, 25, 634, DateTimeKind.Utc).AddTicks(572), new DateTime(2023, 12, 1, 14, 8, 25, 634, DateTimeKind.Utc).AddTicks(563) });
+                column: "LastDailyPointsAllowed",
+                value: new DateTime(2023, 12, 1, 14, 21, 35, 48, DateTimeKind.Utc).AddTicks(4440));
         }
     }
 }
