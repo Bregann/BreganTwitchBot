@@ -2,6 +2,7 @@
 using Humanizer;
 using Humanizer.Localisation;
 using Serilog;
+using TwitchLib.Api.Helix.Models.Channels.GetChannelFollowers;
 using TwitchLib.Api.Helix.Models.Users.GetUserFollows;
 using TwitchLib.Api.Helix.Models.Users.GetUsers;
 
@@ -60,43 +61,63 @@ namespace BreganTwitchBot.Domain.Data.TwitchBot.Commands.FollowAge
             catch (Exception e)
             {
                 Log.Warning($"[Twitch Commands] Error getting user - {e}");
-                return "Well thats no good! An error has occured - please try again shortly";
+                return "Well, that's no good! An error has occurred - please try again shortly.";
             }
 
-            //check if the username exists
+            // Check if the username exists
             if (getUserID.Users.Length == 0)
             {
                 return $"That username does not exist!";
             }
 
-            GetUsersFollowsResponse checkFollow;
+            // Get the user's ID
+            string userId = getUserID.Users[0].Id;
+
+            GetChannelFollowersResponse checkFollow;
             try
             {
-                checkFollow = await TwitchApiConnection.ApiClient.Helix.Users.GetUsersFollowsAsync(fromId: getUserID.Users[0].Id, toId: AppConfig.TwitchChannelID);
+                checkFollow = await TwitchApiConnection.ApiClient.Helix.Channels.GetChannelFollowersAsync(broadcasterId: AppConfig.TwitchChannelID, userId: userId, accessToken: AppConfig.BroadcasterOAuth);
             }
             catch (Exception e)
             {
-                Log.Warning($"[Twitch Commands] Error getting user - {e}");
-                return "Oh deary me there has been an error getting the follow age! Try again shortly";
+                Log.Warning($"[Twitch Commands] Error getting user follow - {e}");
+                return "Oh deary me, there has been an error getting the follow age! Try again shortly. poooooo";
             }
 
-            //Check if they are followed as i forgot to do this and I looked silly
-            if (checkFollow.Follows.Length == 0)
+            // Check if they follow the channel
+            if (checkFollow.Data.Length == 0)
             {
                 return $"It appears {username} doesn't follow {AppConfig.BroadcasterName} :(";
             }
 
-            //To save repeating code I just added a bool to return either followsince or followage
+            var followData = checkFollow.Data.FirstOrDefault();
+            if (followData == null)
+            {
+                return $"It appears {username} doesn't follow {AppConfig.BroadcasterName} :(";
+            }
+
+            // Convert the FollowedAt string to a DateTime (Twitch returns ISO 8601 strings)
+            DateTime followTime;
+            try
+            {
+                followTime = DateTime.Parse(followData.FollowedAt);
+            }
+            catch (Exception e)
+            {
+                Log.Warning($"[Twitch Commands] Error parsing FollowedAt date - {e}");
+                return "Oh dear, we had trouble reading the follow time. Please try again shortly.";
+            }
+
             if (isFollowAge)
             {
-                //now we get the follow age and make it pwetty witty :3
-                var followTime = checkFollow.Follows[0].FollowedAt;
+                // Calculate follow duration and humanize it
                 var nonHumanisedTime = DateTime.UtcNow - followTime;
-                return $"{username} followed {AppConfig.BroadcasterName} since {nonHumanisedTime.Humanize(maxUnit: TimeUnit.Year, minUnit: TimeUnit.Second, precision: 7)}";
+                return $"{username} followed {AppConfig.BroadcasterName} for {nonHumanisedTime.Humanize(maxUnit: TimeUnit.Year, minUnit: TimeUnit.Second, precision: 7)}";
             }
             else
             {
-                return $"{username} followed {AppConfig.BroadcasterName} at {checkFollow.Follows[0].FollowedAt}";
+                // Return follow date as a readable timestamp
+                return $"{username} followed {AppConfig.BroadcasterName} on {followTime:MMMM dd, yyyy 'at' HH:mm UTC}";
             }
         }
     }
