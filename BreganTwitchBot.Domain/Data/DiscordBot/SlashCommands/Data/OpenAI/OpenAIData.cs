@@ -122,8 +122,7 @@ Then list genres and their respective books as follows:
                 // Send the request
                 var client = new ChatClient("gpt-4o-mini", AppConfig.OpenAiApiKey);
 
-                ChatCompletion completion = client.CompleteChat(messages);
-
+                ChatCompletion completion = client.CompleteChat(messages, new ChatCompletionOptions { Temperature = 0.4f });
                 return completion.Content[0].Text;
             }
         }
