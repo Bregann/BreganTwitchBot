@@ -7,6 +7,8 @@ namespace BreganTwitchBot.Domain.Data.DiscordBot.SlashCommands.Modules
 {
     public class OpenAIModule : InteractionModuleBase<SocketInteractionContext>
     {
+        private static readonly string[] AllowedImageTypes = { "image/png", "image/jpeg" };
+
         [SlashCommand("ai_analysebooks", "Upload an image to check the book book books against your interests")]
         public async Task AnalyseBooks([Summary("image", "the image to analyse")]IAttachment file)
         {
@@ -18,7 +20,14 @@ namespace BreganTwitchBot.Domain.Data.DiscordBot.SlashCommands.Modules
                 return;
             }
 
-            await RespondAsync("pooo");
+            if (!AllowedImageTypes.Contains(file.ContentType))
+            {
+                await FollowupAsync("Invalid file type, please upload a png or jpeg image");
+                return;
+            }
+
+            var response = await OpenAIData.AnalyseBooks(Context.User.Id, file.Url, file.ContentType);
+            await FollowupAsync(response);
         }
 
         [SlashCommand("ai_addlikedauthor", "Add a liked author(s) to your list")]
