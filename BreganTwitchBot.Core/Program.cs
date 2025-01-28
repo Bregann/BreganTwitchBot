@@ -1,4 +1,3 @@
-using BreganTwitchBot;
 using BreganTwitchBot.Domain;
 using BreganTwitchBot.Domain.Data.DiscordBot;
 using BreganTwitchBot.Domain.Data.TwitchBot;

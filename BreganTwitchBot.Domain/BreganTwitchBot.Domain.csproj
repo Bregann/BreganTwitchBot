@@ -6,7 +6,7 @@
     <PublishSingleFile>true</PublishSingleFile>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Discord.Net" Version="3.13.0" />
+    <PackageReference Include="Discord.Net" Version="3.17.1" />
     <PackageReference Include="Hangfire" Version="1.8.6" />
     <PackageReference Include="Humanizer" Version="2.14.1" />
     <PackageReference Include="ICanHazDadJoke.NET" Version="1.0.13" />

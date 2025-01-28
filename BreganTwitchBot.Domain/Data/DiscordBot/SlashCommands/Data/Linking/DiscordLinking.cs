@@ -64,6 +64,7 @@ namespace BreganTwitchBot.Domain.Data.DiscordBot.SlashCommands.Data.Linking
                         BossesPointsWon = 0,
                         TimeoutStrikes = 0,
                         WarnStrikes = 0,
+                        CanUseOpenAi = false,
                         DailyPoints = new Infrastructure.Database.Models.DailyPoints
                         {
                             CurrentStreak = 0,

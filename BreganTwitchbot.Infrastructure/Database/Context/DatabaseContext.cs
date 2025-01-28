@@ -24,6 +24,7 @@ namespace BreganTwitchBot.Infrastructure.Database.Context
         public DbSet<UserGambleStats> UserGambleStats { get; set; }
         public DbSet<Watchtime> Watchtime { get; set; }
         public DbSet<DiscordGiveaways> DiscordGiveaways { get; set; }
+        public DbSet<AiBookData> AiBookData { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
             => optionsBuilder.UseNpgsql(_connectionString);
@@ -94,7 +95,8 @@ namespace BreganTwitchBot.Infrastructure.Database.Context
                 SubathonActive = false,
                 HangfireUsername = "",
                 HangfirePassword = "",
-                StreamHappenedThisWeek = false
+                StreamHappenedThisWeek = false,
+                OpenAiApiKey = ""
             });
 
             modelBuilder.Entity<SlotMachine>().HasData(new SlotMachine

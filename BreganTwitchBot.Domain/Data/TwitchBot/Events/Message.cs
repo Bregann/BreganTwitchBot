@@ -35,6 +35,7 @@ namespace BreganTwitchBot.Domain.Data.TwitchBot.Events
                         BitsDonatedThisMonth = 0,
                         BossesDone = 0,
                         BossesPointsWon = 0,
+                        CanUseOpenAi = false,
                         DailyPoints = new DailyPoints
                         {
                             CurrentStreak = 0,

@@ -1,10 +1,9 @@
-﻿using BreganTwitchBot.Domain;
-using BreganTwitchBot.Domain.Data.DiscordBot.Helpers;
+﻿using BreganTwitchBot.Domain.Data.DiscordBot.Helpers;
 using BreganTwitchBot.Domain.Data.TwitchBot;
 using BreganTwitchBot.Infrastructure.Database.Context;
 using Serilog;
 
-namespace BreganTwitchBot
+namespace BreganTwitchBot.Domain
 {
     public class AppConfig
     {
@@ -56,7 +55,7 @@ namespace BreganTwitchBot
         public static string HFPassword { get; private set; } = "";
         public static readonly DateTime SubathonStartTime = new DateTime(2023, 12, 10, 12, 0, 0);
         public static bool StreamHappenedThisWeek { get; private set; }
-
+        public static string OpenAiApiKey { get; private set; } = "";
         public static void LoadConfig()
         {
             using (var context = new DatabaseContext())
@@ -101,6 +100,7 @@ namespace BreganTwitchBot
                 SubathonActive = configVariables.SubathonActive;
                 HFUsername = configVariables.HangfireUsername;
                 HFPassword = configVariables.HangfirePassword;
+                OpenAiApiKey = configVariables.OpenAiApiKey;
             }
 
             PrevSubathonTime = SubathonTime;
@@ -250,7 +250,7 @@ namespace BreganTwitchBot
 
         public static async Task SetStreamThisWeekToFalse()
         {
-            using(var context = new DatabaseContext()) 
+            using (var context = new DatabaseContext())
             {
                 StreamHappenedThisWeek = false;
                 context.Config.First().StreamHappenedThisWeek = false;
@@ -275,7 +275,7 @@ namespace BreganTwitchBot
             {
                 var rnd = new Random();
 
-                if(rnd.Next(0, 101) == 73)
+                if (rnd.Next(0, 101) == 73)
                 {
                     PlaySubathonSound = true;
                 }

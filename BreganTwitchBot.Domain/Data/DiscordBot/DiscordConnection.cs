@@ -37,6 +37,13 @@ namespace BreganTwitchBot.Domain.Data.DiscordBot
                 LogGatewayIntentWarnings = true,
                 DefaultRetryMode = RetryMode.AlwaysRetry
             });
+            
+            // _services = new ServiceCollection().AddSingleton(DiscordClient).AddSingleton<InteractionService>().BuildServiceProvider();
+            _services = new ServiceCollection()
+                .AddSingleton(DiscordClient)
+                .AddSingleton(x => new InteractionService(x.GetRequiredService<DiscordSocketClient>())) // Register InteractionService
+                .AddSingleton(x => new InteractionService(DiscordClient.Rest))
+                .BuildServiceProvider();
 
             DiscordClient.Ready += Ready;
             DiscordClient.Disconnected += Disconnected;
@@ -56,7 +63,6 @@ namespace BreganTwitchBot.Domain.Data.DiscordBot
 
             await DiscordClient.LoginAsync(TokenType.Bot, AppConfig.DiscordAPIKey);
             await DiscordClient.StartAsync();
-            _services = new ServiceCollection().AddSingleton(DiscordClient).AddSingleton<InteractionService>().BuildServiceProvider();
         }
 
         private static Task LogError(LogMessage arg)
@@ -250,13 +256,25 @@ namespace BreganTwitchBot.Domain.Data.DiscordBot
             await DiscordClient.SetGameAsync("many users", type: ActivityType.Watching);
             await DiscordClient.DownloadUsersAsync(DiscordClient.Guilds);
 
-            _interactionService = new InteractionService(DiscordClient.Rest);
-            await _interactionService.AddModulesAsync(assembly: Assembly.GetExecutingAssembly(), null);
+            // Resolve InteractionService from DI
+
+            try
+            {
+                _interactionService = _services.GetRequiredService<InteractionService>();
+
+                // Add modules using DI
+                await _interactionService.AddModulesAsync(Assembly.GetExecutingAssembly(), _services);
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "Error adding modules to InteractionService");
+                throw;
+            }
+
 #if DEBUG
             await _interactionService.RegisterCommandsToGuildAsync(AppConfig.DiscordGuildID, true);
 #else
-            await _interactionService.RegisterCommandsGloballyAsync();
-
+    await _interactionService.RegisterCommandsGloballyAsync();
 #endif
             botLoaded = true;
             Log.Information("[Discord Connection] Discord Client Ready");

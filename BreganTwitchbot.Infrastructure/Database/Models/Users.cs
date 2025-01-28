@@ -36,6 +36,7 @@ namespace BreganTwitchBot.Infrastructure.Database.Models
         public required int TimeoutStrikes { get; set; }
 
         public required int WarnStrikes { get; set; }
+        public required bool CanUseOpenAi { get; set; }
 
         public required DailyPoints DailyPoints { get; set; }
 
