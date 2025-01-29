@@ -56,6 +56,7 @@ namespace BreganTwitchBot.Domain
         public static readonly DateTime SubathonStartTime = new DateTime(2023, 12, 10, 12, 0, 0);
         public static bool StreamHappenedThisWeek { get; private set; }
         public static string OpenAiApiKey { get; private set; } = "";
+        public static string GeminiApiKey { get; private set; } = "";
         public static void LoadConfig()
         {
             using (var context = new DatabaseContext())
@@ -101,6 +102,7 @@ namespace BreganTwitchBot.Domain
                 HFUsername = configVariables.HangfireUsername;
                 HFPassword = configVariables.HangfirePassword;
                 OpenAiApiKey = configVariables.OpenAiApiKey;
+                GeminiApiKey = configVariables.GeminiApiKey;
             }
 
             PrevSubathonTime = SubathonTime;

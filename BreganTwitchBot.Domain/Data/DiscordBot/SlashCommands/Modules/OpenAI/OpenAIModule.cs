@@ -1,4 +1,5 @@
-﻿using BreganTwitchBot.Domain.Data.DiscordBot.SlashCommands.Data.OpenAI;
+﻿using BreganTwitchBot.Domain.Data.DiscordBot.Helpers;
+using BreganTwitchBot.Domain.Data.DiscordBot.SlashCommands.Data.OpenAI;
 using BreganTwitchBot.Infrastructure.Database.Models;
 using Discord;
 using Discord.Interactions;
@@ -9,7 +10,7 @@ namespace BreganTwitchBot.Domain.Data.DiscordBot.SlashCommands.Modules
     {
         private static readonly string[] AllowedImageTypes = { "image/png", "image/jpeg" };
 
-        [SlashCommand("ai_analysebooks", "Upload an image to check the book book books against your interests")]
+        [SlashCommand("ai_analysebooks_openai", "Upload an image to check the book book books against your interests")]
         public async Task AnalyseBooks([Summary("image", "the image to analyse")]IAttachment file)
         {
             await DeferAsync();
@@ -26,8 +27,47 @@ namespace BreganTwitchBot.Domain.Data.DiscordBot.SlashCommands.Modules
                 return;
             }
 
-            var response = await OpenAIData.AnalyseBooks(Context.User.Id, file.Url, file.ContentType);
-            await FollowupAsync(response);
+            var response = await OpenAIData.AnalyseBooks(Context.User.Id, file.Url, file.ContentType, false);
+
+            if (response.Length > 1)
+            {
+                await FollowupAsync(response[0]);
+
+                foreach (var item in response.Skip(1))
+                {
+                    await DiscordHelper.SendMessage(Context.Channel.Id, item);
+                }
+            }
+        }
+
+        [SlashCommand("ai_analysebooks_gemini", "Upload an image to check the book book books against your interests")]
+        public async Task AnalyseBooksGemini([Summary("image", "the image to analyse")] IAttachment file)
+        {
+            await DeferAsync();
+
+            if (!await OpenAIData.IsAllowedAI(Context.User.Id))
+            {
+                await FollowupAsync("You don't have permission to use this command");
+                return;
+            }
+
+            if (!AllowedImageTypes.Contains(file.ContentType))
+            {
+                await FollowupAsync("Invalid file type, please upload a png or jpeg image");
+                return;
+            }
+
+            var response = await OpenAIData.AnalyseBooks(Context.User.Id, file.Url, file.ContentType, true);
+
+            if (response.Length > 1)
+            {
+                await FollowupAsync(response[0]);
+
+                foreach (var item in response.Skip(1))
+                {
+                    await DiscordHelper.SendMessage(Context.Channel.Id, item);
+                }
+            }
         }
 
         [SlashCommand("ai_addlikedauthor", "Add a liked author(s) to your list")]

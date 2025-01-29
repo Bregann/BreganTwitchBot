@@ -46,5 +46,6 @@ namespace BreganTwitchBot.Infrastructure.Database.Models
         public required string HangfirePassword { get; set; }
         public required bool StreamHappenedThisWeek { get; set; }
         public required string OpenAiApiKey { get; set; }
+        public required string GeminiApiKey { get; set; }
     }
 }

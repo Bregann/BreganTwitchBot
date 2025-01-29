@@ -96,7 +96,8 @@ namespace BreganTwitchBot.Infrastructure.Database.Context
                 HangfireUsername = "",
                 HangfirePassword = "",
                 StreamHappenedThisWeek = false,
-                OpenAiApiKey = ""
+                OpenAiApiKey = "",
+                GeminiApiKey = ""
             });
 
             modelBuilder.Entity<SlotMachine>().HasData(new SlotMachine
