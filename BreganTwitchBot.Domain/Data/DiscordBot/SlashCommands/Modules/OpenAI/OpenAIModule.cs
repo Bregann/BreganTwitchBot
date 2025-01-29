@@ -38,6 +38,10 @@ namespace BreganTwitchBot.Domain.Data.DiscordBot.SlashCommands.Modules
                     await DiscordHelper.SendMessage(Context.Channel.Id, item);
                 }
             }
+            else
+            {
+                await FollowupAsync(response[0]);
+            }
         }
 
         [SlashCommand("ai_analysebooks_gemini", "Upload an image to check the book book books against your interests")]
@@ -67,6 +71,10 @@ namespace BreganTwitchBot.Domain.Data.DiscordBot.SlashCommands.Modules
                 {
                     await DiscordHelper.SendMessage(Context.Channel.Id, item);
                 }
+            }
+            else
+            {
+                await FollowupAsync(response[0]);
             }
         }
 
