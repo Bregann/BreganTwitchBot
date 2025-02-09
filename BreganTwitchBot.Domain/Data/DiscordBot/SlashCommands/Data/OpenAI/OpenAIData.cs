@@ -142,7 +142,7 @@ Then list genres and their respective books as follows:
                     var client = new OpenAIClient(new(AppConfig.GeminiApiKey), new()
                     {
                         Endpoint = new("https://generativelanguage.googleapis.com/v1beta/"),
-                    }).GetChatClient("gemini-1.5-flash");
+                    }).GetChatClient("gemini-2.0-flash");
 
                     ChatCompletion completion = client.CompleteChat(messages, new ChatCompletionOptions { Temperature = 0.4f });
                     return SplitText(completion.Content[0].Text, 1800);
