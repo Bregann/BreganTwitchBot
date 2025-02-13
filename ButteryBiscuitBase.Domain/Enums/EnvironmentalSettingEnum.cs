@@ -3,6 +3,10 @@
     public enum EnvironmentalSettingEnum
     {
         HangfireUsername,
-        HangfirePassword
+        HangfirePassword,
+        TwitchAPIClientID,
+        TwitchAPISecret,
+        OpenAiApiKey,
+        GeminiApiKey
     }
 }
