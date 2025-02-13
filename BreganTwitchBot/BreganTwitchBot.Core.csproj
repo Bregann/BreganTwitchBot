@@ -33,7 +33,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\ButteryBiscuitBase.Domain\BreganTwitchBot.Domain.csproj" />
+    <ProjectReference Include="..\BreganTwitchBot.Domain\BreganTwitchBot.Domain.csproj" />
   </ItemGroup>
 
 </Project>
