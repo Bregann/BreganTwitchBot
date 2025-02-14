@@ -1,22 +1,23 @@
 using BreganTwitchBot.Domain.Data.Database.Context;
+using BreganTwitchBot.Domain.Data.Services.Twitch;
 using BreganTwitchBot.Domain.Enums;
 using BreganTwitchBot.Domain.Helpers;
 using BreganTwitchBot.Domain.Interfaces.Helpers;
 using Hangfire;
-using Hangfire.Dashboard;
 using Hangfire.Dashboard.BasicAuthorization;
 using Hangfire.MemoryStorage;
-using Hangfire.PostgreSql;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Serilog;
 using System.Text;
+using TwitchLib.EventSub.Websockets.Extensions;
 
 Log.Logger = new LoggerConfiguration().WriteTo.Async(x => x.File("/app/Logs/log.log", retainedFileCountLimit: null, rollingInterval: RollingInterval.Day)).WriteTo.Console().CreateLogger();
 Log.Information("Logger Setup");
 
 var builder = WebApplication.CreateBuilder(args);
+
 
 // Add services to the container.
 
@@ -92,6 +93,25 @@ builder.Services.AddHangfire(configuration => configuration
 // hangfire
 builder.Services.AddHangfireServer(options => options.SchedulePollingInterval = TimeSpan.FromSeconds(10));
 
+// The twitch service
+builder.Services.AddSingleton<TwitchApiConnection>(provider =>
+{
+    var dbContext = provider.GetRequiredService<AppDbContext>();
+
+    var channelsToConnectTo = dbContext.Channels.ToArray();
+
+    var connection = new TwitchApiConnection();
+
+    foreach (var channel in channelsToConnectTo)
+    {
+        connection.Connect(channel.BroadcasterTwitchChannelName, channel.Id, channel.BroadcasterTwitchChannelId, channel.BroadcasterTwitchChannelOAuthToken, channel.BroadcasterTwitchChannelRefreshToken, AccountType.Broadcaster);
+        connection.Connect(channel.BotTwitchChannelName, channel.Id, channel.BotTwitchChannelId, channel.BotTwitchChannelOAuthToken, channel.BotTwitchChannelRefreshToken, AccountType.Bot);
+    }
+    return connection;
+});
+
+builder.Services.AddTwitchLibEventSubWebsockets();
+
 var app = builder.Build();
 
 app.UseCors("AllowAll");
@@ -144,5 +164,8 @@ app.MapHangfireDashboard("/hangfire", new DashboardOptions
 {
     Authorization = auth
 }, JobStorage.Current);
+
+var hangfireJobs = new HangfireJobServiceHelper(app.Services.GetRequiredService<TwitchApiConnection>(), app.Services.GetRequiredService<AppDbContext>());
+await hangfireJobs.SetupHangfireJobs();
 
 app.Run();
