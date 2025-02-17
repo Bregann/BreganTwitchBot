@@ -15,7 +15,10 @@ namespace BreganTwitchBot.Domain.Helpers
             using (var scope = serviceProvider.CreateScope())
             {
                 var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-                _environmentalSettings = await dbContext.EnvironmentalSettings.ToDictionaryAsync(x => x.Key, x => x.Value);
+                _environmentalSettings = await dbContext.EnvironmentalSettings.ToDictionaryAsync(
+                    x => Enum.Parse<EnvironmentalSettingEnum>(x.Key),
+                    x => x.Value
+                );
             }
         }
 
@@ -34,7 +37,7 @@ namespace BreganTwitchBot.Domain.Helpers
             using (var scope = serviceProvider.CreateScope())
             {
                 var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-                dbContext.EnvironmentalSettings.Where(x => x.Key == key).First().Value = newValue;
+                dbContext.EnvironmentalSettings.Where(x => x.Key == key.ToString()).First().Value = newValue;
                 await dbContext.SaveChangesAsync();
             }
 

@@ -15,8 +15,6 @@ namespace BreganTwitchBot.Domain.Helpers
 
         public async Task SetupHangfireJobs()
         {
-            var test = _twitchApiConnection.GetApiClient("");
-            test.ApiClient.Helix.EventSub.CreateEventSubSubscriptionAsync("test", "1",);
 
         }
     }

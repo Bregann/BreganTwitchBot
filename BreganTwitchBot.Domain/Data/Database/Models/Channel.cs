@@ -43,8 +43,6 @@ namespace BreganTwitchBot.Domain.Data.Database.Models
         public string? DiscordGuildId { get; set; } = null;
         public string? DiscordApiKey { get; set; } = null;
 
-
-        [DeleteBehavior(DeleteBehavior.Cascade)]
         public virtual ChannelConfig ChannelConfig { get; set; } = null!;
     }
 }

@@ -1,8 +1,11 @@
 using BreganTwitchBot.Domain.Data.Database.Context;
 using BreganTwitchBot.Domain.Data.Services.Twitch;
+using BreganTwitchBot.Domain.Data.Services.Twitch.Commands;
+using BreganTwitchBot.Domain.Data.Services.Twitch.Commands.Points;
 using BreganTwitchBot.Domain.Enums;
 using BreganTwitchBot.Domain.Helpers;
 using BreganTwitchBot.Domain.Interfaces.Helpers;
+using BreganTwitchBot.Domain.Interfaces.Twitch.Commands;
 using Hangfire;
 using Hangfire.Dashboard.BasicAuthorization;
 using Hangfire.MemoryStorage;
@@ -96,21 +99,30 @@ builder.Services.AddHangfireServer(options => options.SchedulePollingInterval = 
 // The twitch service
 builder.Services.AddSingleton<TwitchApiConnection>(provider =>
 {
-    var dbContext = provider.GetRequiredService<AppDbContext>();
-
-    var channelsToConnectTo = dbContext.Channels.ToArray();
-
-    var connection = new TwitchApiConnection();
-
-    foreach (var channel in channelsToConnectTo)
+    using (var scope = provider.CreateScope())
     {
-        connection.Connect(channel.BroadcasterTwitchChannelName, channel.Id, channel.BroadcasterTwitchChannelId, channel.BroadcasterTwitchChannelOAuthToken, channel.BroadcasterTwitchChannelRefreshToken, AccountType.Broadcaster);
-        connection.Connect(channel.BotTwitchChannelName, channel.Id, channel.BotTwitchChannelId, channel.BotTwitchChannelOAuthToken, channel.BotTwitchChannelRefreshToken, AccountType.Bot);
+        var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+        var channelsToConnectTo = dbContext.Channels.ToArray();
+
+        var connection = new TwitchApiConnection();
+
+        foreach (var channel in channelsToConnectTo)
+        {
+            connection.Connect(channel.BroadcasterTwitchChannelName, channel.Id, channel.BroadcasterTwitchChannelId, channel.BroadcasterTwitchChannelOAuthToken, channel.BroadcasterTwitchChannelRefreshToken, AccountType.Broadcaster, channel.BroadcasterTwitchChannelId);
+            connection.Connect(channel.BotTwitchChannelName, channel.Id, channel.BotTwitchChannelId, channel.BotTwitchChannelOAuthToken, channel.BotTwitchChannelRefreshToken, AccountType.Bot, channel.BroadcasterTwitchChannelId);
+        }
+        return connection;
     }
-    return connection;
 });
 
 builder.Services.AddTwitchLibEventSubWebsockets();
+builder.Services.AddHostedService<WebsocketHostedService>();
+// Twitch commands
+builder.Services.AddSingleton<CommandHandler>();
+builder.Services.AddSingleton<PointsCommandService>();
+
+builder.Services.AddScoped<IPointsDataService, PointsDataService>();
 
 var app = builder.Build();
 
@@ -125,13 +137,13 @@ using (var scope = app.Services.CreateScope())
 
     if (dbContext.Database.GetPendingMigrations().Any())
     {
-        await dbContext.Database.MigrateAsync();
         await DatabaseSeedHelper.SeedDatabase(dbContext, settingsHelper, scope.ServiceProvider);
+        await dbContext.Database.MigrateAsync();
     }
 }
 #endif
 
-var environmentalSettingHelper = app.Services.GetService<EnvironmentalSettingHelper>()!;
+var environmentalSettingHelper = app.Services.GetService<IEnvironmentalSettingHelper>()!;
 await environmentalSettingHelper.LoadEnvironmentalSettings();
 
 // Configure the HTTP request pipeline.
@@ -155,7 +167,7 @@ var auth = new[] { new BasicAuthAuthorizationFilter(new BasicAuthAuthorizationFi
         new BasicAuthAuthorizationUser
         {
             Login = environmentalSettingHelper.TryGetEnviromentalSettingValue(EnvironmentalSettingEnum.HangfireUsername),
-            PasswordClear = environmentalSettingHelper.TryGetEnviromentalSettingValue(EnvironmentalSettingEnum.HangfireUsername)
+            PasswordClear = environmentalSettingHelper.TryGetEnviromentalSettingValue(EnvironmentalSettingEnum.HangfirePassword)
         }
     }
 })};
@@ -165,7 +177,13 @@ app.MapHangfireDashboard("/hangfire", new DashboardOptions
     Authorization = auth
 }, JobStorage.Current);
 
-var hangfireJobs = new HangfireJobServiceHelper(app.Services.GetRequiredService<TwitchApiConnection>(), app.Services.GetRequiredService<AppDbContext>());
-await hangfireJobs.SetupHangfireJobs();
+
+using (var scope = app.Services.CreateScope())
+{
+    var dbContext = scope.ServiceProvider.GetService<AppDbContext>()!;
+
+    var hangfireJobs = new HangfireJobServiceHelper(app.Services.GetRequiredService<TwitchApiConnection>(), dbContext);
+    await hangfireJobs.SetupHangfireJobs();
+}
 
 app.Run();

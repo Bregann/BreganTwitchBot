@@ -13,13 +13,13 @@ namespace BreganTwitchBot.Domain.Helpers
 
             await context.EnvironmentalSettings.AddAsync(new EnvironmentalSetting
             {
-                Key = Enums.EnvironmentalSettingEnum.HangfireUsername,
+                Key = Enums.EnvironmentalSettingEnum.HangfireUsername.ToString(),
                 Value = "admin"
             });
 
             await context.EnvironmentalSettings.AddAsync(new EnvironmentalSetting
             {
-                Key = Enums.EnvironmentalSettingEnum.HangfirePassword,
+                Key = Enums.EnvironmentalSettingEnum.HangfirePassword.ToString(),
                 Value = "password"
             });
 

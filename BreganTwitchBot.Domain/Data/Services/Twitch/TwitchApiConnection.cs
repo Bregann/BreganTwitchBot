@@ -15,19 +15,19 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch
         /// </summary>
         /// <param name="channelName">The twitch channel name</param>
         /// <param name="channelId">This is the database generated id from the row</param>
-        /// <param name="clientId">The twitch channel ID</param>
+        /// <param name="twitchChannelClientId">The twitch channel ID</param>
         /// <param name="accessToken">The twitch channel access token</param>
         /// <param name="refreshToken">Twitch channel refresh token</param>
         /// <param name="type">if it is a bot account or a broadcaster account</param>
-        public void Connect(string channelName, int channelId, string clientId, string accessToken, string refreshToken, AccountType type)
+        /// <param name="activeChannelId">The channel the user/bot is active in (the broadcaster)</param>
+        public void Connect(string channelName, int channelId, string twitchChannelClientId, string accessToken, string refreshToken, AccountType type, string activeChannelId)
         {
             try
             {
                 var apiClient = new TwitchAPI();
-                apiClient.Settings.ClientId = clientId;
+                apiClient.Settings.ClientId = "gp762nuuoqcoxypju8c569th9wz7q5"; // TODO: move to environmental settings, hardcoded from twitchtokengenerator atm lol
                 apiClient.Settings.AccessToken = accessToken;
-
-                ApiClients[channelName] = new TwitchAccount(apiClient, channelId, refreshToken, type);
+                ApiClients[channelName] = new TwitchAccount(apiClient, channelId, twitchChannelClientId, accessToken, refreshToken, type, activeChannelId);
                 Log.Information($"[Twitch API Connection] Connected to the Twitch API for {channelName}");
             }
             catch (BadGatewayException)
@@ -45,6 +45,11 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch
             return ApiClients.TryGetValue(key, out var account) ? account : null;
         }
 
+        public TwitchAccount[] GetAllApiClients()
+        {
+            return ApiClients.Values.ToArray();
+        }
+
         public void RefreshApiKey(string key, string newAccessToken)
         {
             if (ApiClients.TryGetValue(key, out var account))
@@ -58,15 +63,21 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch
         {
             public TwitchAPI ApiClient { get; }
             public int ChannelId { get; }
+            public string TwitchChannelClientId { get; }
+            public string AccessToken { get; }
             public string RefreshToken { get; }
             public AccountType Type { get; }
+            public string ActiveChannelId { get; }
 
-            public TwitchAccount(TwitchAPI apiClient, int channelId, string refreshToken, AccountType type)
+            public TwitchAccount(TwitchAPI apiClient, int channelId, string clientId, string acccessToken, string refreshToken, AccountType type, string activeChannel)
             {
                 ApiClient = apiClient;
                 ChannelId = channelId;
+                TwitchChannelClientId = clientId;
+                AccessToken = acccessToken;
                 RefreshToken = refreshToken;
                 Type = type;
+                ActiveChannelId = activeChannel;
             }
         }
     }

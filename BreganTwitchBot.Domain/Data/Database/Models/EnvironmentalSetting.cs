@@ -8,7 +8,7 @@ namespace BreganTwitchBot.Domain.Data.Database.Models
     {
         [Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int Id { get; set; }
-        public EnvironmentalSettingEnum Key { get; set; }
-        public required string Value { get; set; } = string.Empty;
+        public required string Key { get; set; }
+        public required string Value { get; set; }
     }
 }
