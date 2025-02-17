@@ -21,9 +21,7 @@ Log.Information("Logger Setup");
 
 var builder = WebApplication.CreateBuilder(args);
 
-
 // Add services to the container.
-
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
@@ -93,9 +91,6 @@ builder.Services.AddHangfire(configuration => configuration
         );
 #endif
 
-// hangfire
-builder.Services.AddHangfireServer(options => options.SchedulePollingInterval = TimeSpan.FromSeconds(10));
-
 // The twitch service
 builder.Services.AddSingleton<TwitchApiConnection>(provider =>
 {
@@ -116,13 +111,20 @@ builder.Services.AddSingleton<TwitchApiConnection>(provider =>
     }
 });
 
+// Twitch events
 builder.Services.AddTwitchLibEventSubWebsockets();
 builder.Services.AddHostedService<WebsocketHostedService>();
+
 // Twitch commands
 builder.Services.AddSingleton<CommandHandler>();
-builder.Services.AddSingleton<PointsCommandService>();
 
+builder.Services.AddSingleton<PointsCommandService>();
 builder.Services.AddScoped<IPointsDataService, PointsDataService>();
+
+// hangfire
+builder.Services.AddHangfireServer(options => options.SchedulePollingInterval = TimeSpan.FromSeconds(10));
+
+builder.Services.AddScoped<HangfireJobServiceHelper>();
 
 var app = builder.Build();
 
@@ -157,6 +159,8 @@ app.UseAuthorization();
 
 app.MapControllers();
 
+app.UseHangfireDashboard();
+
 var auth = new[] { new BasicAuthAuthorizationFilter(new BasicAuthAuthorizationFilterOptions
 {
     RequireSsl = false,
@@ -177,13 +181,11 @@ app.MapHangfireDashboard("/hangfire", new DashboardOptions
     Authorization = auth
 }, JobStorage.Current);
 
-
 using (var scope = app.Services.CreateScope())
 {
-    var dbContext = scope.ServiceProvider.GetService<AppDbContext>()!;
-
-    var hangfireJobs = new HangfireJobServiceHelper(app.Services.GetRequiredService<TwitchApiConnection>(), dbContext);
+    var hangfireJobs = scope.ServiceProvider.GetRequiredService<HangfireJobServiceHelper>();
     await hangfireJobs.SetupHangfireJobs();
 }
+
 
 app.Run();
