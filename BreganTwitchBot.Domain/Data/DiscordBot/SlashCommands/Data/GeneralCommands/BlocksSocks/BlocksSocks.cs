@@ -109,12 +109,12 @@ namespace BreganTwitchBot.Domain.Data.DiscordBot.SlashCommands.Data.GeneralComma
             {
                 var httpResult = await httpClient.GetAsync(skinResponse.Textures.Skin.Url);
                 using var resultStream = await httpResult.Content.ReadAsStreamAsync();
-                using var fileStream = File.Create($"Skins/{uuid}.png");
+                using var fileStream = File.Create($"/app/Skins/{uuid}.png");
                 resultStream.CopyTo(fileStream);
             }
 
             //check if right size
-            var bmp = Image.Load($"Skins/{uuid}.png");
+            var bmp = Image.Load($"/app/Skins/{uuid}.png");
 
             if (bmp.Width != 64 || bmp.Height != 64)
             {
@@ -125,7 +125,7 @@ namespace BreganTwitchBot.Domain.Data.DiscordBot.SlashCommands.Data.GeneralComma
 
             //create colour and load socks
             var funnyColour = Color.FromArgb(0, 255, 255, 255);
-            var socks = Image.Load("Skins/socks.png");
+            var socks = Image.Load("/app/Skins/socks.png");
 
             //draw socks
             bmp.Mutate(x => x.DrawImage(socks, new Point(0, 0), 1));
@@ -149,14 +149,14 @@ namespace BreganTwitchBot.Domain.Data.DiscordBot.SlashCommands.Data.GeneralComma
             //make the rectangle transparent
             //bmp.MakeTransparent(funnyColour);
 
-            bmp.SaveAsPng($"Skins/{uuid}-socks.png");
+            bmp.SaveAsPng($"/app/Skins/{uuid}-socks.png");
 
             bmp.Dispose();
             socks.Dispose();
 
-            using (var socksFs = new FileStream($"Skins/{uuid}-socks.png", FileMode.Open))
+            using (var socksFs = new FileStream($"/app/Skins/{uuid}-socks.png", FileMode.Open))
             {
-                await channel!.SendFileAsync(socksFs, $"Skins/{uuid}-socks.png");
+                await channel!.SendFileAsync(socksFs, $"/app/Skins/{uuid}-socks.png");
                 embedBuilder.Title = "Your socks have been added";
                 embedBuilder.Color = new Discord.Color(34, 255, 0);
                 return embedBuilder;
