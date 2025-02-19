@@ -8,24 +8,22 @@ using System.Threading.Tasks;
 
 namespace BreganTwitchBot.Domain.Data.Database.Models
 {
-    public class ChannelUser
+    public class ChannelUserRankProgress
     {
         [Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int Id { get; set; }
 
+        [ForeignKey(nameof(ChannelUser))]
         [Required]
-        public required string TwitchUserId { get; set; }
+        public required int ChannelUserId { get; set; }
+        virtual public ChannelUser ChannelUser { get; set; } = null!;
+
+        [ForeignKey(nameof(ChannelRank))]
+        [Required]
+        public required int ChannelRankId { get; set; }
+        virtual public ChannelRank ChannelRank { get; set; } = null!;
 
         [Required]
-        public required string TwitchUsername { get; set; }
-
-        [Required]
-        public required ulong DiscordUserId { get; set; } = 0;
-
-        [Required]
-        public required DateTime AddedOn { get; set; }
-
-        [Required]
-        public required bool CanUseOpenAi { get; set; }
+        public required DateTime AchievedAt { get; set; }
     }
 }

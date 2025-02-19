@@ -8,24 +8,21 @@ using System.Threading.Tasks;
 
 namespace BreganTwitchBot.Domain.Data.Database.Models
 {
-    public class ChannelUser
+    public class Subathon
     {
         [Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int Id { get; set; }
 
+        [ForeignKey(nameof(Channel))]
         [Required]
-        public required string TwitchUserId { get; set; }
+        public required int ChannelId { get; set; }
 
-        [Required]
-        public required string TwitchUsername { get; set; }
+        public virtual Channel Channel { get; set; } = null!;
 
+        [ForeignKey(nameof(ChannelUser))]
         [Required]
-        public required ulong DiscordUserId { get; set; } = 0;
+        public required int ChannelUserId { get; set; }
 
-        [Required]
-        public required DateTime AddedOn { get; set; }
-
-        [Required]
-        public required bool CanUseOpenAi { get; set; }
+        public virtual ChannelUser ChannelUser { get; set; } = null!;
     }
 }
