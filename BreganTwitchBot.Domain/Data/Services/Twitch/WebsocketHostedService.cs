@@ -23,10 +23,116 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch
             _eventSubWebsocketClient.WebsocketReconnected += OnWebsocketReconnected;
             _eventSubWebsocketClient.ErrorOccurred += OnErrorOccurred;
 
+            // Events subcribed to via bot account
             _eventSubWebsocketClient.ChannelChatMessage += OnChannelChatMessageReceived;
+            _eventSubWebsocketClient.ChannelUpdate += OnChannelUpdate;
+            _eventSubWebsocketClient.ChannelRaid += OnChannelRaid;
+            _eventSubWebsocketClient.ChannelBan += OnChannelBan;
+            _eventSubWebsocketClient.ChannelUnban += OnChannelUnban;
+            _eventSubWebsocketClient.StreamOnline += OnStreamOnline;
+            _eventSubWebsocketClient.StreamOffline += OnStreamOffline;
+
+            // Events subcribed to via broadcaster account
+            _eventSubWebsocketClient.ChannelPointsAutomaticRewardRedemptionAdd += OnAutomaticRewardRedeemed;
+            _eventSubWebsocketClient.ChannelPointsCustomRewardAdd += OnCustomRewardRedeemed;
+            _eventSubWebsocketClient.ChannelPollBegin += OnPollBegin;
+            _eventSubWebsocketClient.ChannelPollEnd += OnPollEnd;
+            _eventSubWebsocketClient.ChannelPredictionBegin += OnChannelPredictionBegin;
+            _eventSubWebsocketClient.ChannelPredictionLock += OnChannelPredictionLock;
+            _eventSubWebsocketClient.ChannelPredictionEnd += OnChannelPredictionEnd;
+
+            _eventSubWebsocketClient.ChannelFollow += OnFollowReceived;
+            _eventSubWebsocketClient.ChannelSubscribe += OnChannelSubcribe;
+            _eventSubWebsocketClient.ChannelSubscriptionGift += OnChannelSubscriptionGift;
+            _eventSubWebsocketClient.ChannelSubscriptionMessage += OnChannelResubscribe;
 
             _twitchApiConnection = twitchApiConnection;
             _commandHandler = commandHandler;
+        }
+
+        private Task OnChannelResubscribe(object sender, ChannelSubscriptionMessageArgs args)
+        {
+            throw new NotImplementedException();
+        }
+
+        private Task OnChannelSubscriptionGift(object sender, ChannelSubscriptionGiftArgs args)
+        {
+            throw new NotImplementedException();
+        }
+
+        private Task OnChannelSubcribe(object sender, ChannelSubscribeArgs args)
+        {
+            throw new NotImplementedException();
+        }
+
+        private Task OnFollowReceived(object sender, ChannelFollowArgs args)
+        {
+            throw new NotImplementedException();
+        }
+
+        private Task OnStreamOffline(object sender, TwitchLib.EventSub.Websockets.Core.EventArgs.Stream.StreamOfflineArgs args)
+        {
+            throw new NotImplementedException();
+        }
+
+        private Task OnStreamOnline(object sender, TwitchLib.EventSub.Websockets.Core.EventArgs.Stream.StreamOnlineArgs args)
+        {
+            throw new NotImplementedException();
+        }
+
+        private Task OnChannelUnban(object sender, ChannelUnbanArgs args)
+        {
+            throw new NotImplementedException();
+        }
+
+        private Task OnChannelPredictionEnd(object sender, ChannelPredictionEndArgs args)
+        {
+            throw new NotImplementedException();
+        }
+
+        private Task OnChannelPredictionLock(object sender, ChannelPredictionLockArgs args)
+        {
+            throw new NotImplementedException();
+        }
+
+        private Task OnChannelPredictionBegin(object sender, ChannelPredictionBeginArgs args)
+        {
+            throw new NotImplementedException();
+        }
+
+        private Task OnPollEnd(object sender, ChannelPollEndArgs args)
+        {
+            throw new NotImplementedException();
+        }
+
+        private Task OnPollBegin(object sender, ChannelPollBeginArgs args)
+        {
+            throw new NotImplementedException();
+        }
+
+        private Task OnCustomRewardRedeemed(object sender, ChannelPointsCustomRewardArgs args)
+        {
+            throw new NotImplementedException();
+        }
+
+        private Task OnAutomaticRewardRedeemed(object sender, ChannelPointsAutomaticRewardRedemptionArgs args)
+        {
+            throw new NotImplementedException();
+        }
+
+        private Task OnChannelBan(object sender, ChannelBanArgs args)
+        {
+            throw new NotImplementedException();
+        }
+
+        private Task OnChannelRaid(object sender, ChannelRaidArgs args)
+        {
+            throw new NotImplementedException();
+        }
+
+        private Task OnChannelUpdate(object sender, ChannelUpdateArgs args)
+        {
+            throw new NotImplementedException();
         }
 
         private async Task OnChannelChatMessageReceived(object sender, ChannelChatMessageArgs args)
@@ -84,7 +190,19 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch
 
                         try
                         {
-                            var subscriptionResponse = await apiClient.ApiClient.Helix.EventSub.CreateEventSubSubscriptionAsync("channel.chat.message", "1", conditions, EventSubTransportMethod.Websocket, _eventSubWebsocketClient.SessionId);
+                            //TODO: migrate to this when supported - channel.moderate
+                            // await apiClient.ApiClient.Helix.EventSub.CreateEventSubSubscriptionAsync("channel.moderate", "2", new Dictionary<string, string>() { { "broadcaster_user_id", apiClient.ActiveChannelId }, { "moderator_user_id", apiClient.TwitchChannelClientId } }, EventSubTransportMethod.Websocket, _eventSubWebsocketClient.SessionId);
+
+                            // TODO: add unban requests when my PR is merged in
+
+                            await apiClient.ApiClient.Helix.EventSub.CreateEventSubSubscriptionAsync("channel.chat.message", "1", conditions, EventSubTransportMethod.Websocket, _eventSubWebsocketClient.SessionId);
+                            await apiClient.ApiClient.Helix.EventSub.CreateEventSubSubscriptionAsync("channel.update", "2", new Dictionary<string, string>() { { "broadcaster_user_id", apiClient.ActiveChannelId } }, EventSubTransportMethod.Websocket, _eventSubWebsocketClient.SessionId);
+                            await apiClient.ApiClient.Helix.EventSub.CreateEventSubSubscriptionAsync("channel.raid", "1", new Dictionary<string, string>() { { "to_broadcaster_user_id", apiClient.ActiveChannelId } }, EventSubTransportMethod.Websocket, _eventSubWebsocketClient.SessionId);
+                            await apiClient.ApiClient.Helix.EventSub.CreateEventSubSubscriptionAsync("channel.ban", "1", new Dictionary<string, string>() { { "broadcaster_user_id", apiClient.ActiveChannelId } }, EventSubTransportMethod.Websocket, _eventSubWebsocketClient.SessionId);
+                            await apiClient.ApiClient.Helix.EventSub.CreateEventSubSubscriptionAsync("channel.unban", "1", new Dictionary<string, string>() { { "broadcaster_user_id", apiClient.ActiveChannelId } }, EventSubTransportMethod.Websocket, _eventSubWebsocketClient.SessionId);
+                            await apiClient.ApiClient.Helix.EventSub.CreateEventSubSubscriptionAsync("stream.online", "1", new Dictionary<string, string>() { { "broadcaster_user_id", apiClient.ActiveChannelId } }, EventSubTransportMethod.Websocket, _eventSubWebsocketClient.SessionId);
+                            await apiClient.ApiClient.Helix.EventSub.CreateEventSubSubscriptionAsync("stream.offline", "1", new Dictionary<string, string>() { { "broadcaster_user_id", apiClient.ActiveChannelId } }, EventSubTransportMethod.Websocket, _eventSubWebsocketClient.SessionId);
+
                         }
                         catch (Exception ex)
                         {
@@ -96,6 +214,24 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch
                     else
                     {
                         // sub to broadcaster specific events
+
+                        //check can these be subbed by the bot?
+                        await apiClient.ApiClient.Helix.EventSub.CreateEventSubSubscriptionAsync("channel.channel_points_automatic_reward_redemption.add", "2", new Dictionary<string, string> { { "broadcaster_user_id", apiClient.ActiveChannelId } }, EventSubTransportMethod.Webhook, _eventSubWebsocketClient.SessionId);
+                        await apiClient.ApiClient.Helix.EventSub.CreateEventSubSubscriptionAsync("channel.channel_points_custom_reward_redemption.add", "1", new Dictionary<string, string> { { "broadcaster_user_id", apiClient.ActiveChannelId } }, EventSubTransportMethod.Webhook, _eventSubWebsocketClient.SessionId);
+                        await apiClient.ApiClient.Helix.EventSub.CreateEventSubSubscriptionAsync("channel.poll.begin", "1", new Dictionary<string, string> { { "broadcaster_user_id", apiClient.ActiveChannelId } }, EventSubTransportMethod.Webhook, _eventSubWebsocketClient.SessionId);
+                        await apiClient.ApiClient.Helix.EventSub.CreateEventSubSubscriptionAsync("channel.poll.end", "1", new Dictionary<string, string> { { "broadcaster_user_id", apiClient.ActiveChannelId } }, EventSubTransportMethod.Webhook, _eventSubWebsocketClient.SessionId);
+                        await apiClient.ApiClient.Helix.EventSub.CreateEventSubSubscriptionAsync("channel.prediction.begin", "1", new Dictionary<string, string> { { "broadcaster_user_id", apiClient.ActiveChannelId } }, EventSubTransportMethod.Webhook, _eventSubWebsocketClient.SessionId);
+                        await apiClient.ApiClient.Helix.EventSub.CreateEventSubSubscriptionAsync("channel.prediction.lock", "1", new Dictionary<string, string> { { "broadcaster_user_id", apiClient.ActiveChannelId } }, EventSubTransportMethod.Webhook, _eventSubWebsocketClient.SessionId);
+                        await apiClient.ApiClient.Helix.EventSub.CreateEventSubSubscriptionAsync("channel.prediction.end", "1", new Dictionary<string, string> { { "broadcaster_user_id", apiClient.ActiveChannelId } }, EventSubTransportMethod.Webhook, _eventSubWebsocketClient.SessionId);
+                        await apiClient.ApiClient.Helix.EventSub.CreateEventSubSubscriptionAsync("channel.follow", "2", new Dictionary<string, string> { { "broadcaster_user_id", apiClient.ActiveChannelId }, { "moderator_user_id", apiClient.ActiveChannelId } }, EventSubTransportMethod.Webhook, _eventSubWebsocketClient.SessionId);
+                        await apiClient.ApiClient.Helix.EventSub.CreateEventSubSubscriptionAsync("channel.subscribe", "1", new Dictionary<string, string> { { "broadcaster_user_id", apiClient.ActiveChannelId } }, EventSubTransportMethod.Webhook, _eventSubWebsocketClient.SessionId);
+                        await apiClient.ApiClient.Helix.EventSub.CreateEventSubSubscriptionAsync("channel.subscription.gift", "1", new Dictionary<string, string> { { "broadcaster_user_id", apiClient.ActiveChannelId } }, EventSubTransportMethod.Webhook, _eventSubWebsocketClient.SessionId);
+                        await apiClient.ApiClient.Helix.EventSub.CreateEventSubSubscriptionAsync("channel.subscription.message", "1", new Dictionary<string, string> { { "broadcaster_user_id", apiClient.ActiveChannelId } }, EventSubTransportMethod.Webhook, _eventSubWebsocketClient.SessionId);
+
+                        //TODO: add bits when its supported
+                        //  await apiClient.ApiClient.Helix.EventSub.CreateEventSubSubscriptionAsync("channel.bits.use", "1", new Dictionary<string, string> { { "broadcaster_user_id", apiClient.ActiveChannelId } }, EventSubTransportMethod.Webhook, _eventSubWebsocketClient.SessionId);
+
+
                     }
                 }
 

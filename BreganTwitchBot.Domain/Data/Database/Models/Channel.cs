@@ -44,5 +44,14 @@ namespace BreganTwitchBot.Domain.Data.Database.Models
         public string? DiscordApiKey { get; set; } = null;
 
         public virtual ChannelConfig ChannelConfig { get; set; } = null!;
+        public virtual ICollection<ChannelRank> ChannelRanks { get; set; } = null!;
+        public virtual ICollection<CustomCommand> CustomCommands { get; set; } = null!;
+        public virtual ICollection<DiscordLinkRequests> DiscordLinksRequests { get; set; } = null!;
+        public virtual DiscordSpinStats DiscordSpinStats { get; set; } = null!;
+        public virtual ICollection<StreamViewCount> StreamViewCounts { get; set; } = null!;
+        public virtual TwitchSlotMachineStats TwitchSlotMachineStats { get; set; } = null!;
+        public virtual ICollection<TwitchStreamStats> TwitchStreamStats { get; set; } = null!;
+        public virtual ICollection<UniqueViewers> UniqueViewers { get; set; } = null!;
+        public virtual ICollection<Subathon> Subathons { get; set; } = null!;
     }
 }
