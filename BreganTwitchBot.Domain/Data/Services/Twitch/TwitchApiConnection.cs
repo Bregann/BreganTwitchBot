@@ -6,6 +6,22 @@ using TwitchLib.Api.Core.Exceptions;
 
 namespace BreganTwitchBot.Domain.Data.Services.Twitch
 {
+    /* for the bot
+        * https://id.twitch.tv/oauth2/authorize
+                ?response_type=code
+                &client_id=
+                &redirect_uri=http://localhost
+                scope=clips:edit+user:bot+channel:bot+chat:read+channel:moderate+moderation:read+moderator:manage:banned_users+moderator:read:blocked_terms+moderator:manage:blocked_terms+moderator:read:chat_settings+moderator:manage:chat_settings+moderator:manage:announcements+moderator:manage:chat_messages+moderator:read:chatters+user:read:chat+user:read:emotes
+    */
+
+    /* for the broadcaster
+         * https://id.twitch.tv/oauth2/authorize
+                ?response_type=code
+                &client_id=
+                &redirect_uri=http://localhost
+                &scope=bits:read+channel:moderate+channel:read:subscriptions+moderation:read+channel:read:redemptions+channel:read:hype_train+channel:manage:broadcast+channel:manage:redemptions+channel:manage:polls+channel:manage:predictions+channel:manage:raids+channel:read:vips+moderator:manage:shoutouts+moderator:read:followers+moderator:manage:unban_requests
+ */
+
     public class TwitchApiConnection
     {
         private readonly ConcurrentDictionary<string, TwitchAccount> ApiClients = new();
