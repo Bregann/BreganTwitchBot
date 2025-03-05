@@ -39,6 +39,14 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch.Commands
                     if (attribute != null)
                     {
                         _commands["!" + attribute.CommandName] = method;
+
+                        if (attribute.CommandAlias != null)
+                        {
+                            foreach(var alias in attribute.CommandAlias)
+                            {
+                                _commands["!" + alias] = method;
+                            }
+                        }
                     }
                 }
             }
