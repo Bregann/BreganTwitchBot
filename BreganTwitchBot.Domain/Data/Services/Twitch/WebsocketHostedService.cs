@@ -1,4 +1,5 @@
 ﻿using BreganTwitchBot.Domain.Data.Services.Twitch.Commands;
+using BreganTwitchBot.Domain.DTOs.EventSubEvents;
 using BreganTwitchBot.Domain.Enums;
 using Microsoft.Extensions.Hosting;
 using Serilog;
@@ -14,7 +15,7 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch
         private readonly TwitchApiConnection _twitchApiConnection;
         private readonly CommandHandler _commandHandler;
 
-        private readonly Dictionary<string, EventSubWebsocketClient> _userConnections = new();
+        private readonly Dictionary<string, EventSubWebsocketClient> _userConnections = [];
 
         public WebsocketHostedService(TwitchApiConnection twitchApiConnection, CommandHandler commandHandler)
         {
@@ -114,11 +115,22 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch
 
         private async Task OnChannelChatMessageReceived(object sender, ChannelChatMessageArgs args)
         {
-            var messageContent = args.Notification.Payload.Event.Message.Text;
-
-            if (messageContent.StartsWith('!'))
+            var msgParams = new ChannelChatMessageReceivedParams
             {
-                await _commandHandler.HandleCommandAsync(messageContent.Split(' ')[0], args);
+                BroadcasterChannelId = args.Notification.Payload.Event.BroadcasterUserId,
+                BroadcasterChannelName = args.Notification.Payload.Event.BroadcasterUserName,
+                ChatterChannelId = args.Notification.Payload.Event.ChatterUserId,
+                ChatterChannelName = args.Notification.Payload.Event.ChatterUserName,
+                Message = args.Notification.Payload.Event.Message.Text,
+                IsMod = args.Notification.Payload.Event.IsModerator,
+                IsSub = args.Notification.Payload.Event.IsSubscriber,
+                IsVip = args.Notification.Payload.Event.IsVip,
+                IsBroadcaster = args.Notification.Payload.Event.IsBroadcaster
+            };
+
+            if (msgParams.Message.StartsWith('!'))
+            {
+                await _commandHandler.HandleCommandAsync(msgParams.Message.Split(' ')[0], args);
             }
         }
 
@@ -170,9 +182,8 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch
 
                     try
                     {
-                        //TODO: migrate to this when supported - channel.moderate
+                        // TODO: migrate to this when supported - channel.moderate
                         // await apiClient.ApiClient.Helix.EventSub.CreateEventSubSubscriptionAsync("channel.moderate", "2", new Dictionary<string, string>() { { "broadcaster_user_id", apiClient.ActiveChannelId }, { "moderator_user_id", apiClient.TwitchChannelClientId } }, EventSubTransportMethod.Websocket, _eventSubWebsocketClient.SessionId);
-
 
                         // TODO: add unban requests when my PR is merged in
                         await apiClient.ApiClient.Helix.EventSub.CreateEventSubSubscriptionAsync("channel.chat.message", "1", conditions, EventSubTransportMethod.Websocket, userWebsocketConnection.SessionId);
@@ -207,7 +218,7 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch
                         await apiClient.ApiClient.Helix.EventSub.CreateEventSubSubscriptionAsync("channel.prediction.begin", "1", new Dictionary<string, string> { { "broadcaster_user_id", apiClient.ActiveChannelId } }, EventSubTransportMethod.Websocket, userWebsocketConnection.SessionId);
                         await apiClient.ApiClient.Helix.EventSub.CreateEventSubSubscriptionAsync("channel.prediction.lock", "1", new Dictionary<string, string> { { "broadcaster_user_id", apiClient.ActiveChannelId } }, EventSubTransportMethod.Websocket, userWebsocketConnection.SessionId);
                         await apiClient.ApiClient.Helix.EventSub.CreateEventSubSubscriptionAsync("channel.prediction.end", "1", new Dictionary<string, string> { { "broadcaster_user_id", apiClient.ActiveChannelId } }, EventSubTransportMethod.Websocket, userWebsocketConnection.SessionId);
-                        
+
                         Log.Information($"[Twitch API Connection] Subscribed to broadcaster events for {apiClient.TwitchUsername}");
                     }
                     catch (Exception ex)
@@ -267,7 +278,7 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch
 
         public async Task StopAsync(CancellationToken cancellationToken)
         {
-            foreach(var user in _userConnections)
+            foreach (var user in _userConnections)
             {
                 await user.Value.DisconnectAsync();
             }

@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace BreganTwitchBot.Domain.Data.Database.Models
 {
-    public class UniqueViewers
+    public class ChannelMessages
     {
         [Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int Id { get; set; }
@@ -11,9 +11,12 @@ namespace BreganTwitchBot.Domain.Data.Database.Models
         [ForeignKey(nameof(Channel))]
         [Required]
         public required int ChannelId { get; set; }
-
         public virtual Channel Channel { get; set; } = null!;
 
+        [Required]
         public required string Username { get; set; }
+
+        [Required]
+        public required string Message { get; set; }
     }
 }

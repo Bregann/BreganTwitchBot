@@ -1,11 +1,6 @@
 ﻿using BreganTwitchBot.Domain.Attributes;
 using Microsoft.Extensions.DependencyInjection;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
 using TwitchLib.EventSub.Websockets.Core.EventArgs.Channel;
 
 namespace BreganTwitchBot.Domain.Data.Services.Twitch.Commands
@@ -42,7 +37,7 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch.Commands
 
                         if (attribute.CommandAlias != null)
                         {
-                            foreach(var alias in attribute.CommandAlias)
+                            foreach (var alias in attribute.CommandAlias)
                             {
                                 _commands["!" + alias] = method;
                             }

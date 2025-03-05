@@ -16,7 +16,7 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch.Commands.Points
             {
                 var pointsDataService = scope.ServiceProvider.GetRequiredService<IPointsDataService>();
                 var points = await pointsDataService.GetPointsAsync(context.Notification.Payload.Event.ChatterUserId);
-                
+
                 // send a message blah blah blah
             }
         }

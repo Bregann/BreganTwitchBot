@@ -1,11 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations.Schema;
+﻿using BreganTwitchBot.Domain.Enums;
 using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using BreganTwitchBot.Domain.Enums;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace BreganTwitchBot.Domain.Data.Database.Models
 {
