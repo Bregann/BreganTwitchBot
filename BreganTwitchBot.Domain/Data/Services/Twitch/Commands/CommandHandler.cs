@@ -1,7 +1,7 @@
 ﻿using BreganTwitchBot.Domain.Attributes;
+using BreganTwitchBot.Domain.DTOs.EventSubEvents;
 using Microsoft.Extensions.DependencyInjection;
 using System.Reflection;
-using TwitchLib.EventSub.Websockets.Core.EventArgs.Channel;
 
 namespace BreganTwitchBot.Domain.Data.Services.Twitch.Commands
 {
@@ -47,14 +47,14 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch.Commands
             }
         }
 
-        public async Task HandleCommandAsync(string command, ChannelChatMessageArgs context)
+        public async Task HandleCommandAsync(string command, ChannelChatMessageReceivedParams msgParams)
         {
             if (_commands.TryGetValue(command, out var method))
             {
                 var instance = _serviceProvider.GetRequiredService(method.DeclaringType!);
                 if (instance != null)
                 {
-                    var task = (Task?)method.Invoke(instance, new object[] { context }.ToArray());
+                    var task = (Task?)method.Invoke(instance, new object[] { msgParams }.ToArray());
                     if (task != null)
                     {
                         await task;

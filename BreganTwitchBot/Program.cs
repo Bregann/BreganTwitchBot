@@ -5,6 +5,7 @@ using BreganTwitchBot.Domain.Data.Services.Twitch.Commands.Points;
 using BreganTwitchBot.Domain.Enums;
 using BreganTwitchBot.Domain.Helpers;
 using BreganTwitchBot.Domain.Interfaces.Helpers;
+using BreganTwitchBot.Domain.Interfaces.Twitch;
 using BreganTwitchBot.Domain.Interfaces.Twitch.Commands;
 using Hangfire;
 using Hangfire.Dashboard.BasicAuthorization;
@@ -104,8 +105,8 @@ builder.Services.AddSingleton<TwitchApiConnection>(provider =>
 
         foreach (var channel in channelsToConnectTo)
         {
-            connection.Connect(channel.BroadcasterTwitchChannelName, channel.Id, channel.BroadcasterTwitchChannelId, channel.BroadcasterTwitchChannelOAuthToken, channel.BroadcasterTwitchChannelRefreshToken, AccountType.Broadcaster, channel.BroadcasterTwitchChannelId);
-            connection.Connect(channel.BotTwitchChannelName, channel.Id, channel.BotTwitchChannelId, channel.BotTwitchChannelOAuthToken, channel.BotTwitchChannelRefreshToken, AccountType.Bot, channel.BroadcasterTwitchChannelId);
+            connection.Connect(channel.BroadcasterTwitchChannelName, channel.Id, channel.BroadcasterTwitchChannelId, channel.BroadcasterTwitchChannelOAuthToken, channel.BroadcasterTwitchChannelRefreshToken, AccountType.Broadcaster, channel.BroadcasterTwitchChannelId, channel.BroadcasterTwitchChannelName);
+            connection.Connect(channel.BotTwitchChannelName, channel.Id, channel.BotTwitchChannelId, channel.BotTwitchChannelOAuthToken, channel.BotTwitchChannelRefreshToken, AccountType.Bot, channel.BroadcasterTwitchChannelId, channel.BroadcasterTwitchChannelName);
         }
         return connection;
     }
@@ -114,6 +115,7 @@ builder.Services.AddSingleton<TwitchApiConnection>(provider =>
 // Twitch events
 builder.Services.AddTwitchLibEventSubWebsockets();
 builder.Services.AddHostedService<WebsocketHostedService>();
+builder.Services.AddSingleton<ITwitchHelperService, TwitchHelperService>();
 
 // Twitch commands
 builder.Services.AddSingleton<CommandHandler>();
