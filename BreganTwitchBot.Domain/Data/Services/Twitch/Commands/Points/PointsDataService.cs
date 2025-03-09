@@ -1,16 +1,39 @@
 ﻿using BreganTwitchBot.Domain.Data.Database.Context;
+using BreganTwitchBot.Domain.DTOs.Twitch.Commands.Points;
+using BreganTwitchBot.Domain.DTOs.Twitch.EventSubEvents;
+using BreganTwitchBot.Domain.Interfaces.Twitch;
 using BreganTwitchBot.Domain.Interfaces.Twitch.Commands;
+using Microsoft.EntityFrameworkCore;
 
 namespace BreganTwitchBot.Domain.Data.Services.Twitch.Commands.Points
 {
-    public class PointsDataService(AppDbContext dbContext) : IPointsDataService
+    public class PointsDataService(AppDbContext dbContext, ITwitchHelperService twitchHelperService) : IPointsDataService
     {
-        private readonly AppDbContext _context = dbContext;
-
-        public async Task<int> GetPointsAsync(string twitchUserId)
+        public async Task<GetPointsResponse> GetPointsAsync(ChannelChatMessageReceivedParams msgParams)
         {
-            // do some cool stuff
-            return 0;
+            var twitchIdToCheck = msgParams.ChatterChannelId;
+            var twitchUsernameToCheck = msgParams.ChatterChannelName;
+
+            // If theres more than one part to the message, we need to check if the second part is a user
+            if (msgParams.MessageParts.Length > 1)
+            {
+                var userToCheck = await twitchHelperService.GetTwitchUserIdFromUsername(msgParams.MessageParts[1].TrimStart('@'));
+
+                if (userToCheck == null)
+                {
+                    throw new KeyNotFoundException($"User {msgParams.MessageParts[1]} not found");
+                }
+
+                twitchIdToCheck = userToCheck;
+                twitchUsernameToCheck = msgParams.MessageParts[1].TrimStart('@');
+            }
+
+            var userPoints = await dbContext.ChannelUserData.FirstOrDefaultAsync(x => x.ChannelUser.TwitchUserId == twitchIdToCheck && x.Channel.BroadcasterTwitchChannelId == msgParams.BroadcasterChannelId);
+            return new GetPointsResponse 
+            {
+                TwitchUsername = twitchUsernameToCheck,
+                Points = userPoints?.Points ?? 0
+            };
         }
     }
 }

@@ -32,5 +32,8 @@ namespace BreganTwitchBot.Domain.Data.Database.Models
 
         [Required]
         public required int WarnStrikes { get; set; }
+
+        [Required]
+        public required int Points { get; set; }
     }
 }

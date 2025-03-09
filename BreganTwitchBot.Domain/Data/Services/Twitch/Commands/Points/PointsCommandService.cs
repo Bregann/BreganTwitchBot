@@ -1,5 +1,5 @@
 ﻿using BreganTwitchBot.Domain.Attributes;
-using BreganTwitchBot.Domain.DTOs.EventSubEvents;
+using BreganTwitchBot.Domain.DTOs.Twitch.EventSubEvents;
 using BreganTwitchBot.Domain.Interfaces.Twitch;
 using BreganTwitchBot.Domain.Interfaces.Twitch.Commands;
 using Microsoft.Extensions.DependencyInjection;
@@ -16,10 +16,17 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch.Commands.Points
                 var pointsDataService = scope.ServiceProvider.GetRequiredService<IPointsDataService>();
                 var twitchHelperService = scope.ServiceProvider.GetRequiredService<ITwitchHelperService>();
 
-                var points = await pointsDataService.GetPointsAsync(msgParams.ChatterChannelId);
+                try
+                {
+                    var pointsResponse = await pointsDataService.GetPointsAsync(msgParams);
+                    var pointsName = await twitchHelperService.GetPointsName(msgParams.BroadcasterChannelName);
 
-                // send a message blah blah blah
-                await twitchHelperService.SendTwitchMessageToChannel(msgParams.BroadcasterChannelId, msgParams.BroadcasterChannelName, "testing points", msgParams.MessageId);
+                    await twitchHelperService.SendTwitchMessageToChannel(msgParams.BroadcasterChannelId, msgParams.BroadcasterChannelName, $"{pointsResponse.TwitchUsername} has {pointsResponse.Points} {pointsName ?? "points"}", msgParams.MessageId);
+                }
+                catch (KeyNotFoundException)
+                {
+                    await twitchHelperService.SendTwitchMessageToChannel(msgParams.BroadcasterChannelId, msgParams.BroadcasterChannelName, "You silly sausage! That user doesn't exist", msgParams.MessageId);
+                }
             }
         }
     }

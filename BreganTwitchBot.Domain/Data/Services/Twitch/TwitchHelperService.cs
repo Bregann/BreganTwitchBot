@@ -8,7 +8,7 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch
 {
     public class TwitchHelperService(TwitchApiConnection connection, IServiceProvider serviceProvider) : ITwitchHelperService
     {
-        private readonly TwitchApiConnection _connection = connection;
+        private readonly Dictionary<string, string> _pointsNames = [];
 
         /// <summary>
         /// Sends a message to a Twitch channel
@@ -20,7 +20,7 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch
         /// <returns></returns>
         public async Task SendTwitchMessageToChannel(string broadcasterChannelId, string broadcasterChannelName, string message, string? originalMessageId = null)
         {
-            var apiClient = _connection.GetBotTwitchApiClientFromBroadcasterChannelId(broadcasterChannelId);
+            var apiClient = connection.GetBotTwitchApiClientFromBroadcasterChannelId(broadcasterChannelId);
 
             if (apiClient == null)
             {
@@ -47,6 +47,38 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch
 
                 var user = await context.ChannelUsers.FirstOrDefaultAsync(x => x.TwitchUsername == username.ToLower().Trim());
                 return user?.TwitchUserId;
+            }
+        }
+
+        public async Task<string?> GetPointsName(string broadcasterChannelName)
+        {
+            if (_pointsNames.TryGetValue(broadcasterChannelName, out var pointsName))
+            {
+                return pointsName;
+            }
+
+            using (var scope = serviceProvider.CreateScope())
+            {
+                var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+                var channelId = await context.Channels.FirstOrDefaultAsync(x => x.BroadcasterTwitchChannelName == broadcasterChannelName);
+
+                if (channelId == null)
+                {
+                    Log.Error($"[Twitch Helper Service] Error getting points name for {broadcasterChannelName}, channelId is null");
+                    return null;
+                }
+
+                var channel = await context.ChannelConfig.FirstOrDefaultAsync(x => x.ChannelId == channelId.Id);
+
+                if (channel == null)
+                {
+                    Log.Error($"[Twitch Helper Service] Error getting points name for {channelId.BroadcasterTwitchChannelName}, channel is null");
+                    return string.Empty;
+                }
+
+                _pointsNames[broadcasterChannelName] = channel.ChannelCurrencyName;
+                return channel.ChannelCurrencyName;
             }
         }
     }

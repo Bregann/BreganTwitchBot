@@ -1,5 +1,5 @@
 ﻿using BreganTwitchBot.Domain.Attributes;
-using BreganTwitchBot.Domain.DTOs.EventSubEvents;
+using BreganTwitchBot.Domain.DTOs.Twitch.EventSubEvents;
 using Microsoft.Extensions.DependencyInjection;
 using System.Reflection;
 
