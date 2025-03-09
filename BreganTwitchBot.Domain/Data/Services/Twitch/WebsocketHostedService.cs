@@ -113,6 +113,7 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch
                 ChatterChannelId = args.Notification.Payload.Event.ChatterUserId,
                 ChatterChannelName = args.Notification.Payload.Event.ChatterUserName,
                 Message = args.Notification.Payload.Event.Message.Text,
+                MessageParts = args.Notification.Payload.Event.Message.Text.Split(' '),
                 MessageId = args.Notification.Payload.Event.MessageId,
                 IsMod = args.Notification.Payload.Event.IsModerator,
                 IsSub = args.Notification.Payload.Event.IsSubscriber,

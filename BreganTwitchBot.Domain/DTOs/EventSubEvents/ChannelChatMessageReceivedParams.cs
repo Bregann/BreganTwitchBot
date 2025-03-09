@@ -13,6 +13,7 @@ namespace BreganTwitchBot.Domain.DTOs.EventSubEvents
         public required string ChatterChannelName { get; set; }
         public required string ChatterChannelId { get; set; }
         public required string Message { get; set; }
+        public required string[] MessageParts { get; set; }
         public required string MessageId { get; set; }
         public required bool IsMod { get; set; }
         public required bool IsVip { get; set; }

@@ -8,7 +8,7 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch.Commands.Points
 {
     public class PointsCommandService(IServiceProvider serviceProvider)
     {
-        [TwitchCommand("points", ["pooants", "tilly"])]
+        [TwitchCommand("points", ["pooants", "coins"])]
         public async Task PointsCommand(ChannelChatMessageReceivedParams msgParams)
         {
             using (var scope = serviceProvider.CreateScope())

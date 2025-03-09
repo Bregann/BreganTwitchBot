@@ -1,9 +1,12 @@
-﻿using BreganTwitchBot.Domain.Interfaces.Twitch;
+﻿using BreganTwitchBot.Domain.Data.Database.Context;
+using BreganTwitchBot.Domain.Interfaces.Twitch;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using Serilog;
 
 namespace BreganTwitchBot.Domain.Data.Services.Twitch
 {
-    public class TwitchHelperService(TwitchApiConnection connection) : ITwitchHelperService
+    public class TwitchHelperService(TwitchApiConnection connection, IServiceProvider serviceProvider) : ITwitchHelperService
     {
         private readonly TwitchApiConnection _connection = connection;
 
@@ -34,7 +37,17 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch
             {
                 Log.Error($"[Twitch Helper Service] Error sending message to {broadcasterChannelName}, {ex.Message}");
             }
+        }
 
+        public async Task<string?> GetTwitchUserIdFromUsername(string username)
+        {
+            using (var scope = serviceProvider.CreateScope())
+            {
+                var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+                var user = await context.ChannelUsers.FirstOrDefaultAsync(x => x.TwitchUsername == username.ToLower().Trim());
+                return user?.TwitchUserId;
+            }
         }
     }
 }
