@@ -6,5 +6,6 @@ namespace BreganTwitchBot.Domain.Interfaces.Twitch.Commands
     public interface IPointsDataService
     {
         Task<GetPointsResponse> GetPointsAsync(ChannelChatMessageReceivedParams msgParams);
+        Task AddPointsAsync(ChannelChatMessageReceivedParams msgParams);
     }
 }

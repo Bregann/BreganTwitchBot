@@ -1,6 +1,7 @@
 ﻿using BreganTwitchBot.Domain.Data.Database.Context;
 using BreganTwitchBot.Domain.DTOs.Twitch.Commands.Points;
 using BreganTwitchBot.Domain.DTOs.Twitch.EventSubEvents;
+using BreganTwitchBot.Domain.Exceptions;
 using BreganTwitchBot.Domain.Interfaces.Twitch;
 using BreganTwitchBot.Domain.Interfaces.Twitch.Commands;
 using Microsoft.EntityFrameworkCore;
@@ -21,7 +22,7 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch.Commands.Points
 
                 if (userToCheck == null)
                 {
-                    throw new KeyNotFoundException($"User {msgParams.MessageParts[1]} not found");
+                    throw new TwitchUserNotFoundException($"User {msgParams.MessageParts[1]} not found");
                 }
 
                 twitchIdToCheck = userToCheck;
@@ -29,11 +30,51 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch.Commands.Points
             }
 
             var userPoints = await dbContext.ChannelUserData.FirstOrDefaultAsync(x => x.ChannelUser.TwitchUserId == twitchIdToCheck && x.Channel.BroadcasterTwitchChannelId == msgParams.BroadcasterChannelId);
+
             return new GetPointsResponse 
             {
                 TwitchUsername = twitchUsernameToCheck,
-                Points = userPoints?.Points ?? 0
+                Points = userPoints?.Points ?? 0,
+                Position = await GetPointsRank(msgParams.BroadcasterChannelId, twitchIdToCheck)
             };
+        }
+
+        public async Task AddPointsAsync(ChannelChatMessageReceivedParams msgParams)
+        {
+            if (msgParams.MessageParts.Length < 3)
+            {
+                throw new InvalidCommandException("The format is !addpoints <username> <points>");
+            }
+
+            long.TryParse(msgParams.MessageParts[2], out var pointsToAdd);
+
+            if (pointsToAdd <= 0)
+            {
+                throw new InvalidCommandException("The points to add must be a number greater than 0");
+            }
+
+            var rowsUpdated = await dbContext.ChannelUserData
+                .Where(x => x.Channel.BroadcasterTwitchChannelId == msgParams.BroadcasterChannelId && x.ChannelUser.TwitchUsername == msgParams.MessageParts[1].TrimStart('@').ToLower())
+                .ExecuteUpdateAsync(setters =>
+                    setters.SetProperty(x => x.Points, x => x.Points + pointsToAdd)
+                );
+
+            if (rowsUpdated == 0)
+            {
+                throw new TwitchUserNotFoundException($"User {msgParams.MessageParts[1]} not found");
+            }
+        }
+
+        private async Task<string> GetPointsRank(string broadcasterChannelId, string twitchUserId)
+        {
+            var userPoints = await dbContext.ChannelUserData
+                .Where(x => x.Channel.BroadcasterTwitchChannelId == broadcasterChannelId)
+                .OrderByDescending(x => x.Points)
+                .Select(x => x.ChannelUser.TwitchUserId)
+                .ToListAsync();
+
+            var userRank = userPoints.FindIndex(x => x == twitchUserId) + 1;
+            return $"{userRank} / {userPoints.Count}";
         }
     }
 }

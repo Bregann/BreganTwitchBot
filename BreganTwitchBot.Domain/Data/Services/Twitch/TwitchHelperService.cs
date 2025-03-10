@@ -81,5 +81,21 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch
                 return channel.ChannelCurrencyName;
             }
         }
+
+        public async Task<bool> IsUserSuperModInChannel(string broadcasterChannelName, string viewerName)
+        {
+            using (var scope = serviceProvider.CreateScope())
+            {
+                var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+                var userData = await context.ChannelUserData.Where(x => x.Channel.BroadcasterTwitchChannelName == broadcasterChannelName && x.ChannelUser.TwitchUsername == viewerName.ToLower().Trim()).FirstOrDefaultAsync();
+
+                if (userData == null)
+                {
+                    return false;
+                }
+
+                return userData.IsSuperMod;
+            }
+        }
     }
 }

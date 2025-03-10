@@ -1,5 +1,5 @@
 ﻿using BreganTwitchBot.Domain.Data.Services.Twitch.Commands;
-using BreganTwitchBot.Domain.DTOs.EventSubEvents;
+using BreganTwitchBot.Domain.DTOs.Twitch.EventSubEvents;
 using BreganTwitchBot.Domain.Enums;
 using Microsoft.Extensions.Hosting;
 using Serilog;
@@ -156,7 +156,7 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch
             {
 
                 // Subscribe to events based on if a bot or a user
-                var apiClient = twitchApiConnection.GetTwitchApiClientFromBotName(twitchChannelName);
+                var apiClient = twitchApiConnection.GetTwitchApiClientFromChannelName(twitchChannelName);
                 var userWebsocketConnection = _userConnections.GetValueOrDefault(twitchChannelName);
 
                 if (apiClient == null || userWebsocketConnection == null)

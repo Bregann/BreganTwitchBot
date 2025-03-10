@@ -10,5 +10,6 @@ namespace BreganTwitchBot.Domain.DTOs.Twitch.Commands.Points
     {
         public required string TwitchUsername { get; set; }
         public required int Points { get; set; }
+        public required string Position { get; set; }
     }
 }
