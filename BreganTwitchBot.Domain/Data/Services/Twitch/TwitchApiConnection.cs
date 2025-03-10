@@ -44,7 +44,7 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch
                 apiClient.Settings.ClientId = "gp762nuuoqcoxypju8c569th9wz7q5"; // TODO: move to environmental settings, hardcoded from twitchtokengenerator atm lol
                 apiClient.Settings.AccessToken = accessToken;
 
-                ApiClients[channelName] = new TwitchAccount(apiClient, databaseChannelId, twitchChannelClientId, channelName, accessToken, refreshToken, type, broadcasterChannelId, broadcasterChannelName);
+                ApiClients[channelName.ToLower()] = new TwitchAccount(apiClient, databaseChannelId, twitchChannelClientId, channelName.ToLower(), accessToken, refreshToken, type, broadcasterChannelId, broadcasterChannelName);
                 Log.Information($"[Twitch API Connection] Connected to the Twitch API for {channelName}");
             }
             catch (BadGatewayException)
@@ -65,7 +65,7 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch
         /// <returns></returns>
         public TwitchAccount? GetTwitchApiClientFromChannelName(string channelName)
         {
-            return ApiClients.TryGetValue(channelName, out var account) ? account : null;
+            return ApiClients.TryGetValue(channelName.ToLower(), out var account) ? account : null;
         }
 
         /// <summary>

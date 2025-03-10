@@ -1,6 +1,7 @@
 ﻿using BreganTwitchBot.Domain.Data.Services.Twitch.Commands;
 using BreganTwitchBot.Domain.DTOs.Twitch.EventSubEvents;
 using BreganTwitchBot.Domain.Enums;
+using BreganTwitchBot.Domain.Interfaces.Twitch;
 using Microsoft.Extensions.Hosting;
 using Serilog;
 using TwitchLib.Api.Core.Enums;
@@ -10,7 +11,7 @@ using TwitchLib.EventSub.Websockets.Core.EventArgs.Channel;
 
 namespace BreganTwitchBot.Domain.Data.Services.Twitch
 {
-    public class WebsocketHostedService(TwitchApiConnection twitchApiConnection, CommandHandler commandHandler) : IHostedService
+    public class WebsocketHostedService(TwitchApiConnection twitchApiConnection, CommandHandler commandHandler, ITwitchHelperService twitchHelperService) : IHostedService
     {
         private readonly Dictionary<string, EventSubWebsocketClient> _userConnections = [];
 
@@ -186,6 +187,8 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch
                         await apiClient.ApiClient.Helix.EventSub.CreateEventSubSubscriptionAsync("stream.offline", "1", new Dictionary<string, string>() { { "broadcaster_user_id", apiClient.BroadcasterChannelId } }, EventSubTransportMethod.Websocket, userWebsocketConnection.SessionId);
 
                         Log.Information($"[Twitch API Connection] Subscribed to bot events for {apiClient.TwitchUsername}");
+
+                        await twitchHelperService.SendTwitchMessageToChannel(apiClient.BroadcasterChannelId, apiClient.BroadcasterChannelName, "hello currys (successfully connected)", null);
                     }
                     catch (Exception ex)
                     {
