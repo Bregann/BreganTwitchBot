@@ -73,19 +73,13 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch.Commands.FollowAge
 
                 var followTime = DateTime.Parse(checkFollowResponse.Data[0].FollowedAt);
 
-                if (isFollowAge)
+                if (isFollowAge) 
                 {
-                    // Calculate follow duration and humanize it
+                    // Calculate follow duration in total minutes
                     var nonHumanisedTime = DateTime.UtcNow - followTime;
-
-                    var formattedTime = $"{(int)(nonHumanisedTime.TotalDays / 365)} years, " +
-                    $"{nonHumanisedTime.Days % 365} days, " +
-                    $"{nonHumanisedTime.Hours} hours, " +
-                    $"{nonHumanisedTime.Minutes} minutes, " +
-                    $"{nonHumanisedTime.Seconds} seconds";
-
-                    return $"{twitchUsernameToLookup} followed {broadcasterUsername} for {formattedTime}";
-                }
+                    var totalMinutes = (int)nonHumanisedTime.TotalMinutes;
+                    return $"{twitchUsernameToLookup} followed {broadcasterUsername} for {totalMinutes} minutes";
+}
                 else
                 {
                     // Return follow date as a readable timestamp
