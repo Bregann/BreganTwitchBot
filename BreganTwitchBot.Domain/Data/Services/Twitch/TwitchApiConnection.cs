@@ -1,4 +1,5 @@
 ﻿using BreganTwitchBot.Domain.Enums;
+using BreganTwitchBot.Domain.Interfaces.Twitch;
 using Serilog;
 using System.Collections.Concurrent;
 using TwitchLib.Api;
@@ -22,7 +23,7 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch
                 &scope=bits:read+channel:moderate+channel:read:subscriptions+moderation:read+channel:read:redemptions+channel:read:hype_train+channel:manage:broadcast+channel:manage:redemptions+channel:manage:polls+channel:manage:predictions+channel:manage:raids+channel:read:vips+moderator:manage:shoutouts+moderator:read:followers+moderator:manage:unban_requests
  */
 
-    public class TwitchApiConnection
+    public class TwitchApiConnection : ITwitchApiConnection
     {
         private readonly ConcurrentDictionary<string, TwitchAccount> ApiClients = new();
 

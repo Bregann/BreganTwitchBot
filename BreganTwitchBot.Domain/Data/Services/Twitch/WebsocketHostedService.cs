@@ -11,7 +11,7 @@ using TwitchLib.EventSub.Websockets.Core.EventArgs.Channel;
 
 namespace BreganTwitchBot.Domain.Data.Services.Twitch
 {
-    public class WebsocketHostedService(TwitchApiConnection twitchApiConnection, CommandHandler commandHandler, ITwitchHelperService twitchHelperService) : IHostedService
+    public class WebsocketHostedService(ITwitchApiConnection twitchApiConnection, CommandHandler commandHandler, ITwitchHelperService twitchHelperService) : IHostedService
     {
         private readonly Dictionary<string, EventSubWebsocketClient> _userConnections = [];
 

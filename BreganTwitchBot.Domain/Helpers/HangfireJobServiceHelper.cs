@@ -6,7 +6,7 @@ using Serilog;
 
 namespace BreganTwitchBot.Domain.Helpers
 {
-    public class HangfireJobServiceHelper(TwitchApiConnection twitchApiConnection, ITwitchHelperService twitchHelperService, AppDbContext context)
+    public class HangfireJobServiceHelper(ITwitchApiConnection twitchApiConnection, ITwitchHelperService twitchHelperService, AppDbContext context)
     {
         public async Task SetupHangfireJobs()
         {

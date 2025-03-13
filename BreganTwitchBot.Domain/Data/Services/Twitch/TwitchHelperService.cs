@@ -6,7 +6,7 @@ using Serilog;
 
 namespace BreganTwitchBot.Domain.Data.Services.Twitch
 {
-    public class TwitchHelperService(TwitchApiConnection connection, IServiceProvider serviceProvider) : ITwitchHelperService
+    public class TwitchHelperService(ITwitchApiConnection connection, IServiceProvider serviceProvider) : ITwitchHelperService
     {
         private readonly Dictionary<string, string> _pointsNames = [];
 

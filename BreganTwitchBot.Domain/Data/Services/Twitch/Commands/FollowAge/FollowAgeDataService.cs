@@ -1,11 +1,12 @@
 ﻿using BreganTwitchBot.Domain.DTOs.Twitch.EventSubEvents;
 using BreganTwitchBot.Domain.Enums;
+using BreganTwitchBot.Domain.Interfaces.Twitch;
 using BreganTwitchBot.Domain.Interfaces.Twitch.Commands;
 using Serilog;
 
 namespace BreganTwitchBot.Domain.Data.Services.Twitch.Commands.FollowAge
 {
-    public class FollowAgeDataService(TwitchApiConnection twitchApiConnection) : IFollowAgeDataService
+    public class FollowAgeDataService(ITwitchApiConnection twitchApiConnection) : IFollowAgeDataService
     {
         public async Task<string> HandleFollowCommandAsync(ChannelChatMessageReceivedParams msgParams, FollowCommandTypeEnum followCommandType)
         {
@@ -26,13 +27,16 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch.Commands.FollowAge
                     {
                         var nonHumanisedTime = DateTime.UtcNow - followTime.Item1.Value;
 
-                        var formattedTime = $"{(int)(nonHumanisedTime.TotalDays / 365)} years, " +
-                        $"{nonHumanisedTime.Days % 365} days, " +
-                        $"{nonHumanisedTime.Hours} hours, " +
-                        $"{nonHumanisedTime.Minutes} minutes, " +
-                        $"{nonHumanisedTime.Seconds} seconds";
+                        var years = (int)(nonHumanisedTime.TotalDays / 365);
+                        var days = nonHumanisedTime.Days % 365;
 
-                        return $"{twitchUsernameToLookup} followed {msgParams.BroadcasterChannelName} for {formattedTime} minutes";
+                        var formattedTime = $"{years} year{(years > 1 ? "s" : "")}, " +
+                        $"{days} day{(days > 1 ? "s" : "")}, " +
+                        $"{nonHumanisedTime.Hours} hour{(nonHumanisedTime.Hours > 1 ? "s" : "")}, " +
+                        $"{nonHumanisedTime.Minutes} minute{(nonHumanisedTime.Minutes > 1 ? "s" : "")} and " +
+                        $"{nonHumanisedTime.Seconds} second{(nonHumanisedTime.Seconds > 1 ? "s" : "")}!";
+
+                        return $"{twitchUsernameToLookup} followed {msgParams.BroadcasterChannelName} for {formattedTime}";
                     }
                     break;
                 case FollowCommandTypeEnum.FollowSince:

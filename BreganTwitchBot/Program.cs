@@ -96,7 +96,7 @@ builder.Services.AddHangfire(configuration => configuration
 #endif
 
 // The twitch service
-builder.Services.AddSingleton<TwitchApiConnection>(provider =>
+builder.Services.AddSingleton<ITwitchApiConnection>(provider =>
 {
     using (var scope = provider.CreateScope())
     {
