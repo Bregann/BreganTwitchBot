@@ -20,7 +20,7 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch.Commands.FollowAge
             {
                 var twitchHelperService = scope.ServiceProvider.GetRequiredService<ITwitchHelperService>();
                 var followAgeDataService = scope.ServiceProvider.GetRequiredService<IFollowAgeDataService>();
-                var followAgeResponse = await followAgeDataService.GetFollowAgeAsync(msgParams);
+                var followAgeResponse = await followAgeDataService.HandleFollowCommandAsync(msgParams, Enums.FollowCommandTypeEnum.FollowAge);
 
                 await twitchHelperService.SendTwitchMessageToChannel(msgParams.BroadcasterChannelId, msgParams.BroadcasterChannelName, followAgeResponse, msgParams.MessageId);
             }

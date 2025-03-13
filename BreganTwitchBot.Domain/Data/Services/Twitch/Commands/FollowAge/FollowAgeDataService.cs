@@ -1,17 +1,13 @@
 ﻿using BreganTwitchBot.Domain.DTOs.Twitch.EventSubEvents;
+using BreganTwitchBot.Domain.Enums;
 using BreganTwitchBot.Domain.Interfaces.Twitch.Commands;
 using Serilog;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace BreganTwitchBot.Domain.Data.Services.Twitch.Commands.FollowAge
 {
     public class FollowAgeDataService(TwitchApiConnection twitchApiConnection) : IFollowAgeDataService
     {
-        public async Task<string> GetFollowAgeAsync(ChannelChatMessageReceivedParams msgParams)
+        public async Task<string> HandleFollowCommandAsync(ChannelChatMessageReceivedParams msgParams, FollowCommandTypeEnum followCommandType)
         {
             var twitchUsernameToLookup = msgParams.MessageParts.Length > 1
                     ? msgParams.MessageParts[1]
@@ -21,7 +17,43 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch.Commands.FollowAge
                     ? null
                     : msgParams.ChatterChannelId;
 
-            return await GetUserFollowTime(twitchUsernameToLookup, msgParams.BroadcasterChannelId, msgParams.BroadcasterChannelName, true, twitchUserIdToLookup);
+            var followTime = await GetUserFollowTime(twitchUsernameToLookup, msgParams.BroadcasterChannelId, msgParams.BroadcasterChannelName, twitchUserIdToLookup);
+
+            switch (followCommandType)
+            {
+                case FollowCommandTypeEnum.FollowAge:
+                    if (followTime.Item1 != null)
+                    {
+                        var nonHumanisedTime = DateTime.UtcNow - followTime.Item1.Value;
+
+                        var formattedTime = $"{(int)(nonHumanisedTime.TotalDays / 365)} years, " +
+                        $"{nonHumanisedTime.Days % 365} days, " +
+                        $"{nonHumanisedTime.Hours} hours, " +
+                        $"{nonHumanisedTime.Minutes} minutes, " +
+                        $"{nonHumanisedTime.Seconds} seconds";
+
+                        return $"{twitchUsernameToLookup} followed {msgParams.BroadcasterChannelName} for {formattedTime} minutes";
+                    }
+                    break;
+                case FollowCommandTypeEnum.FollowSince:
+                    if (followTime.Item1 != null)
+                    {
+                        return $"{twitchUsernameToLookup} followed {msgParams.BroadcasterChannelName} on {followTime:MMMM dd, yyyy 'at' HH:mm}";
+                    }
+                    break;
+                case FollowCommandTypeEnum.FollowMinutes:
+                    if (followTime.Item1 != null)
+                    {
+                        var nonHumanisedTime = DateTime.UtcNow - followTime.Item1.Value;
+                        var totalMinutes = (int)nonHumanisedTime.TotalMinutes;
+                        return $"{twitchUsernameToLookup} followed {msgParams.BroadcasterChannelName} for {totalMinutes} minutes";
+                    }
+                    break;
+                default:
+                    return "idk how you got here but you somehow did";
+            }
+
+            return followTime.Item2;
         }
 
         /// <summary>
@@ -31,9 +63,8 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch.Commands.FollowAge
         /// <param name="twitchUserIdToLookup">Optional. If known then supply the user id</param>
         /// <param name="broadcasterUserId">The broadcaster user id</param>
         /// <param name="broadcasterUsername">The broadcaster username</param>
-        /// <param name="isFollowAge">True if you want the follow age, false if you want the follow since date</param>
         /// <returns></returns>
-        private async Task<string> GetUserFollowTime(string twitchUsernameToLookup, string broadcasterUserId, string broadcasterUsername, bool isFollowAge, string? twitchUserIdToLookup = null)
+        private async Task<(DateTime?, string)> GetUserFollowTime(string twitchUsernameToLookup, string broadcasterUserId, string broadcasterUsername, string? twitchUserIdToLookup = null)
         {
             var apiClient = twitchApiConnection.GetTwitchApiClientFromChannelName(broadcasterUsername);
 
@@ -50,7 +81,7 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch.Commands.FollowAge
 
                     if (getUserIdResponse.Users.Length == 0)
                     {
-                        return "That username does not exist!";
+                        return (null, "That username does not exist!");
                     }
 
                     twitchUserIdToLookup = getUserIdResponse.Users[0].Id;
@@ -58,7 +89,7 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch.Commands.FollowAge
                 catch (Exception ex)
                 {
                     Log.Error(ex, "[Twitch Commands] Error getting the user id from the Twitch api");
-                    return $"Well, that's no good! An error has occurred - please try again shortly.";
+                    return (null, $"Well, that's no good! An error has occurred - please try again shortly.");
                 }
             }
 
@@ -68,28 +99,17 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch.Commands.FollowAge
 
                 if (checkFollowResponse.Data.Length == 0)
                 {
-                    return $"It appears {twitchUsernameToLookup} doesn't follow {broadcasterUsername} :(";
+                    return (null, $"It appears {twitchUsernameToLookup} doesn't follow {broadcasterUsername} :(");
                 }
 
                 var followTime = DateTime.Parse(checkFollowResponse.Data[0].FollowedAt);
 
-                if (isFollowAge) 
-                {
-                    // Calculate follow duration in total minutes
-                    var nonHumanisedTime = DateTime.UtcNow - followTime;
-                    var totalMinutes = (int)nonHumanisedTime.TotalMinutes;
-                    return $"{twitchUsernameToLookup} followed {broadcasterUsername} for {totalMinutes} minutes";
-}
-                else
-                {
-                    // Return follow date as a readable timestamp
-                    return $"{twitchUsernameToLookup} followed {broadcasterUsername} on {followTime:MMMM dd, yyyy 'at' HH:mm UTC}";
-                }
+                return (followTime, "");
             }
             catch (Exception ex)
             {
                 Log.Error(ex, "[Twitch Commands] Error getting the follow time from the Twitch api");
-                return "Oh deary me, there has been an error getting the follow age! Try again shortly. poooooo";
+                return (null, "Oh deary me, there has been an error getting the follow age! Try again shortly. poooooo");
             }
         }
     }
