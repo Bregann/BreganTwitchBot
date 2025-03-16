@@ -2,6 +2,7 @@ using BreganTwitchBot.Domain.Data.Database.Context;
 using BreganTwitchBot.Domain.Data.Services.Twitch;
 using BreganTwitchBot.Domain.Data.Services.Twitch.Commands;
 using BreganTwitchBot.Domain.Data.Services.Twitch.Commands._8Ball;
+using BreganTwitchBot.Domain.Data.Services.Twitch.Commands.CustomCommands;
 using BreganTwitchBot.Domain.Data.Services.Twitch.Commands.DadJoke;
 using BreganTwitchBot.Domain.Data.Services.Twitch.Commands.FollowAge;
 using BreganTwitchBot.Domain.Data.Services.Twitch.Commands.Points;
@@ -131,6 +132,9 @@ builder.Services.AddScoped<IFollowAgeDataService, FollowAgeDataService>();
 
 builder.Services.AddSingleton<EightBallCommandService>();
 builder.Services.AddSingleton<DadJokesCommandService>();
+
+builder.Services.AddSingleton<CustomCommandsCommandService>();
+builder.Services.AddScoped<ICustomCommandDataService, CustomCommandsDataService>();
 
 // hangfire
 builder.Services.AddHangfireServer(options => options.SchedulePollingInterval = TimeSpan.FromSeconds(10));

@@ -122,10 +122,7 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch
                 IsBroadcaster = args.Notification.Payload.Event.IsBroadcaster
             };
 
-            if (msgParams.Message.StartsWith('!'))
-            {
-                await commandHandler.HandleCommandAsync(msgParams.Message.Split(' ')[0], msgParams);
-            }
+            await commandHandler.HandleCommandAsync(msgParams.Message.Split(' ')[0], msgParams);
         }
 
         private Task OnErrorOccurred(object sender, ErrorOccuredArgs args)

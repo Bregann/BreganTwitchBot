@@ -1,5 +1,6 @@
 ﻿using BreganTwitchBot.Domain.Attributes;
 using BreganTwitchBot.Domain.DTOs.Twitch.EventSubEvents;
+using BreganTwitchBot.Domain.Interfaces.Twitch.Commands;
 using Microsoft.Extensions.DependencyInjection;
 using System.Reflection;
 
@@ -49,6 +50,7 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch.Commands
 
         public async Task HandleCommandAsync(string command, ChannelChatMessageReceivedParams msgParams)
         {
+            // For the predefined commands
             if (_commands.TryGetValue(command, out var method))
             {
                 var instance = _serviceProvider.GetRequiredService(method.DeclaringType!);
@@ -61,6 +63,18 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch.Commands
                     }
                 }
             }
+
+            //For custom commands, use the custom command service
+            using (var scope = _serviceProvider.CreateScope())
+            {
+                var customCommandService = scope.ServiceProvider.GetRequiredService<ICustomCommandDataService>();
+                await customCommandService.HandleCustomCommandAsync(command, msgParams);
+            }
+        }
+
+        public bool IsSystemCommand(string commandName)
+        {
+            return _commands.ContainsKey(commandName.Trim('!'));
         }
     }
 }
