@@ -1,8 +1,10 @@
 ﻿using BreganTwitchBot.Domain.Attributes;
+using BreganTwitchBot.Domain.Data.Database.Context;
 using BreganTwitchBot.Domain.DTOs.Twitch.EventSubEvents;
 using BreganTwitchBot.Domain.Interfaces.Twitch.Commands;
 using Microsoft.Extensions.DependencyInjection;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 
 namespace BreganTwitchBot.Domain.Data.Services.Twitch.Commands
 {
@@ -10,11 +12,13 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch.Commands
     {
         private readonly IServiceProvider _serviceProvider;
         private readonly Dictionary<string, MethodInfo> _commands = new();
+        private List<string> _customCommands = new();
 
         public CommandHandler(IServiceProvider serviceProvider)
         {
             _serviceProvider = serviceProvider;
             RegisterCommands();
+            LoadCustomCommands();
         }
 
         public void RegisterCommands()
@@ -48,6 +52,15 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch.Commands
             }
         }
 
+        public void LoadCustomCommands()
+        {
+            using(var scope = _serviceProvider.CreateScope())
+            {
+                var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+                _customCommands = context.CustomCommands.Select(x => x.CommandName).ToList();
+            }
+        }
+
         public async Task HandleCommandAsync(string command, ChannelChatMessageReceivedParams msgParams)
         {
             // For the predefined commands
@@ -65,16 +78,32 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch.Commands
             }
 
             //For custom commands, use the custom command service
-            using (var scope = _serviceProvider.CreateScope())
+            if (_customCommands.Contains(command.ToLower().Trim()))
             {
-                var customCommandService = scope.ServiceProvider.GetRequiredService<ICustomCommandDataService>();
-                await customCommandService.HandleCustomCommandAsync(command, msgParams);
+                using (var scope = _serviceProvider.CreateScope())
+                {
+                    var customCommandService = scope.ServiceProvider.GetRequiredService<ICustomCommandDataService>();
+                    await customCommandService.HandleCustomCommandAsync(command, msgParams);
+                }
             }
         }
 
         public bool IsSystemCommand(string commandName)
         {
             return _commands.ContainsKey(commandName.Trim('!'));
+        }
+
+        public bool RemoveCustomCommand(string commandName)
+        {
+            return _customCommands.Remove(commandName);
+        }
+
+        public void AddCustomCommand(string commandName)
+        {
+            if (!_customCommands.Contains(commandName))
+            {
+                _customCommands.Add(commandName);
+            }
         }
     }
 }
