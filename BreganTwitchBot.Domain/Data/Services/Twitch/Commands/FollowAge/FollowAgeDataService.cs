@@ -6,7 +6,7 @@ using Serilog;
 
 namespace BreganTwitchBot.Domain.Data.Services.Twitch.Commands.FollowAge
 {
-    public class FollowAgeDataService(ITwitchApiConnection twitchApiConnection) : IFollowAgeDataService
+    public class FollowAgeDataService(ITwitchApiConnection twitchApiConnection, ITwitchApiInteractionService twitchApiInteractionService) : IFollowAgeDataService
     {
         public async Task<string> HandleFollowCommandAsync(ChannelChatMessageReceivedParams msgParams, FollowCommandTypeEnum followCommandType)
         {
@@ -81,9 +81,9 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch.Commands.FollowAge
             {
                 try
                 {
-                    var getUserIdResponse = await apiClient.ApiClient.Helix.Users.GetUsersAsync(logins: new List<string> { twitchUsernameToLookup });
+                    var getUserIdResponse = await twitchApiInteractionService.GetUsersAsync(apiClient.ApiClient, twitchUsernameToLookup);
 
-                    if (getUserIdResponse.Users.Length == 0)
+                    if (getUserIdResponse == null || getUserIdResponse.Users.Count == 0)
                     {
                         return (null, "That username does not exist!");
                     }
@@ -99,14 +99,14 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch.Commands.FollowAge
 
             try
             {
-                var checkFollowResponse = await apiClient.ApiClient.Helix.Channels.GetChannelFollowersAsync(broadcasterId: broadcasterUserId, userId: twitchUserIdToLookup);
+                var checkFollowResponse = await twitchApiInteractionService.GetChannelFollowersAsync(apiClient.ApiClient, broadcasterId: broadcasterUserId, userId: twitchUserIdToLookup);
 
-                if (checkFollowResponse.Data.Length == 0)
+                if (checkFollowResponse == null || checkFollowResponse.Followers.Count == 0)
                 {
                     return (null, $"It appears {twitchUsernameToLookup} doesn't follow {broadcasterUsername} :(");
                 }
 
-                var followTime = DateTime.Parse(checkFollowResponse.Data[0].FollowedAt);
+                var followTime = DateTime.Parse(checkFollowResponse.Followers[0].FollowedAt);
 
                 return (followTime, "");
             }
