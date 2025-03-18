@@ -72,10 +72,12 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch.Commands.CustomCommands
 
         public async Task<string> EditCustomCommand(ChannelChatMessageReceivedParams msgParams)
         {
+            return "";
         }
 
         public async Task<string> DeleteCustomCommand(ChannelChatMessageReceivedParams msgParams)
         {
+            return "";
         }
     }
 }

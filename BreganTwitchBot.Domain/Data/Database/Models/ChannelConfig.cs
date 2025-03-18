@@ -27,7 +27,7 @@ namespace BreganTwitchBot.Domain.Data.Database.Models
         public required bool StreamHappenedThisWeek { get; set; }
 
         [Required]
-        public required string DailyPointsCollectingAllowed { get; set; }
+        public required bool DailyPointsCollectingAllowed { get; set; }
 
         [Required]
         public required DateTime LastDailyPointsAllowed { get; set; }

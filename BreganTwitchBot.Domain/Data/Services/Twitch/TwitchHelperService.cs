@@ -6,7 +6,7 @@ using Serilog;
 
 namespace BreganTwitchBot.Domain.Data.Services.Twitch
 {
-    public class TwitchHelperService(ITwitchApiConnection connection, IServiceProvider serviceProvider) : ITwitchHelperService
+    public class TwitchHelperService(ITwitchApiConnection connection, IServiceProvider serviceProvider, ITwitchApiInteractionService twitchApiInteractionService) : ITwitchHelperService
     {
         private readonly Dictionary<string, string> _pointsNames = [];
 
@@ -30,7 +30,7 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch
 
             try
             {
-                await apiClient.ApiClient.Helix.Chat.SendChatMessage(apiClient.BroadcasterChannelId, apiClient.TwitchChannelClientId, message, originalMessageId);
+                await twitchApiInteractionService.SendChatMessage(apiClient.ApiClient, apiClient.BroadcasterChannelId, apiClient.TwitchChannelClientId, message, originalMessageId);
                 Log.Information($"[Twitch Helper Service] Sent message to {broadcasterChannelName}. Message contents: {message}");
             }
             catch (Exception ex)

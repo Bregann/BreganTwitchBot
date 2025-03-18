@@ -1,6 +1,7 @@
 ﻿using BreganTwitchBot.Domain.Interfaces.Twitch;
 using BreganTwitchBot.Domain.Interfaces.Twitch.Api;
 using TwitchLib.Api;
+using TwitchLib.Api.Helix.Models.Moderation.CheckAutoModStatus;
 
 namespace BreganTwitchBot.Domain.Data.Services.Twitch
 {
@@ -51,6 +52,11 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch
                 }).ToList(),
                 Total = res.Total
             };
+        }
+
+        public async Task SendChatMessage(TwitchAPI apiClient, string broadcasterChannelId, string twitchChannelClientId, string message, string? originalMessageId = null)
+        {
+            await apiClient.Helix.Chat.SendChatMessage(broadcasterChannelId, twitchChannelClientId, message, originalMessageId);
         }
     }
 }
