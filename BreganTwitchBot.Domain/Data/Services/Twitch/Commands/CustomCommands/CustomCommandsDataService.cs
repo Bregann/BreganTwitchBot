@@ -28,7 +28,7 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch.Commands.CustomCommands
                 return;
             }
 
-            var isSuperMod = await twitchHelperService.IsUserSuperModInChannel(msgParams.BroadcasterChannelName, msgParams.ChatterChannelName);
+            var isSuperMod = await twitchHelperService.IsUserSuperModInChannel(msgParams.BroadcasterChannelId, msgParams.ChatterChannelId);
 
             if (DateTime.UtcNow - TimeSpan.FromSeconds(5) < commandData.LastUsed || !isSuperMod)
             {

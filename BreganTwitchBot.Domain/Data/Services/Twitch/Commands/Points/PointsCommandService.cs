@@ -34,18 +34,10 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch.Commands.Points
         [TwitchCommand("addpoints", ["pointsadd", "addcoins", "coinsadd"])]
         public async Task AddPointsCommand(ChannelChatMessageReceivedParams msgParams)
         {
-            using(var scope = serviceProvider.CreateScope())
+            using (var scope = serviceProvider.CreateScope())
             {
                 var pointsDataService = scope.ServiceProvider.GetRequiredService<IPointsDataService>();
                 var twitchHelperService = scope.ServiceProvider.GetRequiredService<ITwitchHelperService>();
-
-                var isSuperMod = await twitchHelperService.IsUserSuperModInChannel(msgParams.BroadcasterChannelName, msgParams.ChatterChannelName);
-
-                if (!isSuperMod)
-                {
-                    await twitchHelperService.SendTwitchMessageToChannel(msgParams.BroadcasterChannelId, msgParams.BroadcasterChannelName, "You don't have permission to do that", msgParams.MessageId);
-                    return;
-                }
 
                 try
                 {

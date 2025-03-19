@@ -120,6 +120,7 @@ builder.Services.AddSingleton<ITwitchApiConnection>(provider =>
 builder.Services.AddTwitchLibEventSubWebsockets();
 builder.Services.AddHostedService<WebsocketHostedService>();
 builder.Services.AddSingleton<ITwitchHelperService, TwitchHelperService>();
+builder.Services.AddSingleton<ITwitchApiInteractionService, TwitchApiInteractionService>();
 
 // Twitch commands
 builder.Services.AddSingleton<CommandHandler>();

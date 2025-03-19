@@ -35,18 +35,25 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch.Commands.Points
             {
                 TwitchUsername = twitchUsernameToCheck,
                 Points = userPoints?.Points ?? 0,
-                Position = await GetPointsRank(msgParams.BroadcasterChannelId, twitchIdToCheck)
+                Position = userPoints != null ? await GetPointsRank(msgParams.BroadcasterChannelId, twitchIdToCheck) : "N/A"
             };
         }
 
         public async Task AddPointsAsync(ChannelChatMessageReceivedParams msgParams)
         {
+            var isSuperMod = await twitchHelperService.IsUserSuperModInChannel(msgParams.BroadcasterChannelId, msgParams.ChatterChannelId);
+
+            if (!isSuperMod)
+            {
+                throw new InvalidCommandException("You don't have permission to do that");
+            }
+
             if (msgParams.MessageParts.Length < 3)
             {
                 throw new InvalidCommandException("The format is !addpoints <username> <points>");
             }
 
-            long.TryParse(msgParams.MessageParts[2], out var pointsToAdd);
+            int.TryParse(msgParams.MessageParts[2], out var pointsToAdd);
 
             if (pointsToAdd <= 0)
             {

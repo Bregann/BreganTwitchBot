@@ -82,12 +82,12 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch
             }
         }
 
-        public async Task<bool> IsUserSuperModInChannel(string broadcasterChannelName, string viewerName)
+        public async Task<bool> IsUserSuperModInChannel(string broadcasterChannelId, string viewerChannelId)
         {
             using (var scope = serviceProvider.CreateScope())
             {
                 var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-                var userData = await context.ChannelUserData.Where(x => x.Channel.BroadcasterTwitchChannelName == broadcasterChannelName && x.ChannelUser.TwitchUsername == viewerName.ToLower().Trim()).FirstOrDefaultAsync();
+                var userData = await context.ChannelUserData.Where(x => x.Channel.BroadcasterTwitchChannelId == broadcasterChannelId && x.ChannelUser.TwitchUserId == viewerChannelId.ToLower().Trim()).FirstOrDefaultAsync();
 
                 if (userData == null)
                 {
