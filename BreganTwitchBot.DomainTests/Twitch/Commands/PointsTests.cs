@@ -4,13 +4,11 @@ using BreganTwitchBot.Domain.Data.Database.Context;
 using BreganTwitchBot.Domain.Interfaces.Twitch;
 using BreganTwitchBot.Domain.Data.Services.Twitch.Commands.Points;
 using BreganTwitchBot.DomainTests.Helpers;
-using System.Data.Common;
-using Microsoft.Data.Sqlite;
 using BreganTwitchBot.Domain.DTOs.Twitch.EventSubEvents;
 using BreganTwitchBot.Domain.Exceptions;
 using Testcontainers.PostgreSql;
 
-namespace BreganTwitchBot.DomainTests;
+namespace BreganTwitchBot.DomainTests.Twitch.Commands;
 
 public class PointsTests
 {
@@ -53,7 +51,6 @@ public class PointsTests
         _twitchHelperService.Setup(x => x.IsUserSuperModInChannel("123", "1111")).ReturnsAsync(true);
         _twitchHelperService.Setup(x => x.GetTwitchUserIdFromUsername("cooluser")).ReturnsAsync("456");
         _twitchHelperService.Setup(x => x.GetTwitchUserIdFromUsername("cooluser2")).ReturnsAsync("789");
-
     }
 
     [TearDown]
