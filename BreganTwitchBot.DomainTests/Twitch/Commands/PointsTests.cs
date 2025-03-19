@@ -8,31 +8,42 @@ using System.Data.Common;
 using Microsoft.Data.Sqlite;
 using BreganTwitchBot.Domain.DTOs.Twitch.EventSubEvents;
 using BreganTwitchBot.Domain.Exceptions;
+using Testcontainers.PostgreSql;
 
 namespace BreganTwitchBot.DomainTests;
 
 public class PointsTests
 {
+    private PostgreSqlContainer _postgresContainer;
     private AppDbContext _dbContext;
-    private DbConnection _connection;
-
-    private PointsDataService _pointsDataService;
     private Mock<ITwitchHelperService> _twitchHelperService;
+    private PointsDataService _pointsDataService;
+
+    [OneTimeSetUp]
+    public async Task OneTimeSetup()
+    {
+        _postgresContainer = new PostgreSqlBuilder()
+            .WithImage("postgres:16")
+            .WithDatabase("testdb")
+            .WithUsername("testuser")
+            .WithPassword("testpassword")
+            .WithCleanUp(true) // Cleanup after test run
+            .Build();
+
+        await _postgresContainer.StartAsync();
+    }
 
     [SetUp]
     public async Task Setup()
     {
-        _connection = new SqliteConnection("DataSource=:memory:");
-        _connection.Open();
-
         var options = new DbContextOptionsBuilder<AppDbContext>()
             .UseLazyLoadingProxies()
-            .UseSqlite(_connection)
+            .UseNpgsql(_postgresContainer.GetConnectionString())
             .Options;
 
         _dbContext = new AppDbContext(options);
-        _dbContext.Database.EnsureDeleted();
-        _dbContext.Database.EnsureCreated();
+        await _dbContext.Database.EnsureDeletedAsync();
+        await _dbContext.Database.EnsureCreatedAsync();
 
         await DatabaseSeedHelper.SeedDatabase(_dbContext);
 
@@ -46,7 +57,12 @@ public class PointsTests
     public void TearDown()
     {
         _dbContext.Dispose();
-        _connection.Close();
+    }
+
+    [OneTimeTearDown]
+    public async Task OneTimeTearDown()
+    {
+        await _postgresContainer.DisposeAsync();
     }
 
     [Test]
@@ -71,7 +87,7 @@ public class PointsTests
         {
             Assert.That(result.TwitchUsername, Is.EqualTo("CoolUser"));
             Assert.That(result.Points, Is.EqualTo(100));
-            Assert.That(result.Position, Is.EqualTo("1 / 2"));
+            Assert.That(result.Position, Is.EqualTo("2 / 3"));
         });
     }
 
@@ -99,13 +115,15 @@ public class PointsTests
         {
             Assert.That(result.TwitchUsername, Is.EqualTo("CoolUser2"));
             Assert.That(result.Points, Is.EqualTo(73));
-            Assert.That(result.Position, Is.EqualTo("2 / 2"));
+            Assert.That(result.Position, Is.EqualTo("3 / 3"));
         });
     }
 
     [Test]
     public async Task GetPointsAsync_GetPointsForUnknownUser_CorrectDataReturns()
     {
+        _twitchHelperService.Setup(x => x.GetTwitchUserIdFromUsername(It.IsAny<string>())).ReturnsAsync("999");
+
         var result = await _pointsDataService.GetPointsAsync(new ChannelChatMessageReceivedParams
         {
             BroadcasterChannelName = "CoolStreamerName",
@@ -242,12 +260,12 @@ public class PointsTests
                 IsMod = false,
                 IsSub = false,
                 IsVip = false,
-                Message = "!addpoints CoolUser1 100",
+                Message = "!addpoints CoolUser3 100",
                 MessageId = "123",
                 BroadcasterChannelId = "123",
                 ChatterChannelId = "1111",
                 ChatterChannelName = "SuperModUser",
-                MessageParts = new string[] { "!addpoints", "CoolUser1", "100" }
+                MessageParts = new string[] { "!addpoints", "CoolUser3", "100" }
             });
         });
 

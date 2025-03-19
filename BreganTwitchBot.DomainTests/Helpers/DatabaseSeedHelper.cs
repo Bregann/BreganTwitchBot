@@ -39,7 +39,7 @@ namespace BreganTwitchBot.DomainTests.Helpers
             {
                 ChannelId = channel.Id,
                 DailyPointsCollectingAllowed = false,
-                LastDailyPointsAllowed = DateTime.Now,
+                LastDailyPointsAllowed = DateTime.UtcNow,
                 StreamAnnounced = false,
                 SubathonActive = false,
                 ChannelCurrencyName = "CoolCurrencyName",
@@ -52,7 +52,7 @@ namespace BreganTwitchBot.DomainTests.Helpers
             {
                 ChannelId = channel2.Id,
                 DailyPointsCollectingAllowed = false,
-                LastDailyPointsAllowed = DateTime.Now,
+                LastDailyPointsAllowed = DateTime.UtcNow,
                 StreamAnnounced = false,
                 SubathonActive = false,
                 ChannelCurrencyName = "CoolCurrencyName2",
@@ -65,7 +65,7 @@ namespace BreganTwitchBot.DomainTests.Helpers
 
             var channelUser = new ChannelUser
             {
-                AddedOn = DateTime.Now,
+                AddedOn = DateTime.UtcNow,
                 CanUseOpenAi = false,
                 DiscordUserId = 0,
                 TwitchUserId = "456",
@@ -74,7 +74,7 @@ namespace BreganTwitchBot.DomainTests.Helpers
 
             var channelUser2 = new ChannelUser
             {
-                AddedOn = DateTime.Now,
+                AddedOn = DateTime.UtcNow,
                 CanUseOpenAi = false,
                 DiscordUserId = 0,
                 TwitchUserId = "789",
@@ -83,7 +83,7 @@ namespace BreganTwitchBot.DomainTests.Helpers
 
             var channelUser3 = new ChannelUser
             {
-                AddedOn = DateTime.Now,
+                AddedOn = DateTime.UtcNow,
                 CanUseOpenAi = false,
                 DiscordUserId = 0,
                 TwitchUserId = "999",
@@ -92,7 +92,7 @@ namespace BreganTwitchBot.DomainTests.Helpers
 
             var superModUser = new ChannelUser
             {
-                AddedOn = DateTime.Now,
+                AddedOn = DateTime.UtcNow,
                 CanUseOpenAi = false,
                 DiscordUserId = 0,
                 TwitchUserId = "1111",
