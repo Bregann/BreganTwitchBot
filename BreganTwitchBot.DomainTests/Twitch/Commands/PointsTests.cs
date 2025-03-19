@@ -293,6 +293,9 @@ public class PointsTests
 
         var userPoints = await _dbContext.ChannelUserData.FirstAsync(x => x.ChannelUser.TwitchUsername == "cooluser");
 
+        // this is only for testing bc executeupdateasync doesnt update the entity in memory
+        await _dbContext.Entry(userPoints).ReloadAsync();
+
         Assert.That(userPoints.Points, Is.EqualTo(200));
     }
 }
