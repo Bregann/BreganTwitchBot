@@ -18,7 +18,7 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch.Commands.Points
             // If theres more than one part to the message, we need to check if the second part is a user
             if (msgParams.MessageParts.Length > 1)
             {
-                var userToCheck = await twitchHelperService.GetTwitchUserIdFromUsername(msgParams.MessageParts[1].TrimStart('@'));
+                var userToCheck = await twitchHelperService.GetTwitchUserIdFromUsername(msgParams.MessageParts[1].TrimStart('@').ToLower());
 
                 if (userToCheck == null)
                 {
@@ -60,8 +60,15 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch.Commands.Points
                 throw new InvalidCommandException("The points to add must be a number greater than 0");
             }
 
+            var userId = await twitchHelperService.GetTwitchUserIdFromUsername(msgParams.MessageParts[1].TrimStart('@').ToLower());
+
+            if (userId == null)
+            {
+                throw new TwitchUserNotFoundException($"User {msgParams.MessageParts[1]} not found");
+            }
+
             var rowsUpdated = await dbContext.ChannelUserData
-                .Where(x => x.Channel.BroadcasterTwitchChannelId == msgParams.BroadcasterChannelId && x.ChannelUser.TwitchUsername == msgParams.MessageParts[1].TrimStart('@').ToLower())
+                .Where(x => x.Channel.BroadcasterTwitchChannelId == msgParams.BroadcasterChannelId && x.ChannelUser.TwitchUserId == userId)
                 .ExecuteUpdateAsync(setters =>
                     setters.SetProperty(x => x.Points, x => x.Points + pointsToAdd)
                 );

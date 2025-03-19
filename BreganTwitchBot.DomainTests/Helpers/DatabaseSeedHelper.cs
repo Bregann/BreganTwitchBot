@@ -14,9 +14,9 @@ namespace BreganTwitchBot.DomainTests.Helpers
                 BotTwitchChannelId = "",
                 BotTwitchChannelRefreshToken = "",
                 BroadcasterTwitchChannelRefreshToken = "",
-                BotTwitchChannelName = "CoolBotName",
+                BotTwitchChannelName = "coolbotname",
                 BroadcasterTwitchChannelId = "123",
-                BroadcasterTwitchChannelName = "CoolStreamerName",
+                BroadcasterTwitchChannelName = "coolstreamername",
             };
 
             var channel2 = new Channel
@@ -26,9 +26,9 @@ namespace BreganTwitchBot.DomainTests.Helpers
                 BotTwitchChannelId = "",
                 BotTwitchChannelRefreshToken = "",
                 BroadcasterTwitchChannelRefreshToken = "",
-                BotTwitchChannelName = "CoolBotName2",
+                BotTwitchChannelName = "coolbotname2",
                 BroadcasterTwitchChannelId = "12345",
-                BroadcasterTwitchChannelName = "CoolStreamerName2",
+                BroadcasterTwitchChannelName = "coolstreamername2",
             };
 
             await context.Channels.AddAsync(channel);
@@ -69,7 +69,7 @@ namespace BreganTwitchBot.DomainTests.Helpers
                 CanUseOpenAi = false,
                 DiscordUserId = 0,
                 TwitchUserId = "456",
-                TwitchUsername = "CoolUser",
+                TwitchUsername = "cooluser",
             };
 
             var channelUser2 = new ChannelUser
@@ -78,7 +78,7 @@ namespace BreganTwitchBot.DomainTests.Helpers
                 CanUseOpenAi = false,
                 DiscordUserId = 0,
                 TwitchUserId = "789",
-                TwitchUsername = "CoolUser2",
+                TwitchUsername = "cooluser2",
             };
 
             var channelUser3 = new ChannelUser
@@ -87,7 +87,7 @@ namespace BreganTwitchBot.DomainTests.Helpers
                 CanUseOpenAi = false,
                 DiscordUserId = 0,
                 TwitchUserId = "999",
-                TwitchUsername = "CoolUser3",
+                TwitchUsername = "cooluser3",
             };
 
             var superModUser = new ChannelUser
@@ -96,7 +96,7 @@ namespace BreganTwitchBot.DomainTests.Helpers
                 CanUseOpenAi = false,
                 DiscordUserId = 0,
                 TwitchUserId = "1111",
-                TwitchUsername = "SuperModUser",
+                TwitchUsername = "supermoduser",
             };
 
             await context.ChannelUsers.AddAsync(channelUser);

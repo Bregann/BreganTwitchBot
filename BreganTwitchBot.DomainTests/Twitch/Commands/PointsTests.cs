@@ -51,6 +51,9 @@ public class PointsTests
         _pointsDataService = new PointsDataService(_dbContext, _twitchHelperService.Object);
 
         _twitchHelperService.Setup(x => x.IsUserSuperModInChannel("123", "1111")).ReturnsAsync(true);
+        _twitchHelperService.Setup(x => x.GetTwitchUserIdFromUsername("cooluser")).ReturnsAsync("456");
+        _twitchHelperService.Setup(x => x.GetTwitchUserIdFromUsername("cooluser2")).ReturnsAsync("789");
+
     }
 
     [TearDown]
@@ -70,7 +73,7 @@ public class PointsTests
     {
         var result = await _pointsDataService.GetPointsAsync(new ChannelChatMessageReceivedParams
         {
-            BroadcasterChannelName = "CoolStreamerName",
+            BroadcasterChannelName = "coolstreamername",
             IsBroadcaster = false,
             IsMod = false,
             IsSub = false,
@@ -94,11 +97,9 @@ public class PointsTests
     [Test]
     public async Task GetPointsAsync_GetPointsForOtherKnownUser_CorrectDataReturns()
     {
-        _twitchHelperService.Setup(x => x.GetTwitchUserIdFromUsername(It.IsAny<string>())).ReturnsAsync("789");
-
         var result = await _pointsDataService.GetPointsAsync(new ChannelChatMessageReceivedParams
         {
-            BroadcasterChannelName = "CoolStreamerName",
+            BroadcasterChannelName = "coolstreamername",
             IsBroadcaster = false,
             IsMod = false,
             IsSub = false,
@@ -264,11 +265,34 @@ public class PointsTests
                 MessageId = "123",
                 BroadcasterChannelId = "123",
                 ChatterChannelId = "1111",
-                ChatterChannelName = "SuperModUser",
+                ChatterChannelName = "supermoduser",
                 MessageParts = new string[] { "!addpoints", "CoolUser3", "100" }
             });
         });
 
         Assert.That(ex.Message, Is.EqualTo("User CoolUser3 not found"));
+    }
+
+    [Test]
+    public async Task AddPointsAsync_ProvideValidUsernameAndPoints_CorrectAmountOfPointsAdd()
+    {
+        await _pointsDataService.AddPointsAsync(new ChannelChatMessageReceivedParams
+        {
+            BroadcasterChannelName = "CoolStreamerName",
+            IsBroadcaster = false,
+            IsMod = false,
+            IsSub = false,
+            IsVip = false,
+            Message = "!addpoints CoolUser 100",
+            MessageId = "123",
+            BroadcasterChannelId = "123",
+            ChatterChannelId = "1111",
+            ChatterChannelName = "SuperModUser",
+            MessageParts = new string[] { "!addpoints", "CoolUser", "100" }
+        });
+
+        var userPoints = await _dbContext.ChannelUserData.FirstAsync(x => x.ChannelUser.TwitchUsername == "cooluser");
+
+        Assert.That(userPoints.Points, Is.EqualTo(200));
     }
 }
