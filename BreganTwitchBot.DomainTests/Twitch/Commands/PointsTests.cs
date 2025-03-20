@@ -70,15 +70,15 @@ public class PointsTests
     {
         var result = await _pointsDataService.GetPointsAsync(new ChannelChatMessageReceivedParams
         {
-            BroadcasterChannelName = "coolstreamername",
+            BroadcasterChannelName = DatabaseSeedHelper.Channel1BroadcasterTwitchChannelName,
             IsBroadcaster = false,
             IsMod = false,
             IsSub = false,
             IsVip = false,
             Message = "!points",
             MessageId = "123",
-            BroadcasterChannelId = "123",
-            ChatterChannelId = "456",
+            BroadcasterChannelId = DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId,
+            ChatterChannelId = DatabaseSeedHelper.Channel1User1TwitchUserId,
             ChatterChannelName = "CoolUser",
             MessageParts = new string[] { "!points" }
         });
@@ -96,15 +96,15 @@ public class PointsTests
     {
         var result = await _pointsDataService.GetPointsAsync(new ChannelChatMessageReceivedParams
         {
-            BroadcasterChannelName = "coolstreamername",
+            BroadcasterChannelName = DatabaseSeedHelper.Channel1BroadcasterTwitchChannelName,
             IsBroadcaster = false,
             IsMod = false,
             IsSub = false,
             IsVip = false,
             Message = "!points @CoolUser2",
             MessageId = "123",
-            BroadcasterChannelId = "123",
-            ChatterChannelId = "456",
+            BroadcasterChannelId = DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId,
+            ChatterChannelId = DatabaseSeedHelper.Channel1User1TwitchUserId,
             ChatterChannelName = "CoolUser",
             MessageParts = new string[] { "!points", "@CoolUser2" }
         });
@@ -124,15 +124,15 @@ public class PointsTests
 
         var result = await _pointsDataService.GetPointsAsync(new ChannelChatMessageReceivedParams
         {
-            BroadcasterChannelName = "CoolStreamerName",
+            BroadcasterChannelName = DatabaseSeedHelper.Channel1BroadcasterTwitchChannelName,
             IsBroadcaster = false,
             IsMod = false,
             IsSub = false,
             IsVip = false,
             Message = "!points @CoolUser3",
             MessageId = "123",
-            BroadcasterChannelId = "123",
-            ChatterChannelId = "456",
+            BroadcasterChannelId = DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId,
+            ChatterChannelId = DatabaseSeedHelper.Channel1User1TwitchUserId,
             ChatterChannelName = "CoolUser",
             MessageParts = new string[] { "!points", "@CoolUser3" }
         });
@@ -152,15 +152,15 @@ public class PointsTests
         {
             await _pointsDataService.AddPointsAsync(new ChannelChatMessageReceivedParams
             {
-                BroadcasterChannelName = "CoolStreamerName",
+                BroadcasterChannelName = DatabaseSeedHelper.Channel1BroadcasterTwitchChannelName,
                 IsBroadcaster = false,
                 IsMod = false,
                 IsSub = false,
                 IsVip = false,
                 Message = "!addpoints",
                 MessageId = "123",
-                BroadcasterChannelId = "123",
-                ChatterChannelId = "1111",
+                BroadcasterChannelId = DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId,
+                ChatterChannelId = DatabaseSeedHelper.Channel1SuperModUserTwitchUserId,
                 ChatterChannelName = "SuperModUser",
                 MessageParts = new string[] { "!addpoints" }
             });
@@ -176,15 +176,15 @@ public class PointsTests
         {
             await _pointsDataService.AddPointsAsync(new ChannelChatMessageReceivedParams
             {
-                BroadcasterChannelName = "CoolStreamerName",
+                BroadcasterChannelName = DatabaseSeedHelper.Channel1BroadcasterTwitchChannelName,
                 IsBroadcaster = false,
                 IsMod = false,
                 IsSub = false,
                 IsVip = false,
                 Message = "!addpoints CoolUser1",
                 MessageId = "123",
-                BroadcasterChannelId = "123",
-                ChatterChannelId = "1111",
+                BroadcasterChannelId = DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId,
+                ChatterChannelId = DatabaseSeedHelper.Channel1SuperModUserTwitchUserId,
                 ChatterChannelName = "SuperModUser",
                 MessageParts = new string[] { "!addpoints", "CoolUser1" }
             });
@@ -200,14 +200,14 @@ public class PointsTests
         {
             await _pointsDataService.AddPointsAsync(new ChannelChatMessageReceivedParams
             {
-                BroadcasterChannelName = "CoolStreamerName",
+                BroadcasterChannelName = DatabaseSeedHelper.Channel1BroadcasterTwitchChannelName,
                 IsBroadcaster = false,
                 IsMod = false,
                 IsSub = false,
                 IsVip = false,
                 Message = "!addpoints CoolUser1 100",
                 MessageId = "123",
-                BroadcasterChannelId = "123",
+                BroadcasterChannelId = DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId,
                 ChatterChannelId = "456",
                 ChatterChannelName = "CoolUser",
                 MessageParts = new string[] { "!addpoints", "CoolUser1", "100" }
@@ -227,15 +227,15 @@ public class PointsTests
         {
             await _pointsDataService.AddPointsAsync(new ChannelChatMessageReceivedParams
             {
-                BroadcasterChannelName = "CoolStreamerName",
+                BroadcasterChannelName = DatabaseSeedHelper.Channel1BroadcasterTwitchChannelName,
                 IsBroadcaster = false,
                 IsMod = false,
                 IsSub = false,
                 IsVip = false,
                 Message = $"!addpoints CoolUser1 {pointsValue}",
                 MessageId = "123",
-                BroadcasterChannelId = "123",
-                ChatterChannelId = "1111",
+                BroadcasterChannelId = DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId,
+                ChatterChannelId = DatabaseSeedHelper.Channel1SuperModUserTwitchUserId,
                 ChatterChannelName = "SuperModUser",
                 MessageParts = new string[] { "!addpoints", "CoolUser1", pointsValue }
             });
@@ -253,16 +253,16 @@ public class PointsTests
         {
             await _pointsDataService.AddPointsAsync(new ChannelChatMessageReceivedParams
             {
-                BroadcasterChannelName = "CoolStreamerName",
+                BroadcasterChannelName = DatabaseSeedHelper.Channel1BroadcasterTwitchChannelName,
                 IsBroadcaster = false,
                 IsMod = false,
                 IsSub = false,
                 IsVip = false,
                 Message = "!addpoints CoolUser3 100",
                 MessageId = "123",
-                BroadcasterChannelId = "123",
-                ChatterChannelId = "1111",
-                ChatterChannelName = "supermoduser",
+                BroadcasterChannelId = DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId,
+                ChatterChannelId = DatabaseSeedHelper.Channel1SuperModUserTwitchUserId,
+                ChatterChannelName = "SuperModUser",
                 MessageParts = new string[] { "!addpoints", "CoolUser3", "100" }
             });
         });
@@ -275,15 +275,15 @@ public class PointsTests
     {
         await _pointsDataService.AddPointsAsync(new ChannelChatMessageReceivedParams
         {
-            BroadcasterChannelName = "CoolStreamerName",
+            BroadcasterChannelName = DatabaseSeedHelper.Channel1BroadcasterTwitchChannelName,
             IsBroadcaster = false,
             IsMod = false,
             IsSub = false,
             IsVip = false,
             Message = "!addpoints CoolUser 100",
             MessageId = "123",
-            BroadcasterChannelId = "123",
-            ChatterChannelId = "1111",
+            BroadcasterChannelId = DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId,
+            ChatterChannelId = DatabaseSeedHelper.Channel1SuperModUserTwitchUserId,
             ChatterChannelName = "SuperModUser",
             MessageParts = new string[] { "!addpoints", "CoolUser", "100" }
         });
