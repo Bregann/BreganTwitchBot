@@ -176,6 +176,35 @@ namespace BreganTwitchBot.DomainTests.Helpers
             });
 
             await context.SaveChangesAsync();
+
+            await context.CustomCommands.AddAsync(new CustomCommand
+            {
+                CommandName = "!oncooldown",
+                ChannelId = channel.Id,
+                CommandText = "This is a test command that is on cooldown",
+                LastUsed = DateTime.UtcNow.AddDays(1),
+                TimesUsed = 0
+            });
+            
+            await context.CustomCommands.AddAsync(new CustomCommand
+            {
+                CommandName = "!readytouse",
+                ChannelId = channel.Id,
+                CommandText = "This is a test command ready to use",
+                LastUsed = DateTime.UtcNow.AddSeconds(-30),
+                TimesUsed = 0
+            });
+
+            await context.CustomCommands.AddAsync(new CustomCommand
+            {
+                CommandName = "!2ndchannel",
+                ChannelId = channel2.Id,
+                CommandText = "This is a test command on the other channel",
+                LastUsed = DateTime.UtcNow.AddSeconds(-30),
+                TimesUsed = 0
+            });
+
+            await context.SaveChangesAsync();
         }
     }
 }

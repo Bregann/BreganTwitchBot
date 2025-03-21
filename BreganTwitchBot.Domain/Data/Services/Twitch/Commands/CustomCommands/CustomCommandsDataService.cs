@@ -30,7 +30,7 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch.Commands.CustomCommands
 
             var isSuperMod = await twitchHelperService.IsUserSuperModInChannel(msgParams.BroadcasterChannelId, msgParams.ChatterChannelId);
 
-            if (DateTime.UtcNow - TimeSpan.FromSeconds(5) < commandData.LastUsed || !isSuperMod)
+            if (DateTime.UtcNow - TimeSpan.FromSeconds(5) < commandData.LastUsed && !isSuperMod)
             {
                 Log.Information($"Custom command {command} on cooldown for channel {msgParams.BroadcasterChannelName}");
                 return;
@@ -38,7 +38,11 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch.Commands.CustomCommands
 
             await twitchHelperService.SendTwitchMessageToChannel(msgParams.BroadcasterChannelId, msgParams.BroadcasterChannelName, commandData.CommandText.Replace("[count]", commandData.TimesUsed.ToString()).Replace("[user]", $"@{msgParams.ChatterChannelName}"), msgParams.MessageId);
 
-            commandData.LastUsed = DateTime.UtcNow;
+            if (!isSuperMod)
+            {
+                commandData.LastUsed = DateTime.UtcNow;
+            }
+
             commandData.TimesUsed++;
             await context.SaveChangesAsync();
         }
