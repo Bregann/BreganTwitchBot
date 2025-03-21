@@ -42,7 +42,7 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch.Commands.FollowAge
                 case FollowCommandTypeEnum.FollowSince:
                     if (followTime.Item1 != null)
                     {
-                        return $"{twitchUsernameToLookup} followed {msgParams.BroadcasterChannelName} on {followTime:MMMM dd, yyyy 'at' HH:mm}";
+                        return $"{twitchUsernameToLookup} followed {msgParams.BroadcasterChannelName} on {followTime.Item1:MMMM dd, yyyy 'at' HH:mm}";
                     }
                     break;
                 case FollowCommandTypeEnum.FollowMinutes:

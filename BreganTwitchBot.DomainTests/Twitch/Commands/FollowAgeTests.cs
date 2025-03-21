@@ -134,14 +134,14 @@ namespace BreganTwitchBot.DomainTests.Twitch.Commands
         [TestCase(FollowCommandTypeEnum.FollowMinutes)]
         public async Task HandleFollowCommandAsync_MockCommandUserNotFollowingChannel_CorrectResultReturned(FollowCommandTypeEnum followTypeEnum)
         {
-            _twitchApiInteractionService.Setup(x => x.GetUsersAsync(It.IsAny<TwitchAPI>(), DatabaseSeedHelper.Channel1User1TwitchUserId))
+            _twitchApiInteractionService.Setup(x => x.GetUsersAsync(It.IsAny<TwitchAPI>(), DatabaseSeedHelper.Channel1User1TwitchUsername))
                 .ReturnsAsync(new GetUsersAsyncResponse
                 {
                     Users =
                     [
                         new User
                         {
-                            DisplayName = "CoolUser1",
+                            DisplayName =   DatabaseSeedHelper.Channel1User1TwitchUsername,
                             Id = DatabaseSeedHelper.Channel1User1TwitchUserId,
                             Login = ""
                         }
@@ -179,14 +179,14 @@ namespace BreganTwitchBot.DomainTests.Twitch.Commands
         [TestCase(FollowCommandTypeEnum.FollowMinutes)]
         public async Task HandleFollowAgeCommandAsync_MockCommandUSerIsFollowingChannel_CorrectResultReturned(FollowCommandTypeEnum followCommandTypeEnum)
         {
-            _twitchApiInteractionService.Setup(x => x.GetUsersAsync(It.IsAny<TwitchAPI>(), DatabaseSeedHelper.Channel1User1TwitchUserId))
+            _twitchApiInteractionService.Setup(x => x.GetUsersAsync(It.IsAny<TwitchAPI>(), DatabaseSeedHelper.Channel1User1TwitchUsername))
                 .ReturnsAsync(new GetUsersAsyncResponse
                 {
                     Users =
                     [
                         new User
                         {
-                            DisplayName = "CoolUser1",
+                            DisplayName = DatabaseSeedHelper.Channel1User1TwitchUsername,
                             Id = DatabaseSeedHelper.Channel1User1TwitchUserId,
                             Login = ""
                         }
@@ -200,8 +200,8 @@ namespace BreganTwitchBot.DomainTests.Twitch.Commands
                     {
                         FollowedAt = DateTime.UtcNow.AddDays(-1).ToString(),
                         UserId = DatabaseSeedHelper.Channel1User1TwitchUserId,
-                        UserLogin = "CoolUser1",
-                        UserName = "CoolUser1"
+                        UserLogin = DatabaseSeedHelper.Channel1User1TwitchUsername,
+                        UserName = DatabaseSeedHelper.Channel1User1TwitchUsername
                     }],
                     Total = 1
                 });
@@ -210,7 +210,7 @@ namespace BreganTwitchBot.DomainTests.Twitch.Commands
             {
                 BroadcasterChannelName = DatabaseSeedHelper.Channel1BroadcasterTwitchChannelName,
                 BroadcasterChannelId = DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId,
-                ChatterChannelName = DatabaseSeedHelper.Channel1BroadcasterTwitchChannelName,
+                ChatterChannelName = DatabaseSeedHelper.Channel1User1TwitchUsername,
                 ChatterChannelId = DatabaseSeedHelper.Channel1User1TwitchUserId,
                 MessageParts = new[] { "!followage" },
                 Message = "!followage",
@@ -221,8 +221,20 @@ namespace BreganTwitchBot.DomainTests.Twitch.Commands
                 MessageId = "123",
             }, followCommandTypeEnum);
 
-            Assert.That(result, Does.Contain($"CoolUser1 followed {DatabaseSeedHelper.Channel1BroadcasterTwitchChannelName}"));
-            Assert.That(result, Does.Contain($"1 day"));
+            Assert.That(result, Does.Contain($"{DatabaseSeedHelper.Channel1User1TwitchUsername} followed {DatabaseSeedHelper.Channel1BroadcasterTwitchChannelName}"));
+
+            switch (followCommandTypeEnum)
+            {
+                case FollowCommandTypeEnum.FollowAge:
+                    Assert.That(result, Does.Contain($"1 day"));
+                    break;
+                case FollowCommandTypeEnum.FollowSince:
+                    Assert.That(result, Does.Contain(DateTime.UtcNow.AddDays(-1).ToString("MMMM dd, yyyy 'at' HH:mm")));
+                    break;
+                case FollowCommandTypeEnum.FollowMinutes:
+                    Assert.That(result, Does.Contain($"1440 minutes"));
+                    break;
+            }
         }
 
         [Test]
@@ -231,14 +243,14 @@ namespace BreganTwitchBot.DomainTests.Twitch.Commands
         [TestCase(FollowCommandTypeEnum.FollowMinutes)]
         public async Task HandleFollowCommandAsync_MockOtherUserNotFollowingChannel_CorrectResultReturned(FollowCommandTypeEnum followCommandTypeEnum)
         {
-            _twitchApiInteractionService.Setup(x => x.GetUsersAsync(It.IsAny<TwitchAPI>(), DatabaseSeedHelper.Channel1User1TwitchUserId))
+            _twitchApiInteractionService.Setup(x => x.GetUsersAsync(It.IsAny<TwitchAPI>(), "CoolUser1"))
                 .ReturnsAsync(new GetUsersAsyncResponse
                 {
                     Users =
                     [
                         new User
                         {
-                            DisplayName = "CoolUser1",
+                            DisplayName = DatabaseSeedHelper.Channel1User1TwitchUsername,
                             Id = DatabaseSeedHelper.Channel1User1TwitchUserId,
                             Login = ""
                         }
@@ -256,7 +268,7 @@ namespace BreganTwitchBot.DomainTests.Twitch.Commands
             {
                 BroadcasterChannelName = DatabaseSeedHelper.Channel1BroadcasterTwitchChannelName,
                 BroadcasterChannelId = DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId,
-                ChatterChannelName = DatabaseSeedHelper.Channel1BroadcasterTwitchChannelName,
+                ChatterChannelName = DatabaseSeedHelper.Channel1User1TwitchUsername,
                 ChatterChannelId = DatabaseSeedHelper.Channel1User1TwitchUserId,
                 MessageParts = new[] { "!followage", "CoolUser1" },
                 Message = "!followage CoolUser1",
@@ -267,7 +279,7 @@ namespace BreganTwitchBot.DomainTests.Twitch.Commands
                 MessageId = "123",
             }, followCommandTypeEnum);
 
-            Assert.That(result, Is.EqualTo($"It appears {DatabaseSeedHelper.Channel1BroadcasterTwitchChannelName} doesn't follow CoolUser1 :("));
+            Assert.That(result, Is.EqualTo($"It appears CoolUser1 doesn't follow {DatabaseSeedHelper.Channel1BroadcasterTwitchChannelName} :("));
         }
 
         [Test]
@@ -276,17 +288,31 @@ namespace BreganTwitchBot.DomainTests.Twitch.Commands
         [TestCase(FollowCommandTypeEnum.FollowMinutes)]
         public async Task HandleFollowCommandAsync_MockOtherUserIsFollowingChannel_CorrectResultReturned(FollowCommandTypeEnum followCommandTypeEnum)
         {
-            _twitchApiInteractionService.Setup(x => x.GetUsersAsync(It.IsAny<TwitchAPI>(), DatabaseSeedHelper.Channel1User1TwitchUserId))
+            _twitchApiInteractionService.Setup(x => x.GetUsersAsync(It.IsAny<TwitchAPI>(), DatabaseSeedHelper.Channel1User1TwitchUsername))
                 .ReturnsAsync(new GetUsersAsyncResponse
                 {
                     Users =
                     [
                         new User
                         {
-                            DisplayName = "CoolUser1",
+                            DisplayName = DatabaseSeedHelper.Channel1User1TwitchUsername,
                             Id = DatabaseSeedHelper.Channel1User1TwitchUserId,
                             Login = ""
                         }
+                    ]
+                });
+
+            _twitchApiInteractionService.Setup(x => x.GetUsersAsync(It.IsAny<TwitchAPI>(), "CoolUser1"))
+                .ReturnsAsync(new GetUsersAsyncResponse
+                {
+                    Users =
+                    [
+                        new User
+                                    {
+                                        DisplayName = DatabaseSeedHelper.Channel1User1TwitchUsername,
+                                        Id = DatabaseSeedHelper.Channel1User1TwitchUserId,
+                                        Login = ""
+                                    }
                     ]
                 });
 
@@ -297,8 +323,8 @@ namespace BreganTwitchBot.DomainTests.Twitch.Commands
                     {
                         FollowedAt = DateTime.UtcNow.AddDays(-1).ToString(),
                         UserId = DatabaseSeedHelper.Channel1User1TwitchUserId,
-                        UserLogin = "CoolUser1",
-                        UserName = "CoolUser1"
+                        UserLogin = DatabaseSeedHelper.Channel1User1TwitchUsername,
+                        UserName = DatabaseSeedHelper.Channel1User1TwitchUsername
                     }],
                     Total = 1
                 });
@@ -307,7 +333,7 @@ namespace BreganTwitchBot.DomainTests.Twitch.Commands
             {
                 BroadcasterChannelName = DatabaseSeedHelper.Channel1BroadcasterTwitchChannelName,
                 BroadcasterChannelId = DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId,
-                ChatterChannelName = DatabaseSeedHelper.Channel1BroadcasterTwitchChannelName,
+                ChatterChannelName = DatabaseSeedHelper.Channel1User1TwitchUsername,
                 ChatterChannelId = DatabaseSeedHelper.Channel1User1TwitchUserId,
                 MessageParts = new[] { "!followage", "CoolUser1" },
                 Message = "!followage CoolUser1",
@@ -318,7 +344,20 @@ namespace BreganTwitchBot.DomainTests.Twitch.Commands
                 MessageId = "123",
             }, followCommandTypeEnum);
             Assert.That(result, Does.Contain($"CoolUser1 followed {DatabaseSeedHelper.Channel1BroadcasterTwitchChannelName}"));
-            Assert.That(result, Does.Contain($"1 day"));
+
+            switch (followCommandTypeEnum)
+            {
+                case FollowCommandTypeEnum.FollowAge:
+                    Assert.That(result, Does.Contain($"1 day"));
+                    break;
+                case FollowCommandTypeEnum.FollowSince:
+                    Assert.That(result, Does.Contain(DateTime.UtcNow.AddDays(-1).ToString("MMMM dd, yyyy 'at' HH:mm")));
+                    break;
+                case FollowCommandTypeEnum.FollowMinutes:
+                    Assert.That(result, Does.Contain($"1440 minutes"));
+                    break;
+            }
+
         }
     }
 }
