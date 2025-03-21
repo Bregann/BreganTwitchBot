@@ -50,9 +50,11 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch
             }
         }
 
-        public async Task<string?> GetPointsName(string broadcasterChannelName)
+        public async Task<string?> GetPointsName(string broadcasterChannelId, string broadcasterChannelName)
         {
-            if (_pointsNames.TryGetValue(broadcasterChannelName, out var pointsName))
+            var sanitisedBroadcasterChannelId = broadcasterChannelId.ToLower().Trim();
+
+            if (_pointsNames.TryGetValue(sanitisedBroadcasterChannelId, out var pointsName))
             {
                 return pointsName;
             }
@@ -60,25 +62,16 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch
             using (var scope = serviceProvider.CreateScope())
             {
                 var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+                var channel = await context.Channels.FirstOrDefaultAsync(x => x.BroadcasterTwitchChannelId == sanitisedBroadcasterChannelId);
 
-                var channelId = await context.Channels.FirstOrDefaultAsync(x => x.BroadcasterTwitchChannelName == broadcasterChannelName);
-
-                if (channelId == null)
+                if (channel == null)
                 {
                     Log.Error($"[Twitch Helper Service] Error getting points name for {broadcasterChannelName}, channelId is null");
                     return null;
                 }
 
-                var channel = await context.ChannelConfig.FirstOrDefaultAsync(x => x.ChannelId == channelId.Id);
-
-                if (channel == null)
-                {
-                    Log.Error($"[Twitch Helper Service] Error getting points name for {channelId.BroadcasterTwitchChannelName}, channel is null");
-                    return string.Empty;
-                }
-
-                _pointsNames[broadcasterChannelName] = channel.ChannelCurrencyName;
-                return channel.ChannelCurrencyName;
+                _pointsNames[sanitisedBroadcasterChannelId] = channel.ChannelConfig.ChannelCurrencyName;
+                return channel.ChannelConfig.ChannelCurrencyName;
             }
         }
 

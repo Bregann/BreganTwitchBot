@@ -1,6 +1,7 @@
 ﻿using BreganTwitchBot.Domain.Attributes;
 using BreganTwitchBot.Domain.Data.Database.Context;
 using BreganTwitchBot.Domain.DTOs.Twitch.EventSubEvents;
+using BreganTwitchBot.Domain.Interfaces.Twitch;
 using BreganTwitchBot.Domain.Interfaces.Twitch.Commands;
 using Microsoft.Extensions.DependencyInjection;
 using System.Reflection;
@@ -8,7 +9,7 @@ using System.Runtime.CompilerServices;
 
 namespace BreganTwitchBot.Domain.Data.Services.Twitch.Commands
 {
-    public class CommandHandler
+    public class CommandHandler : ICommandHandler
     {
         private readonly IServiceProvider _serviceProvider;
         private readonly Dictionary<string, MethodInfo> _commands = new();

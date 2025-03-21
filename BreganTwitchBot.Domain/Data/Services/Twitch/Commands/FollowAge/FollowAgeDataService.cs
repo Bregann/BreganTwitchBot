@@ -99,7 +99,7 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch.Commands.FollowAge
 
             try
             {
-                var checkFollowResponse = await twitchApiInteractionService.GetChannelFollowersAsync(apiClient.ApiClient, broadcasterId: broadcasterUserId, userId: twitchUserIdToLookup);
+                var checkFollowResponse = await twitchApiInteractionService.GetChannelFollowersAsync(apiClient.ApiClient, broadcasterUserId, twitchUserIdToLookup);
 
                 if (checkFollowResponse == null || checkFollowResponse.Followers.Count == 0)
                 {

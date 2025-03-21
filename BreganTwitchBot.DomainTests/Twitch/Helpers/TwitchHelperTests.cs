@@ -94,5 +94,51 @@ namespace BreganTwitchBot.DomainTests.Twitch.Helpers
             var result = await _twitchHelperService.GetTwitchUserIdFromUsername("nonexistentuser");
             Assert.That(result, Is.Null);
         }
+
+        [Test]
+        [TestCase(DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId, DatabaseSeedHelper.Channel1BroadcasterTwitchChannelName, DatabaseSeedHelper.Channel1ChannelCurrencyName)]
+        [TestCase(DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId + "     ", DatabaseSeedHelper.Channel1BroadcasterTwitchChannelName, DatabaseSeedHelper.Channel1ChannelCurrencyName)]
+        public async Task GetPointsName_WhenBroadcasterExists_ReturnsPointsName(string broadcasterChannelId, string broadcasterChannelName, string expectedPointsName)
+        {
+            var result = await _twitchHelperService.GetPointsName(broadcasterChannelId, broadcasterChannelName);
+            Assert.That(result, Is.EqualTo(expectedPointsName));
+        }
+
+        [Test]
+        public async Task GetPointsName_WhenBroadcasterDoesNotExist_ReturnsNull()
+        {
+            var result = await _twitchHelperService.GetPointsName("nonexistentbroadcaster", "DoesntExist");
+            Assert.That(result, Is.Null);
+        }
+
+        [Test]
+        public async Task IsUserSuperModInChannel_WhenUserIsSuperMod_ReturnsTrue()
+        {
+            var broadcasterChannelId = DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId;
+            var superModUserId = DatabaseSeedHelper.Channel1SuperModUserTwitchUserId;
+
+            var result = await _twitchHelperService.IsUserSuperModInChannel(broadcasterChannelId, superModUserId);
+
+            Assert.That(result, Is.True);
+        }
+
+        [Test]
+        public async Task IsUserSuperModInChannel_WhenUserIsNotSuperMod_ReturnsFalse()
+        {
+            var broadcasterChannelId = DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId;
+            var nonSuperModUserId = DatabaseSeedHelper.Channel1User1TwitchUserId;
+
+            var result = await _twitchHelperService.IsUserSuperModInChannel(broadcasterChannelId, nonSuperModUserId);
+            Assert.That(result, Is.False);
+        }
+
+        [Test]
+        public async Task IsUserSuperModInChannel_WhenUserDoesNotExist_ReturnsFalse()
+        {
+            var broadcasterChannelId = DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId;
+            var nonExistentUserId = "nonexistentuser";
+            var result = await _twitchHelperService.IsUserSuperModInChannel(broadcasterChannelId, nonExistentUserId);
+            Assert.That(result, Is.False);
+        }
     }
 }

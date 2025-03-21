@@ -123,7 +123,7 @@ builder.Services.AddSingleton<ITwitchHelperService, TwitchHelperService>();
 builder.Services.AddSingleton<ITwitchApiInteractionService, TwitchApiInteractionService>();
 
 // Twitch commands
-builder.Services.AddSingleton<CommandHandler>();
+builder.Services.AddSingleton<ICommandHandler, CommandHandler>();
 
 builder.Services.AddSingleton<PointsCommandService>();
 builder.Services.AddScoped<IPointsDataService, PointsDataService>();

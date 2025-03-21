@@ -15,7 +15,7 @@ using System.Threading.Tasks;
 
 namespace BreganTwitchBot.Domain.Data.Services.Twitch.Commands.CustomCommands
 {
-    public class CustomCommandsDataService (AppDbContext context, ITwitchHelperService twitchHelperService, CommandHandler commandHandler) : ICustomCommandDataService
+    public class CustomCommandsDataService (AppDbContext context, ITwitchHelperService twitchHelperService, ICommandHandler commandHandler) : ICustomCommandDataService
     {
         public async Task HandleCustomCommandAsync(string command, ChannelChatMessageReceivedParams msgParams)
         {

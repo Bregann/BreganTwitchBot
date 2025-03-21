@@ -20,7 +20,7 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch.Commands.Points
                 try
                 {
                     var pointsResponse = await pointsDataService.GetPointsAsync(msgParams);
-                    var pointsName = await twitchHelperService.GetPointsName(msgParams.BroadcasterChannelName);
+                    var pointsName = await twitchHelperService.GetPointsName(msgParams.BroadcasterChannelId, msgParams.BroadcasterChannelName);
 
                     await twitchHelperService.SendTwitchMessageToChannel(msgParams.BroadcasterChannelId, msgParams.BroadcasterChannelName, $"{pointsResponse.TwitchUsername} has {pointsResponse.Points:N0} {pointsName ?? "points"}. Rank: {pointsResponse.Position}", msgParams.MessageId);
                 }
