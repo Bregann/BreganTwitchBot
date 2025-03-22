@@ -44,13 +44,24 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch.Commands.CustomCommands
             }
 
             commandData.TimesUsed++;
+
+            Log.Information($"Custom command {command} used by {msgParams.ChatterChannelName} in channel {msgParams.BroadcasterChannelName}");
             await context.SaveChangesAsync();
         }
 
-        public async Task<string> AddNewCustomCommand(ChannelChatMessageReceivedParams msgParams)
+        public async Task<string> AddNewCustomCommandAsync(ChannelChatMessageReceivedParams msgParams)
         {
-            if(msgParams.MessageParts.Length < 3)
+            var isSuperMod = await twitchHelperService.IsUserSuperModInChannel(msgParams.BroadcasterChannelId, msgParams.ChatterChannelId);
+
+            if(!isSuperMod && !msgParams.IsMod && !msgParams.IsBroadcaster)
             {
+                Log.Warning($"User {msgParams.ChatterChannelName} attempted to add a command without permission in channel {msgParams.BroadcasterChannelName}");
+                throw new UnauthorizedAccessException("You are not authorised to add commands");
+            }
+
+            if (msgParams.MessageParts.Length < 3)
+            {
+                Log.Warning($"User {msgParams.ChatterChannelName} attempted to add a command without the correct format in channel {msgParams.BroadcasterChannelName}");
                 throw new InvalidCommandException("You really are a daftylugs! The format is !addcmd commandName commandText");
             }
 
@@ -58,6 +69,7 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch.Commands.CustomCommands
 
             if (commandHandler.IsSystemCommand(sanitisedCommandName) || await context.CustomCommands.AnyAsync(x => x.Channel.BroadcasterTwitchChannelId == msgParams.BroadcasterChannelId && x.CommandName == sanitisedCommandName))
             {
+                Log.Warning($"User {msgParams.ChatterChannelName} attempted to add a command that already exists in channel {msgParams.BroadcasterChannelName}");
                 throw new DuplicateNameException("deary me that command already exists");
             }
 
@@ -66,11 +78,15 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch.Commands.CustomCommands
                 Channel = await context.Channels.FirstAsync(x => x.BroadcasterTwitchChannelId == msgParams.BroadcasterChannelId),
                 CommandName = sanitisedCommandName,
                 CommandText = string.Join(" ", msgParams.MessageParts.Skip(2)),
-                LastUsed = DateTime.UtcNow.AddSeconds(-10),
+                LastUsed = new DateTime(),
                 TimesUsed = 0
             });
 
             await context.SaveChangesAsync();
+
+            commandHandler.AddCustomCommand(sanitisedCommandName, msgParams.BroadcasterChannelId);
+
+            Log.Information($"User {msgParams.ChatterChannelName} added a new command {sanitisedCommandName} in channel {msgParams.BroadcasterChannelName}");
             return "New command added! Wooooooo";
         }
 

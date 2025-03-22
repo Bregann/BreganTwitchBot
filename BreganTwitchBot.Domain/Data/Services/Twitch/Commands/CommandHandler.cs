@@ -13,7 +13,11 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch.Commands
     {
         private readonly IServiceProvider _serviceProvider;
         private readonly Dictionary<string, MethodInfo> _commands = new();
-        private List<string> _customCommands = new();
+
+        // Custom commands are stored in a list of tuples, where the first item is the command name and the second item is the broadcaster id
+        // This is to prevent the need to query the database for every command, a dictionary would be better but it's not possible to have a dictionary with multiple keys
+        // incase multiple broadcasters have the same command name
+        private List<(string, string)> _customCommands = new();
 
         public CommandHandler(IServiceProvider serviceProvider)
         {
@@ -58,7 +62,10 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch.Commands
             using(var scope = _serviceProvider.CreateScope())
             {
                 var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-                _customCommands = context.CustomCommands.Select(x => x.CommandName).ToList();
+                _customCommands = context.CustomCommands
+                    .AsEnumerable()
+                    .Select(x => (x.CommandName, x.ChannelId.ToString()))
+                    .ToList();
             }
         }
 
@@ -79,7 +86,7 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch.Commands
             }
 
             //For custom commands, use the custom command service
-            if (_customCommands.Contains(command.ToLower().Trim()))
+            if (_customCommands.Any(x => x.Item1 == command.ToLower().Trim() && x.Item2 == msgParams.BroadcasterChannelId))
             {
                 using (var scope = _serviceProvider.CreateScope())
                 {
@@ -91,19 +98,20 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch.Commands
 
         public bool IsSystemCommand(string commandName)
         {
-            return _commands.ContainsKey(commandName.Trim('!'));
+            return _commands.ContainsKey(commandName.ToLower().Trim('!'));
         }
 
-        public bool RemoveCustomCommand(string commandName)
+        public bool RemoveCustomCommand(string commandName, string broadcasterId)
         {
-            return _customCommands.Remove(commandName);
+            var command = _customCommands.FirstOrDefault(x => x.Item1 == commandName && x.Item2 == broadcasterId);
+            return _customCommands.Remove(command);
         }
 
-        public void AddCustomCommand(string commandName)
+        public void AddCustomCommand(string commandName, string broadcasterId)
         {
-            if (!_customCommands.Contains(commandName))
+            if (!_customCommands.Any(x => x.Item1 == commandName))
             {
-                _customCommands.Add(commandName);
+                _customCommands.Add(new (commandName, broadcasterId));
             }
         }
     }

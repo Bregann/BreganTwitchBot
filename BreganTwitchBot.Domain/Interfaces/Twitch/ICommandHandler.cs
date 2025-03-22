@@ -13,8 +13,7 @@ namespace BreganTwitchBot.Domain.Interfaces.Twitch
         void LoadCustomCommands();
         Task HandleCommandAsync(string command, ChannelChatMessageReceivedParams msgParams);
         bool IsSystemCommand(string commandName);
-        bool RemoveCustomCommand(string commandName);
-        void AddCustomCommand(string commandName);
+        bool RemoveCustomCommand(string commandName, string broadcasterId);
+        void AddCustomCommand(string commandName, string broadcasterId);
     }
-
 }
