@@ -113,9 +113,33 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch.Commands.CustomCommands
             return "Your command has been edited successfully! Why not give it a whirl?";
         }
 
-        public async Task<string> DeleteCustomCommand(ChannelChatMessageReceivedParams msgParams)
+        public async Task<string> DeleteCustomCommandAsync(ChannelChatMessageReceivedParams msgParams)
         {
-            return "";
+            await twitchHelperService.EnsureUserHasModeratorPermissions(msgParams.IsMod, msgParams.IsBroadcaster, msgParams.ChatterChannelName, msgParams.ChatterChannelId, msgParams.BroadcasterChannelId, msgParams.BroadcasterChannelName);
+
+            if (msgParams.MessageParts.Length < 2)
+            {
+                Log.Warning($"User {msgParams.ChatterChannelName} attempted to delete a command without the correct format in channel {msgParams.BroadcasterChannelName}");
+                throw new InvalidCommandException("Bog off! The format is !delcmd commandName");
+            }
+
+            var sanitisedCommandName = msgParams.MessageParts[1].ToLower().Trim();
+
+            var rowsDeleted = await context.CustomCommands
+                .Where(x => x.Channel.BroadcasterTwitchChannelId == msgParams.BroadcasterChannelId && x.CommandName == sanitisedCommandName)
+                .ExecuteDeleteAsync();
+
+            if (rowsDeleted == 0)
+            {
+                Log.Warning($"User {msgParams.ChatterChannelName} attempted to delete a command that doesn't exist in channel {msgParams.BroadcasterChannelName}");
+                throw new CommandNotFoundException("You can't delete a command that doesn't exist FailFish Try again");
+            }
+
+            commandHandler.RemoveCustomCommand(sanitisedCommandName, msgParams.BroadcasterChannelId);
+            Log.Information($"User {msgParams.ChatterChannelName} deleted a command {sanitisedCommandName} in channel {msgParams.BroadcasterChannelName}");
+
+            //I misspelt it on purpose, it's a meme from the original version of the bot
+            return "Your command has been remove! :) It's gone! It's gone! It's gone!";
         }
     }
 }

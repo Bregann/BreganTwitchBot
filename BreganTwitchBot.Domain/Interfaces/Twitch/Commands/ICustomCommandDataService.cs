@@ -7,6 +7,6 @@ namespace BreganTwitchBot.Domain.Interfaces.Twitch.Commands
         Task HandleCustomCommandAsync(string command, ChannelChatMessageReceivedParams msgParams);
         Task<string> AddNewCustomCommandAsync(ChannelChatMessageReceivedParams msgParams);
         Task<string> EditCustomCommandAsync(ChannelChatMessageReceivedParams msgParams);
-        Task<string> DeleteCustomCommand(ChannelChatMessageReceivedParams msgParams);
+        Task<string> DeleteCustomCommandAsync(ChannelChatMessageReceivedParams msgParams);
     }
 }

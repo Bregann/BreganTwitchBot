@@ -16,6 +16,7 @@ using BreganTwitchBot.Domain.Data.Services.Twitch.Commands.CustomCommands;
 using BreganTwitchBot.Domain.DTOs.Twitch.EventSubEvents;
 using BreganTwitchBot.Domain.Exceptions;
 using System.Data;
+using BreganTwitchBot.Domain.Data.Database.Models;
 
 namespace BreganTwitchBot.DomainTests.Twitch.Commands
 {
@@ -490,9 +491,89 @@ namespace BreganTwitchBot.DomainTests.Twitch.Commands
             await _customCommandsDataService.EditCustomCommandAsync(msgParams);
             var commandData = _dbContext.CustomCommands.First(x => x.Channel.BroadcasterTwitchChannelId == msgParams.BroadcasterChannelId && x.CommandName == "!readytouse");
 
-            _dbContext.Entry(commandData).Reload();
+            await _dbContext.Entry(commandData).ReloadAsync();
 
             Assert.That(commandData.CommandText, Is.EqualTo("newCommandText"));
+        }
+
+        [Test]
+        public void DeleteCustomCommandAsync_CommandNotFound_ThrowsCommandNotFoundException()
+        {
+            var msgParams = new ChannelChatMessageReceivedParams
+            {
+                BroadcasterChannelId = DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId,
+                BroadcasterChannelName = DatabaseSeedHelper.Channel1BroadcasterTwitchChannelName,
+                ChatterChannelId = DatabaseSeedHelper.Channel1User1TwitchUserId,
+                ChatterChannelName = DatabaseSeedHelper.Channel1User1TwitchUsername,
+                IsBroadcaster = false,
+                IsMod = false,
+                IsSub = false,
+                IsVip = false,
+                Message = "!delcmd !unknown",
+                MessageId = "123",
+                MessageParts = new string[] { "!delcmd", "!unknown" }
+            };
+
+            Assert.ThrowsAsync<CommandNotFoundException>(async () => await _customCommandsDataService.DeleteCustomCommandAsync(msgParams));
+        }
+
+        [Test]
+        public void DeleteCustomCommandAsync_UserNotModOrBroadcaster_ThrowsUnauthorizedAccessException()
+        {
+            _twitchHelperServiceMock.Setup(x => x.IsUserSuperModInChannel(It.IsAny<string>(), It.IsAny<string>())).ReturnsAsync(false);
+            _twitchHelperServiceMock
+                .Setup(x => x.EnsureUserHasModeratorPermissions(
+                    It.IsAny<bool>(),
+                    It.IsAny<bool>(),
+                    It.IsAny<string>(),
+                    It.IsAny<string>(),
+                    It.IsAny<string>(),
+                    It.IsAny<string>()))
+                .ThrowsAsync(new UnauthorizedAccessException("You are not authorised to use this command! Straight to jail Kappa"));
+
+            var msgParams = new ChannelChatMessageReceivedParams
+            {
+                BroadcasterChannelId = DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId,
+                BroadcasterChannelName = DatabaseSeedHelper.Channel1BroadcasterTwitchChannelName,
+                ChatterChannelId = DatabaseSeedHelper.Channel1User1TwitchUserId,
+                ChatterChannelName = DatabaseSeedHelper.Channel1User1TwitchUsername,
+                IsBroadcaster = false,
+                IsMod = false,
+                IsSub = false,
+                IsVip = false,
+                Message = "!delcmd !readytouse",
+                MessageId = "123",
+                MessageParts = new string[] { "!delcmd", "!readytouse" }
+            };
+
+            Assert.ThrowsAsync<UnauthorizedAccessException>(async () => await _customCommandsDataService.DeleteCustomCommandAsync(msgParams));
+        }
+
+        [Test]
+        [TestCase("!readytouse")]
+        [TestCase("!readytouse         ")]
+        [TestCase("!READYTOUSE")]
+        public async Task DeleteCustomCommandAsync_CommandDeleted_CommandIsRemoved(string commandToDelete)
+        {
+            _twitchHelperServiceMock.Setup(x => x.IsUserSuperModInChannel(It.IsAny<string>(), It.IsAny<string>())).ReturnsAsync(true);
+            var msgParams = new ChannelChatMessageReceivedParams
+            {
+                BroadcasterChannelId = DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId,
+                BroadcasterChannelName = DatabaseSeedHelper.Channel1BroadcasterTwitchChannelName,
+                ChatterChannelId = DatabaseSeedHelper.Channel1SuperModUserTwitchUserId,
+                ChatterChannelName = DatabaseSeedHelper.Channel1SuperModUserTwitchUsername,
+                IsBroadcaster = false,
+                IsMod = false,
+                IsSub = false,
+                IsVip = false,
+                Message = $"!delcmd {commandToDelete}",
+                MessageId = "123",
+                MessageParts = new string[] { "!delcmd", commandToDelete }
+            };
+            await _customCommandsDataService.DeleteCustomCommandAsync(msgParams);
+            var commandData = _dbContext.CustomCommands.FirstOrDefault(x => x.Channel.BroadcasterTwitchChannelId == msgParams.BroadcasterChannelId && x.CommandName == "!readytouse");
+
+            Assert.That(commandData, Is.Null);
         }
     }
 }
