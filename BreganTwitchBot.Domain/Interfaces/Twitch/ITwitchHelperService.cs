@@ -6,5 +6,6 @@
         Task<string?> GetTwitchUserIdFromUsername(string username);
         Task<string?> GetPointsName(string broadcasterChannelId, string broadcasterChannelName);
         Task<bool> IsUserSuperModInChannel(string broadcasterChannelId, string viewerChannelId);
+        Task EnsureUserHasModeratorPermissions(bool isMod, bool isBroadcaster, string viewerUsername, string viewerChannelId, string broadcasterChannelId, string broadcasterChannelName);
     }
 }

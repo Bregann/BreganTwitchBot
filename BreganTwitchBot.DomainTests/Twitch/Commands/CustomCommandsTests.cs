@@ -220,6 +220,16 @@ namespace BreganTwitchBot.DomainTests.Twitch.Commands
         {
             _twitchHelperServiceMock.Setup(x => x.IsUserSuperModInChannel(It.IsAny<string>(), It.IsAny<string>())).ReturnsAsync(false);
 
+            _twitchHelperServiceMock
+                .Setup(x => x.EnsureUserHasModeratorPermissions(
+                    It.IsAny<bool>(),
+                    It.IsAny<bool>(),
+                    It.IsAny<string>(),
+                    It.IsAny<string>(),
+                    It.IsAny<string>(),
+                    It.IsAny<string>()))
+                .ThrowsAsync(new UnauthorizedAccessException("You are not authorised to use this command! Straight to jail Kappa"));
+
             var msgParams = new ChannelChatMessageReceivedParams
             {
                 BroadcasterChannelId = DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId,
@@ -334,11 +344,11 @@ namespace BreganTwitchBot.DomainTests.Twitch.Commands
                 MessageId = "123",
                 MessageParts = new string[] { "!addcmd", "!newcommand", "commandText" }
             };
-            
+
             await _customCommandsDataService.AddNewCustomCommandAsync(msgParams);
 
             var commandData = await _dbContext.CustomCommands.FirstAsync(x => x.Channel.BroadcasterTwitchChannelId == msgParams.BroadcasterChannelId && x.CommandName == "!newcommand");
-            
+
             Assert.Multiple(() =>
             {
                 Assert.That(commandData.CommandText, Is.EqualTo("commandText"));
@@ -348,7 +358,10 @@ namespace BreganTwitchBot.DomainTests.Twitch.Commands
         }
 
         [Test]
-        public async Task AddNewCustomCommandAsync_CommandAddedAsModerator_CommandAddedToDatabase()
+        [TestCase("!newcommand")]
+        [TestCase("!newcommand         ")]
+        [TestCase("!NEWCOMMAND")]
+        public async Task AddNewCustomCommandAsync_CommandAddedAsModerator_CommandAddedToDatabase(string commandToAdd)
         {
             _twitchHelperServiceMock.Setup(x => x.IsUserSuperModInChannel(It.IsAny<string>(), It.IsAny<string>())).ReturnsAsync(false);
             var msgParams = new ChannelChatMessageReceivedParams
@@ -361,9 +374,9 @@ namespace BreganTwitchBot.DomainTests.Twitch.Commands
                 IsMod = true,
                 IsSub = false,
                 IsVip = false,
-                Message = "!addcmd !newcommand commandText",
+                Message = $"!addcmd {commandToAdd} commandText",
                 MessageId = "123",
-                MessageParts = new string[] { "!addcmd", "!newcommand", "commandText" }
+                MessageParts = new string[] { "!addcmd", commandToAdd, "commandText" }
             };
 
             await _customCommandsDataService.AddNewCustomCommandAsync(msgParams);
@@ -377,5 +390,109 @@ namespace BreganTwitchBot.DomainTests.Twitch.Commands
             });
         }
 
+        [Test]
+        public void EditCustomCommandAsync_CommandNotFound_ThrowsCommandNotFoundException()
+        {
+            var msgParams = new ChannelChatMessageReceivedParams
+            {
+                BroadcasterChannelId = DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId,
+                BroadcasterChannelName = DatabaseSeedHelper.Channel1BroadcasterTwitchChannelName,
+                ChatterChannelId = DatabaseSeedHelper.Channel1User1TwitchUserId,
+                ChatterChannelName = DatabaseSeedHelper.Channel1User1TwitchUsername,
+                IsBroadcaster = false,
+                IsMod = false,
+                IsSub = false,
+                IsVip = false,
+                Message = "!editcmd !unknown commandText",
+                MessageId = "123",
+                MessageParts = new string[] { "!editcmd", "!unknown", "commandText" }
+            };
+
+            Assert.ThrowsAsync<CommandNotFoundException>(async () => await _customCommandsDataService.EditCustomCommandAsync(msgParams));
+        }
+
+        [Test]
+        public void EditCustomCommandAsync_CommandPartsLessThan3_ThrowsInvalidCommandException()
+        {
+            var msgParams = new ChannelChatMessageReceivedParams
+            {
+                BroadcasterChannelId = DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId,
+                BroadcasterChannelName = DatabaseSeedHelper.Channel1BroadcasterTwitchChannelName,
+                ChatterChannelId = DatabaseSeedHelper.Channel1User1TwitchUserId,
+                ChatterChannelName = DatabaseSeedHelper.Channel1User1TwitchUsername,
+                IsBroadcaster = false,
+                IsMod = true,
+                IsSub = false,
+                IsVip = false,
+                Message = "!editcmd !readytouse",
+                MessageId = "123",
+                MessageParts = new string[] { "!editcmd", "!readytouse" }
+            };
+
+            Assert.ThrowsAsync<InvalidCommandException>(async () => await _customCommandsDataService.EditCustomCommandAsync(msgParams));
+        }
+
+        [Test]
+        public void EditCustomCommandAsync_UserNotModOrBroadcaster_ThrowsUnauthorizedAccessException()
+        {
+            _twitchHelperServiceMock.Setup(x => x.IsUserSuperModInChannel(It.IsAny<string>(), It.IsAny<string>())).ReturnsAsync(false);
+            _twitchHelperServiceMock
+                .Setup(x => x.EnsureUserHasModeratorPermissions(
+                    It.IsAny<bool>(),
+                    It.IsAny<bool>(),
+                    It.IsAny<string>(),
+                    It.IsAny<string>(),
+                    It.IsAny<string>(),
+                    It.IsAny<string>()))
+                .ThrowsAsync(new UnauthorizedAccessException("You are not authorised to use this command! Straight to jail Kappa"));
+
+            var msgParams = new ChannelChatMessageReceivedParams
+            {
+                BroadcasterChannelId = DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId,
+                BroadcasterChannelName = DatabaseSeedHelper.Channel1BroadcasterTwitchChannelName,
+                ChatterChannelId = DatabaseSeedHelper.Channel1User1TwitchUserId,
+                ChatterChannelName = DatabaseSeedHelper.Channel1User1TwitchUsername,
+                IsBroadcaster = false,
+                IsMod = false,
+                IsSub = false,
+                IsVip = false,
+                Message = "!editcmd !readytouse commandText",
+                MessageId = "123",
+                MessageParts = new string[] { "!editcmd", "!readytouse", "commandText" }
+            };
+
+            Assert.ThrowsAsync<UnauthorizedAccessException>(async () => await _customCommandsDataService.EditCustomCommandAsync(msgParams));
+        }
+
+        [Test]
+        [TestCase("!readytouse")]
+        [TestCase("!readytouse         ")]
+        [TestCase("!READYTOUSE")]
+        public async Task EditCustomCommandAsync_ProvideCorrectCommand_CommandIsUpdated(string commandEdited)
+        {
+            _twitchHelperServiceMock.Setup(x => x.IsUserSuperModInChannel(It.IsAny<string>(), It.IsAny<string>())).ReturnsAsync(true);
+
+            var msgParams = new ChannelChatMessageReceivedParams
+            {
+                BroadcasterChannelId = DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId,
+                BroadcasterChannelName = DatabaseSeedHelper.Channel1BroadcasterTwitchChannelName,
+                ChatterChannelId = DatabaseSeedHelper.Channel1SuperModUserTwitchUserId,
+                ChatterChannelName = DatabaseSeedHelper.Channel1SuperModUserTwitchUsername,
+                IsBroadcaster = false,
+                IsMod = false,
+                IsSub = false,
+                IsVip = false,
+                Message = $"!editcmd {commandEdited} newCommandText",
+                MessageId = "123",
+                MessageParts = new string[] { "!editcmd", commandEdited, "newCommandText" }
+            };
+
+            await _customCommandsDataService.EditCustomCommandAsync(msgParams);
+            var commandData = _dbContext.CustomCommands.First(x => x.Channel.BroadcasterTwitchChannelId == msgParams.BroadcasterChannelId && x.CommandName == "!readytouse");
+
+            _dbContext.Entry(commandData).Reload();
+
+            Assert.That(commandData.CommandText, Is.EqualTo("newCommandText"));
+        }
     }
 }

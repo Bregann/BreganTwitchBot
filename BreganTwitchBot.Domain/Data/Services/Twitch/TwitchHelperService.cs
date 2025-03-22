@@ -90,5 +90,28 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch
                 return userData.IsSuperMod;
             }
         }
+
+        /// <summary>
+        /// Checks if the user has moderator permissions. This will check if they either have mod permissions, are the broadcaster or are a super mod
+        /// </summary>
+        /// <param name="isMod"></param>
+        /// <param name="isBroadcaster"></param>
+        /// <param name="viewerUsername"></param>
+        /// <param name="viewerChannelId"></param>
+        /// <param name="broadcasterChannelId"></param>
+        /// <param name="broadcasterChannelName"></param>
+        /// <returns></returns>
+        /// <exception cref="UnauthorizedAccessException"></exception>
+
+        public async Task EnsureUserHasModeratorPermissions(bool isMod, bool isBroadcaster, string viewerUsername, string viewerChannelId, string broadcasterChannelId, string broadcasterChannelName)
+        {
+            var isSuperMod = await IsUserSuperModInChannel(broadcasterChannelId, viewerChannelId);
+
+            if (!isSuperMod && !isMod && !isBroadcaster)
+            {
+                Log.Warning($"User {viewerUsername} attempted to add a command without permission in channel {broadcasterChannelName}");
+                throw new UnauthorizedAccessException("You are not authorised to use this command! Straight to jail Kappa");
+            }
+        }
     }
 }

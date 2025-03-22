@@ -140,5 +140,65 @@ namespace BreganTwitchBot.DomainTests.Twitch.Helpers
             var result = await _twitchHelperService.IsUserSuperModInChannel(broadcasterChannelId, nonExistentUserId);
             Assert.That(result, Is.False);
         }
+
+        [Test]
+        public void EnsureUserHasModeratorPermissions_WhenUserIsBroadcaster_DoesNotThrowException()
+        {
+            var isMod = true;
+            var isBroadcaster = true;
+            var viewerUsername = "coolstreamername";
+            var viewerChannelId = DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId;
+            var broadcasterChannelId = DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId;
+            var broadcasterChannelName = DatabaseSeedHelper.Channel1BroadcasterTwitchChannelName;
+
+            Assert.DoesNotThrowAsync(async () =>
+                await _twitchHelperService.EnsureUserHasModeratorPermissions(isMod, isBroadcaster, viewerUsername, viewerChannelId, broadcasterChannelId, broadcasterChannelName)
+            );
+        }
+
+        [Test]
+        public void EnsureUserHasModeratorPermissions_WhenUserIsSuperMod_DoesNotThrowException()
+        {
+            var isMod = true;
+            var isBroadcaster = false;
+            var viewerUsername = "supermoduser";
+            var viewerChannelId = DatabaseSeedHelper.Channel1SuperModUserTwitchUserId;
+            var broadcasterChannelId = DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId;
+            var broadcasterChannelName = DatabaseSeedHelper.Channel1BroadcasterTwitchChannelName;
+
+            Assert.DoesNotThrowAsync(async () =>
+                await _twitchHelperService.EnsureUserHasModeratorPermissions(isMod, isBroadcaster, viewerUsername, viewerChannelId, broadcasterChannelId, broadcasterChannelName)
+            );
+        }
+
+        [Test]
+        public void EnsureUserHasModeratorPermissions_WhenUserIsMod_DoesNotThrowException()
+        {
+            var isMod = true;
+            var isBroadcaster = false;
+            var viewerUsername = "cooluser";
+            var viewerChannelId = DatabaseSeedHelper.Channel1User1TwitchUserId;
+            var broadcasterChannelId = DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId;
+            var broadcasterChannelName = DatabaseSeedHelper.Channel1BroadcasterTwitchChannelName;
+
+            Assert.DoesNotThrowAsync(async () =>
+                await _twitchHelperService.EnsureUserHasModeratorPermissions(isMod, isBroadcaster, viewerUsername, viewerChannelId, broadcasterChannelId, broadcasterChannelName)
+            );
+        }
+
+        [Test]
+        public void EnsureUserHasModeratorPermissions_WhenUserIsNotMod_ThrowsUnauthorizedAccessException()
+        {
+            var isMod = false;
+            var isBroadcaster = false;
+            var viewerUsername = "cooluser";
+            var viewerChannelId = DatabaseSeedHelper.Channel1User1TwitchUserId;
+            var broadcasterChannelId = DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId;
+            var broadcasterChannelName = DatabaseSeedHelper.Channel1BroadcasterTwitchChannelName;
+
+            Assert.ThrowsAsync<UnauthorizedAccessException>(async () =>
+                await _twitchHelperService.EnsureUserHasModeratorPermissions(isMod, isBroadcaster, viewerUsername, viewerChannelId, broadcasterChannelId, broadcasterChannelName)
+            );
+        }
     }
 }

@@ -51,13 +51,7 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch.Commands.CustomCommands
 
         public async Task<string> AddNewCustomCommandAsync(ChannelChatMessageReceivedParams msgParams)
         {
-            var isSuperMod = await twitchHelperService.IsUserSuperModInChannel(msgParams.BroadcasterChannelId, msgParams.ChatterChannelId);
-
-            if(!isSuperMod && !msgParams.IsMod && !msgParams.IsBroadcaster)
-            {
-                Log.Warning($"User {msgParams.ChatterChannelName} attempted to add a command without permission in channel {msgParams.BroadcasterChannelName}");
-                throw new UnauthorizedAccessException("You are not authorised to add commands");
-            }
+            await twitchHelperService.EnsureUserHasModeratorPermissions(msgParams.IsMod, msgParams.IsBroadcaster, msgParams.ChatterChannelName, msgParams.ChatterChannelId, msgParams.BroadcasterChannelId, msgParams.BroadcasterChannelName);
 
             if (msgParams.MessageParts.Length < 3)
             {
@@ -90,9 +84,33 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch.Commands.CustomCommands
             return "New command added! Wooooooo";
         }
 
-        public async Task<string> EditCustomCommand(ChannelChatMessageReceivedParams msgParams)
+        public async Task<string> EditCustomCommandAsync(ChannelChatMessageReceivedParams msgParams)
         {
-            return "";
+            await twitchHelperService.EnsureUserHasModeratorPermissions(msgParams.IsMod, msgParams.IsBroadcaster, msgParams.ChatterChannelName, msgParams.ChatterChannelId, msgParams.BroadcasterChannelId, msgParams.BroadcasterChannelName);
+
+            if (msgParams.MessageParts.Length < 3)
+            {
+                Log.Warning($"User {msgParams.ChatterChannelName} attempted to edit a command without the correct format in channel {msgParams.BroadcasterChannelName}");
+                throw new InvalidCommandException("Oh dear, oh dear, oh dear! The format is !editcmd commandName commandText");
+            }
+
+            var sanitisedCommandName = msgParams.MessageParts[1].ToLower().Trim();
+            var commandContent = string.Join(" ", msgParams.MessageParts.Skip(2));
+
+            var rowsEdited = await context.CustomCommands
+                .Where(x => x.Channel.BroadcasterTwitchChannelId == msgParams.BroadcasterChannelId && x.CommandName == sanitisedCommandName)
+                .ExecuteUpdateAsync(setters => 
+                    setters.SetProperty(x => x.CommandText, commandContent)
+                );
+
+            if (rowsEdited == 0)
+            {
+                Log.Warning($"User {msgParams.ChatterChannelName} attempted to edit a command that doesn't exist in channel {msgParams.BroadcasterChannelName}");
+                throw new CommandNotFoundException("You can't edit a command that doesn't exist");
+            }
+
+            Log.Information($"User {msgParams.ChatterChannelName} edited a command {sanitisedCommandName} in channel {msgParams.BroadcasterChannelName}. The new command content is {commandContent}");
+            return "Your command has been edited successfully! Why not give it a whirl?";
         }
 
         public async Task<string> DeleteCustomCommand(ChannelChatMessageReceivedParams msgParams)
