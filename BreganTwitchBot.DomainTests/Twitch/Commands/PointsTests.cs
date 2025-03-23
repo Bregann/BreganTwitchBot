@@ -68,20 +68,8 @@ public class PointsTests
     [Test]
     public async Task GetPointsAsync_GetPointsForKnownUser_CorrectDataReturns()
     {
-        var result = await _pointsDataService.GetPointsAsync(new ChannelChatMessageReceivedParams
-        {
-            BroadcasterChannelName = DatabaseSeedHelper.Channel1BroadcasterTwitchChannelName,
-            IsBroadcaster = false,
-            IsMod = false,
-            IsSub = false,
-            IsVip = false,
-            Message = "!points",
-            MessageId = "123",
-            BroadcasterChannelId = DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId,
-            ChatterChannelId = DatabaseSeedHelper.Channel1User1TwitchUserId,
-            ChatterChannelName = "CoolUser",
-            MessageParts = new string[] { "!points" }
-        });
+        var msgParams = MessageParamsHelper.CreateChatMessageParams("!points", "123", new string[] { "!points" }, chatterChannelName: "CoolUser");
+        var result = await _pointsDataService.GetPointsAsync(msgParams);
 
         Assert.Multiple(() =>
         {
@@ -94,20 +82,8 @@ public class PointsTests
     [Test]
     public async Task GetPointsAsync_GetPointsForOtherKnownUser_CorrectDataReturns()
     {
-        var result = await _pointsDataService.GetPointsAsync(new ChannelChatMessageReceivedParams
-        {
-            BroadcasterChannelName = DatabaseSeedHelper.Channel1BroadcasterTwitchChannelName,
-            IsBroadcaster = false,
-            IsMod = false,
-            IsSub = false,
-            IsVip = false,
-            Message = "!points @CoolUser2",
-            MessageId = "123",
-            BroadcasterChannelId = DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId,
-            ChatterChannelId = DatabaseSeedHelper.Channel1User1TwitchUserId,
-            ChatterChannelName = "CoolUser",
-            MessageParts = new string[] { "!points", "@CoolUser2" }
-        });
+        var msgParams = MessageParamsHelper.CreateChatMessageParams("!points @CoolUser2", "123", new string[] { "!points", "@CoolUser2" });
+        var result = await _pointsDataService.GetPointsAsync(msgParams);
 
         Assert.Multiple(() =>
         {
@@ -122,20 +98,8 @@ public class PointsTests
     {
         _twitchHelperService.Setup(x => x.GetTwitchUserIdFromUsername(It.IsAny<string>())).ReturnsAsync("999");
 
-        var result = await _pointsDataService.GetPointsAsync(new ChannelChatMessageReceivedParams
-        {
-            BroadcasterChannelName = DatabaseSeedHelper.Channel1BroadcasterTwitchChannelName,
-            IsBroadcaster = false,
-            IsMod = false,
-            IsSub = false,
-            IsVip = false,
-            Message = "!points @CoolUser3",
-            MessageId = "123",
-            BroadcasterChannelId = DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId,
-            ChatterChannelId = DatabaseSeedHelper.Channel1User1TwitchUserId,
-            ChatterChannelName = "CoolUser",
-            MessageParts = new string[] { "!points", "@CoolUser3" }
-        });
+        var msgParams = MessageParamsHelper.CreateChatMessageParams("!points @CoolUser3", "123", new string[] { "!points", "@CoolUser3" });
+        var result = await _pointsDataService.GetPointsAsync(msgParams);
 
         Assert.Multiple(() =>
         {
@@ -148,22 +112,10 @@ public class PointsTests
     [Test]
     public void AddPointsAsync_ProvideNoCommands_CorrectExceptionMessage()
     {
+        var msgParams = MessageParamsHelper.CreateChatMessageParams("!addpoints", "123", new string[] { "!addpoints" }, chatterChannelId: DatabaseSeedHelper.Channel1SuperModUserTwitchUserId, chatterChannelName: DatabaseSeedHelper.Channel1SuperModUserTwitchUsername);
         var ex = Assert.ThrowsAsync<InvalidCommandException>(async () =>
         {
-            await _pointsDataService.AddPointsAsync(new ChannelChatMessageReceivedParams
-            {
-                BroadcasterChannelName = DatabaseSeedHelper.Channel1BroadcasterTwitchChannelName,
-                IsBroadcaster = false,
-                IsMod = false,
-                IsSub = false,
-                IsVip = false,
-                Message = "!addpoints",
-                MessageId = "123",
-                BroadcasterChannelId = DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId,
-                ChatterChannelId = DatabaseSeedHelper.Channel1SuperModUserTwitchUserId,
-                ChatterChannelName = "SuperModUser",
-                MessageParts = new string[] { "!addpoints" }
-            });
+            await _pointsDataService.AddPointsAsync(msgParams);
         });
 
         Assert.That(ex.Message, Is.EqualTo("The format is !addpoints <username> <points>"));
@@ -172,22 +124,10 @@ public class PointsTests
     [Test]
     public void AddPointsAsync_ProvideNoPoints_CorrectExceptionMessage()
     {
+        var msgParams = MessageParamsHelper.CreateChatMessageParams("!addpoints CoolUser1", "123", new string[] { "!addpoints", "CoolUser1" }, chatterChannelId: DatabaseSeedHelper.Channel1SuperModUserTwitchUserId, chatterChannelName: DatabaseSeedHelper.Channel1SuperModUserTwitchUsername);
         var ex = Assert.ThrowsAsync<InvalidCommandException>(async () =>
         {
-            await _pointsDataService.AddPointsAsync(new ChannelChatMessageReceivedParams
-            {
-                BroadcasterChannelName = DatabaseSeedHelper.Channel1BroadcasterTwitchChannelName,
-                IsBroadcaster = false,
-                IsMod = false,
-                IsSub = false,
-                IsVip = false,
-                Message = "!addpoints CoolUser1",
-                MessageId = "123",
-                BroadcasterChannelId = DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId,
-                ChatterChannelId = DatabaseSeedHelper.Channel1SuperModUserTwitchUserId,
-                ChatterChannelName = "SuperModUser",
-                MessageParts = new string[] { "!addpoints", "CoolUser1" }
-            });
+            await _pointsDataService.AddPointsAsync(msgParams);
         });
 
         Assert.That(ex.Message, Is.EqualTo("The format is !addpoints <username> <points>"));
@@ -196,22 +136,10 @@ public class PointsTests
     [Test]
     public void AddPointsAsync_ProvideUserWithoutSuperMod_CorrectExceptionMessage()
     {
+        var msgParams = MessageParamsHelper.CreateChatMessageParams("!addpoints CoolUser1 100", "123", new string[] { "!addpoints", "CoolUser1", "100" });
         var ex = Assert.ThrowsAsync<InvalidCommandException>(async () =>
         {
-            await _pointsDataService.AddPointsAsync(new ChannelChatMessageReceivedParams
-            {
-                BroadcasterChannelName = DatabaseSeedHelper.Channel1BroadcasterTwitchChannelName,
-                IsBroadcaster = false,
-                IsMod = false,
-                IsSub = false,
-                IsVip = false,
-                Message = "!addpoints CoolUser1 100",
-                MessageId = "123",
-                BroadcasterChannelId = DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId,
-                ChatterChannelId = "456",
-                ChatterChannelName = "CoolUser",
-                MessageParts = new string[] { "!addpoints", "CoolUser1", "100" }
-            });
+            await _pointsDataService.AddPointsAsync(msgParams);
         });
 
         Assert.That(ex.Message, Is.EqualTo("You don't have permission to do that"));
@@ -223,22 +151,10 @@ public class PointsTests
     [TestCase("-300")]
     public void AddPointAsync_ProvideInvalidPointsValue_CorrectExceptionMessage(string pointsValue)
     {
+        var msgParams = MessageParamsHelper.CreateChatMessageParams($"!addpoints CoolUser1 {pointsValue}", "123", new string[] { "!addpoints", "CoolUser1", pointsValue }, chatterChannelId: DatabaseSeedHelper.Channel1SuperModUserTwitchUserId, chatterChannelName: DatabaseSeedHelper.Channel1SuperModUserTwitchUsername);
         var ex = Assert.ThrowsAsync<InvalidCommandException>(async () =>
         {
-            await _pointsDataService.AddPointsAsync(new ChannelChatMessageReceivedParams
-            {
-                BroadcasterChannelName = DatabaseSeedHelper.Channel1BroadcasterTwitchChannelName,
-                IsBroadcaster = false,
-                IsMod = false,
-                IsSub = false,
-                IsVip = false,
-                Message = $"!addpoints CoolUser1 {pointsValue}",
-                MessageId = "123",
-                BroadcasterChannelId = DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId,
-                ChatterChannelId = DatabaseSeedHelper.Channel1SuperModUserTwitchUserId,
-                ChatterChannelName = "SuperModUser",
-                MessageParts = new string[] { "!addpoints", "CoolUser1", pointsValue }
-            });
+            await _pointsDataService.AddPointsAsync(msgParams);
         });
 
         Assert.That(ex.Message, Is.EqualTo("The points to add must be a number greater than 0"));
@@ -247,24 +163,10 @@ public class PointsTests
     [Test]
     public void AddPointsAsync_ProvideInvalidUsername_CorrectExceptionMessage()
     {
-        var columns = _dbContext.ChannelUserData.ToArray();
-
+        var msgParams = MessageParamsHelper.CreateChatMessageParams("!addpoints CoolUser3 100", "123", new string[] { "!addpoints", "CoolUser3", "100" }, chatterChannelId: DatabaseSeedHelper.Channel1SuperModUserTwitchUserId, chatterChannelName: DatabaseSeedHelper.Channel1SuperModUserTwitchUsername);
         var ex = Assert.ThrowsAsync<TwitchUserNotFoundException>(async () =>
         {
-            await _pointsDataService.AddPointsAsync(new ChannelChatMessageReceivedParams
-            {
-                BroadcasterChannelName = DatabaseSeedHelper.Channel1BroadcasterTwitchChannelName,
-                IsBroadcaster = false,
-                IsMod = false,
-                IsSub = false,
-                IsVip = false,
-                Message = "!addpoints CoolUser3 100",
-                MessageId = "123",
-                BroadcasterChannelId = DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId,
-                ChatterChannelId = DatabaseSeedHelper.Channel1SuperModUserTwitchUserId,
-                ChatterChannelName = "SuperModUser",
-                MessageParts = new string[] { "!addpoints", "CoolUser3", "100" }
-            });
+            await _pointsDataService.AddPointsAsync(msgParams);
         });
 
         Assert.That(ex.Message, Is.EqualTo("User CoolUser3 not found"));
@@ -273,20 +175,8 @@ public class PointsTests
     [Test]
     public async Task AddPointsAsync_ProvideValidUsernameAndPoints_CorrectAmountOfPointsAdd()
     {
-        await _pointsDataService.AddPointsAsync(new ChannelChatMessageReceivedParams
-        {
-            BroadcasterChannelName = DatabaseSeedHelper.Channel1BroadcasterTwitchChannelName,
-            IsBroadcaster = false,
-            IsMod = false,
-            IsSub = false,
-            IsVip = false,
-            Message = "!addpoints CoolUser 100",
-            MessageId = "123",
-            BroadcasterChannelId = DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId,
-            ChatterChannelId = DatabaseSeedHelper.Channel1SuperModUserTwitchUserId,
-            ChatterChannelName = "SuperModUser",
-            MessageParts = new string[] { "!addpoints", "CoolUser", "100" }
-        });
+        var msgParams = MessageParamsHelper.CreateChatMessageParams("!addpoints CoolUser 100", "123", new string[] { "!addpoints", "CoolUser", "100" }, chatterChannelId: DatabaseSeedHelper.Channel1SuperModUserTwitchUserId, chatterChannelName: DatabaseSeedHelper.Channel1SuperModUserTwitchUsername);
+        await _pointsDataService.AddPointsAsync(msgParams);
 
         var userPoints = await _dbContext.ChannelUserData.FirstAsync(x => x.ChannelUser.TwitchUsername == "cooluser");
 

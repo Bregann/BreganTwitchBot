@@ -83,22 +83,11 @@ namespace BreganTwitchBot.DomainTests.Twitch.Commands
         [Test]
         public void HandleFollowCommandAsync_ProvideIncorrectBroadcasterChannelName_CorrectExceptionThrown()
         {
+            var msgParams = MessageParamsHelper.CreateChatMessageParams("!followage", "123", new[] { "!followage" }, broadcasterChannelName: "invalid");
+
             var ex = Assert.ThrowsAsync<ArgumentException>(async () =>
             {
-                await _followAgeDataService.HandleFollowCommandAsync(new ChannelChatMessageReceivedParams
-                {
-                    BroadcasterChannelName = DatabaseSeedHelper.Channel2BroadcasterTwitchChannelName,
-                    BroadcasterChannelId = DatabaseSeedHelper.Channel2BroadcasterTwitchChannelId,
-                    ChatterChannelName = DatabaseSeedHelper.Channel2BroadcasterTwitchChannelName,
-                    ChatterChannelId = DatabaseSeedHelper.Channel2BroadcasterTwitchChannelId,
-                    MessageParts = new[] { "!followage" },
-                    Message = "!followage",
-                    IsBroadcaster = false,
-                    IsMod = false,
-                    IsSub = false,
-                    IsVip = false,
-                    MessageId = "123",
-                }, FollowCommandTypeEnum.FollowAge);
+                await _followAgeDataService.HandleFollowCommandAsync(msgParams, FollowCommandTypeEnum.FollowAge);
             });
 
             Assert.That(ex.Message, Is.EqualTo("Could not get the twitch api client from the broadcaster username"));
@@ -110,20 +99,8 @@ namespace BreganTwitchBot.DomainTests.Twitch.Commands
             _twitchApiInteractionService.Setup(x => x.GetUsersAsync(It.IsAny<TwitchAPI>(), "CoolUser1"))
                 .ReturnsAsync(value: null);
 
-            var result = await _followAgeDataService.HandleFollowCommandAsync(new ChannelChatMessageReceivedParams
-            {
-                BroadcasterChannelName = DatabaseSeedHelper.Channel1BroadcasterTwitchChannelName,
-                BroadcasterChannelId = DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId,
-                ChatterChannelName = DatabaseSeedHelper.Channel1BroadcasterTwitchChannelName,
-                ChatterChannelId = DatabaseSeedHelper.Channel1User1TwitchUserId,
-                MessageParts = new[] { "!followage", "CoolUser1" },
-                Message = "!followage CoolUser1",
-                IsBroadcaster = false,
-                IsMod = false,
-                IsSub = false,
-                IsVip = false,
-                MessageId = "123",
-            }, FollowCommandTypeEnum.FollowAge);
+            var msgParams = MessageParamsHelper.CreateChatMessageParams("!followage CoolUser1", "123", new[] { "!followage", "CoolUser1" });
+            var result = await _followAgeDataService.HandleFollowCommandAsync(msgParams, FollowCommandTypeEnum.FollowAge);
 
             Assert.That(result, Is.EqualTo("That username does not exist!"));
         }
@@ -155,22 +132,11 @@ namespace BreganTwitchBot.DomainTests.Twitch.Commands
                     Total = 0
                 });
 
-            var result = await _followAgeDataService.HandleFollowCommandAsync(new ChannelChatMessageReceivedParams
-            {
-                BroadcasterChannelName = DatabaseSeedHelper.Channel1BroadcasterTwitchChannelName,
-                BroadcasterChannelId = DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId,
-                ChatterChannelName = DatabaseSeedHelper.Channel1BroadcasterTwitchChannelName,
-                ChatterChannelId = DatabaseSeedHelper.Channel1User1TwitchUserId,
-                MessageParts = new[] { "!followage" },
-                Message = "!followage",
-                IsBroadcaster = false,
-                IsMod = false,
-                IsSub = false,
-                IsVip = false,
-                MessageId = "123",
-            }, followTypeEnum);
+            var msgParams = MessageParamsHelper.CreateChatMessageParams("!followage", "123", new[] { "!followage" });
 
-            Assert.That(result, Is.EqualTo($"It appears {DatabaseSeedHelper.Channel1BroadcasterTwitchChannelName} doesn't follow {DatabaseSeedHelper.Channel1BroadcasterTwitchChannelName} :("));
+            var result = await _followAgeDataService.HandleFollowCommandAsync(msgParams, followTypeEnum);
+
+            Assert.That(result, Is.EqualTo($"It appears {DatabaseSeedHelper.Channel1User1TwitchUsername} doesn't follow {DatabaseSeedHelper.Channel1BroadcasterTwitchChannelName} :("));
         }
 
         [Test]
@@ -206,20 +172,8 @@ namespace BreganTwitchBot.DomainTests.Twitch.Commands
                     Total = 1
                 });
 
-            var result = await _followAgeDataService.HandleFollowCommandAsync(new ChannelChatMessageReceivedParams
-            {
-                BroadcasterChannelName = DatabaseSeedHelper.Channel1BroadcasterTwitchChannelName,
-                BroadcasterChannelId = DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId,
-                ChatterChannelName = DatabaseSeedHelper.Channel1User1TwitchUsername,
-                ChatterChannelId = DatabaseSeedHelper.Channel1User1TwitchUserId,
-                MessageParts = new[] { "!followage" },
-                Message = "!followage",
-                IsBroadcaster = false,
-                IsMod = false,
-                IsSub = false,
-                IsVip = false,
-                MessageId = "123",
-            }, followCommandTypeEnum);
+            var msgParams = MessageParamsHelper.CreateChatMessageParams("!followage", "123", new[] { "!followage" });
+            var result = await _followAgeDataService.HandleFollowCommandAsync(msgParams, followCommandTypeEnum);
 
             Assert.That(result, Does.Contain($"{DatabaseSeedHelper.Channel1User1TwitchUsername} followed {DatabaseSeedHelper.Channel1BroadcasterTwitchChannelName}"));
 
@@ -264,20 +218,8 @@ namespace BreganTwitchBot.DomainTests.Twitch.Commands
                     Total = 0
                 });
 
-            var result = await _followAgeDataService.HandleFollowCommandAsync(new ChannelChatMessageReceivedParams
-            {
-                BroadcasterChannelName = DatabaseSeedHelper.Channel1BroadcasterTwitchChannelName,
-                BroadcasterChannelId = DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId,
-                ChatterChannelName = DatabaseSeedHelper.Channel1User1TwitchUsername,
-                ChatterChannelId = DatabaseSeedHelper.Channel1User1TwitchUserId,
-                MessageParts = new[] { "!followage", "CoolUser1" },
-                Message = "!followage CoolUser1",
-                IsBroadcaster = false,
-                IsMod = false,
-                IsSub = false,
-                IsVip = false,
-                MessageId = "123",
-            }, followCommandTypeEnum);
+            var msgParams = MessageParamsHelper.CreateChatMessageParams("!followage CoolUser1", "123", new[] { "!followage", "CoolUser1" });
+            var result = await _followAgeDataService.HandleFollowCommandAsync(msgParams, followCommandTypeEnum);
 
             Assert.That(result, Is.EqualTo($"It appears CoolUser1 doesn't follow {DatabaseSeedHelper.Channel1BroadcasterTwitchChannelName} :("));
         }
@@ -329,20 +271,9 @@ namespace BreganTwitchBot.DomainTests.Twitch.Commands
                     Total = 1
                 });
 
-            var result = await _followAgeDataService.HandleFollowCommandAsync(new ChannelChatMessageReceivedParams
-            {
-                BroadcasterChannelName = DatabaseSeedHelper.Channel1BroadcasterTwitchChannelName,
-                BroadcasterChannelId = DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId,
-                ChatterChannelName = DatabaseSeedHelper.Channel1User1TwitchUsername,
-                ChatterChannelId = DatabaseSeedHelper.Channel1User1TwitchUserId,
-                MessageParts = new[] { "!followage", "CoolUser1" },
-                Message = "!followage CoolUser1",
-                IsBroadcaster = false,
-                IsMod = false,
-                IsSub = false,
-                IsVip = false,
-                MessageId = "123",
-            }, followCommandTypeEnum);
+            var msgParams = MessageParamsHelper.CreateChatMessageParams("!followage CoolUser1", "123", new[] { "!followage", "CoolUser1" });
+
+            var result = await _followAgeDataService.HandleFollowCommandAsync(msgParams, followCommandTypeEnum);
             Assert.That(result, Does.Contain($"CoolUser1 followed {DatabaseSeedHelper.Channel1BroadcasterTwitchChannelName}"));
 
             switch (followCommandTypeEnum)
@@ -357,7 +288,6 @@ namespace BreganTwitchBot.DomainTests.Twitch.Commands
                     Assert.That(result, Does.Contain($"1440 minutes"));
                     break;
             }
-
         }
     }
 }

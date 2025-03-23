@@ -82,20 +82,7 @@ namespace BreganTwitchBot.DomainTests.Twitch.Commands
         [Test]
         public async Task HandleCustomCommandAsync_CommandNotFound_LogsInformation()
         {
-            var msgParams = new ChannelChatMessageReceivedParams
-            {
-                BroadcasterChannelId = DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId,
-                BroadcasterChannelName = DatabaseSeedHelper.Channel1BroadcasterTwitchChannelName,
-                ChatterChannelId = DatabaseSeedHelper.Channel1User1TwitchUserId,
-                ChatterChannelName = DatabaseSeedHelper.Channel1User1TwitchUsername,
-                IsBroadcaster = false,
-                IsMod = false,
-                IsSub = false,
-                IsVip = false,
-                Message = "!unknown",
-                MessageId = "123",
-                MessageParts = new string[] { "!unknown" }
-            };
+            var msgParams = MessageParamsHelper.CreateChatMessageParams("!unknown", "123", new string[] { "!unknown" });
 
             await _customCommandsDataService.HandleCustomCommandAsync("!unknown", msgParams);
             _twitchHelperServiceMock.Verify(x => x.SendTwitchMessageToChannel(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()), Times.Never);
@@ -104,20 +91,7 @@ namespace BreganTwitchBot.DomainTests.Twitch.Commands
         [Test]
         public async Task HandleCustomCommandAsync_CommandOnCooldown_LogsInformation()
         {
-            var msgParams = new ChannelChatMessageReceivedParams
-            {
-                BroadcasterChannelId = DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId,
-                BroadcasterChannelName = DatabaseSeedHelper.Channel1BroadcasterTwitchChannelName,
-                ChatterChannelId = DatabaseSeedHelper.Channel1User1TwitchUserId,
-                ChatterChannelName = DatabaseSeedHelper.Channel1User1TwitchUsername,
-                IsBroadcaster = false,
-                IsMod = false,
-                IsSub = false,
-                IsVip = false,
-                Message = "!oncooldown",
-                MessageId = "123",
-                MessageParts = new string[] { "!oncooldown" }
-            };
+            var msgParams = MessageParamsHelper.CreateChatMessageParams("!oncooldown", "123", new string[] { "!oncooldown" });
 
             _twitchHelperServiceMock.Setup(x => x.IsUserSuperModInChannel(It.IsAny<string>(), It.IsAny<string>())).ReturnsAsync(false);
 
@@ -129,20 +103,7 @@ namespace BreganTwitchBot.DomainTests.Twitch.Commands
         [Test]
         public async Task HandleCustomCommandAsync_CommandOnCooldownAndUserIsSuperMod_CommandSendsAndUpdates()
         {
-            var msgParams = new ChannelChatMessageReceivedParams
-            {
-                BroadcasterChannelId = DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId,
-                BroadcasterChannelName = DatabaseSeedHelper.Channel1BroadcasterTwitchChannelName,
-                ChatterChannelId = DatabaseSeedHelper.Channel1SuperModUserTwitchUserId,
-                ChatterChannelName = DatabaseSeedHelper.Channel1SuperModUserTwitchUsername,
-                IsBroadcaster = false,
-                IsMod = false,
-                IsSub = false,
-                IsVip = false,
-                Message = "!oncooldown",
-                MessageId = "123",
-                MessageParts = new string[] { "!oncooldown" }
-            };
+            var msgParams = MessageParamsHelper.CreateChatMessageParams("!oncooldown", "123", new string[] { "!oncooldown" });
 
             _twitchHelperServiceMock.Setup(x => x.IsUserSuperModInChannel(It.IsAny<string>(), It.IsAny<string>())).ReturnsAsync(true);
 
@@ -165,20 +126,7 @@ namespace BreganTwitchBot.DomainTests.Twitch.Commands
         [TestCase("!READYTOUSE")]
         public async Task HandleCustomCommandAsync_CommandReadyToUse_CommandSendsAndUpdates(string commandName)
         {
-            var msgParams = new ChannelChatMessageReceivedParams
-            {
-                BroadcasterChannelId = DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId,
-                BroadcasterChannelName = DatabaseSeedHelper.Channel1BroadcasterTwitchChannelName,
-                ChatterChannelId = DatabaseSeedHelper.Channel1User1TwitchUserId,
-                ChatterChannelName = DatabaseSeedHelper.Channel1User1TwitchUsername,
-                IsBroadcaster = false,
-                IsMod = false,
-                IsSub = false,
-                IsVip = false,
-                Message = commandName,
-                MessageId = "123",
-                MessageParts = new string[] { commandName }
-            };
+            var msgParams = MessageParamsHelper.CreateChatMessageParams(commandName, "123", new string[] { commandName });
 
             _twitchHelperServiceMock.Setup(x => x.IsUserSuperModInChannel(It.IsAny<string>(), It.IsAny<string>())).ReturnsAsync(false);
             await _customCommandsDataService.HandleCustomCommandAsync(commandName, msgParams);
@@ -198,20 +146,7 @@ namespace BreganTwitchBot.DomainTests.Twitch.Commands
         {
             _twitchHelperServiceMock.Setup(x => x.IsUserSuperModInChannel(It.IsAny<string>(), It.IsAny<string>())).ReturnsAsync(true);
 
-            var msgParams = new ChannelChatMessageReceivedParams
-            {
-                BroadcasterChannelId = DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId,
-                BroadcasterChannelName = DatabaseSeedHelper.Channel1BroadcasterTwitchChannelName,
-                ChatterChannelId = DatabaseSeedHelper.Channel1User1TwitchUserId,
-                ChatterChannelName = DatabaseSeedHelper.Channel1User1TwitchUsername,
-                IsBroadcaster = false,
-                IsMod = true,
-                IsSub = false,
-                IsVip = false,
-                Message = "!addcmd",
-                MessageId = "123",
-                MessageParts = new string[] { "!addcmd" }
-            };
+            var msgParams = MessageParamsHelper.CreateChatMessageParams("!addcmd", "123", new string[] { "!addcmd" });
 
             Assert.ThrowsAsync<InvalidCommandException>(async () => await _customCommandsDataService.AddNewCustomCommandAsync(msgParams));
         }
@@ -231,20 +166,7 @@ namespace BreganTwitchBot.DomainTests.Twitch.Commands
                     It.IsAny<string>()))
                 .ThrowsAsync(new UnauthorizedAccessException("You are not authorised to use this command! Straight to jail Kappa"));
 
-            var msgParams = new ChannelChatMessageReceivedParams
-            {
-                BroadcasterChannelId = DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId,
-                BroadcasterChannelName = DatabaseSeedHelper.Channel1BroadcasterTwitchChannelName,
-                ChatterChannelId = DatabaseSeedHelper.Channel1User1TwitchUserId,
-                ChatterChannelName = DatabaseSeedHelper.Channel1User1TwitchUsername,
-                IsBroadcaster = false,
-                IsMod = false,
-                IsSub = false,
-                IsVip = false,
-                Message = "!addcmd !newcommand commandText",
-                MessageId = "123",
-                MessageParts = new string[] { "!addcmd", "!newcommand", "commandText" }
-            };
+            var msgParams = MessageParamsHelper.CreateChatMessageParams("!addcmd !newcommand", "123", new string[] { "!addcmd", "!newcommand" });
 
             Assert.ThrowsAsync<UnauthorizedAccessException>(async () => await _customCommandsDataService.AddNewCustomCommandAsync(msgParams));
         }
@@ -255,20 +177,7 @@ namespace BreganTwitchBot.DomainTests.Twitch.Commands
             _twitchHelperServiceMock.Setup(x => x.IsUserSuperModInChannel(It.IsAny<string>(), It.IsAny<string>())).ReturnsAsync(true);
             _commandHandlerMock.Setup(x => x.IsSystemCommand(It.IsAny<string>())).Returns(true);
 
-            var msgParams = new ChannelChatMessageReceivedParams
-            {
-                BroadcasterChannelId = DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId,
-                BroadcasterChannelName = DatabaseSeedHelper.Channel1BroadcasterTwitchChannelName,
-                ChatterChannelId = DatabaseSeedHelper.Channel1User1TwitchUserId,
-                ChatterChannelName = DatabaseSeedHelper.Channel1User1TwitchUsername,
-                IsBroadcaster = false,
-                IsMod = true,
-                IsSub = false,
-                IsVip = false,
-                Message = "!addcmd !followage commandText",
-                MessageId = "123",
-                MessageParts = new string[] { "!addcmd", "!followage", "commandText" }
-            };
+            var msgParams = MessageParamsHelper.CreateChatMessageParams("!addcmd !systemcommand test", "123", new string[] { "!addcmd", "!systemcommand", "test" }, isMod: true);
 
             Assert.ThrowsAsync<DuplicateNameException>(async () => await _customCommandsDataService.AddNewCustomCommandAsync(msgParams));
         }
@@ -278,20 +187,7 @@ namespace BreganTwitchBot.DomainTests.Twitch.Commands
         {
             _twitchHelperServiceMock.Setup(x => x.IsUserSuperModInChannel(It.IsAny<string>(), It.IsAny<string>())).ReturnsAsync(true);
 
-            var msgParams = new ChannelChatMessageReceivedParams
-            {
-                BroadcasterChannelId = DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId,
-                BroadcasterChannelName = DatabaseSeedHelper.Channel1BroadcasterTwitchChannelName,
-                ChatterChannelId = DatabaseSeedHelper.Channel1User1TwitchUserId,
-                ChatterChannelName = DatabaseSeedHelper.Channel1User1TwitchUsername,
-                IsBroadcaster = false,
-                IsMod = true,
-                IsSub = false,
-                IsVip = false,
-                Message = "!addcmd !readytouse commandText",
-                MessageId = "123",
-                MessageParts = new string[] { "!addcmd", "!readytouse", "commandText" }
-            };
+            var msgParams = MessageParamsHelper.CreateChatMessageParams("!addcmd !readytouse test", "123", new string[] { "!addcmd", "!readytouse", "test" }, isMod: true);
 
             Assert.ThrowsAsync<DuplicateNameException>(async () => await _customCommandsDataService.AddNewCustomCommandAsync(msgParams));
         }
@@ -300,22 +196,10 @@ namespace BreganTwitchBot.DomainTests.Twitch.Commands
         public async Task AddNewCustomCommandAsync_CommandAddedAsSuperMod_CommandAddedToDatabase()
         {
             _twitchHelperServiceMock.Setup(x => x.IsUserSuperModInChannel(It.IsAny<string>(), It.IsAny<string>())).ReturnsAsync(true);
-            var msgParams = new ChannelChatMessageReceivedParams
-            {
-                BroadcasterChannelId = DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId,
-                BroadcasterChannelName = DatabaseSeedHelper.Channel1BroadcasterTwitchChannelName,
-                ChatterChannelId = DatabaseSeedHelper.Channel1User1TwitchUserId,
-                ChatterChannelName = DatabaseSeedHelper.Channel1User1TwitchUsername,
-                IsBroadcaster = false,
-                IsMod = false,
-                IsSub = false,
-                IsVip = false,
-                Message = "!addcmd !newcommand commandText",
-                MessageId = "123",
-                MessageParts = new string[] { "!addcmd", "!newcommand", "commandText" }
-            };
 
+            var msgParams = MessageParamsHelper.CreateChatMessageParams("!addcmd !newcommand commandText", "123", new string[] { "!addcmd", "!newcommand", "commandText" });
             await _customCommandsDataService.AddNewCustomCommandAsync(msgParams);
+
             var commandData = await _dbContext.CustomCommands.FirstAsync(x => x.Channel.BroadcasterTwitchChannelId == msgParams.BroadcasterChannelId && x.CommandName == "!newcommand");
 
             Assert.Multiple(() =>
@@ -331,21 +215,7 @@ namespace BreganTwitchBot.DomainTests.Twitch.Commands
         {
             _twitchHelperServiceMock.Setup(x => x.IsUserSuperModInChannel(It.IsAny<string>(), It.IsAny<string>())).ReturnsAsync(false);
 
-            var msgParams = new ChannelChatMessageReceivedParams
-            {
-                BroadcasterChannelId = DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId,
-                BroadcasterChannelName = DatabaseSeedHelper.Channel1BroadcasterTwitchChannelName,
-                ChatterChannelId = DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId,
-                ChatterChannelName = DatabaseSeedHelper.Channel1BroadcasterTwitchChannelName,
-                IsBroadcaster = true,
-                IsMod = false,
-                IsSub = false,
-                IsVip = false,
-                Message = "!addcmd !newcommand commandText",
-                MessageId = "123",
-                MessageParts = new string[] { "!addcmd", "!newcommand", "commandText" }
-            };
-
+            var msgParams = MessageParamsHelper.CreateChatMessageParams("!addcmd !newcommand commandText", "123", new string[] { "!addcmd", "!newcommand", "commandText" }, isBroadcaster: true);
             await _customCommandsDataService.AddNewCustomCommandAsync(msgParams);
 
             var commandData = await _dbContext.CustomCommands.FirstAsync(x => x.Channel.BroadcasterTwitchChannelId == msgParams.BroadcasterChannelId && x.CommandName == "!newcommand");
@@ -365,22 +235,10 @@ namespace BreganTwitchBot.DomainTests.Twitch.Commands
         public async Task AddNewCustomCommandAsync_CommandAddedAsModerator_CommandAddedToDatabase(string commandToAdd)
         {
             _twitchHelperServiceMock.Setup(x => x.IsUserSuperModInChannel(It.IsAny<string>(), It.IsAny<string>())).ReturnsAsync(false);
-            var msgParams = new ChannelChatMessageReceivedParams
-            {
-                BroadcasterChannelId = DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId,
-                BroadcasterChannelName = DatabaseSeedHelper.Channel1BroadcasterTwitchChannelName,
-                ChatterChannelId = DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId,
-                ChatterChannelName = DatabaseSeedHelper.Channel1BroadcasterTwitchChannelName,
-                IsBroadcaster = false,
-                IsMod = true,
-                IsSub = false,
-                IsVip = false,
-                Message = $"!addcmd {commandToAdd} commandText",
-                MessageId = "123",
-                MessageParts = new string[] { "!addcmd", commandToAdd, "commandText" }
-            };
 
+            var msgParams = MessageParamsHelper.CreateChatMessageParams($"!addcmd {commandToAdd} commandText", "123", new string[] { "!addcmd", commandToAdd, "commandText" }, isMod: true);
             await _customCommandsDataService.AddNewCustomCommandAsync(msgParams);
+
             var commandData = await _dbContext.CustomCommands.FirstAsync(x => x.Channel.BroadcasterTwitchChannelId == msgParams.BroadcasterChannelId && x.CommandName == "!newcommand");
 
             Assert.Multiple(() =>
@@ -394,20 +252,7 @@ namespace BreganTwitchBot.DomainTests.Twitch.Commands
         [Test]
         public void EditCustomCommandAsync_CommandNotFound_ThrowsCommandNotFoundException()
         {
-            var msgParams = new ChannelChatMessageReceivedParams
-            {
-                BroadcasterChannelId = DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId,
-                BroadcasterChannelName = DatabaseSeedHelper.Channel1BroadcasterTwitchChannelName,
-                ChatterChannelId = DatabaseSeedHelper.Channel1User1TwitchUserId,
-                ChatterChannelName = DatabaseSeedHelper.Channel1User1TwitchUsername,
-                IsBroadcaster = false,
-                IsMod = false,
-                IsSub = false,
-                IsVip = false,
-                Message = "!editcmd !unknown commandText",
-                MessageId = "123",
-                MessageParts = new string[] { "!editcmd", "!unknown", "commandText" }
-            };
+            var msgParams = MessageParamsHelper.CreateChatMessageParams("!editcmd !unknown commandText", "123", new string[] { "!editcmd", "!unknown", "commandText" }, isMod: true);
 
             Assert.ThrowsAsync<CommandNotFoundException>(async () => await _customCommandsDataService.EditCustomCommandAsync(msgParams));
         }
@@ -415,20 +260,7 @@ namespace BreganTwitchBot.DomainTests.Twitch.Commands
         [Test]
         public void EditCustomCommandAsync_CommandPartsLessThan3_ThrowsInvalidCommandException()
         {
-            var msgParams = new ChannelChatMessageReceivedParams
-            {
-                BroadcasterChannelId = DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId,
-                BroadcasterChannelName = DatabaseSeedHelper.Channel1BroadcasterTwitchChannelName,
-                ChatterChannelId = DatabaseSeedHelper.Channel1User1TwitchUserId,
-                ChatterChannelName = DatabaseSeedHelper.Channel1User1TwitchUsername,
-                IsBroadcaster = false,
-                IsMod = true,
-                IsSub = false,
-                IsVip = false,
-                Message = "!editcmd !readytouse",
-                MessageId = "123",
-                MessageParts = new string[] { "!editcmd", "!readytouse" }
-            };
+            var msgParams = MessageParamsHelper.CreateChatMessageParams("!editcmd !readytouse", "123", new string[] { "!editcmd", "!readytouse" }, isMod: true);
 
             Assert.ThrowsAsync<InvalidCommandException>(async () => await _customCommandsDataService.EditCustomCommandAsync(msgParams));
         }
@@ -447,20 +279,7 @@ namespace BreganTwitchBot.DomainTests.Twitch.Commands
                     It.IsAny<string>()))
                 .ThrowsAsync(new UnauthorizedAccessException("You are not authorised to use this command! Straight to jail Kappa"));
 
-            var msgParams = new ChannelChatMessageReceivedParams
-            {
-                BroadcasterChannelId = DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId,
-                BroadcasterChannelName = DatabaseSeedHelper.Channel1BroadcasterTwitchChannelName,
-                ChatterChannelId = DatabaseSeedHelper.Channel1User1TwitchUserId,
-                ChatterChannelName = DatabaseSeedHelper.Channel1User1TwitchUsername,
-                IsBroadcaster = false,
-                IsMod = false,
-                IsSub = false,
-                IsVip = false,
-                Message = "!editcmd !readytouse commandText",
-                MessageId = "123",
-                MessageParts = new string[] { "!editcmd", "!readytouse", "commandText" }
-            };
+            var msgParams = MessageParamsHelper.CreateChatMessageParams("!editcmd !readytouse commandText", "123", new string[] { "!editcmd", "!readytouse", "commandText" });
 
             Assert.ThrowsAsync<UnauthorizedAccessException>(async () => await _customCommandsDataService.EditCustomCommandAsync(msgParams));
         }
@@ -473,20 +292,7 @@ namespace BreganTwitchBot.DomainTests.Twitch.Commands
         {
             _twitchHelperServiceMock.Setup(x => x.IsUserSuperModInChannel(It.IsAny<string>(), It.IsAny<string>())).ReturnsAsync(true);
 
-            var msgParams = new ChannelChatMessageReceivedParams
-            {
-                BroadcasterChannelId = DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId,
-                BroadcasterChannelName = DatabaseSeedHelper.Channel1BroadcasterTwitchChannelName,
-                ChatterChannelId = DatabaseSeedHelper.Channel1SuperModUserTwitchUserId,
-                ChatterChannelName = DatabaseSeedHelper.Channel1SuperModUserTwitchUsername,
-                IsBroadcaster = false,
-                IsMod = false,
-                IsSub = false,
-                IsVip = false,
-                Message = $"!editcmd {commandEdited} newCommandText",
-                MessageId = "123",
-                MessageParts = new string[] { "!editcmd", commandEdited, "newCommandText" }
-            };
+            var msgParams = MessageParamsHelper.CreateChatMessageParams($"!editcmd {commandEdited} newCommandText", "123", new string[] { "!editcmd", commandEdited, "newCommandText" }, isMod: true);
 
             await _customCommandsDataService.EditCustomCommandAsync(msgParams);
             var commandData = _dbContext.CustomCommands.First(x => x.Channel.BroadcasterTwitchChannelId == msgParams.BroadcasterChannelId && x.CommandName == "!readytouse");
@@ -499,20 +305,7 @@ namespace BreganTwitchBot.DomainTests.Twitch.Commands
         [Test]
         public void DeleteCustomCommandAsync_CommandNotFound_ThrowsCommandNotFoundException()
         {
-            var msgParams = new ChannelChatMessageReceivedParams
-            {
-                BroadcasterChannelId = DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId,
-                BroadcasterChannelName = DatabaseSeedHelper.Channel1BroadcasterTwitchChannelName,
-                ChatterChannelId = DatabaseSeedHelper.Channel1User1TwitchUserId,
-                ChatterChannelName = DatabaseSeedHelper.Channel1User1TwitchUsername,
-                IsBroadcaster = false,
-                IsMod = false,
-                IsSub = false,
-                IsVip = false,
-                Message = "!delcmd !unknown",
-                MessageId = "123",
-                MessageParts = new string[] { "!delcmd", "!unknown" }
-            };
+            var msgParams = MessageParamsHelper.CreateChatMessageParams("!delcmd !unknown", "123", new string[] { "!delcmd", "!unknown" }, isMod: true);
 
             Assert.ThrowsAsync<CommandNotFoundException>(async () => await _customCommandsDataService.DeleteCustomCommandAsync(msgParams));
         }
@@ -531,20 +324,7 @@ namespace BreganTwitchBot.DomainTests.Twitch.Commands
                     It.IsAny<string>()))
                 .ThrowsAsync(new UnauthorizedAccessException("You are not authorised to use this command! Straight to jail Kappa"));
 
-            var msgParams = new ChannelChatMessageReceivedParams
-            {
-                BroadcasterChannelId = DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId,
-                BroadcasterChannelName = DatabaseSeedHelper.Channel1BroadcasterTwitchChannelName,
-                ChatterChannelId = DatabaseSeedHelper.Channel1User1TwitchUserId,
-                ChatterChannelName = DatabaseSeedHelper.Channel1User1TwitchUsername,
-                IsBroadcaster = false,
-                IsMod = false,
-                IsSub = false,
-                IsVip = false,
-                Message = "!delcmd !readytouse",
-                MessageId = "123",
-                MessageParts = new string[] { "!delcmd", "!readytouse" }
-            };
+            var msgParams = MessageParamsHelper.CreateChatMessageParams("!delcmd !readytouse", "123", new string[] { "!delcmd", "!readytouse" });
 
             Assert.ThrowsAsync<UnauthorizedAccessException>(async () => await _customCommandsDataService.DeleteCustomCommandAsync(msgParams));
         }
@@ -556,21 +336,10 @@ namespace BreganTwitchBot.DomainTests.Twitch.Commands
         public async Task DeleteCustomCommandAsync_CommandDeleted_CommandIsRemoved(string commandToDelete)
         {
             _twitchHelperServiceMock.Setup(x => x.IsUserSuperModInChannel(It.IsAny<string>(), It.IsAny<string>())).ReturnsAsync(true);
-            var msgParams = new ChannelChatMessageReceivedParams
-            {
-                BroadcasterChannelId = DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId,
-                BroadcasterChannelName = DatabaseSeedHelper.Channel1BroadcasterTwitchChannelName,
-                ChatterChannelId = DatabaseSeedHelper.Channel1SuperModUserTwitchUserId,
-                ChatterChannelName = DatabaseSeedHelper.Channel1SuperModUserTwitchUsername,
-                IsBroadcaster = false,
-                IsMod = false,
-                IsSub = false,
-                IsVip = false,
-                Message = $"!delcmd {commandToDelete}",
-                MessageId = "123",
-                MessageParts = new string[] { "!delcmd", commandToDelete }
-            };
+
+            var msgParams = MessageParamsHelper.CreateChatMessageParams($"!delcmd {commandToDelete}", "123", new string[] { "!delcmd", commandToDelete }, isMod: true);
             await _customCommandsDataService.DeleteCustomCommandAsync(msgParams);
+
             var commandData = _dbContext.CustomCommands.FirstOrDefault(x => x.Channel.BroadcasterTwitchChannelId == msgParams.BroadcasterChannelId && x.CommandName == "!readytouse");
 
             Assert.That(commandData, Is.Null);
