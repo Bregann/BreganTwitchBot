@@ -50,7 +50,7 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch
             }
         }
 
-        public async Task<string?> GetPointsName(string broadcasterChannelId, string broadcasterChannelName)
+        public async Task<string?> GetPointsName(string broadcasterChannelId, string broadcasterChannelName = "")
         {
             var sanitisedBroadcasterChannelId = broadcasterChannelId.ToLower().Trim();
 

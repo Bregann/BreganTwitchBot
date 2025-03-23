@@ -33,6 +33,12 @@ namespace BreganTwitchBot.Domain.Data.Database.Models
         public required DateTime LastDailyPointsAllowed { get; set; }
 
         [Required]
+        public required DateTime LastStreamStartDate { get; set; }
+
+        [Required]
+        public required DateTime LastStreamEndDate { get; set; }
+
+        [Required]
         public required bool SubathonActive { get; set; }
 
         [Required]

@@ -8,8 +8,8 @@ namespace BreganTwitchBot.Domain.Interfaces.Twitch.Commands
 {
     public interface IDailyPointsDataService
     {
-        void ScheduleDailyPointsCollection(string broadcasterId);
-        void CancelDailyPointsCollection(string broadcasterId);
+        Task ScheduleDailyPointsCollection(string broadcasterId);
+        Task CancelDailyPointsCollection(string broadcasterId);
         Task AllowDailyPointsCollecting(string broadcasterId);
     }
 }
