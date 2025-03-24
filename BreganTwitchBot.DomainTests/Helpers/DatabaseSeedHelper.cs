@@ -61,13 +61,15 @@ namespace BreganTwitchBot.DomainTests.Helpers
             {
                 ChannelId = channel.Id,
                 DailyPointsCollectingAllowed = false,
-                LastDailyPointsAllowed = DateTime.UtcNow,
+                LastDailyPointsAllowed = DateTime.UtcNow.AddDays(-1),
                 StreamAnnounced = false,
                 SubathonActive = false,
                 ChannelCurrencyName = Channel1ChannelCurrencyName,
                 CurrencyPointCap = 1000,
                 StreamHappenedThisWeek = false,
-                SubathonTime = TimeSpan.FromHours(1)
+                SubathonTime = TimeSpan.FromHours(1),
+                LastStreamStartDate = DateTime.UtcNow.AddDays(-2),
+                LastStreamEndDate = DateTime.UtcNow.AddDays(-1)
             });
 
             await context.ChannelConfig.AddAsync(new ChannelConfig
@@ -80,7 +82,9 @@ namespace BreganTwitchBot.DomainTests.Helpers
                 ChannelCurrencyName = Channel2ChannelCurrencyName,
                 CurrencyPointCap = 2000,
                 StreamHappenedThisWeek = false,
-                SubathonTime = TimeSpan.FromHours(1)
+                SubathonTime = TimeSpan.FromHours(1),
+                LastStreamStartDate = DateTime.UtcNow.AddDays(-2),
+                LastStreamEndDate = DateTime.UtcNow.AddDays(-1)
             });
 
             await context.SaveChangesAsync();
@@ -205,6 +209,54 @@ namespace BreganTwitchBot.DomainTests.Helpers
             });
 
             await context.SaveChangesAsync();
+
+            await context.TwitchDailyPoints.AddAsync(new TwitchDailyPoints
+            {
+                ChannelId = channel.Id,
+                CurrentDailyStreak = 1,
+                CurrentlyWeeklyStreak = 2,
+                CurrentMonthlyStreak = 3,
+                CurrentYearlyStreak = 4,
+                HighestDailyStreak = 1,
+                HighestMonthlyStreak = 2,
+                HighestWeeklyStreak = 3,
+                HighestYearlyStreak = 4,
+                MonthlyPointsClaimed = false,
+                PointsClaimedThisStream = true,
+                PointsLastClaimed = DateTime.UtcNow,
+                TotalPointsClaimed = 0,
+                TotalTimesDailyClaimed = 1,
+                TotalTimesMonthlyClaimed = 2,
+                TotalTimesYearlyClaimed = 3,
+                TotalTimesWeeklyClaimed = 4,
+                WeeklyPointsClaimed = false,
+                YearlyPointsClaimed = false,
+                ChannelUserId = channelUser.Id
+            });
+
+            await context.TwitchDailyPoints.AddAsync(new TwitchDailyPoints
+            {
+                ChannelId = channel.Id,
+                CurrentDailyStreak = 1,
+                CurrentlyWeeklyStreak = 2,
+                CurrentMonthlyStreak = 3,
+                CurrentYearlyStreak = 4,
+                HighestDailyStreak = 1,
+                HighestMonthlyStreak = 2,
+                HighestWeeklyStreak = 3,
+                HighestYearlyStreak = 4,
+                MonthlyPointsClaimed = false,
+                PointsClaimedThisStream = false,
+                PointsLastClaimed = DateTime.UtcNow,
+                TotalPointsClaimed = 0,
+                TotalTimesDailyClaimed = 1,
+                TotalTimesMonthlyClaimed = 2,
+                TotalTimesYearlyClaimed = 3,
+                TotalTimesWeeklyClaimed = 4,
+                WeeklyPointsClaimed = false,
+                YearlyPointsClaimed = false,
+                ChannelUserId = channelUser2.Id
+            });
         }
     }
 }

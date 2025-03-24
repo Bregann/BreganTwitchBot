@@ -1,9 +1,13 @@
 ﻿using BreganTwitchBot.Domain.Data.Database.Context;
+using BreganTwitchBot.Domain.DTOs.Twitch.EventSubEvents;
+using BreganTwitchBot.Domain.Enums;
+using BreganTwitchBot.Domain.Exceptions;
 using BreganTwitchBot.Domain.Interfaces.Helpers;
 using BreganTwitchBot.Domain.Interfaces.Twitch;
 using BreganTwitchBot.Domain.Interfaces.Twitch.Commands;
 using Hangfire;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
 using Serilog;
 using System;
 using System.Collections.Generic;
@@ -83,6 +87,7 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch.Commands.DailyPoints
             foreach (var user in usersToReset)
             {
                 user.CurrentDailyStreak = 0;
+                user.PointsClaimedThisStream = false;
             }
 
             await context.SaveChangesAsync();
@@ -100,6 +105,76 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch.Commands.DailyPoints
                 () => twitchHelperService.SendTwitchMessageToChannel(broadcasterId, channelName!, $"Don't forget to claim your daily, weekly, monthly and yearly {twitchHelperService.GetPointsName(broadcasterId, channelName!)} with !daily, !weekly, !monthly and !yearly PogChamp KEKW", null),
                 "*/30 * * * *"
             );
+        }
+
+        public async Task<string> HandlePointsClaimed(ChannelChatMessageReceivedParams msgParams, PointsClaimType pointsClaimType)
+        {
+            var collectionAllowed = configHelper.GetDailyPointsStatus(msgParams.BroadcasterChannelId);
+            var pointsName = await twitchHelperService.GetPointsName(msgParams.BroadcasterChannelId, msgParams.BroadcasterChannelName);
+
+            if (!collectionAllowed.DailyPointsAllowed)
+            {
+                return $"Daily {pointsName} collection is not allowed at the moment! The stream has to be online for 30 minutes (ish) before claiming";
+            }
+
+            var user = await context.TwitchDailyPoints
+                .FirstOrDefaultAsync(x => x.Channel.BroadcasterTwitchChannelId == msgParams.BroadcasterChannelId && x.User.TwitchUserId == msgParams.ChatterChannelId);
+
+            // If the user isn't registered in the database yet, return a friendly message
+            if (user == null)
+            {
+                return $"Oops! Looks like you're not quite ready to claim your {pointsName} just yet. Give it a moment and try again!";
+            }
+
+            var pointsClaimedAlready = pointsClaimType switch
+            {
+                PointsClaimType.Daily => user.PointsClaimedThisStream,
+                PointsClaimType.Weekly => user.WeeklyPointsClaimed,
+                PointsClaimType.Monthly => user.MonthlyPointsClaimed,
+                PointsClaimType.Yearly => user.YearlyPointsClaimed,
+                _ => throw new InvalidCommandException("dunno how you got to manage claiming your daily points this way, congrats you broke something")
+            };
+
+            if (pointsClaimedAlready)
+            {
+                return $"You silly sausage! You have claimed your {pointsClaimType.ToString().ToLower()} {pointsName}!";
+            }
+
+            switch (pointsClaimType)
+            {
+                case PointsClaimType.Daily:
+                    var dict = new Dictionary<int, (int MinPoints, int MaxPoints)>
+                    {
+
+                    };
+
+                    var pointsMilestoneMessage = await CheckForPointsMilestones(user.TotalClaims, msgParams.ChatterChannelId, pointsName, pointsClaimType);
+                    break;
+                case PointsClaimType.Weekly:
+                    break;
+                case PointsClaimType.Monthly:
+                    break;
+                case PointsClaimType.Yearly:
+                    break;
+                default:
+                    throw new InvalidCommandException("dunno how you got to manage claiming your daily points this way, congrats you broke something");
+            }
+        }
+
+        private async Task<string?> CheckForPointsMilestones(int totalClaims, string twitchUserId, string pointsName, PointsClaimType pointsClaimType, Dictionary<int, (int MinPoints, int MaxPoints)> streakMilestones)
+        {
+            foreach (var streakMilestone in streakMilestones)
+            {
+                if (totalClaims % streakMilestone.Key == 0)
+                {
+                    var randomPoints = new Random().Next(streakMilestone.Value.MinPoints, streakMilestone.Value.MaxPoints);
+                    await twitchHelperService.AddPointsToUser(twitchUserId, twitchUserId, randomPoints, pointsName, twitchUserId);
+
+                    return $"As this is your {totalClaims}th time claiming your {pointsClaimType.ToString().ToLower()} {pointsName}, you have been gifted an extra {randomPoints:N0} {pointsName} PogChamp !!!";
+                }
+            }
+
+            return null;
         }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using BreganTwitchBot.Domain.Data.Database.Context;
+using BreganTwitchBot.Domain.Exceptions;
 using BreganTwitchBot.Domain.Interfaces.Twitch;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -111,6 +112,58 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch
             {
                 Log.Warning($"User {viewerUsername} attempted to add a command without permission in channel {broadcasterChannelName}");
                 throw new UnauthorizedAccessException("You are not authorised to use this command! Straight to jail Kappa");
+            }
+        }
+
+
+        //TODO: test this method
+        /// <summary>
+        /// Adds points to a user in a channel
+        /// </summary>
+        /// <param name="broadcasterChannelId"></param>
+        /// <param name="viewerChannelId"></param>
+        /// <param name="pointsToAdd"></param>
+        /// <param name="broadcasterChannelName"></param>
+        /// <param name="viewerUsername"></param>
+        /// <returns></returns>
+        /// <exception cref="InvalidOperationException"></exception>
+        /// <exception cref="TwitchUserNotFoundException"></exception>
+        public async Task AddPointsToUser(string broadcasterChannelId, string viewerChannelId, int pointsToAdd, string broadcasterChannelName, string viewerUsername)
+        {
+            using (var scope = serviceProvider.CreateScope())
+            {
+                var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+                var channel = await context.Channels.FirstOrDefaultAsync(x => x.BroadcasterTwitchChannelId == broadcasterChannelId);
+
+                if (channel == null)
+                {
+                    Log.Error($"[Twitch Helper Service] Error adding points to {viewerUsername}, channelId is null");
+                    throw new InvalidOperationException("Channel not found");
+                }
+
+                var user = await context.ChannelUsers.FirstOrDefaultAsync(x => x.TwitchUserId == viewerChannelId.ToLower().Trim());
+
+                if (user == null)
+                {
+                    Log.Error($"[Twitch Helper Service] Error adding points to {viewerUsername}, user is null");
+                    throw new TwitchUserNotFoundException("Error adding points to the user - user not found");
+                }
+
+                var userPoints = await context.ChannelUserData.FirstAsync(x => x.ChannelUserId == user.Id && x.ChannelId == channel.Id);
+
+                // check if the new amount of points will make the user above the points cap
+                if (userPoints.Points + pointsToAdd > channel.ChannelConfig.CurrencyPointCap)
+                {
+                    userPoints.Points = channel.ChannelConfig.CurrencyPointCap;
+                    await context.SaveChangesAsync();
+                    Log.Information($"[Twitch Helper Service] Added {pointsToAdd} points to {viewerUsername} in {broadcasterChannelName}, but capped at {channel.ChannelConfig.CurrencyPointCap}");
+                    return;
+                }
+
+                userPoints.Points += pointsToAdd;
+
+                await context.SaveChangesAsync();
+                Log.Information($"[Twitch Helper Service] Added {pointsToAdd} points to {viewerUsername} in {broadcasterChannelName}");
             }
         }
     }
