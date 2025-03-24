@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using BreganTwitchBot.Domain.Enums;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace BreganTwitchBot.Domain.Data.Database.Models
@@ -19,13 +20,16 @@ namespace BreganTwitchBot.Domain.Data.Database.Models
         public virtual Channel Channel { get; set; } = null!;
 
         [Required]
-        public required int CurrentDailyStreak { get; set; }
+        public required PointsClaimType PointsClaimType { get; set; }
 
         [Required]
-        public required int HighestDailyStreak { get; set; }
+        public required int CurrentStreak { get; set; }
 
         [Required]
-        public required int TotalTimesDailyClaimed { get; set; }
+        public required int HighestStreak { get; set; }
+
+        [Required]
+        public required int TotalTimesClaimed { get; set; }
 
         [Required]
         public required long TotalPointsClaimed { get; set; }
@@ -34,42 +38,6 @@ namespace BreganTwitchBot.Domain.Data.Database.Models
         public required DateTime PointsLastClaimed { get; set; }
 
         [Required]
-        public required bool PointsClaimedThisStream { get; set; }
-
-        [Required]
-        public required bool WeeklyPointsClaimed { get; set; }
-
-        [Required]
-        public required int CurrentlyWeeklyStreak { get; set; }
-
-        [Required]
-        public required int HighestWeeklyStreak { get; set; }
-
-        [Required]
-        public required int TotalTimesWeeklyClaimed { get; set; }
-
-        [Required]
-        public required bool MonthlyPointsClaimed { get; set; }
-
-        [Required]
-        public required int CurrentMonthlyStreak { get; set; }
-
-        [Required]
-        public required int HighestMonthlyStreak { get; set; }
-
-        [Required]
-        public required int TotalTimesMonthlyClaimed { get; set; }
-
-        [Required]
-        public required bool YearlyPointsClaimed { get; set; }
-
-        [Required]
-        public required int CurrentYearlyStreak { get; set; }
-
-        [Required]
-        public required int HighestYearlyStreak { get; set; }
-
-        [Required]
-        public required int TotalTimesYearlyClaimed { get; set; }
+        public required bool PointsClaimed { get; set; }
     }
 }

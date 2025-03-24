@@ -76,28 +76,34 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch.Commands.DailyPoints
 
             // reset streaks
             var usersToReset = await context.TwitchDailyPoints
-                .Where(x => x.Channel.BroadcasterTwitchChannelId == broadcasterId)
+                .Where(x => x.Channel.BroadcasterTwitchChannelId == broadcasterId && x.PointsClaimType == PointsClaimType.Daily && x.PointsClaimed == false)
                 .ToListAsync();
 
             var top5LostStreaks = usersToReset
-                .OrderByDescending(x => x.CurrentDailyStreak)
+                .OrderByDescending(x => x.CurrentStreak)
                 .Take(5)
                 .ToList();
 
             foreach (var user in usersToReset)
             {
-                user.CurrentDailyStreak = 0;
-                user.PointsClaimedThisStream = false;
+                user.CurrentStreak = 0;
             }
 
             await context.SaveChangesAsync();
 
             Log.Information($"Missed streaks reset - {usersToReset.Count} users reset");
 
+            var rowsChanged = await context.TwitchDailyPoints
+                .Where(x => x.Channel.BroadcasterTwitchChannelId == broadcasterId && x.PointsClaimType == PointsClaimType.Daily && x.PointsClaimed == true)
+                .ExecuteUpdateAsync(setters => setters
+                    .SetProperty(x => x.PointsClaimed, false));
+
+            Log.Information($"Reset {rowsChanged} users streaks");
+
             // allow the point collecting and let the users know
             await configHelper.UpdateDailyPointsStatus(broadcasterId, true);
             await twitchHelperService.SendTwitchMessageToChannel(broadcasterId, channelName!, $"Don't forget to claim your daily, weekly, monthly and yearly {await twitchHelperService.GetPointsName(broadcasterId, channelName!)} with !daily, !weekly, !monthly and !yearly PogChamp KEKW");
-            await twitchHelperService.SendTwitchMessageToChannel(broadcasterId, channelName!, $"Top 5 lost streaks: {string.Join(", ", top5LostStreaks.Select(x => $"{x.User.TwitchUsername} - {x.CurrentDailyStreak}"))}");
+            await twitchHelperService.SendTwitchMessageToChannel(broadcasterId, channelName!, $"Top 5 lost streaks: {string.Join(", ", top5LostStreaks.Select(x => $"{x.User.TwitchUsername} - {x.CurrentStreak}"))}");
 
             // create a recurring job to remind the users to collect their points
             RecurringJob.AddOrUpdate(
