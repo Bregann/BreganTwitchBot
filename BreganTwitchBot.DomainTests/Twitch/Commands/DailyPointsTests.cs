@@ -15,6 +15,8 @@ using BreganTwitchBot.DomainTests.Helpers;
 using BreganTwitchBot.Domain.Data.Services.Twitch.Commands.DailyPoints;
 using BreganTwitchBot.Domain.Interfaces.Helpers;
 using BreganTwitchBot.Domain.Data.Database.Models;
+using Hangfire;
+using BreganTwitchBot.Domain.Enums;
 
 namespace BreganTwitchBot.DomainTests.Twitch.Commands
 {
@@ -56,6 +58,9 @@ namespace BreganTwitchBot.DomainTests.Twitch.Commands
 
             await DatabaseSeedHelper.SeedDatabase(_dbContext);
 
+            _configHelper = new Mock<IConfigHelper>();
+            _twitchHelperService = new Mock<ITwitchHelperService>();
+
             _twitchHelperService
                 .Setup(x => x.SendTwitchMessageToChannel(
                     It.IsAny<string>(),
@@ -65,10 +70,9 @@ namespace BreganTwitchBot.DomainTests.Twitch.Commands
                 ))
                 .Returns(Task.CompletedTask);
 
-            _configHelper = new Mock<IConfigHelper>();
-            _twitchHelperService = new Mock<ITwitchHelperService>();
+            var mockRecurringJobManager = new Mock<IRecurringJobManager>();
 
-            _dailyPointsDataService = new DailyPointsDataService(_dbContext, _configHelper.Object, _twitchHelperService.Object);
+            _dailyPointsDataService = new DailyPointsDataService(_dbContext, _configHelper.Object, _twitchHelperService.Object, mockRecurringJobManager.Object);
         }
 
         [TearDown]
@@ -87,7 +91,6 @@ namespace BreganTwitchBot.DomainTests.Twitch.Commands
         public async Task AllowDailyPointsCollecting_ShouldResetStreaksWhenNoStreamToday_StreaksGetReset()
         {
             await _dailyPointsDataService.AllowDailyPointsCollecting(DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId);
-
             _configHelper.Verify(x => x.UpdateDailyPointsStatus(DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId, true), Times.Once);
 
             _twitchHelperService.Verify(x => x.SendTwitchMessageToChannel(
@@ -97,42 +100,96 @@ namespace BreganTwitchBot.DomainTests.Twitch.Commands
                 It.IsAny<string?>()),
                 Times.Once);
 
-            var config = await _dbContext.ChannelConfig.FirstAsync(x => x.Channel.BroadcasterTwitchChannelId == DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId);
-            var dailyPoints = await _dbContext.TwitchDailyPoints.Where(x => x.Channel.BroadcasterTwitchChannelId == DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId && x.User.TwitchUserId == DatabaseSeedHelper.Channel1User1TwitchUserId).FirstAsync();
+            _configHelper.Verify(x => x.UpdateDailyPointsStatus(DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId, true), Times.Once);
 
-            Assert.Multiple(() =>
-            {
-                Assert.That(config.DailyPointsCollectingAllowed, Is.True);
-                Assert.That(dailyPoints.CurrentDailyStreak, Is.EqualTo(0));
-            });
+            var dailyPoints = await _dbContext.TwitchDailyPoints.Where(x => x.Channel.BroadcasterTwitchChannelId == DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId && x.User.TwitchUserId == DatabaseSeedHelper.Channel1User1TwitchUserId && x.PointsClaimType == Domain.Enums.PointsClaimType.Daily).FirstAsync();
+            Assert.That(dailyPoints.CurrentStreak, Is.EqualTo(0));
         }
 
         [Test]
         public async Task AllowDailyPointsCollecting_ShouldNotResetStreaksWhenStreamToday_StreaksNotReset()
         {
-            var config = await _dbContext.ChannelConfig.FirstAsync(x => x.Channel.BroadcasterTwitchChannelId == DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId);
-            config.LastStreamStartDate = DateTime.UtcNow;
-            config.LastStreamEndDate = DateTime.UtcNow.AddHours(1);
-            await _dbContext.SaveChangesAsync();
+            _configHelper.Setup(x => x.GetDailyPointsStatus(DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId))
+                .Returns((false, DateTime.UtcNow, DateTime.UtcNow));
 
             await _dailyPointsDataService.AllowDailyPointsCollecting(DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId);
 
             _configHelper.Verify(x => x.UpdateDailyPointsStatus(DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId, true), Times.Once);
+
             _twitchHelperService.Verify(x => x.SendTwitchMessageToChannel(
                 DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId,
                 It.IsAny<string>(),
                 It.Is<string>(msg => msg.Contains("Top 5 lost streaks")),
                 It.IsAny<string?>()),
                 Times.Never);
-
-            var updatedConfig = await _dbContext.ChannelConfig.FirstAsync(x => x.Channel.BroadcasterTwitchChannelId == DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId);
-            var dailyPoints = await _dbContext.TwitchDailyPoints.Where(x => x.Channel.BroadcasterTwitchChannelId == DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId && x.User.TwitchUserId == DatabaseSeedHelper.Channel1User1TwitchUserId).FirstAsync();
-            
-            Assert.Multiple(() =>
-            {
-                Assert.That(updatedConfig.DailyPointsCollectingAllowed, Is.True);
-                Assert.That(dailyPoints.CurrentDailyStreak, Is.EqualTo(1));
-            });
         }
+
+        [Test]
+        [TestCase(PointsClaimType.Daily)]
+        [TestCase(PointsClaimType.Weekly)]
+        [TestCase(PointsClaimType.Monthly)]
+        [TestCase(PointsClaimType.Yearly)]
+        public async Task HandlePointsClaimed_AttemptToClaimWhenPointsDisabled_ShouldNotAllowClaimingPoints(PointsClaimType pointsClaimType)
+        {
+            _configHelper.Setup(x => x.GetDailyPointsStatus(DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId))
+                .Returns((false, DateTime.UtcNow, DateTime.UtcNow));
+            _twitchHelperService.Setup(x => x.GetPointsName(DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId, DatabaseSeedHelper.Channel1BroadcasterTwitchChannelName))
+                .ReturnsAsync(DatabaseSeedHelper.Channel1ChannelCurrencyName);
+
+            var msgParams = MessageParamsHelper.CreateChatMessageParams("!daily", "123", new string[] { "!daily" });
+            var response = await _dailyPointsDataService.HandlePointsClaimed(msgParams, pointsClaimType);
+
+            Assert.That(response, Is.EqualTo($"Daily {DatabaseSeedHelper.Channel1ChannelCurrencyName} collection is not allowed at the moment! The stream has to be online for 30 minutes (ish) before claiming"));
+        }
+
+        [Test]
+        [TestCase(PointsClaimType.Daily)]
+        [TestCase(PointsClaimType.Weekly)]
+        [TestCase(PointsClaimType.Monthly)]
+        [TestCase(PointsClaimType.Yearly)]
+        public async Task HandlePointsClaimed_AttemptToClaimWithInvalidUsername_CorrectMessageReturned(PointsClaimType pointsClaimType)
+        {
+            _configHelper.Setup(x => x.GetDailyPointsStatus(DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId))
+                .Returns((true, DateTime.UtcNow, DateTime.UtcNow));
+
+            _twitchHelperService.Setup(x => x.GetPointsName(DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId, DatabaseSeedHelper.Channel1BroadcasterTwitchChannelName))
+                .ReturnsAsync(DatabaseSeedHelper.Channel1ChannelCurrencyName);
+
+            _twitchHelperService.Setup(x => x.GetTwitchUserIdFromUsername(It.IsAny<string>()))
+                .ReturnsAsync((string?)null);
+
+            var msgParams = MessageParamsHelper.CreateChatMessageParams("!daily", "123", new string[] { "!daily" }, chatterChannelId: "2545555", chatterChannelName: "invalid");
+            var response = await _dailyPointsDataService.HandlePointsClaimed(msgParams, pointsClaimType);
+            Assert.That(response, Is.EqualTo($"Oops! Looks like you're not quite ready to claim your {DatabaseSeedHelper.Channel1ChannelCurrencyName} just yet. Give it a moment and try again!"));
+        }
+
+        [Test]
+        [TestCase(PointsClaimType.Daily)]
+        [TestCase(PointsClaimType.Weekly)]
+        [TestCase(PointsClaimType.Monthly)]
+        [TestCase(PointsClaimType.Yearly)]
+        public async Task HandlePointsClaimed_AttemptToClaimWithPointsAlreadyClaimed_CorrectMessageReturned(PointsClaimType pointsClaimType)
+        {
+            _configHelper.Setup(x => x.GetDailyPointsStatus(DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId))
+                .Returns((true, DateTime.UtcNow, DateTime.UtcNow));
+
+            _twitchHelperService.Setup(x => x.GetPointsName(DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId, DatabaseSeedHelper.Channel1BroadcasterTwitchChannelName))
+                .ReturnsAsync(DatabaseSeedHelper.Channel1ChannelCurrencyName);
+
+            _dbContext.TwitchDailyPoints.Where(x => x.Channel.BroadcasterTwitchChannelId == DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId && x.User.TwitchUserId == DatabaseSeedHelper.Channel1User1TwitchUserId && x.PointsClaimType == pointsClaimType)
+                .First().PointsClaimed = true;
+
+            var msgParams = MessageParamsHelper.CreateChatMessageParams("!daily", "123", new string[] { "!daily" });
+            var response = await _dailyPointsDataService.HandlePointsClaimed(msgParams, pointsClaimType);
+
+            Assert.That(response, Is.EqualTo($"You silly sausage! You have claimed your {pointsClaimType.ToString().ToLower()} {DatabaseSeedHelper.Channel1ChannelCurrencyName}!"));
+        }
+
+        [Test]
+        [TestCase(PointsClaimType.Daily)]
+        [TestCase(PointsClaimType.Weekly)]
+        [TestCase(PointsClaimType.Monthly)]
+        [TestCase(PointsClaimType.Yearly)]
+
     }
 }

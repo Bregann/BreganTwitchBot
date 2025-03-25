@@ -1,4 +1,5 @@
 ﻿using BreganTwitchBot.Domain.DTOs.Twitch.EventSubEvents;
+using BreganTwitchBot.Domain.Enums;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,6 +13,7 @@ namespace BreganTwitchBot.Domain.Interfaces.Twitch.Commands
         Task ScheduleDailyPointsCollection(string broadcasterId);
         Task CancelDailyPointsCollection(string broadcasterId);
         Task AllowDailyPointsCollecting(string broadcasterId);
-        Task HandlePointsClaimed(ChannelChatMessageReceivedParams msgParams);
+        Task<string> HandlePointsClaimed(ChannelChatMessageReceivedParams msgParams, PointsClaimType pointsClaimType);
+        Task<string> HandleStreakCheckCommand(ChannelChatMessageReceivedParams msgParams, PointsClaimType pointsClaimType);
     }
 }
