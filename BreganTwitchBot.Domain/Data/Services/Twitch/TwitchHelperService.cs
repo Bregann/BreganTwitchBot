@@ -115,8 +115,6 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch
             }
         }
 
-
-        //TODO: test this method
         /// <summary>
         /// Adds points to a user in a channel
         /// </summary>
@@ -130,6 +128,12 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch
         /// <exception cref="TwitchUserNotFoundException"></exception>
         public async Task AddPointsToUser(string broadcasterChannelId, string viewerChannelId, int pointsToAdd, string broadcasterChannelName, string viewerUsername)
         {
+            if (pointsToAdd <= 0)
+            {
+                Log.Warning($"[Twitch Helper Service] Error adding points to {viewerUsername}, pointsToAdd is less than or equal to 0");
+                throw new InvalidOperationException("Points to add must be greater than 0");
+            }
+
             using (var scope = serviceProvider.CreateScope())
             {
                 var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
@@ -156,13 +160,14 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch
                 {
                     userPoints.Points = channel.ChannelConfig.CurrencyPointCap;
                     await context.SaveChangesAsync();
+
                     Log.Information($"[Twitch Helper Service] Added {pointsToAdd} points to {viewerUsername} in {broadcasterChannelName}, but capped at {channel.ChannelConfig.CurrencyPointCap}");
                     return;
                 }
 
                 userPoints.Points += pointsToAdd;
-
                 await context.SaveChangesAsync();
+
                 Log.Information($"[Twitch Helper Service] Added {pointsToAdd} points to {viewerUsername} in {broadcasterChannelName}");
             }
         }

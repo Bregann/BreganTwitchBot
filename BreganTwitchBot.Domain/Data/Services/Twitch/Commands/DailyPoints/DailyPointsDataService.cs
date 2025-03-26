@@ -115,7 +115,6 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch.Commands.DailyPoints
             );
         }
 
-        //TODO: test this
         public async Task<string> HandlePointsClaimed(ChannelChatMessageReceivedParams msgParams, PointsClaimType pointsClaimType)
         {
             var collectionAllowed = configHelper.GetDailyPointsStatus(msgParams.BroadcasterChannelId);
@@ -139,6 +138,10 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch.Commands.DailyPoints
             {
                 return $"You silly sausage! You have claimed your {pointsClaimType.ToString().ToLower()} {pointsName}!";
             }
+
+            // increment the streak and total times claimed ready for milestone checking
+            user.CurrentStreak++;
+            user.TotalTimesClaimed++;
 
             //get the milestones for the points claim type
             var milestoneDict = pointsClaimType switch
@@ -166,7 +169,7 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch.Commands.DailyPoints
             };
 
             // check for milestones and give bonus points if applicable
-            var bonusPoints = CheckForPointsMilestones(user.TotalTimesClaimed, user.CurrentStreak, pointsName!, pointsClaimType, milestoneDict);
+            var bonusPoints = CheckForPointsMilestones(user.TotalTimesClaimed, pointsName!, pointsClaimType, milestoneDict);
 
             // work out the base points and add the bonus points if applicable
             var basePointsBonus = pointsClaimType switch
@@ -184,15 +187,17 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch.Commands.DailyPoints
             
             user.PointsClaimed = true;
             user.TotalPointsClaimed += totalPoints;
-            user.CurrentStreak++;
-            user.TotalTimesClaimed++;
+
+            if (user.CurrentStreak > user.HighestStreak)
+            {
+                user.HighestStreak = user.CurrentStreak;
+            }
 
             await context.SaveChangesAsync();
 
-            return bonusPoints.HasValue ? bonusPoints.Value.ChatMessage : $"You have claimed your {pointsClaimType.ToString().ToLower()} {pointsName} for {totalPoints:N0} points! You are on a {user.CurrentStreak} day streak!";
+            return $"You have claimed your {pointsClaimType.ToString().ToLower()} {pointsName} for {totalPoints:N0} points! You are on a {user.CurrentStreak} day streak!" + (bonusPoints.HasValue ? $" {bonusPoints.Value.ChatMessage}" : string.Empty);
         }
 
-        //TODO: test this
         public async Task<string> HandleStreakCheckCommand(ChannelChatMessageReceivedParams msgParams, PointsClaimType pointsClaimType)
         {
             var pointsName = await twitchHelperService.GetPointsName(msgParams.BroadcasterChannelId, msgParams.BroadcasterChannelName);
@@ -228,18 +233,22 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch.Commands.DailyPoints
             }
 
             return isCheckingAnotherUser
-                ? $"{usernameToCheck} is on a {user.CurrentStreak} day streak!"
-                : $"You are on a {user.CurrentStreak} day streak!";
+                ? $"{usernameToCheck} is on a {user.CurrentStreak} {pointsClaimType.ToString().ToLower().TrimEnd(['l', 'y'])} streak!"
+                : $"You are on a {user.CurrentStreak} {pointsClaimType.ToString().ToLower().TrimEnd(['l', 'y'])} streak!";
         }
 
-        private static (int BonusPoints, string ChatMessage)? CheckForPointsMilestones(int totalClaims, int currentStreak, string pointsName, PointsClaimType pointsClaimType, Dictionary<int, (int MinPoints, int MaxPoints)> streakMilestones)
+        private static (int BonusPoints, string ChatMessage)? CheckForPointsMilestones(int totalClaims, string pointsName, PointsClaimType pointsClaimType, Dictionary<int, (int MinPoints, int MaxPoints)> streakMilestones)
         {
             foreach (var streakMilestone in streakMilestones)
             {
                 if (totalClaims % streakMilestone.Key == 0)
                 {
                     var randomPoints = new Random().Next(streakMilestone.Value.MinPoints, streakMilestone.Value.MaxPoints);
-                    return (randomPoints, $"As this is your {totalClaims}th time claiming your {pointsClaimType.ToString().ToLower()} {pointsName}, you have been gifted an extra {randomPoints:N0} {pointsName} PogChamp !!! You are on a {currentStreak} day streak");
+                    var suffix = totalClaims % 10 == 1 && totalClaims % 100 != 11 ? "st" :
+                                 totalClaims % 10 == 2 && totalClaims % 100 != 12 ? "nd" :
+                                 totalClaims % 10 == 3 && totalClaims % 100 != 13 ? "rd" : "th";
+
+                    return (randomPoints, $"As this is your {totalClaims}{suffix} time claiming your {pointsClaimType.ToString().ToLower()} {pointsName}, you have been gifted an extra {randomPoints:N0} {pointsName} PogChamp !!!");
                 }
             }
 

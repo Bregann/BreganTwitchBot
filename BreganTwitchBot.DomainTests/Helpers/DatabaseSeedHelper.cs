@@ -263,6 +263,58 @@ namespace BreganTwitchBot.DomainTests.Helpers
                 TotalTimesClaimed = 4
             });
 
+            await context.TwitchDailyPoints.AddAsync(new TwitchDailyPoints
+            {
+                ChannelId = channel.Id,
+                PointsLastClaimed = DateTime.UtcNow,
+                TotalPointsClaimed = 0,
+                ChannelUserId = channelUser2.Id,
+                CurrentStreak = 2,
+                HighestStreak = 2,
+                PointsClaimed = false,
+                PointsClaimType = PointsClaimType.Daily,
+                TotalTimesClaimed = 2
+            });
+
+            await context.TwitchDailyPoints.AddAsync(new TwitchDailyPoints
+            {
+                ChannelId = channel.Id,
+                PointsLastClaimed = DateTime.UtcNow,
+                TotalPointsClaimed = 0,
+                ChannelUserId = channelUser2.Id,
+                CurrentStreak = 3,
+                HighestStreak = 3,
+                PointsClaimed = false,
+                PointsClaimType = PointsClaimType.Weekly,
+                TotalTimesClaimed = 3
+            });
+
+            await context.TwitchDailyPoints.AddAsync(new TwitchDailyPoints
+            {
+                ChannelId = channel.Id,
+                PointsLastClaimed = DateTime.UtcNow,
+                TotalPointsClaimed = 0,
+                ChannelUserId = channelUser2.Id,
+                CurrentStreak = 4,
+                HighestStreak = 4,
+                PointsClaimed = false,
+                PointsClaimType = PointsClaimType.Monthly,
+                TotalTimesClaimed = 4
+            });
+
+            await context.TwitchDailyPoints.AddAsync(new TwitchDailyPoints
+            {
+                ChannelId = channel.Id,
+                PointsLastClaimed = DateTime.UtcNow,
+                TotalPointsClaimed = 0,
+                ChannelUserId = channelUser2.Id,
+                CurrentStreak = 5,
+                HighestStreak = 5,
+                PointsClaimed = false,
+                PointsClaimType = PointsClaimType.Yearly,
+                TotalTimesClaimed = 5
+            });
+
 
             await context.TwitchDailyPoints.AddAsync(new TwitchDailyPoints
             {

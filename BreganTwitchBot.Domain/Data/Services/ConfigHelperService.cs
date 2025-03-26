@@ -24,7 +24,7 @@ namespace BreganTwitchBot.Domain.Data.Services
             using (var scope = _serviceProvider.CreateScope())
             {
                 var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-                _channelConfigs = context.ChannelConfig.ToList();
+                _channelConfigs = context.ChannelConfig.Include(c => c.Channel).ToList();
             }
         }
 

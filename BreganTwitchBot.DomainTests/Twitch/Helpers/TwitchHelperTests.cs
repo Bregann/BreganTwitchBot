@@ -1,5 +1,6 @@
 ﻿using BreganTwitchBot.Domain.Data.Database.Context;
 using BreganTwitchBot.Domain.Data.Services.Twitch;
+using BreganTwitchBot.Domain.Exceptions;
 using BreganTwitchBot.Domain.Interfaces.Twitch;
 using BreganTwitchBot.DomainTests.Helpers;
 using Microsoft.EntityFrameworkCore;
@@ -200,5 +201,61 @@ namespace BreganTwitchBot.DomainTests.Twitch.Helpers
                 await _twitchHelperService.EnsureUserHasModeratorPermissions(isMod, isBroadcaster, viewerUsername, viewerChannelId, broadcasterChannelId, broadcasterChannelName)
             );
         }
+
+        [Test]
+        public async Task AddPointsToUser_AddPointsWhenUserExists_AddsPoints()
+        {
+            var pointsToAdd = 100;
+            _dbContext.ChangeTracker.Clear();
+
+            await _twitchHelperService.AddPointsToUser(DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId, DatabaseSeedHelper.Channel1User1TwitchUserId, pointsToAdd, DatabaseSeedHelper.Channel1BroadcasterTwitchChannelName, DatabaseSeedHelper.Channel1User1TwitchUsername);
+
+            var user = await _dbContext.ChannelUserData
+                .FirstAsync(x => x.Channel.BroadcasterTwitchChannelId == DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId && x.ChannelUser.TwitchUserId == DatabaseSeedHelper.Channel1User1TwitchUserId);
+
+            Assert.That(user.Points, Is.EqualTo(200));
+        }
+
+        [Test]
+        public void AddPointsToUser_WhenUserDoesNotExist_ThrowsTwitchUserNotFoundException()
+        {
+            var pointsToAdd = 100;
+            Assert.ThrowsAsync<TwitchUserNotFoundException>(async () =>
+                await _twitchHelperService.AddPointsToUser(DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId, "nonexistentuser", pointsToAdd, "DoesntExist", DatabaseSeedHelper.Channel1User1TwitchUsername)
+            );
+        }
+
+        [Test]
+        public void AddPointsToUser_WhenUserExistsAndPointsToAddIsNegative_ThrowsInvalidOperationException()
+        {
+            var pointsToAdd = -100;
+            Assert.ThrowsAsync<InvalidOperationException>(async () =>
+                await _twitchHelperService.AddPointsToUser(DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId, DatabaseSeedHelper.Channel1User1TwitchUserId, pointsToAdd, DatabaseSeedHelper.Channel1BroadcasterTwitchChannelName, DatabaseSeedHelper.Channel1User1TwitchUsername)
+            );
+        }
+
+        [Test]
+        public void AddPointsToUser_WhenChannelDoesNotExist_ThrowsInvalidOperationException()
+        {
+            var pointsToAdd = 100;
+            Assert.ThrowsAsync<InvalidOperationException>(async () =>
+                await _twitchHelperService.AddPointsToUser("unknown", DatabaseSeedHelper.Channel1User1TwitchUserId, pointsToAdd, "unknown", DatabaseSeedHelper.Channel1User1TwitchUsername)
+            );
+        }
+
+        [Test]
+        public async Task AddPointsToUser_AddOverPointsCapToUser_AddsMaxOfPointsCap()
+        {
+            var pointsToAdd = 9999999;
+            _dbContext.ChangeTracker.Clear();
+
+            await _twitchHelperService.AddPointsToUser(DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId, DatabaseSeedHelper.Channel1User1TwitchUserId, pointsToAdd, DatabaseSeedHelper.Channel1BroadcasterTwitchChannelName, DatabaseSeedHelper.Channel1User1TwitchUsername);
+
+            var user = await _dbContext.ChannelUserData
+                .FirstAsync(x => x.Channel.BroadcasterTwitchChannelId == DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId && x.ChannelUser.TwitchUserId == DatabaseSeedHelper.Channel1User1TwitchUserId);
+
+            Assert.That(user.Points, Is.EqualTo(1000));
+        }
+
     }
 }
