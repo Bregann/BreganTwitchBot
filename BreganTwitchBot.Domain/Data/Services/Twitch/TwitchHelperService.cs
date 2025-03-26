@@ -51,7 +51,7 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch
             }
         }
 
-        public async Task<string?> GetPointsName(string broadcasterChannelId, string broadcasterChannelName = "")
+        public async Task<string> GetPointsName(string broadcasterChannelId, string broadcasterChannelName = "")
         {
             var sanitisedBroadcasterChannelId = broadcasterChannelId.ToLower().Trim();
 
@@ -63,13 +63,7 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch
             using (var scope = serviceProvider.CreateScope())
             {
                 var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-                var channel = await context.Channels.FirstOrDefaultAsync(x => x.BroadcasterTwitchChannelId == sanitisedBroadcasterChannelId);
-
-                if (channel == null)
-                {
-                    Log.Error($"[Twitch Helper Service] Error getting points name for {broadcasterChannelName}, channelId is null");
-                    return null;
-                }
+                var channel = await context.Channels.FirstAsync(x => x.BroadcasterTwitchChannelId == sanitisedBroadcasterChannelId);
 
                 _pointsNames[sanitisedBroadcasterChannelId] = channel.ChannelConfig.ChannelCurrencyName;
                 return channel.ChannelConfig.ChannelCurrencyName;
@@ -126,7 +120,7 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch
         /// <returns></returns>
         /// <exception cref="InvalidOperationException"></exception>
         /// <exception cref="TwitchUserNotFoundException"></exception>
-        public async Task AddPointsToUser(string broadcasterChannelId, string viewerChannelId, int pointsToAdd, string broadcasterChannelName, string viewerUsername)
+        public async Task AddPointsToUser(string broadcasterChannelId, string viewerChannelId, long pointsToAdd, string broadcasterChannelName, string viewerUsername)
         {
             if (pointsToAdd <= 0)
             {
@@ -137,23 +131,15 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch
             using (var scope = serviceProvider.CreateScope())
             {
                 var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-                var channel = await context.Channels.FirstOrDefaultAsync(x => x.BroadcasterTwitchChannelId == broadcasterChannelId);
+                var channel = await context.Channels.FirstAsync(x => x.BroadcasterTwitchChannelId == broadcasterChannelId);
 
-                if (channel == null)
+                var userPoints = await context.ChannelUserData.FirstOrDefaultAsync(x => x.Channel.BroadcasterTwitchChannelId == broadcasterChannelId && x.ChannelUser.TwitchUserId == viewerChannelId);
+
+                if (userPoints == null)
                 {
-                    Log.Error($"[Twitch Helper Service] Error adding points to {viewerUsername}, channelId is null");
-                    throw new InvalidOperationException("Channel not found");
+                    Log.Warning($"[Twitch Helper Service] Error removing points from {viewerUsername}, userPoints is null");
+                    throw new TwitchUserNotFoundException($"User {viewerUsername} not found in channel {broadcasterChannelName} when attempting to add points");
                 }
-
-                var user = await context.ChannelUsers.FirstOrDefaultAsync(x => x.TwitchUserId == viewerChannelId.ToLower().Trim());
-
-                if (user == null)
-                {
-                    Log.Error($"[Twitch Helper Service] Error adding points to {viewerUsername}, user is null");
-                    throw new TwitchUserNotFoundException("Error adding points to the user - user not found");
-                }
-
-                var userPoints = await context.ChannelUserData.FirstAsync(x => x.ChannelUserId == user.Id && x.ChannelId == channel.Id);
 
                 // check if the new amount of points will make the user above the points cap
                 if (userPoints.Points + pointsToAdd > channel.ChannelConfig.CurrencyPointCap)
@@ -169,6 +155,82 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch
                 await context.SaveChangesAsync();
 
                 Log.Information($"[Twitch Helper Service] Added {pointsToAdd} points to {viewerUsername} in {broadcasterChannelName}");
+            }
+        }
+
+        /// <summary>
+        /// Removes points from a user in a channel
+        /// </summary>
+        /// <param name="broadcasterChannelId"></param>
+        /// <param name="viewerChannelId"></param>
+        /// <param name="pointsToRemove"></param>
+        /// <param name="broadcasterChannelName"></param>
+        /// <param name="viewerUsername"></param>
+        /// <returns></returns>
+        /// <exception cref="InvalidOperationException"></exception>
+        /// <exception cref="TwitchUserNotFoundException"></exception>
+        public async Task RemovePointsFromUser(string broadcasterChannelId, string viewerChannelId, long pointsToRemove, string broadcasterChannelName, string viewerUsername)
+        {
+            if (pointsToRemove <= 0)
+            {
+                Log.Warning($"[Twitch Helper Service] Error removing points from {viewerUsername}, pointsToRemove is less than or equal to 0");
+                throw new InvalidOperationException("Points to remove must be greater than 0");
+            }
+
+            using (var scope = serviceProvider.CreateScope())
+            {
+                var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+                var userPoints = await context.ChannelUserData.FirstOrDefaultAsync(x => x.Channel.BroadcasterTwitchChannelId == broadcasterChannelId && x.ChannelUser.TwitchUserId == viewerChannelId);
+                
+                if(userPoints == null)
+                {
+                    Log.Warning($"[Twitch Helper Service] Error removing points from {viewerUsername}, userPoints is null");
+                    throw new TwitchUserNotFoundException($"User {viewerUsername} not found in channel {broadcasterChannelName} when attempting to remove points");
+                }
+
+                // check if the new amount of points will make the user below 0
+                if (userPoints.Points - pointsToRemove < 0)
+                {
+                    userPoints.Points = 0;
+                    await context.SaveChangesAsync();
+                    Log.Information($"[Twitch Helper Service] Removed {pointsToRemove} points from {viewerUsername} in {broadcasterChannelName}, but capped at 0");
+                    return;
+                }
+
+                userPoints.Points -= pointsToRemove;
+                await context.SaveChangesAsync();
+
+                Log.Information($"[Twitch Helper Service] Removed {pointsToRemove} points from {viewerUsername} in {broadcasterChannelName}");
+            }
+        }
+
+        public async Task<bool> IsBroadcasterLive(string broadcasterChannelId)
+        {
+            using (var scope = serviceProvider.CreateScope())
+            {
+                var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+                var config = await context.ChannelConfig.FirstAsync(x => x.Channel.BroadcasterTwitchChannelId == broadcasterChannelId);
+
+                return config.BroadcasterLive;
+            }
+        }
+
+        public async Task<long> GetPointsForUser(string broadcasterChannelId, string userChannelId, string broadcasterUsername, string userChannelName)
+        {
+            using (var scope = serviceProvider.CreateScope())
+            {
+                var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+                var userPoints = await context.ChannelUserData.FirstOrDefaultAsync(x => x.Channel.BroadcasterTwitchChannelId == broadcasterChannelId && x.ChannelUser.TwitchUserId == userChannelId);
+
+                if (userPoints == null)
+                {
+                    Log.Warning($"[Twitch Helper Service] Error getting points for {userChannelName}, userPoints is null");
+                    throw new TwitchUserNotFoundException($"User {userChannelName} not found in channel {broadcasterUsername}");
+                }
+
+                return userPoints.Points;
             }
         }
     }

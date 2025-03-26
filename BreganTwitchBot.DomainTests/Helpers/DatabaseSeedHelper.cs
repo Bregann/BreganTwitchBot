@@ -70,7 +70,8 @@ namespace BreganTwitchBot.DomainTests.Helpers
                 StreamHappenedThisWeek = false,
                 SubathonTime = TimeSpan.FromHours(1),
                 LastStreamStartDate = DateTime.UtcNow.AddDays(-2),
-                LastStreamEndDate = DateTime.UtcNow.AddDays(-1)
+                LastStreamEndDate = DateTime.UtcNow.AddDays(-1),
+                BroadcasterLive = true
             });
 
             await context.ChannelConfig.AddAsync(new ChannelConfig
@@ -85,7 +86,8 @@ namespace BreganTwitchBot.DomainTests.Helpers
                 StreamHappenedThisWeek = false,
                 SubathonTime = TimeSpan.FromHours(1),
                 LastStreamStartDate = DateTime.UtcNow.AddDays(-2),
-                LastStreamEndDate = DateTime.UtcNow.AddDays(-1)
+                LastStreamEndDate = DateTime.UtcNow.AddDays(-1),
+                BroadcasterLive = true
             });
 
             await context.SaveChangesAsync();

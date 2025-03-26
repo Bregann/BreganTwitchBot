@@ -23,6 +23,9 @@ namespace BreganTwitchBot.Domain.Data.Database.Models
         public required int Tier3Wins { get; set; }
 
         [Required]
+        public required int BookWins { get; set; }
+
+        [Required]
         public required int JackpotWins { get; set; }
 
         [Required]

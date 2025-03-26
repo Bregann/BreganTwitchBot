@@ -76,6 +76,10 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch.Commands.DailyPoints
                     var dailyPointsResponse = await dailyPointsDataService.HandlePointsClaimed(msgParams, pointsClaimType);
                     await twitchHelperService.SendTwitchMessageToChannel(msgParams.BroadcasterChannelId, msgParams.BroadcasterChannelName, dailyPointsResponse, msgParams.MessageId);
                 }
+                catch (TwitchUserNotFoundException ex)
+                {
+                    await twitchHelperService.SendTwitchMessageToChannel(msgParams.BroadcasterChannelId, msgParams.BroadcasterChannelName, ex.Message, msgParams.MessageId);
+                }
                 catch (Exception ex)
                 {
                     await twitchHelperService.SendTwitchMessageToChannel(msgParams.BroadcasterChannelId, msgParams.BroadcasterChannelName, "uh oh error", msgParams.MessageId);

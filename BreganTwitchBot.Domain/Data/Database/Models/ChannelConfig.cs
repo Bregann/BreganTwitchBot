@@ -44,6 +44,9 @@ namespace BreganTwitchBot.Domain.Data.Database.Models
         [Required]
         public required TimeSpan SubathonTime { get; set; }
 
+        [Required]
+        public required bool BroadcasterLive { get; set; }
+
         // Discord related properties
         public ulong? DiscordGuildOwnerId { get; set; } = null;
         public ulong? DiscordEventChannelId { get; set; } = null;
