@@ -108,6 +108,7 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch.Commands.Gambling
             }
 
             var slotMachineDbData = await context.TwitchSlotMachineStats.FirstAsync(x => x.Channel.BroadcasterTwitchChannelId == broadcasterId);
+            var userSlotMachineDbData = await context.ChannelUserGambleStats.FirstAsync(x => x.Channel.BroadcasterTwitchChannelId == broadcasterId && x.ChannelUser.TwitchUserId == twitchUserId);
 
             var winMultipliers = new Dictionary<string, long>
             {
@@ -135,6 +136,7 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch.Commands.Gambling
                         winAmount = slotMachineDbData.JackpotAmount;
                         slotMachineDbData.JackpotAmount = 20000;
                         slotMachineDbData.JackpotWins++;
+                        userSlotMachineDbData.JackpotWins++;
 
                         spinResultMessage = $"You have spun {emoteList[0]} | {emoteList[1]} | {emoteList[2]} . DING DING DING JACKPOT!!! You have won {winAmount:N0} {pointsName}!";
                         Log.Information($"{twitchUsername} got a TriHard win in channel {broadcasterUsername}");
@@ -143,6 +145,7 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch.Commands.Gambling
                     {
                         winAmount = 1;
                         slotMachineDbData.SmorcWins++;
+                        userSlotMachineDbData.SmorcWins++;
 
                         spinResultMessage = $"You have spun {emoteList[0]} | {emoteList[1]} | {emoteList[2]} . DING DING DING BUDGET JACKPOT!!! You have won the grand total of 1 WHOLE {pointsName} PogChamp PogChamp PogChamp";
                         Log.Information($"{twitchUsername} got a SMOrc win in channel {broadcasterUsername}");
@@ -156,15 +159,19 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch.Commands.Gambling
                         {
                             case "Kappa":
                                 slotMachineDbData.Tier1Wins++;
+                                userSlotMachineDbData.Tier1Wins++;
                                 break;
                             case "4Head":
                                 slotMachineDbData.Tier2Wins++;
+                                userSlotMachineDbData.Tier2Wins++;
                                 break;
                             case "📖":
                                 slotMachineDbData.BookWins++;
+                                userSlotMachineDbData.BookWins++;
                                 break;
                             case "LUL":
                                 slotMachineDbData.Tier3Wins++;
+                                userSlotMachineDbData.Tier3Wins++;
                                 break;
                         }
 
@@ -180,11 +187,13 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch.Commands.Gambling
             {
                 Log.Information($"{twitchUsername} got a loss in channel {broadcasterUsername}");
                 spinResultMessage = $"You have spun {emoteList[0]} | {emoteList[1]} | {emoteList[2]} . You are not lucky :( Have this to increase your luck! 🍀 🌳";
+                userSlotMachineDbData.PointsLost += pointsGambled;
             }
 
             if (winAmount > 0)
             {
                 await twitchHelperService.AddPointsToUser(broadcasterId, twitchUserId, winAmount, broadcasterUsername, twitchUsername);
+                userSlotMachineDbData.PointsWon += winAmount;
             }
             else
             {
@@ -193,6 +202,8 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch.Commands.Gambling
             }
 
             slotMachineDbData.TotalSpins++;
+            userSlotMachineDbData.TotalSpins++;
+            userSlotMachineDbData.PointsGambled += pointsGambled;
             await context.SaveChangesAsync();
 
             return spinResultMessage;

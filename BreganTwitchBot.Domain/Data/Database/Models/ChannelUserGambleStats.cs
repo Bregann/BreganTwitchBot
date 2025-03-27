@@ -45,5 +45,8 @@ namespace BreganTwitchBot.Domain.Data.Database.Models
 
         [Required]
         public required int SmorcWins { get; set; }
+
+        [Required]
+        public required int BookWins { get; set; }
     }
 }

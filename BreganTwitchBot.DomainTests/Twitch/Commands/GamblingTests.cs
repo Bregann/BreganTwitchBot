@@ -135,11 +135,14 @@ namespace BreganTwitchBot.DomainTests.Twitch.Commands
 
             var result = await _gamblingDataService.HandleSpinCommand(msgParams);
             var gambleStats = await _dbContext.TwitchSlotMachineStats.FirstAsync(x => x.Channel.BroadcasterTwitchChannelId == msgParams.BroadcasterChannelId);
+            var userGambleStats = await _dbContext.ChannelUserGambleStats.FirstAsync(x => x.ChannelUser.TwitchUserId == msgParams.ChatterChannelId);
 
             Assert.Multiple(() =>
             {
                 Assert.That(result, Is.Not.Null);
                 Assert.That(gambleStats.TotalSpins, Is.EqualTo(1));
+                Assert.That(userGambleStats.PointsGambled, Is.EqualTo(200));
+                Assert.That(userGambleStats.TotalSpins, Is.EqualTo(1));
             });
         }
 
@@ -152,11 +155,14 @@ namespace BreganTwitchBot.DomainTests.Twitch.Commands
             var msgParams = MessageParamsHelper.CreateChatMessageParams("!spin 200", "123", ["!spin", "200"]);
             var result = await _gamblingDataService.HandleSpinCommand(msgParams);
             var gambleStats = await _dbContext.TwitchSlotMachineStats.FirstAsync(x => x.Channel.BroadcasterTwitchChannelId == msgParams.BroadcasterChannelId);
+            var userGambleStats = await _dbContext.ChannelUserGambleStats.FirstAsync(x => x.ChannelUser.TwitchUserId == msgParams.ChatterChannelId);
 
             Assert.Multiple(() =>
             {
                 Assert.That(result, Is.Not.Null);
                 Assert.That(gambleStats.TotalSpins, Is.EqualTo(1));
+                Assert.That(userGambleStats.PointsGambled, Is.EqualTo(200));
+                Assert.That(userGambleStats.TotalSpins, Is.EqualTo(1));
             });
 
             Assert.That(result, Is.Not.Null);
