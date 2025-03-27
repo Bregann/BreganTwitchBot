@@ -30,11 +30,17 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch.Commands.Gambling
                 throw new InvalidCommandException("You need to specify an amount to gamble! Usage: !spin <amount> or if you are an absolute mad lad do !spin all");
             }
 
+
             var userPoints = await twitchHelperService.GetPointsForUser(msgParams.BroadcasterChannelId, msgParams.ChatterChannelId, msgParams.BroadcasterChannelName, msgParams.ChatterChannelName);
             var pointsName = await twitchHelperService.GetPointsName(msgParams.BroadcasterChannelId, msgParams.BroadcasterChannelName);
 
             if (msgParams.MessageParts[1].ToLower() == "all")
             {
+                if (userPoints < 100)
+                {
+                    throw new InvalidCommandException($"You need to have at least 100 {pointsName} to gamble all! Usage: !spin <amount> or if you are an absolute mad lad do !spin all");
+                }
+
                 return await SpinSlotMachine(userPoints, msgParams.ChatterChannelId, msgParams.BroadcasterChannelId, msgParams.ChatterChannelName, msgParams.BroadcasterChannelName, pointsName);
             }
 
@@ -43,12 +49,25 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch.Commands.Gambling
                 throw new InvalidCommandException("You need to specify a valid amount to gamble! Usage: !spin <amount> or if you are an absolute mad lad do !spin all");
             }
 
+            if (pointsGambled < 100)
+            {
+                throw new InvalidCommandException($"You have to gamble at least 100 {pointsName}! Usage: !spin <amount> or if you are an absolute mad lad do !spin all");
+            }
+
             if (pointsGambled > userPoints)
             {
                 throw new InvalidCommandException($"You do not have enough {pointsName} to gamble that amount! You have {userPoints:N0} {pointsName}");
             }
 
             return await SpinSlotMachine(pointsGambled, msgParams.ChatterChannelId, msgParams.BroadcasterChannelId, msgParams.ChatterChannelName, msgParams.BroadcasterChannelName, pointsName);
+        }
+
+        public async Task<string> GetJackpotAmount(ChannelChatMessageReceivedParams msgParams)
+        {
+            var slotMachineDbData = await context.TwitchSlotMachineStats.FirstAsync(x => x.Channel.BroadcasterTwitchChannelId == msgParams.BroadcasterChannelId);
+            var pointsName = await twitchHelperService.GetPointsName(msgParams.BroadcasterChannelId, msgParams.BroadcasterChannelName);
+
+            return $"The current jackpot is {slotMachineDbData.JackpotAmount:N0} {pointsName}";
         }
 
         private async Task<string> SpinSlotMachine(long pointsGambled, string twitchUserId, string broadcasterId, string twitchUsername, string broadcasterUsername, string pointsName)
@@ -103,10 +122,10 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch.Commands.Gambling
             long winAmount = 0;
             var spinResultMessage = $"You have spun {emoteList[0]} | {emoteList[1]} | {emoteList[2]} . You have won {winAmount} {pointsName}!";
 
-            // Check if all emotes are the same
             var firstEmote = emoteList[0];
 
-            if (emoteList.All(x => x == firstEmote)) // Check if all items in the list match the first emote
+            // Check if all items in the list match the first emote
+            if (emoteList.All(x => x == firstEmote)) 
             {
                 if (winMultipliers.ContainsKey(firstEmote))
                 {

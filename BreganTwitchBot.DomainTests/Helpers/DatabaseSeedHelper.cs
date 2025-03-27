@@ -371,6 +371,21 @@ namespace BreganTwitchBot.DomainTests.Helpers
             });
 
             await context.SaveChangesAsync();
+
+            await context.TwitchSlotMachineStats.AddAsync(new TwitchSlotMachineStats
+            {
+                ChannelId = channel.Id,
+                JackpotAmount = 1000,
+                BookWins = 0,
+                JackpotWins = 0,
+                SmorcWins = 0,
+                Tier1Wins = 0,
+                Tier2Wins = 0,
+                Tier3Wins = 0,
+                TotalSpins = 0
+            });
+
+            await context.SaveChangesAsync();
         }
     }
 }

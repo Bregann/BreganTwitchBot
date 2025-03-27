@@ -7,6 +7,7 @@ using BreganTwitchBot.Domain.Data.Services.Twitch.Commands.CustomCommands;
 using BreganTwitchBot.Domain.Data.Services.Twitch.Commands.DadJoke;
 using BreganTwitchBot.Domain.Data.Services.Twitch.Commands.DailyPoints;
 using BreganTwitchBot.Domain.Data.Services.Twitch.Commands.FollowAge;
+using BreganTwitchBot.Domain.Data.Services.Twitch.Commands.Gambling;
 using BreganTwitchBot.Domain.Data.Services.Twitch.Commands.Points;
 using BreganTwitchBot.Domain.Enums;
 using BreganTwitchBot.Domain.Helpers;
@@ -151,6 +152,9 @@ builder.Services.AddScoped<ICustomCommandDataService, CustomCommandsDataService>
 
 builder.Services.AddSingleton<DailyPointsCommandService>();
 builder.Services.AddScoped<IDailyPointsDataService, DailyPointsDataService>();
+
+builder.Services.AddSingleton<GamblingCommandService>();
+builder.Services.AddScoped<IGamblingDataService, GamblingDataService>();
 
 // hangfire
 builder.Services.AddHangfireServer(options => options.SchedulePollingInterval = TimeSpan.FromSeconds(10));
