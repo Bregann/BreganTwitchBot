@@ -1,7 +1,8 @@
-﻿using BreganTwitchBot.Domain.Interfaces.Twitch;
-using BreganTwitchBot.Domain.Interfaces.Twitch.Api;
+﻿using BreganTwitchBot.Domain.DTOs.Twitch.Api;
+using BreganTwitchBot.Domain.Interfaces.Twitch;
 using TwitchLib.Api;
 using TwitchLib.Api.Helix.Models.Moderation.CheckAutoModStatus;
+using System.Linq;
 
 namespace BreganTwitchBot.Domain.Data.Services.Twitch
 {
@@ -57,6 +58,35 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch
         public async Task SendChatMessage(TwitchAPI apiClient, string broadcasterChannelId, string twitchChannelClientId, string message, string? originalMessageId = null)
         {
             await apiClient.Helix.Chat.SendChatMessage(broadcasterChannelId, twitchChannelClientId, message, originalMessageId);
+        }
+
+        public async Task<GetChattersResult> GetChattersAsync(TwitchAPI apiClient, string broadcasterChannelId, string moderatorId)
+        {
+            var res = await apiClient.Helix.Chat.GetChattersAsync(broadcasterChannelId, moderatorId, 1000);
+            
+            var chatters = res.Data.Select(item => new Chatters
+            {
+                UserId = item.UserId,
+                UserName = item.UserName
+            }).ToList();
+
+            if (res.Pagination.Cursor != null)
+            {
+                while (res.Pagination.Cursor != null)
+                {
+                    res = await apiClient.Helix.Chat.GetChattersAsync(broadcasterChannelId, moderatorId, 1000, res.Pagination.Cursor);
+                    chatters.AddRange(res.Data.Select(item => new Chatters
+                    {
+                        UserId = item.UserId,
+                        UserName = item.UserName
+                    }).ToList());
+                }
+            }
+
+            return new GetChattersResult
+            {
+                Chatters = chatters
+            };
         }
     }
 }

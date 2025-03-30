@@ -1,4 +1,4 @@
-﻿using BreganTwitchBot.Domain.Interfaces.Twitch.Api;
+﻿using BreganTwitchBot.Domain.DTOs.Twitch.Api;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,5 +13,6 @@ namespace BreganTwitchBot.Domain.Interfaces.Twitch
         Task<GetUsersAsyncResponse?> GetUsersAsync(TwitchAPI apiClient, string twitchUsername);
         Task<GetChannelFollowersAsyncResponse?> GetChannelFollowersAsync(TwitchAPI apiClient, string broadcasterId, string userId);
         Task SendChatMessage(TwitchAPI apiClient, string broadcasterChannelId, string twitchChannelClientId, string message, string? originalMessageId = null);
+        Task<GetChattersResult> GetChattersAsync(TwitchAPI apiClient, string broadcasterChannelId, string moderatorId);
     }
 }

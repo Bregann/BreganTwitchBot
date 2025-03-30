@@ -21,6 +21,9 @@ namespace BreganTwitchBot.Domain.Data.Database.Models
         public required DateTime AddedOn { get; set; }
 
         [Required]
+        public required DateTime LastSeen { get; set; }
+
+        [Required]
         public required bool CanUseOpenAi { get; set; }
 
         public virtual ICollection<ChannelUserData> ChannelUserData { get; set; } = null!;

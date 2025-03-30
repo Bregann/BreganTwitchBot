@@ -20,7 +20,7 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch
                 ?response_type=code
                 &client_id=
                 &redirect_uri=http://localhost
-                &scope=bits:read+channel:moderate+channel:read:subscriptions+moderation:read+channel:read:redemptions+channel:read:hype_train+channel:manage:broadcast+channel:manage:redemptions+channel:manage:polls+channel:manage:predictions+channel:manage:raids+channel:read:vips+moderator:manage:shoutouts+moderator:read:followers+moderator:manage:unban_requests
+                &scope=bits:read+channel:moderate+moderator:read:chatters+channel:read:subscriptions+moderation:read+channel:read:redemptions+channel:read:hype_train+channel:manage:broadcast+channel:manage:redemptions+channel:manage:polls+channel:manage:predictions+channel:manage:raids+channel:read:vips+moderator:manage:shoutouts+moderator:read:followers+moderator:manage:unban_requests
  */
 
     public class TwitchApiConnection : ITwitchApiConnection

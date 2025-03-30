@@ -1,7 +1,7 @@
 ﻿using Newtonsoft.Json;
 
 
-namespace BreganTwitchBot.Domain.Interfaces.Twitch.Api
+namespace BreganTwitchBot.Domain.DTOs.Twitch.Api
 {
     public class GetChannelFollowersAsyncResponse
     {

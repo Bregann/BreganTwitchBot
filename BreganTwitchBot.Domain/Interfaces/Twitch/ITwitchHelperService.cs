@@ -11,5 +11,6 @@
         Task<bool> IsBroadcasterLive(string broadcasterChannelId);
         Task<long> GetPointsForUser(string broadcasterChannelId, string userChannelId, string broadcasterUsername, string userChannelName);
         Task RemovePointsFromUser(string broadcasterChannelId, string viewerChannelId, long pointsToRemove, string broadcasterChannelName, string viewerUsername);
+        Task AddOrUpdateUserToDatabase(string broadcasterChannelId, string userChannelId, string broadcasterUsername, string userChannelName, bool addMinutes = false);
     }
 }

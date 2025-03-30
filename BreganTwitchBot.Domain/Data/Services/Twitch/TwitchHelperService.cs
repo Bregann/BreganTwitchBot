@@ -1,4 +1,6 @@
 ﻿using BreganTwitchBot.Domain.Data.Database.Context;
+using BreganTwitchBot.Domain.Data.Database.Models;
+using BreganTwitchBot.Domain.Enums;
 using BreganTwitchBot.Domain.Exceptions;
 using BreganTwitchBot.Domain.Interfaces.Twitch;
 using Microsoft.EntityFrameworkCore;
@@ -182,8 +184,8 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch
                 var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
 
                 var userPoints = await context.ChannelUserData.FirstOrDefaultAsync(x => x.Channel.BroadcasterTwitchChannelId == broadcasterChannelId && x.ChannelUser.TwitchUserId == viewerChannelId);
-                
-                if(userPoints == null)
+
+                if (userPoints == null)
                 {
                     Log.Warning($"[Twitch Helper Service] Error removing points from {viewerUsername}, userPoints is null");
                     throw new TwitchUserNotFoundException($"User {viewerUsername} not found in channel {broadcasterChannelName} when attempting to remove points");
@@ -231,6 +233,151 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch
                 }
 
                 return userPoints.Points;
+            }
+        }
+
+        //TODO: test this method
+        public async Task AddOrUpdateUserToDatabase(string broadcasterChannelId, string userChannelId, string broadcasterUsername, string userChannelName, bool addMinutes = false)
+        {
+            using (var scope = serviceProvider.CreateScope())
+            {
+                var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+                var user = await context.ChannelUsers.FirstOrDefaultAsync(x => x.TwitchUserId == userChannelId);
+                var broadcasterChannel = await context.Channels.FirstAsync(x => x.BroadcasterTwitchChannelId == broadcasterChannelId);
+
+                // if the user does not exist then add into the database
+                if (user == null)
+                {
+                    user = new ChannelUser
+                    {
+                        AddedOn = DateTime.UtcNow,
+                        LastSeen = DateTime.UtcNow,
+                        CanUseOpenAi = false,
+                        DiscordUserId = 0,
+                        TwitchUserId = userChannelId,
+                        TwitchUsername = userChannelName.ToLower().Trim()
+                    };
+
+                    await context.ChannelUsers.AddAsync(user);
+                    await context.SaveChangesAsync();
+                }
+
+                // check if they are in user stats for the specifc broadcaster
+                // if they are then dont process them
+                if (user.ChannelUserStats.Any(x => x.ChannelId == broadcasterChannel.Id))
+                {
+                    user.TwitchUsername = userChannelName.ToLower().Trim();
+                    user.LastSeen = DateTime.UtcNow;
+                    await context.SaveChangesAsync();
+                    return;
+                }
+
+                user.ChannelUserGambleStats.Add(new ChannelUserGambleStats
+                {
+                    BookWins = 0,
+                    ChannelId = broadcasterChannel.Id,
+                    ChannelUserId = user.Id,
+                    JackpotWins = 0,
+                    PointsGambled = 0,
+                    PointsLost = 0,
+                    PointsWon = 0,
+                    SmorcWins = 0,
+                    Tier1Wins = 0,
+                    Tier2Wins = 0,
+                    Tier3Wins = 0,
+                    TotalSpins = 0
+                });
+
+                user.ChannelUserStats.Add(new ChannelUserStats
+                {
+                    BitsDonatedThisMonth = 0,
+                    BossesDone = 0,
+                    BossesPointsWon = 0,
+                    ChannelId = broadcasterChannel.Id,
+                    ChannelUserId = user.Id,
+                    GiftedSubsThisMonth = 0,
+                    MarblesWins = 0,
+                    TotalMessages = 0,
+                });
+
+                user.ChannelUserData.Add(new ChannelUserData
+                {
+                    ChannelId = broadcasterChannel.Id,
+                    ChannelUserId = user.Id,
+                    InStream = true,
+                    IsSub = false,
+                    IsSuperMod = false,
+                    Points = 0,
+                    TimeoutStrikes = 0,
+                    WarnStrikes = 0
+                });
+
+                user.ChannelUserWatchtimes.Add(new ChannelUserWatchtime
+                {
+                    ChannelId = broadcasterChannel.Id,
+                    ChannelUserId = user.Id,
+                    MinutesInStream = addMinutes ? 1 : 0,
+                    MinutesWatchedThisMonth = addMinutes ? 1 : 0,
+                    MinutesWatchedThisStream = addMinutes ? 1 : 0,
+                    MinutesWatchedThisWeek = addMinutes ? 1 : 0,
+                    MinutesWatchedThisYear = addMinutes ? 1 : 0
+                });
+
+                user.TwitchDailyPoints.Add(new TwitchDailyPoints
+                {
+                    ChannelId = broadcasterChannel.Id,
+                    ChannelUserId = user.Id,
+                    CurrentStreak = 0,
+                    HighestStreak = 0,
+                    PointsClaimed = false,
+                    PointsClaimType = PointsClaimType.Daily,
+                    PointsLastClaimed = new DateTime(0),
+                    TotalPointsClaimed = 0,
+                    TotalTimesClaimed = 0
+                });
+
+                user.TwitchDailyPoints.Add(new TwitchDailyPoints
+                {
+                    ChannelId = broadcasterChannel.Id,
+                    ChannelUserId = user.Id,
+                    CurrentStreak = 0,
+                    HighestStreak = 0,
+                    PointsClaimed = false,
+                    PointsClaimType = PointsClaimType.Weekly,
+                    PointsLastClaimed = new DateTime(0),
+                    TotalPointsClaimed = 0,
+                    TotalTimesClaimed = 0
+                });
+
+                user.TwitchDailyPoints.Add(new TwitchDailyPoints
+                {
+                    ChannelId = broadcasterChannel.Id,
+                    ChannelUserId = user.Id,
+                    CurrentStreak = 0,
+                    HighestStreak = 0,
+                    PointsClaimed = false,
+                    PointsClaimType = PointsClaimType.Monthly,
+                    PointsLastClaimed = new DateTime(0),
+                    TotalPointsClaimed = 0,
+                    TotalTimesClaimed = 0
+                });
+
+                user.TwitchDailyPoints.Add(new TwitchDailyPoints
+                {
+                    ChannelId = broadcasterChannel.Id,
+                    ChannelUserId = user.Id,
+                    CurrentStreak = 0,
+                    HighestStreak = 0,
+                    PointsClaimed = false,
+                    PointsClaimType = PointsClaimType.Yearly,
+                    PointsLastClaimed = new DateTime(0),
+                    TotalPointsClaimed = 0,
+                    TotalTimesClaimed = 0
+                });
+
+                await context.SaveChangesAsync();
+                Log.Information($"new user {userChannelName} added to channel {broadcasterUsername}");
+                return;
             }
         }
     }

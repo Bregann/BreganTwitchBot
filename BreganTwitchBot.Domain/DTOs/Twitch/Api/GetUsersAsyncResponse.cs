@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace BreganTwitchBot.Domain.Interfaces.Twitch.Api
+namespace BreganTwitchBot.Domain.DTOs.Twitch.Api
 {
     public class GetUsersAsyncResponse
     {
