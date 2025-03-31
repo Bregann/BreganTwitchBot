@@ -99,6 +99,7 @@ namespace BreganTwitchBot.DomainTests.Helpers
                 DiscordUserId = 0,
                 TwitchUserId = Channel1User1TwitchUserId,
                 TwitchUsername = Channel1User1TwitchUsername,
+                LastSeen = DateTime.UtcNow
             };
 
             var channelUser2 = new ChannelUser
@@ -108,6 +109,7 @@ namespace BreganTwitchBot.DomainTests.Helpers
                 DiscordUserId = 0,
                 TwitchUserId = Channel1User2TwitchUserId,
                 TwitchUsername = Channel1User2TwitchUsername,
+                LastSeen = DateTime.UtcNow
             };
 
             var channelUser3 = new ChannelUser
@@ -117,6 +119,7 @@ namespace BreganTwitchBot.DomainTests.Helpers
                 DiscordUserId = 0,
                 TwitchUserId = Channel2User1TwitchUserId,
                 TwitchUsername = Channel2User1TwitchUsername,
+                LastSeen = DateTime.UtcNow
             };
 
             var superModUser = new ChannelUser
@@ -126,6 +129,7 @@ namespace BreganTwitchBot.DomainTests.Helpers
                 DiscordUserId = 0,
                 TwitchUserId = Channel1SuperModUserTwitchUserId,
                 TwitchUsername = Channel1SuperModUserTwitchUsername,
+                LastSeen = DateTime.UtcNow
             };
 
             await context.ChannelUsers.AddAsync(channelUser);
@@ -399,6 +403,19 @@ namespace BreganTwitchBot.DomainTests.Helpers
                 Tier2Wins = 0,
                 Tier3Wins = 0,
                 TotalSpins = 0
+            });
+
+            await context.SaveChangesAsync();
+
+            await context.ChannelUserWatchtime.AddAsync(new ChannelUserWatchtime
+            {
+                ChannelId = channel.Id,
+                ChannelUserId = channelUser.Id,
+                MinutesWatchedThisStream = 0,
+                MinutesWatchedThisWeek = 1,
+                MinutesWatchedThisMonth = 2,
+                MinutesWatchedThisYear = 3,
+                MinutesInStream = 4
             });
 
             await context.SaveChangesAsync();

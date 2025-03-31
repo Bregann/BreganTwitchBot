@@ -1,5 +1,8 @@
 ﻿using BreganTwitchBot.Domain.Data.Database.Context;
 using BreganTwitchBot.Domain.Data.Database.Models;
+using BreganTwitchBot.Domain.DTOs.Twitch.EventSubEvents;
+using BreganTwitchBot.Domain.Enums;
+using BreganTwitchBot.Domain.Exceptions;
 using BreganTwitchBot.Domain.Interfaces.Twitch;
 using BreganTwitchBot.Domain.Interfaces.Twitch.Commands;
 using Microsoft.EntityFrameworkCore;
@@ -7,6 +10,7 @@ using Serilog;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -83,6 +87,53 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch.Commands.Hours
             }
 
             Log.Information($"Watchtime update completed. {chatters.Chatters.Count} users updated");
+        }
+
+        public async Task<string> GetHoursCommand(ChannelChatMessageReceivedParams msgParams, HoursWatchTypes hoursType)
+        {
+            var twitchIdToCheck = msgParams.ChatterChannelId;
+            var twitchUsernameToCheck = msgParams.ChatterChannelName;
+
+            // If theres more than one part to the message, we need to check if the second part is a user
+            if (msgParams.MessageParts.Length > 1)
+            {
+                var userToCheck = await twitchHelperService.GetTwitchUserIdFromUsername(msgParams.MessageParts[1].TrimStart('@').ToLower());
+
+                if (userToCheck == null)
+                {
+                    throw new TwitchUserNotFoundException($"User not found!");
+                }
+
+                twitchIdToCheck = userToCheck;
+                twitchUsernameToCheck = msgParams.MessageParts[1].TrimStart('@');
+            }
+
+            var userWatchtime = await context.ChannelUserWatchtime.FirstOrDefaultAsync(x => x.Channel.BroadcasterTwitchChannelId == msgParams.BroadcasterChannelId && x.ChannelUser.TwitchUserId == twitchIdToCheck);
+
+            if (userWatchtime == null)
+            {
+                throw new TwitchUserNotFoundException($"Oh dear this user doesn't have any watchtime in the channel!");
+            }
+
+            var timeSpan = hoursType switch
+            {
+                HoursWatchTypes.Stream => TimeSpan.FromMinutes(userWatchtime.MinutesWatchedThisStream),
+                HoursWatchTypes.Week => TimeSpan.FromMinutes(userWatchtime.MinutesWatchedThisWeek),
+                HoursWatchTypes.Month => TimeSpan.FromMinutes(userWatchtime.MinutesWatchedThisMonth),
+                HoursWatchTypes.AllTime => TimeSpan.FromMinutes(userWatchtime.MinutesInStream),
+                _ => throw new ArgumentOutOfRangeException(nameof(hoursType), hoursType, null)
+            };
+
+            var msgType = hoursType switch
+            {
+                HoursWatchTypes.Stream => "this stream!",
+                HoursWatchTypes.Week => "this week!",
+                HoursWatchTypes.Month => "this month!",
+                HoursWatchTypes.AllTime => "in the stream!",
+                _ => throw new ArgumentOutOfRangeException(nameof(hoursType), hoursType, null)
+            };
+
+            return msgParams.MessageParts.Length > 1 ? $"{twitchUsernameToCheck} has {timeSpan.TotalMinutes} minutes (about {Math.Round(timeSpan.TotalMinutes / 60, 2)} hours) {msgType}" : $"You have {timeSpan.TotalMinutes} minutes (about {Math.Round(timeSpan.TotalMinutes / 60, 2)} hours) {msgType}";
         }
     }
 }
