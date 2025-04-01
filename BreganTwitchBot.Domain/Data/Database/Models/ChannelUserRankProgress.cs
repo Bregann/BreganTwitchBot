@@ -13,6 +13,10 @@ namespace BreganTwitchBot.Domain.Data.Database.Models
         public required int ChannelUserId { get; set; }
         virtual public ChannelUser ChannelUser { get; set; } = null!;
 
+        [ForeignKey(nameof(Channel))]
+        public required int ChannelId { get; set; }
+        virtual public Channel Channel { get; set; } = null!;
+
         [ForeignKey(nameof(ChannelRank))]
         [Required]
         public required int ChannelRankId { get; set; }

@@ -35,6 +35,9 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch.Commands.Hours
             }
 
             var chatters = await twitchApiInteractionService.GetChattersAsync(apiClient.ApiClient, apiClient.BroadcasterChannelId, apiClient.TwitchChannelClientId);
+            var channelRanks = await context.ChannelRanks.Where(x => x.ChannelId == channel.Id).ToArrayAsync();
+
+            var rankups = 0;
 
             foreach (var user in chatters.Chatters)
             {
@@ -74,6 +77,35 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch.Commands.Hours
                             watchTime.MinutesWatchedThisWeek += 1;
                             watchTime.MinutesWatchedThisMonth += 1;
                             watchTime.MinutesWatchedThisYear += 1;
+
+                            // check if the user has got any ranks
+                            var rankEarned = channelRanks.FirstOrDefault(x => x.RankMinutesRequired == watchTime.MinutesInStream);
+
+                            if (rankEarned != null && rankups != 10)
+                            {
+                                await context.ChannelUserRankProgress.AddAsync(new ChannelUserRankProgress
+                                {
+                                    ChannelUserId = dbUser.Id,
+                                    ChannelId = channel.Id,
+                                    ChannelRankId = rankEarned.Id,
+                                    AchievedAt = DateTime.UtcNow
+                                });
+                                
+                                if (channel.DiscordApiKey == null)
+                                {
+                                    await twitchHelperService.SendTwitchMessageToChannel(broadcasterId, channel.BroadcasterTwitchChannelName, $"Congrats you earned the {rankEarned.RankName} rank by watching {rankEarned.RankMinutesRequired} minutes in the stream! Keep watching to earn a higher rank!");
+                                }
+                                else if (channel.DiscordApiKey != null && dbUser.DiscordUserId == 0)
+                                {
+                                    await twitchHelperService.SendTwitchMessageToChannel(broadcasterId, channel.BroadcasterTwitchChannelName, $"Congrats you earned the {rankEarned.RankName} rank by watching {rankEarned.RankMinutesRequired} minutes in the stream! Make sure to join the Discord and link your Twitch account to unlock your rank role!");
+                                }
+                                else
+                                {
+                                    await twitchHelperService.SendTwitchMessageToChannel(broadcasterId, channel.BroadcasterTwitchChannelName, $"Congrats you earned {rankEarned.RankName} rank by watching {rankEarned.RankMinutesRequired} minutes in the stream! Your rank has been applied in the Discord");
+                                }
+
+                                rankups++;
+                            }
                         }
                     }
 
