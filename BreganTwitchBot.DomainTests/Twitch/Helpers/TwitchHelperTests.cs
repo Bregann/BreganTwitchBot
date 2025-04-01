@@ -301,5 +301,74 @@ namespace BreganTwitchBot.DomainTests.Twitch.Helpers
                 await _twitchHelperService.GetPointsForUser(DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId, "nonexistentuser", DatabaseSeedHelper.Channel1BroadcasterTwitchChannelName, "DoesntExist")
             );
         }
+
+        [Test]
+        public async Task AddOrUpdateUserToDatabase_ShouldAddNewUser_WhenUserDoesNotExist()
+        {
+            await _twitchHelperService.AddOrUpdateUserToDatabase(
+                DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId,
+                "99999", // New user ID
+                DatabaseSeedHelper.Channel1BroadcasterTwitchChannelName,
+                "newuser"
+            );
+
+            var user = await _dbContext.ChannelUsers.FirstOrDefaultAsync(u => u.TwitchUserId == "99999");
+
+            Assert.That(user, Is.Not.Null);
+            Assert.That(user.TwitchUsername, Is.EqualTo("newuser"));
+        }
+
+        [Test]
+        public async Task AddOrUpdateUserToDatabase_ShouldUpdateExistingUser_WhenUserExists()
+        {
+            await _twitchHelperService.AddOrUpdateUserToDatabase(
+                DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId,
+                DatabaseSeedHelper.Channel1User1TwitchUserId,
+                DatabaseSeedHelper.Channel1BroadcasterTwitchChannelName,
+                "updateduser"
+            );
+
+            var user = await _dbContext.ChannelUsers.FirstAsync(u => u.TwitchUserId == DatabaseSeedHelper.Channel1User1TwitchUserId);
+            await _dbContext.Entry(user).ReloadAsync();
+
+            Assert.That(user, Is.Not.Null);
+            Assert.That(user.TwitchUsername, Is.EqualTo("updateduser"));
+        }
+
+        [Test]
+        public async Task AddOrUpdateUserToDatabase_ShouldNotDuplicateUserStats_WhenUserAlreadyHasStats()
+        {
+            await _twitchHelperService.AddOrUpdateUserToDatabase(
+                DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId,
+                DatabaseSeedHelper.Channel1User1TwitchUserId,
+                DatabaseSeedHelper.Channel1BroadcasterTwitchChannelName,
+                DatabaseSeedHelper.Channel1User1TwitchUsername
+            );
+
+            var user = await _dbContext.ChannelUsers.Include(u => u.ChannelUserStats)
+                .FirstOrDefaultAsync(u => u.TwitchUserId == DatabaseSeedHelper.Channel1User1TwitchUserId);
+
+            Assert.That(user, Is.Not.Null);
+            Assert.That(user.ChannelUserStats, Has.Count.EqualTo(1));
+        }
+
+        [Test]
+        public async Task AddOrUpdateUserToDatabase_ShouldAddWatchtime_WhenAddMinutesIsTrue()
+        {
+            await _twitchHelperService.AddOrUpdateUserToDatabase(
+                DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId,
+                DatabaseSeedHelper.Channel2User1TwitchUserId,
+                DatabaseSeedHelper.Channel1BroadcasterTwitchChannelName,
+                DatabaseSeedHelper.Channel2User1TwitchUsername,
+                addMinutes: true
+            );
+
+            var user = await _dbContext.ChannelUsers.Include(u => u.ChannelUserWatchtimes)
+                .FirstOrDefaultAsync(u => u.TwitchUserId == DatabaseSeedHelper.Channel2User1TwitchUserId);
+
+            Assert.That(user, Is.Not.Null);
+            Assert.That(user.ChannelUserWatchtimes.First().MinutesWatchedThisStream, Is.EqualTo(1));
+        }
+
     }
 }

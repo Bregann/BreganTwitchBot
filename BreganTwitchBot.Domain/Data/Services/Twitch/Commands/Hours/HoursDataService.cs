@@ -55,7 +55,7 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch.Commands.Hours
                     {
                         // get the watch time of the user
                         // there is a chance they have been registered in another channel so we need to be careful on the updating
-                        var watchTime = dbUser.ChannelUserWatchtimes.FirstOrDefault(x => x.Channel.BroadcasterTwitchChannelId == broadcasterId);
+                        var watchTime = context.ChannelUserWatchtime.FirstOrDefault(x => x.Channel.BroadcasterTwitchChannelId == broadcasterId && x.ChannelUserId == dbUser.Id);
 
                         if (watchTime == null)
                         {
@@ -90,6 +90,8 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch.Commands.Hours
                                     ChannelRankId = rankEarned.Id,
                                     AchievedAt = DateTime.UtcNow
                                 });
+
+                                await twitchHelperService.AddPointsToUser(broadcasterId, dbUser.TwitchUserId, rankEarned.BonusRankPointsEarned, channel.BroadcasterTwitchChannelName, dbUser.TwitchUsername);
                                 
                                 if (channel.DiscordApiKey == null)
                                 {

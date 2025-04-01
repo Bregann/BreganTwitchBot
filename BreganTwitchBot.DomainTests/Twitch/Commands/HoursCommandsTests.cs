@@ -14,6 +14,9 @@ using TwitchLib.Api;
 using BreganTwitchBot.DomainTests.Helpers;
 using BreganTwitchBot.Domain.Data.Services.Twitch.Commands.Hours;
 using BreganTwitchBot.Domain.DTOs.Twitch.Api;
+using BreganTwitchBot.Domain.Data.Database.Models;
+using BreganTwitchBot.Domain.Enums;
+using BreganTwitchBot.Domain.Exceptions;
 
 namespace BreganTwitchBot.DomainTests.Twitch.Commands
 {
@@ -153,6 +156,144 @@ namespace BreganTwitchBot.DomainTests.Twitch.Commands
                 channel.BroadcasterTwitchChannelName,
                 newUser.UserName,
                 true), Times.Once);
+        }
+
+        [Test]
+        public async Task UpdateWatchtimeForChannel_ExistingUser_WatchtimeUpdates()
+        {
+            var channel = await _dbContext.Channels.FirstAsync(c => c.BroadcasterTwitchChannelId == DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId);
+            channel.ChannelConfig.BroadcasterLive = true;
+            await _dbContext.SaveChangesAsync();
+
+            var newUser = new Chatters { UserId = DatabaseSeedHelper.Channel1User1TwitchUserId, UserName = DatabaseSeedHelper.Channel1User1TwitchUsername };
+            var chattersResult = new GetChattersResult { Chatters = new List<Chatters> { newUser } };
+
+            _twitchApiInteractionService.Setup(x => x.GetChattersAsync(It.IsAny<TwitchAPI>(), It.IsAny<string>(), It.IsAny<string>()))
+                .ReturnsAsync(chattersResult);
+
+            await _hoursDataService.UpdateWatchtimeForChannel(DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId);
+
+            var userWatchtime = await _dbContext.ChannelUserWatchtime.FirstAsync(x => x.ChannelUser.TwitchUsername == DatabaseSeedHelper.Channel1User1TwitchUsername);
+
+            Assert.Multiple(() =>
+            {
+                Assert.That(userWatchtime.MinutesWatchedThisStream, Is.EqualTo(1));
+                Assert.That(userWatchtime.MinutesWatchedThisWeek, Is.EqualTo(2));
+                Assert.That(userWatchtime.MinutesWatchedThisMonth, Is.EqualTo(3));
+                Assert.That(userWatchtime.MinutesWatchedThisYear, Is.EqualTo(4));
+                Assert.That(userWatchtime.MinutesInStream, Is.EqualTo(5));
+            });
+        }
+
+        [Test]
+        public async Task UpdateWatchtimeForChannel_ExistingUserToBotButNewToUser_WatchtimeAdds()
+        {
+            var channel = await _dbContext.Channels.FirstAsync(c => c.BroadcasterTwitchChannelId == DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId);
+            channel.ChannelConfig.BroadcasterLive = true;
+            await _dbContext.SaveChangesAsync();
+
+            var newUser = new Chatters { UserId = DatabaseSeedHelper.Channel1SuperModUserTwitchUserId, UserName = DatabaseSeedHelper.Channel1SuperModUserTwitchUsername };
+            var chattersResult = new GetChattersResult { Chatters = new List<Chatters> { newUser } };
+
+            _twitchApiInteractionService.Setup(x => x.GetChattersAsync(It.IsAny<TwitchAPI>(), It.IsAny<string>(), It.IsAny<string>()))
+                .ReturnsAsync(chattersResult);
+
+            await _hoursDataService.UpdateWatchtimeForChannel(DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId);
+
+            var userWatchtime = await _dbContext.ChannelUserWatchtime.FirstAsync(x => x.ChannelUser.TwitchUsername == DatabaseSeedHelper.Channel1SuperModUserTwitchUsername);
+
+            Assert.Multiple(() =>
+            {
+                Assert.That(userWatchtime.MinutesWatchedThisStream, Is.EqualTo(1));
+                Assert.That(userWatchtime.MinutesWatchedThisWeek, Is.EqualTo(1));
+                Assert.That(userWatchtime.MinutesWatchedThisMonth, Is.EqualTo(1));
+                Assert.That(userWatchtime.MinutesWatchedThisYear, Is.EqualTo(1));
+                Assert.That(userWatchtime.MinutesInStream, Is.EqualTo(1));
+            });
+        }
+
+        [Test]
+        public async Task UpdateWatchtimeForChannel_UserReachesRankup_RankUpAddsToDatabase()
+        {
+            var channel = await _dbContext.Channels.FirstAsync(c => c.BroadcasterTwitchChannelId == DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId);
+            channel.ChannelConfig.BroadcasterLive = true;
+            await _dbContext.SaveChangesAsync();
+
+            var newUser = new Chatters { UserId = DatabaseSeedHelper.Channel1User2TwitchUserId, UserName = DatabaseSeedHelper.Channel1User2TwitchUsername };
+            var chattersResult = new GetChattersResult { Chatters = new List<Chatters> { newUser } };
+
+            _twitchApiInteractionService.Setup(x => x.GetChattersAsync(It.IsAny<TwitchAPI>(), It.IsAny<string>(), It.IsAny<string>()))
+                .ReturnsAsync(chattersResult);
+
+            await _hoursDataService.UpdateWatchtimeForChannel(DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId);
+
+            var userRanks = await _dbContext.ChannelUserRankProgress.FirstAsync(x => x.ChannelUser.TwitchUsername == DatabaseSeedHelper.Channel1User2TwitchUsername);
+
+            Assert.That(userRanks, Is.Not.Null);
+        }
+
+        [Test]
+        [TestCase(HoursWatchTypes.Stream, "this stream!")]
+        [TestCase(HoursWatchTypes.Week, "this week!")]
+        [TestCase(HoursWatchTypes.Month, "this month!")]
+        [TestCase(HoursWatchTypes.AllTime, "in the stream!")]
+        public async Task GetHoursCommand_ValidUser_ReturnsCorrectMessage(HoursWatchTypes hoursType, string expectedMessageType)
+        {
+            var msgParams = MessageParamsHelper.CreateChatMessageParams("!hours", "123", new string[] { "!hours" });
+            await _dbContext.SaveChangesAsync();
+
+            var response = await _hoursDataService.GetHoursCommand(msgParams, hoursType);
+
+            Assert.That(response, Does.Contain(expectedMessageType));
+            Assert.That(response, Does.Contain("about"));
+        }
+
+        [Test]
+        public void GetHoursCommand_InvalidUser_ThrowsTwitchUserNotFoundException()
+        {
+            var msgParams = MessageParamsHelper.CreateChatMessageParams("!hours invalid", "123", new string[] { "!hours", "invalid" });
+
+            _twitchHelperService.Setup(x => x.GetTwitchUserIdFromUsername(It.IsAny<string>()))
+                .ReturnsAsync((string?)null);
+
+            var ex = Assert.ThrowsAsync<TwitchUserNotFoundException>(() => _hoursDataService.GetHoursCommand(msgParams, HoursWatchTypes.AllTime));
+            Assert.That(ex.Message, Is.EqualTo("User not found!"));
+        }
+
+        [Test]
+        public void GetHoursCommand_UserWithNoWatchtime_ThrowsTwitchUserNotFoundException()
+        {
+            var msgParams = MessageParamsHelper.CreateChatMessageParams("!hours", "123", new string[] { "!hours" }, chatterChannelId: "invalid", chatterChannelName: "invalid");
+
+            var ex = Assert.ThrowsAsync<TwitchUserNotFoundException>(() => _hoursDataService.GetHoursCommand(msgParams, HoursWatchTypes.AllTime));
+            Assert.That(ex.Message, Is.EqualTo("Oh dear this user doesn't have any watchtime in the channel!"));
+        }
+
+        [Test]
+        public void GetHoursCommand_InvalidHoursType_ThrowsArgumentOutOfRangeException()
+        {
+            var msgParams = MessageParamsHelper.CreateChatMessageParams("!hours", "123", new string[] { "!hours" });
+
+            Assert.ThrowsAsync<ArgumentOutOfRangeException>(() => _hoursDataService.GetHoursCommand(msgParams, (HoursWatchTypes)999));
+        }
+
+        [Test]
+        [TestCase(HoursWatchTypes.Stream, "this stream!")]
+        [TestCase(HoursWatchTypes.Week, "this week!")]
+        [TestCase(HoursWatchTypes.Month, "this month!")]
+        [TestCase(HoursWatchTypes.AllTime, "in the stream!")]
+        public async Task GetHoursCommand_ValidOtherUser_ReturnsCorrectMessage(HoursWatchTypes hoursType, string expectedMessageType)
+        {
+            var msgParams = MessageParamsHelper.CreateChatMessageParams("!hours", "123", new string[] { "!hours", "cooluser2" });
+            await _dbContext.SaveChangesAsync();
+
+            _twitchHelperService.Setup(x => x.GetTwitchUserIdFromUsername(It.IsAny<string>()))
+                .ReturnsAsync("789");
+
+            var response = await _hoursDataService.GetHoursCommand(msgParams, hoursType);
+
+            Assert.That(response, Does.Contain(expectedMessageType));
+            Assert.That(response, Does.Contain("cooluser2 has"));
         }
     }
 }

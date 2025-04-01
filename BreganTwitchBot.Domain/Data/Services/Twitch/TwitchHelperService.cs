@@ -264,7 +264,7 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch
 
                 // check if they are in user stats for the specifc broadcaster
                 // if they are then dont process them
-                if (user.ChannelUserStats.Any(x => x.ChannelId == broadcasterChannel.Id))
+                if (context.ChannelUserStats.Any(x => x.ChannelId == broadcasterChannel.Id))
                 {
                     user.TwitchUsername = userChannelName.ToLower().Trim();
                     user.LastSeen = DateTime.UtcNow;
@@ -272,7 +272,7 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch
                     return;
                 }
 
-                user.ChannelUserGambleStats.Add(new ChannelUserGambleStats
+                context.ChannelUserGambleStats.Add(new ChannelUserGambleStats
                 {
                     BookWins = 0,
                     ChannelId = broadcasterChannel.Id,
@@ -288,7 +288,7 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch
                     TotalSpins = 0
                 });
 
-                user.ChannelUserStats.Add(new ChannelUserStats
+                context.ChannelUserStats.Add(new ChannelUserStats
                 {
                     BitsDonatedThisMonth = 0,
                     BossesDone = 0,
@@ -300,7 +300,7 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch
                     TotalMessages = 0,
                 });
 
-                user.ChannelUserData.Add(new ChannelUserData
+                context.ChannelUserData.Add(new ChannelUserData
                 {
                     ChannelId = broadcasterChannel.Id,
                     ChannelUserId = user.Id,
@@ -312,7 +312,7 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch
                     WarnStrikes = 0
                 });
 
-                user.ChannelUserWatchtimes.Add(new ChannelUserWatchtime
+                context.ChannelUserWatchtime.Add(new ChannelUserWatchtime
                 {
                     ChannelId = broadcasterChannel.Id,
                     ChannelUserId = user.Id,
@@ -323,7 +323,7 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch
                     MinutesWatchedThisYear = addMinutes ? 1 : 0
                 });
 
-                user.TwitchDailyPoints.Add(new TwitchDailyPoints
+                context.TwitchDailyPoints.Add(new TwitchDailyPoints
                 {
                     ChannelId = broadcasterChannel.Id,
                     ChannelUserId = user.Id,
@@ -336,7 +336,7 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch
                     TotalTimesClaimed = 0
                 });
 
-                user.TwitchDailyPoints.Add(new TwitchDailyPoints
+                context.TwitchDailyPoints.Add(new TwitchDailyPoints
                 {
                     ChannelId = broadcasterChannel.Id,
                     ChannelUserId = user.Id,
@@ -349,7 +349,7 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch
                     TotalTimesClaimed = 0
                 });
 
-                user.TwitchDailyPoints.Add(new TwitchDailyPoints
+                context.TwitchDailyPoints.Add(new TwitchDailyPoints
                 {
                     ChannelId = broadcasterChannel.Id,
                     ChannelUserId = user.Id,
@@ -362,7 +362,7 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch
                     TotalTimesClaimed = 0
                 });
 
-                user.TwitchDailyPoints.Add(new TwitchDailyPoints
+                context.TwitchDailyPoints.Add(new TwitchDailyPoints
                 {
                     ChannelId = broadcasterChannel.Id,
                     ChannelUserId = user.Id,

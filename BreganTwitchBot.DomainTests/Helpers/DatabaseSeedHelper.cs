@@ -188,6 +188,19 @@ namespace BreganTwitchBot.DomainTests.Helpers
 
             await context.SaveChangesAsync();
 
+            await context.ChannelUserStats.AddAsync(new ChannelUserStats
+            {
+                BitsDonatedThisMonth = 0,
+                BossesDone = 0,
+                BossesPointsWon = 0,
+                GiftedSubsThisMonth = 0,
+                MarblesWins = 0,
+                TotalMessages = 0,
+                ChannelId = channel.Id,
+                ChannelUserId = channelUser.Id
+            });
+
+
             await context.CustomCommands.AddAsync(new CustomCommand
             {
                 CommandName = "!oncooldown",
@@ -416,6 +429,25 @@ namespace BreganTwitchBot.DomainTests.Helpers
                 MinutesWatchedThisMonth = 2,
                 MinutesWatchedThisYear = 3,
                 MinutesInStream = 4
+            });
+
+            await context.ChannelUserWatchtime.AddAsync(new ChannelUserWatchtime
+            {
+                ChannelId = channel.Id,
+                ChannelUserId = channelUser2.Id,
+                MinutesWatchedThisStream = 0,
+                MinutesWatchedThisWeek = 1,
+                MinutesWatchedThisMonth = 2,
+                MinutesWatchedThisYear = 3,
+                MinutesInStream = 9
+            });
+
+            await context.ChannelRanks.AddAsync(new ChannelRank
+            {
+                BonusRankPointsEarned = 10000,
+                ChannelId = channel.Id,
+                RankMinutesRequired = 10,
+                RankName = "tilly"
             });
 
             await context.SaveChangesAsync();
