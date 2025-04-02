@@ -40,6 +40,7 @@ namespace BreganTwitchBot.DomainTests.Helpers
                 BotTwitchChannelName = Channel1BotTwitchChannelName,
                 BroadcasterTwitchChannelId = Channel1BroadcasterTwitchChannelId,
                 BroadcasterTwitchChannelName = Channel1BroadcasterTwitchChannelName,
+                DiscordEnabled = false
             };
 
             var channel2 = new Channel
@@ -52,6 +53,7 @@ namespace BreganTwitchBot.DomainTests.Helpers
                 BotTwitchChannelName = Channel2BotTwitchChannelName,
                 BroadcasterTwitchChannelId = Channel2BroadcasterTwitchChannelId,
                 BroadcasterTwitchChannelName = Channel2BroadcasterTwitchChannelName,
+                DiscordEnabled = false
             };
 
             await context.Channels.AddAsync(channel);

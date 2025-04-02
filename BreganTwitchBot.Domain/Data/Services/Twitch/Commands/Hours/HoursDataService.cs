@@ -93,11 +93,11 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch.Commands.Hours
 
                                 await twitchHelperService.AddPointsToUser(broadcasterId, dbUser.TwitchUserId, rankEarned.BonusRankPointsEarned, channel.BroadcasterTwitchChannelName, dbUser.TwitchUsername);
                                 
-                                if (channel.DiscordApiKey == null)
+                                if (!channel.DiscordEnabled)
                                 {
                                     await twitchHelperService.SendTwitchMessageToChannel(broadcasterId, channel.BroadcasterTwitchChannelName, $"Congrats you earned the {rankEarned.RankName} rank by watching {rankEarned.RankMinutesRequired} minutes in the stream! Keep watching to earn a higher rank!");
                                 }
-                                else if (channel.DiscordApiKey != null && dbUser.DiscordUserId == 0)
+                                else if (channel.DiscordEnabled && dbUser.DiscordUserId == 0)
                                 {
                                     await twitchHelperService.SendTwitchMessageToChannel(broadcasterId, channel.BroadcasterTwitchChannelName, $"Congrats you earned the {rankEarned.RankName} rank by watching {rankEarned.RankMinutesRequired} minutes in the stream! Make sure to join the Discord and link your Twitch account to unlock your rank role!");
                                 }

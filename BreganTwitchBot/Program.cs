@@ -1,4 +1,5 @@
 using BreganTwitchBot.Domain.Data.Database.Context;
+using BreganTwitchBot.Domain.Data.Database.Models;
 using BreganTwitchBot.Domain.Data.Services;
 using BreganTwitchBot.Domain.Data.Services.Twitch;
 using BreganTwitchBot.Domain.Data.Services.Twitch.Commands;
@@ -8,6 +9,8 @@ using BreganTwitchBot.Domain.Data.Services.Twitch.Commands.DadJoke;
 using BreganTwitchBot.Domain.Data.Services.Twitch.Commands.DailyPoints;
 using BreganTwitchBot.Domain.Data.Services.Twitch.Commands.FollowAge;
 using BreganTwitchBot.Domain.Data.Services.Twitch.Commands.Gambling;
+using BreganTwitchBot.Domain.Data.Services.Twitch.Commands.Hours;
+using BreganTwitchBot.Domain.Data.Services.Twitch.Commands.Linking;
 using BreganTwitchBot.Domain.Data.Services.Twitch.Commands.Points;
 using BreganTwitchBot.Domain.Enums;
 using BreganTwitchBot.Domain.Helpers;
@@ -155,6 +158,12 @@ builder.Services.AddScoped<IDailyPointsDataService, DailyPointsDataService>();
 
 builder.Services.AddSingleton<GamblingCommandService>();
 builder.Services.AddScoped<IGamblingDataService, GamblingDataService>();
+
+builder.Services.AddSingleton<HoursCommandService>();
+builder.Services.AddScoped<IHoursDataService, HoursDataService>();
+
+builder.Services.AddSingleton<LinkingCommandService>();
+builder.Services.AddScoped<ILinkingDataService, LinkingDataService>();
 
 // hangfire
 builder.Services.AddHangfireServer(options => options.SchedulePollingInterval = TimeSpan.FromSeconds(10));

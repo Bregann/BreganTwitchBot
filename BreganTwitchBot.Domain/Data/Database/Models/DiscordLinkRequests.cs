@@ -18,6 +18,6 @@ namespace BreganTwitchBot.Domain.Data.Database.Models
         public required string TwitchUserId { get; set; }
 
         [Required]
-        public required string DiscordUserId { get; set; }
+        public required ulong DiscordUserId { get; set; }
     }
 }
