@@ -1,5 +1,4 @@
 ﻿using BreganTwitchBot.Domain.Data.Database.Context;
-using BreganTwitchBot.Domain.DTOs.Twitch.Commands.Points;
 using BreganTwitchBot.Domain.DTOs.Twitch.EventSubEvents;
 using BreganTwitchBot.Domain.Exceptions;
 using BreganTwitchBot.Domain.Interfaces.Twitch;
@@ -10,7 +9,7 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch.Commands.Points
 {
     public class PointsDataService(AppDbContext dbContext, ITwitchHelperService twitchHelperService) : IPointsDataService
     {
-        public async Task<GetPointsResponse> GetPointsAsync(ChannelChatMessageReceivedParams msgParams)
+        public async Task<string> GetPointsAsync(ChannelChatMessageReceivedParams msgParams)
         {
             var twitchIdToCheck = msgParams.ChatterChannelId;
             var twitchUsernameToCheck = msgParams.ChatterChannelName;
@@ -30,13 +29,9 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch.Commands.Points
             }
 
             var userPoints = await dbContext.ChannelUserData.FirstOrDefaultAsync(x => x.ChannelUser.TwitchUserId == twitchIdToCheck && x.Channel.BroadcasterTwitchChannelId == msgParams.BroadcasterChannelId);
+            var pointsName = await twitchHelperService.GetPointsName(msgParams.BroadcasterChannelId, msgParams.BroadcasterChannelName);
 
-            return new GetPointsResponse 
-            {
-                TwitchUsername = twitchUsernameToCheck,
-                Points = userPoints?.Points ?? 0,
-                Position = userPoints != null ? await GetPointsRank(msgParams.BroadcasterChannelId, twitchIdToCheck) : "N/A"
-            };
+            return $"{twitchUsernameToCheck} has {userPoints?.Points:N0} {pointsName}. Rank: {(userPoints != null ? await GetPointsRank(msgParams.BroadcasterChannelId, twitchIdToCheck) : "N / A")}";
         }
 
         public async Task AddPointsAsync(ChannelChatMessageReceivedParams msgParams)

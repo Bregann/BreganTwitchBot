@@ -30,18 +30,10 @@ namespace BreganTwitchBot.Domain.Data.TwitchBot.Commands.TwitchBosses
 
                 _bossInProgress = true;
 
-                TwitchBotConnection.Client.GetVIPs(AppConfig.BroadcasterName);
-                TwitchBotConnection.Client.GetChannelModerators(AppConfig.BroadcasterName);
-
-                TwitchBotConnection.Client.OnVIPsReceived += OnVIPsReceived;
-                TwitchBotConnection.Client.OnModeratorsReceived += OnModeratorsReceived;
-
                 await Task.Delay(5000);
 
                 //Get the data needed
                 var bossNames = _twitchModsAndVIPs;
-                bossNames.Add(AppConfig.BotName); //incase theres not mods or vips detected
-                bossNames.Add(AppConfig.BroadcasterName);
 
                 var bossTitles = new List<string> { "The Terrible", "The Melvin", "The KEKW", "The Smelly", "The Gnoblin", "The Gnome", "The Troll", "The Handsome", "The Rank Beggar", "The Tommyinnit Fan", "The Tree", "The Super", "The Super Super", "The Duck" };
                 var elimiationReasons = new List<string> { "got AGS'd for a 73", "got snowballed into the void", "missed their MLG", "missplaced a block", "got stamped on", "had a tree fall onto their head", "got destroyed by lasers" };
