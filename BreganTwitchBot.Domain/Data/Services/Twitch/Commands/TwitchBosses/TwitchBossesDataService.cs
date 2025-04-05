@@ -1,6 +1,8 @@
 ﻿using BreganTwitchBot.Domain.DTOs.Twitch.Commands.TwitchBosses;
+using BreganTwitchBot.Domain.DTOs.Twitch.EventSubEvents;
 using BreganTwitchBot.Domain.Interfaces.Twitch;
 using BreganTwitchBot.Domain.Interfaces.Twitch.Commands;
+using Hangfire;
 using Serilog;
 using System;
 using System.Collections.Generic;
@@ -10,9 +12,9 @@ using System.Threading.Tasks;
 
 namespace BreganTwitchBot.Domain.Data.Services.Twitch.Commands.TwitchBosses
 {
-    public class TwitchBossesDataService(ITwitchHelperService twitchHelperService) : ITwitchBossesDataService
+    public class TwitchBossesDataService(ITwitchHelperService twitchHelperService, IBackgroundJobClient backgroundJobClient) : ITwitchBossesDataService
     {
-        private Dictionary<string, BossState> _bossState = [];
+        internal Dictionary<string, BossState> _bossState = [];
 
         public async Task StartBossFight(string broadcasterId, string broadcasterName)
         {
@@ -22,6 +24,13 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch.Commands.TwitchBosses
             if (bossState == null)
             {
                 Log.Warning($"[Twitch Bosses] No boss state found for {broadcasterName}");
+                return;
+            }
+
+            //Check if the boss is in progress
+            if (bossState.BossInProgress)
+            {
+                Log.Information($"[Twitch Bosses] Boss is already in progress for {broadcasterName}");
                 return;
             }
 
@@ -38,7 +47,8 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch.Commands.TwitchBosses
             await Task.Delay(5000);
 
             //Get the data needed
-            //TODO: GET THE MODS
+            //TODO: GET THE MODS, temp atm
+            bossState.TwitchMods.Add(broadcasterName);
             var bossSuffixes = new List<string> { "The Terrible", "The Melvin", "The KEKW", "The Smelly", "The Gnoblin", "The Gnome", "The Troll", "The Handsome", "The Tree", "The Duck" };
             var elimiationReasons = new List<string> { "got AGS'd for a 73", "got snowballed into the void", "missed their MLG", "missplaced a block", "got stamped on", "had a tree fall onto their head", "got destroyed by lasers" };
 
@@ -103,6 +113,82 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch.Commands.TwitchBosses
             _bossState[broadcasterId].TwitchMods.Clear();
             _bossState[broadcasterId].BossCountdownEnabled = false;
             _bossState[broadcasterId].BossInProgress = false;
+        }
+
+        public string HandleBossCommand(ChannelChatMessageReceivedParams msgParams)
+        {
+            var boss = _bossState.GetValueOrDefault(msgParams.BroadcasterChannelId);
+
+            if (boss == null)
+            {
+                Log.Warning($"[Twitch Bosses] No boss state found for {msgParams.BroadcasterChannelName}");
+                return "There is no boss active!";
+            }
+
+            if (!boss.BossCountdownEnabled || boss.BossInProgress)
+            {
+                Log.Warning($"[Twitch Bosses] Boss countdown is not enabled or boss is in progress for {msgParams.BroadcasterChannelName}");
+                return "The boss countdown is not enabled or the boss is already in progress!";
+            }
+
+            if (boss.ViewersJoined.Any(x => x.UserId == msgParams.ChatterChannelId))
+            {
+                Log.Information($"[Twitch Bosses] {msgParams.ChatterChannelName} is already in the boss fight for {msgParams.BroadcasterChannelName}");
+                return $"You already joined the boss fight! Daft user!";
+            }
+
+            _bossState[msgParams.BroadcasterChannelId].ViewersJoined.Add((msgParams.ChatterChannelName, msgParams.ChatterChannelId));
+            Log.Information($"[Twitch Bosses] {msgParams.ChatterChannelName} has joined the boss fight for {msgParams.BroadcasterChannelName}");
+            return $"{msgParams.ChatterChannelName} has joined the boss fight! {_bossState[msgParams.BroadcasterChannelId].ViewersJoined.Count} people have joined the fight! You can join to by doing !boss";
+        }
+
+        public async Task<bool> StartBossFightCountdown(string broadcasterId, string broadcasterName, ChannelChatMessageReceivedParams? msgParams = null)
+        {
+            // check if the msgParams is null, if not, check if the user is a supermod or broadcaster
+            if (msgParams != null)
+            {
+                var isSuperMod = await twitchHelperService.IsUserSuperModInChannel(broadcasterId, msgParams.ChatterChannelId);
+                var isBroadcaster = msgParams.IsBroadcaster;
+                if (!isSuperMod && !isBroadcaster)
+                {
+                    Log.Information($"[Twitch Bosses] {msgParams.ChatterChannelName} is not a supermod or broadcaster for {broadcasterName}");
+                    return false;
+                }
+            }
+
+            var boss = _bossState.GetValueOrDefault(broadcasterId);
+
+            if (boss == null)
+            {
+                Log.Information($"[Twitch Bosses] No boss state found for {broadcasterName}");
+                _bossState[broadcasterId] = new BossState
+                {
+                    ViewersJoined = [],
+                    TwitchMods = [],
+                    BossCountdownEnabled = true,
+                    BossInProgress = false
+                };
+
+                Log.Information($"[Twitch Bosses] Boss state created for {broadcasterName} and boss started");
+                backgroundJobClient.Schedule(() => twitchHelperService.SendAnnouncementMessageToChannel(broadcasterId, broadcasterName, "This is your 1 minute warning! You only have 1 minute left to join the boss fight with !boss"), TimeSpan.FromMinutes(1));
+                backgroundJobClient.Schedule(() => StartBossFight(broadcasterId, broadcasterName), TimeSpan.FromMinutes(2));
+                await twitchHelperService.SendAnnouncementMessageToChannel(broadcasterId, broadcasterName, "The boss countdown has started! You can join the fight by doing !boss");
+                return true;
+            }
+
+            if (boss.BossCountdownEnabled || boss.BossInProgress)
+            {
+                Log.Warning($"[Twitch Bosses] Boss countdown is already enabled or boss is in progress for {broadcasterName}");
+                return false;
+            }
+
+            boss.BossCountdownEnabled = true;
+            Log.Information($"[Twitch Bosses] Boss countdown started for {broadcasterName}");
+            backgroundJobClient.Schedule(() => twitchHelperService.SendAnnouncementMessageToChannel(broadcasterId, broadcasterName, "This is your 1 minute warning! You only have 1 minute left to join the boss fight with !boss"), TimeSpan.FromMinutes(1));
+            backgroundJobClient.Schedule(() => StartBossFight(broadcasterId, broadcasterName), TimeSpan.FromMinutes(2));
+
+            await twitchHelperService.SendAnnouncementMessageToChannel(broadcasterId, broadcasterName, "The boss countdown has started! You can join the fight by doing !boss");
+            return true;
         }
     }
 }

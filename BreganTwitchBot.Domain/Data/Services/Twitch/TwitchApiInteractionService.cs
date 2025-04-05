@@ -3,6 +3,7 @@ using BreganTwitchBot.Domain.Interfaces.Twitch;
 using TwitchLib.Api;
 using TwitchLib.Api.Helix.Models.Moderation.CheckAutoModStatus;
 using System.Linq;
+using TwitchLib.Api.Helix.Models.Chat;
 
 namespace BreganTwitchBot.Domain.Data.Services.Twitch
 {
@@ -87,6 +88,11 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch
             {
                 Chatters = chatters
             };
+        }
+
+        public async Task SendAnnouncementMessage(TwitchAPI apiClient, string broadcasterChannelId, string twitchChannelClientId, string message)
+        {
+            await apiClient.Helix.Chat.SendChatAnnouncementAsync(broadcasterChannelId, twitchChannelClientId, message, AnnouncementColors.Green);
         }
     }
 }

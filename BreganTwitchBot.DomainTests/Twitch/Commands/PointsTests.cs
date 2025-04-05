@@ -48,6 +48,7 @@ public class PointsTests
         _twitchHelperService = new Mock<ITwitchHelperService>();
         _pointsDataService = new PointsDataService(_dbContext, _twitchHelperService.Object);
 
+        _twitchHelperService.Setup(x => x.GetPointsName(It.IsAny<string>(), It.IsAny<string>())).ReturnsAsync(DatabaseSeedHelper.Channel1ChannelCurrencyName);
         _twitchHelperService.Setup(x => x.IsUserSuperModInChannel("123", "1111")).ReturnsAsync(true);
         _twitchHelperService.Setup(x => x.GetTwitchUserIdFromUsername("cooluser")).ReturnsAsync("456");
         _twitchHelperService.Setup(x => x.GetTwitchUserIdFromUsername("cooluser2")).ReturnsAsync("789");
@@ -71,12 +72,7 @@ public class PointsTests
         var msgParams = MessageParamsHelper.CreateChatMessageParams("!points", "123", new string[] { "!points" }, chatterChannelName: "CoolUser");
         var result = await _pointsDataService.GetPointsAsync(msgParams);
 
-        Assert.Multiple(() =>
-        {
-            Assert.That(result.TwitchUsername, Is.EqualTo("CoolUser"));
-            Assert.That(result.Points, Is.EqualTo(100));
-            Assert.That(result.Position, Is.EqualTo("2 / 3"));
-        });
+        Assert.That(result, Is.EqualTo("CoolUser has 100 CoolCurrencyName. Rank: 2 / 3"));
     }
 
     [Test]
@@ -85,12 +81,7 @@ public class PointsTests
         var msgParams = MessageParamsHelper.CreateChatMessageParams("!points @CoolUser2", "123", new string[] { "!points", "@CoolUser2" });
         var result = await _pointsDataService.GetPointsAsync(msgParams);
 
-        Assert.Multiple(() =>
-        {
-            Assert.That(result.TwitchUsername, Is.EqualTo("CoolUser2"));
-            Assert.That(result.Points, Is.EqualTo(73));
-            Assert.That(result.Position, Is.EqualTo("3 / 3"));
-        });
+        Assert.That(result, Is.EqualTo("CoolUser2 has 73 CoolCurrencyName. Rank: 3 / 3"));
     }
 
     [Test]
@@ -101,12 +92,7 @@ public class PointsTests
         var msgParams = MessageParamsHelper.CreateChatMessageParams("!points @CoolUser3", "123", new string[] { "!points", "@CoolUser3" });
         var result = await _pointsDataService.GetPointsAsync(msgParams);
 
-        Assert.Multiple(() =>
-        {
-            Assert.That(result.TwitchUsername, Is.EqualTo("CoolUser3"));
-            Assert.That(result.Points, Is.EqualTo(0));
-            Assert.That(result.Position, Is.EqualTo("N/A"));
-        });
+        Assert.That(result, Is.EqualTo("CoolUser3 has 0 CoolCurrencyName. Rank: N / A"));
     }
 
     [Test]

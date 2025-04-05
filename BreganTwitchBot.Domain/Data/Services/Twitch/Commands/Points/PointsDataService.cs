@@ -31,7 +31,7 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch.Commands.Points
             var userPoints = await dbContext.ChannelUserData.FirstOrDefaultAsync(x => x.ChannelUser.TwitchUserId == twitchIdToCheck && x.Channel.BroadcasterTwitchChannelId == msgParams.BroadcasterChannelId);
             var pointsName = await twitchHelperService.GetPointsName(msgParams.BroadcasterChannelId, msgParams.BroadcasterChannelName);
 
-            return $"{twitchUsernameToCheck} has {userPoints?.Points:N0} {pointsName}. Rank: {(userPoints != null ? await GetPointsRank(msgParams.BroadcasterChannelId, twitchIdToCheck) : "N / A")}";
+            return $"{twitchUsernameToCheck} has {(userPoints == null ? 0 : userPoints.Points.ToString("N0"))} {pointsName}. Rank: {(userPoints != null ? await GetPointsRank(msgParams.BroadcasterChannelId, twitchIdToCheck) : "N / A")}";
         }
 
         public async Task AddPointsAsync(ChannelChatMessageReceivedParams msgParams)

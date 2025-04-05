@@ -42,6 +42,34 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch
             }
         }
 
+        /// <summary>
+        /// Sends an announcement message to a Twitch channel using the announcement api method
+        /// </summary>
+        /// <param name="broadcasterChannelId"></param>
+        /// <param name="broadcasterChannelName"></param>
+        /// <param name="message"></param>
+        /// <returns></returns>
+        public async Task SendAnnouncementMessageToChannel(string broadcasterChannelId, string broadcasterChannelName, string message)
+        {
+            var apiClient = connection.GetBotTwitchApiClientFromBroadcasterChannelId(broadcasterChannelId);
+
+            if (apiClient == null)
+            {
+                Log.Error($"[Twitch Helper Service] Error sending announcement to {broadcasterChannelName}, apiClient is null");
+                return;
+            }
+
+            try
+            {
+                await twitchApiInteractionService.SendAnnouncementMessage(apiClient.ApiClient, apiClient.BroadcasterChannelId, apiClient.TwitchChannelClientId, message);
+                Log.Information($"[Twitch Helper Service] Sent announcement to {broadcasterChannelName}. Announcement contents: {message}");
+            }
+            catch (Exception ex)
+            {
+                Log.Error($"[Twitch Helper Service] Error sending announcement to {broadcasterChannelName}, {ex.Message}");
+            }
+        }
+
         public async Task<string?> GetTwitchUserIdFromUsername(string username)
         {
             using (var scope = serviceProvider.CreateScope())
