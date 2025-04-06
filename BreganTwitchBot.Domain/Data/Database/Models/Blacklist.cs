@@ -1,4 +1,5 @@
 ﻿using BreganTwitchBot.Domain.Enums;
+using Hangfire;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -14,5 +15,10 @@ namespace BreganTwitchBot.Domain.Data.Database.Models
 
         [Required]
         public required WordType WordType { get; set; }
+
+        [Required]
+        [ForeignKey(nameof(ChannelId))]
+        public required int ChannelId { get; set; }
+        virtual public Channel Channel { get; set; } = null!;
     }
 }
