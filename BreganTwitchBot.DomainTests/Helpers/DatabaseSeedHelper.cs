@@ -28,6 +28,11 @@ namespace BreganTwitchBot.DomainTests.Helpers
         public const string Channel1SuperModUserTwitchUserId = "1111";
         public const string Channel1SuperModUserTwitchUsername = "supermoduser";
 
+        public const string SeededChannel1BannedWord = "seededbannedword";
+        public const string SeededChannel1TempBanWord = "seededtempbanword";
+        public const string SeededChannel2BannedWord = "seededbannedword"; 
+
+
         public static async Task SeedDatabase(AppDbContext context)
         {
             var channel = new Channel
@@ -453,6 +458,27 @@ namespace BreganTwitchBot.DomainTests.Helpers
             });
 
             await context.SaveChangesAsync();
+
+            await context.Blacklist.AddAsync(new Blacklist
+            {
+                ChannelId = channel.Id,
+                Word = "seededbannedword",
+                WordType = WordType.PermBanWord
+            });
+
+            await context.Blacklist.AddAsync(new Blacklist
+            {
+                ChannelId = channel.Id,
+                Word = "seededfilteredword",
+                WordType = WordType.TempBanWord
+            });
+
+            await context.Blacklist.AddAsync(new Blacklist
+            {
+                ChannelId = channel2.Id,
+                Word = "seededbannedword",
+                WordType = WordType.PermBanWord
+            });
         }
     }
 }

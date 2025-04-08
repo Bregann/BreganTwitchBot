@@ -28,4 +28,7 @@
       <HintPath>..\Utils\BreganUtils.dll</HintPath>
     </Reference>
   </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Data\TwitchBot\Commands\WordBlacklist\" />
+  </ItemGroup>
 </Project>
