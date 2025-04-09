@@ -6,12 +6,8 @@ using System.Threading.Tasks;
 
 namespace BreganTwitchBot.Domain.DTOs.Twitch.EventSubEvents
 {
-    public class ChannelChatMessageReceivedParams
+    public class ChannelChatMessageReceivedParams : EventBase
     {
-        public required string BroadcasterChannelName { get; set; }
-        public required string BroadcasterChannelId { get; set; }
-        public required string ChatterChannelName { get; set; }
-        public required string ChatterChannelId { get; set; }
         public required string Message { get; set; }
         public required string[] MessageParts { get; set; }
         public required string MessageId { get; set; }

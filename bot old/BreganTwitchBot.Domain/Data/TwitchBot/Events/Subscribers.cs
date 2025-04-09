@@ -100,44 +100,5 @@ namespace BreganTwitchBot.Domain.Data.TwitchBot.Events
             TwitchHelper.SendMessage($"Welcome {username}to the {AppConfig.BroadcasterName} squad with a {subName}");
         }
 
-        public static async Task HandleResubscriberEvent(TwitchLib.Client.Enums.SubscriptionPlan subType, string username, string userId, string cumulativeMonthsSubscribed, string streakMonthsSubscribed)
-        {
-            var subName = "";
-            int.TryParse(cumulativeMonthsSubscribed, out var months);
-            int.TryParse(streakMonthsSubscribed, out var streakMonths);
-
-
-            var sharedStreakMessage = streakMonths == 0 ? "they did not share their sub streak :(" : $"They are on a {streakMonths} month sub streak <3 PogChamp blocksGuinea1 blocksGuinea2 blocksGuinea3 blocksW blocksOK blocksGuinea blocksMarge blocksBitrate blocksSWIRL blocksFail blocksWOT blocksEcho";
-
-            switch (subType)
-            {
-                case TwitchLib.Client.Enums.SubscriptionPlan.NotSet:
-                case TwitchLib.Client.Enums.SubscriptionPlan.Tier1:
-                    subName = "tier 1";
-                    await PointsHelper.AddUserPoints(userId, 20000 + months * 2000);
-                    StreamStatsService.UpdateStreamStat(20000 + months * 2000, StatTypes.PointsGainedSubscribing);
-                    break;
-
-                case TwitchLib.Client.Enums.SubscriptionPlan.Prime:
-                    subName = "TWITCH PRIME!!! ANY PRIMERS?";
-                    await PointsHelper.AddUserPoints(userId, 30000 + months * 2000);
-                    StreamStatsService.UpdateStreamStat(30000 + months * 2000, StatTypes.PointsGainedSubscribing);
-                    break;
-
-                case TwitchLib.Client.Enums.SubscriptionPlan.Tier2:
-                    subName = "tier 2";
-                    await PointsHelper.AddUserPoints(userId, 40000 + months * 2000);
-                    StreamStatsService.UpdateStreamStat(40000 + months * 2000, StatTypes.PointsGainedSubscribing);
-                    break;
-
-                case TwitchLib.Client.Enums.SubscriptionPlan.Tier3:
-                    subName = "tier 3";
-                    await PointsHelper.AddUserPoints(userId, 100000 + months * 2000);
-                    StreamStatsService.UpdateStreamStat(100000 + months * 2000, StatTypes.PointsGainedSubscribing);
-                    break;
-            }
-
-            TwitchHelper.SendMessage($"Welcome back {username} for {months} months with a {subName} subscription! {sharedStreakMessage}");
-        }
     }
 }

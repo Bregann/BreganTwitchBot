@@ -2,6 +2,7 @@
 using BreganTwitchBot.Domain.DTOs.Twitch.EventSubEvents;
 using BreganTwitchBot.Domain.Enums;
 using BreganTwitchBot.Domain.Interfaces.Twitch;
+using BreganTwitchBot.Domain.Interfaces.Twitch.Events;
 using Microsoft.Extensions.Hosting;
 using Serilog;
 using TwitchLib.Api.Core.Enums;
@@ -11,23 +12,60 @@ using TwitchLib.EventSub.Websockets.Core.EventArgs.Channel;
 
 namespace BreganTwitchBot.Domain.Data.Services.Twitch
 {
-    public class WebsocketHostedService(ITwitchApiConnection twitchApiConnection, ICommandHandler commandHandler, ITwitchHelperService twitchHelperService) : IHostedService
+    public class WebsocketHostedService(ITwitchApiConnection twitchApiConnection, ICommandHandler commandHandler, ITwitchHelperService twitchHelperService, ITwitchEventHandlerService twitchEventHandlerService) : IHostedService
     {
         private readonly Dictionary<string, EventSubWebsocketClient> _userConnections = [];
 
-        private Task OnChannelCheer(object sender, ChannelCheerArgs args)
+        private async Task OnChannelCheer(object sender, ChannelCheerArgs args)
         {
-            throw new NotImplementedException();
+            var bitsEvent = new BitsCheeredParams
+            {
+                BroadcasterChannelId = args.Notification.Payload.Event.BroadcasterUserId,
+                BroadcasterChannelName = args.Notification.Payload.Event.BroadcasterUserName,
+                ChatterChannelId = args.Notification.Payload.Event.UserId ?? "Anon",
+                ChatterChannelName = args.Notification.Payload.Event.UserName ?? "Anon",
+                Amount = args.Notification.Payload.Event.Bits,
+                Message = args.Notification.Payload.Event.Message,
+                IsAnonymous = args.Notification.Payload.Event.IsAnonymous
+            };
+
+            Log.Information($"[Twitch Events] Bits cheered: {bitsEvent.Amount} from {bitsEvent.ChatterChannelName} in {bitsEvent.BroadcasterChannelName}");
+
+            await twitchEventHandlerService.HandleChannelCheerEvent(bitsEvent);
         }
 
-        private Task OnChannelResubscribe(object sender, ChannelSubscriptionMessageArgs args)
+        private async Task OnChannelResubscribe(object sender, ChannelSubscriptionMessageArgs args)
         {
-            throw new NotImplementedException();
+            var resubEvent = new ChannelResubscribeParams
+            {
+                BroadcasterChannelId = args.Notification.Payload.Event.BroadcasterUserId,
+                BroadcasterChannelName = args.Notification.Payload.Event.BroadcasterUserName,
+                ChatterChannelId = args.Notification.Payload.Event.UserId,
+                ChatterChannelName = args.Notification.Payload.Event.UserName,
+                Message = args.Notification.Payload.Event.Message.Text,
+                StreakMonths = args.Notification.Payload.Event.StreakMonths,
+                CumulativeMonths = args.Notification.Payload.Event.CumulativeMonths,
+                SubTier = Enum.TryParse<SubTierEnum>(args.Notification.Payload.Event.Tier, out var tier) ? tier : SubTierEnum.Tier1
+            };
+
+            Log.Information($"[Twitch Events] Channel resubscribe: {resubEvent.ChatterChannelName} in {resubEvent.BroadcasterChannelName}. Tier: {resubEvent.SubTier}");
+
+            await twitchEventHandlerService.HandleChannelResubscribeEvent(resubEvent);
         }
 
         private Task OnChannelSubscriptionGift(object sender, ChannelSubscriptionGiftArgs args)
         {
-            throw new NotImplementedException();
+            var giftSubEvent = new ChannelGiftSubParams
+            {
+                BroadcasterChannelId = args.Notification.Payload.Event.BroadcasterUserId,
+                BroadcasterChannelName = args.Notification.Payload.Event.BroadcasterUserName,
+                ChatterChannelId = args.Notification.Payload.Event.UserId,
+                ChatterChannelName = args.Notification.Payload.Event.UserName,
+                IsAnonymous = args.Notification.Payload.Event.IsAnonymous,
+                SubTier = Enum.TryParse<SubTierEnum>(args.Notification.Payload.Event.Tier, out var tier) ? tier : SubTierEnum.Tier1,
+                CumulativeTotal = args.Notification.Payload.Event.CumulativeTotal,
+                Total = args.Notification.Payload.Event.Total
+            };
         }
 
         private Task OnChannelSubcribe(object sender, ChannelSubscribeArgs args)
