@@ -95,12 +95,44 @@ namespace BreganTwitchBot.DomainTests.Twitch.Helpers
         {
             var (DailyPointsAllowed, LastStreamDate, LastDailyPointedAllowedDate) = _configHelperService.GetDailyPointsStatus(DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId);
             var config = await _dbContext.ChannelConfig.FirstAsync(x => x.Channel.BroadcasterTwitchChannelId == DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId);
-            
+
             Assert.Multiple(() =>
             {
                 Assert.That(DailyPointsAllowed, Is.EqualTo(config.DailyPointsCollectingAllowed));
                 Assert.That(LastStreamDate, Is.EqualTo(config.LastStreamEndDate).Within(30).Seconds);
                 Assert.That(LastDailyPointedAllowedDate, Is.EqualTo(config.LastDailyPointsAllowed).Within(30).Seconds);
+            });
+        }
+
+        [Test]
+        public async Task UpdateStreamLiveStatus_UpdateStreamLiveStatusToTrue_ValuesAreSet()
+        {
+            await _configHelperService.UpdateStreamLiveStatus(DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId, true);
+            var config = await _dbContext.ChannelConfig.FirstAsync(x => x.Channel.BroadcasterTwitchChannelId == DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId);
+
+            _dbContext.Entry(config).Reload();
+
+            Assert.Multiple(() =>
+            {
+                Assert.That(config.StreamAnnounced, Is.True);
+                Assert.That(config.LastStreamStartDate, Is.EqualTo(DateTime.UtcNow).Within(30).Seconds);
+                Assert.That(config.StreamHappenedThisWeek, Is.True);
+            });
+        }
+
+        [Test]
+        public async Task UpdateStreamLiveStatus_UpdateStreamLiveStatusToFalse_ValuesAreSet()
+        {
+            await _configHelperService.UpdateStreamLiveStatus(DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId, false);
+            var config = await _dbContext.ChannelConfig.FirstAsync(x => x.Channel.BroadcasterTwitchChannelId == DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId);
+
+            _dbContext.Entry(config).Reload();
+
+            Assert.Multiple(() =>
+            {
+                Assert.That(config.StreamAnnounced, Is.False);
+                Assert.That(config.LastStreamEndDate, Is.EqualTo(DateTime.UtcNow).Within(30).Seconds);
+                Assert.That(config.StreamHappenedThisWeek, Is.True);
             });
         }
     }

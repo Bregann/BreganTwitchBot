@@ -1,6 +1,7 @@
 ﻿using BreganTwitchBot.Domain.Data.Services.Twitch.Commands;
 using BreganTwitchBot.Domain.DTOs.Twitch.EventSubEvents;
 using BreganTwitchBot.Domain.Enums;
+using BreganTwitchBot.Domain.Interfaces.Helpers;
 using BreganTwitchBot.Domain.Interfaces.Twitch;
 using BreganTwitchBot.Domain.Interfaces.Twitch.Events;
 using Microsoft.Extensions.Hosting;
@@ -12,7 +13,7 @@ using TwitchLib.EventSub.Websockets.Core.EventArgs.Channel;
 
 namespace BreganTwitchBot.Domain.Data.Services.Twitch
 {
-    public class WebsocketHostedService(ITwitchApiConnection twitchApiConnection, ICommandHandler commandHandler, ITwitchHelperService twitchHelperService, ITwitchEventHandlerService twitchEventHandlerService) : IHostedService
+    public class WebsocketHostedService(ITwitchApiConnection twitchApiConnection, ICommandHandler commandHandler, ITwitchHelperService twitchHelperService, ITwitchEventHandlerService twitchEventHandlerService, IConfigHelperService configHelperService) : IHostedService
     {
         private readonly Dictionary<string, EventSubWebsocketClient> _userConnections = [];
 
@@ -53,7 +54,7 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch
             await twitchEventHandlerService.HandleChannelResubscribeEvent(resubEvent);
         }
 
-        private Task OnChannelSubscriptionGift(object sender, ChannelSubscriptionGiftArgs args)
+        private async Task OnChannelSubscriptionGift(object sender, ChannelSubscriptionGiftArgs args)
         {
             var giftSubEvent = new ChannelGiftSubParams
             {
@@ -66,56 +67,160 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch
                 CumulativeTotal = args.Notification.Payload.Event.CumulativeTotal,
                 Total = args.Notification.Payload.Event.Total
             };
+
+            Log.Information($"[Twitch Events] Channel gift sub: {giftSubEvent.ChatterChannelName} in {giftSubEvent.BroadcasterChannelName}. Tier: {giftSubEvent.SubTier}");
+
+            await twitchEventHandlerService.HandleChannelGiftSubEvent(giftSubEvent);
         }
 
-        private Task OnChannelSubcribe(object sender, ChannelSubscribeArgs args)
+        private async Task OnChannelSubcribe(object sender, ChannelSubscribeArgs args)
         {
-            throw new NotImplementedException();
+            var subEvent = new ChannelSubscribeParams
+            {
+                BroadcasterChannelId = args.Notification.Payload.Event.BroadcasterUserId,
+                BroadcasterChannelName = args.Notification.Payload.Event.BroadcasterUserName,
+                ChatterChannelId = args.Notification.Payload.Event.UserId,
+                ChatterChannelName = args.Notification.Payload.Event.UserName,
+                SubTier = Enum.TryParse<SubTierEnum>(args.Notification.Payload.Event.Tier, out var tier) ? tier : SubTierEnum.Tier1,
+                IsGift = args.Notification.Payload.Event.IsGift
+            };
+
+            Log.Information($"[Twitch Events] Channel subscribe: {subEvent.ChatterChannelName} in {subEvent.BroadcasterChannelName}. Tier: {subEvent.SubTier}");
+
+            await twitchEventHandlerService.HandleChannelSubEvent(subEvent);
         }
 
-        private Task OnFollowReceived(object sender, ChannelFollowArgs args)
+        private async Task OnFollowReceived(object sender, ChannelFollowArgs args)
         {
-            throw new NotImplementedException();
+            Log.Information($"[Twitch Events] Channel follow: {args.Notification.Payload.Event.UserName} ({args.Notification.Payload.Event.UserId}) in {args.Notification.Payload.Event.BroadcasterUserName}");
+
+            await twitchHelperService.AddOrUpdateUserToDatabase(args.Notification.Payload.Event.BroadcasterUserId, args.Notification.Payload.Event.UserId, args.Notification.Payload.Event.BroadcasterUserName, args.Notification.Payload.Event.UserName);
         }
 
-        private Task OnStreamOffline(object sender, TwitchLib.EventSub.Websockets.Core.EventArgs.Stream.StreamOfflineArgs args)
+        private async Task OnStreamOffline(object sender, TwitchLib.EventSub.Websockets.Core.EventArgs.Stream.StreamOfflineArgs args)
         {
-            throw new NotImplementedException();
+            Log.Information($"[Twitch Events] Stream offline: {args.Notification.Payload.Event.BroadcasterUserName} ({args.Notification.Payload.Event.BroadcasterUserId})");
+
+            await configHelperService.UpdateStreamLiveStatus(args.Notification.Payload.Event.BroadcasterUserId, false);
         }
 
-        private Task OnStreamOnline(object sender, TwitchLib.EventSub.Websockets.Core.EventArgs.Stream.StreamOnlineArgs args)
+        private async Task OnStreamOnline(object sender, TwitchLib.EventSub.Websockets.Core.EventArgs.Stream.StreamOnlineArgs args)
         {
-            throw new NotImplementedException();
+            Log.Information($"[Twitch Events] Stream online: {args.Notification.Payload.Event.BroadcasterUserName} ({args.Notification.Payload.Event.BroadcasterUserId})");
+
+            await configHelperService.UpdateStreamLiveStatus(args.Notification.Payload.Event.BroadcasterUserId, true);
         }
 
-        private Task OnChannelUnban(object sender, ChannelUnbanArgs args)
+        private async Task OnChannelUnban(object sender, ChannelUnbanArgs args)
         {
-            throw new NotImplementedException();
+            Log.Information($"[Twitch Events] Channel unban: {args.Notification.Payload.Event.UserName} ({args.Notification.Payload.Event.UserId}) in {args.Notification.Payload.Event.BroadcasterUserName}");
         }
 
-        private Task OnChannelPredictionEnd(object sender, ChannelPredictionEndArgs args)
+        private async Task OnChannelPredictionEnd(object sender, ChannelPredictionEndArgs args)
         {
-            throw new NotImplementedException();
+            var predictionEndParams = new ChannelPredictionEndParams
+            {
+                BroadcasterChannelId = args.Notification.Payload.Event.BroadcasterUserId,
+                BroadcasterChannelName = args.Notification.Payload.Event.BroadcasterUserName,
+                PredictionId = args.Notification.Payload.Event.Id,
+                WonOutcome = args.Notification.Payload.Event.Outcomes.Where(x => x.Id == args.Notification.Payload.Event.WinningOutcomeId).Select(x => new ChannelPredictionEndParams.Outcome
+                {
+                    Id = x.Id,
+                    Title = x.Title,
+                    Users = x.Users ?? 0,
+                    ChannelPoints = x.ChannelPoints ?? 0,
+                    TopPredictors = x.TopPredictors.Select(y => new ChannelPredictionEndParams.TopPredictor
+                    {
+                        UserName = y.UserName,
+                        UserId = y.UserId,
+                        ChannelPointsWon = y.ChannelPointsWon,
+                        ChannelPointsUsed = y.ChannelPointsUsed
+                    }).ToArray()
+                }).First(),
+                PredictionStatus = args.Notification.Payload.Event.Status,
+                PredictionTitle = args.Notification.Payload.Event.Title
+            };
+
+            Log.Information($"[Twitch Events] Channel prediction end: {predictionEndParams.BroadcasterChannelName} ({predictionEndParams.BroadcasterChannelId}) - {predictionEndParams.PredictionTitle}");
+
+            await twitchEventHandlerService.HandlePredictionEndEvent(predictionEndParams);
         }
 
-        private Task OnChannelPredictionLock(object sender, ChannelPredictionLockArgs args)
+        private async Task OnChannelPredictionLock(object sender, ChannelPredictionLockArgs args)
         {
-            throw new NotImplementedException();
+            var predictionLockParams = new ChannelPredictionLockedParams
+            {
+                BroadcasterChannelId = args.Notification.Payload.Event.BroadcasterUserId,
+                BroadcasterChannelName = args.Notification.Payload.Event.BroadcasterUserName,
+                PredictionId = args.Notification.Payload.Event.Id,
+                PredictionTitle = args.Notification.Payload.Event.Title,
+                PredictionStatus = "Locked"
+            };
+
+            Log.Information($"[Twitch Events] Channel prediction lock: {predictionLockParams.BroadcasterChannelName} ({predictionLockParams.BroadcasterChannelId}) - {predictionLockParams.PredictionTitle}");
+
+            await twitchEventHandlerService.HandlePredictionLockedEvent(predictionLockParams);
         }
 
-        private Task OnChannelPredictionBegin(object sender, ChannelPredictionBeginArgs args)
+        private async Task OnChannelPredictionBegin(object sender, ChannelPredictionBeginArgs args)
         {
-            throw new NotImplementedException();
+            var predictionBeginParams = new ChannelPredictionBeginParams
+            {
+                BroadcasterChannelId = args.Notification.Payload.Event.BroadcasterUserId,
+                BroadcasterChannelName = args.Notification.Payload.Event.BroadcasterUserName,
+                PredictionId = args.Notification.Payload.Event.Id,
+                PredictionTitle = args.Notification.Payload.Event.Title,
+                PredictionStatus = "Started",
+                PredictionOutcomeOptions = args.Notification.Payload.Event.Outcomes.Select(x => new PredictionOutcomeOption
+                {
+                    Id = x.Id,
+                    Title = x.Title
+                }).ToArray()
+            };
+            Log.Information($"[Twitch Events] Channel prediction begin: {predictionBeginParams.BroadcasterChannelName} ({predictionBeginParams.BroadcasterChannelId}) - {predictionBeginParams.PredictionTitle}");
+
+            await twitchEventHandlerService.HandlePredictionBeginEvent(predictionBeginParams);
         }
 
-        private Task OnPollEnd(object sender, ChannelPollEndArgs args)
+        private async Task OnPollEnd(object sender, ChannelPollEndArgs args)
         {
-            throw new NotImplementedException();
+            var pollEndParams = new ChannelPollEndParams
+            {
+                BroadcasterChannelId = args.Notification.Payload.Event.BroadcasterUserId,
+                BroadcasterChannelName = args.Notification.Payload.Event.BroadcasterUserName,
+                PollTitle = args.Notification.Payload.Event.Title,
+                PollEndResults = args.Notification.Payload.Event.Choices.Select(x => new PollEndChoices
+                {
+                    Id = x.Id,
+                    Title = x.Title,
+                    Votes = x.Votes ?? 0,
+                    ChannelPointsVotes = x.ChannelPointsVotes ?? 0,
+                    BitsVotes = x.BitsVotes ?? 0
+                }).ToArray()
+            };
+            
+            Log.Information($"[Twitch Events] Channel poll end: {pollEndParams.BroadcasterChannelName} ({pollEndParams.BroadcasterChannelId}) - {pollEndParams.PollTitle}");
+
+            await twitchEventHandlerService.HandlePollBeginEvent(pollEndParams);
         }
 
-        private Task OnPollBegin(object sender, ChannelPollBeginArgs args)
+        private async Task OnPollBegin(object sender, ChannelPollBeginArgs args)
         {
-            throw new NotImplementedException();
+            var pollBeginParams = new ChannelPollBeginParams
+            {
+                BroadcasterChannelId = args.Notification.Payload.Event.BroadcasterUserId,
+                BroadcasterChannelName = args.Notification.Payload.Event.BroadcasterUserName,
+                PollTitle = args.Notification.Payload.Event.Title,
+                PollChoices = args.Notification.Payload.Event.Choices.Select(x => new PollStartChoices
+                {
+                    Id = x.Id,
+                    Title = x.Title
+                }).ToArray()
+            };
+
+            Log.Information($"[Twitch Events] Channel poll begin: {pollBeginParams.BroadcasterChannelName} ({pollBeginParams.BroadcasterChannelId}) - {pollBeginParams.PollTitle}");
+
+            await twitchEventHandlerService.HandlePollBeginEvent(pollBeginParams);
         }
 
         private Task OnCustomRewardRedeemed(object sender, ChannelPointsCustomRewardArgs args)

@@ -26,7 +26,7 @@ namespace BreganTwitchBot.DomainTests.Twitch.Commands
     {
         private PostgreSqlContainer _postgresContainer;
         private AppDbContext _dbContext;
-        private Mock<IConfigHelper> _configHelper;
+        private Mock<IConfigHelperService> _configHelper;
         private Mock<ITwitchHelperService> _twitchHelperService;
 
         private DailyPointsDataService _dailyPointsDataService;
@@ -59,7 +59,7 @@ namespace BreganTwitchBot.DomainTests.Twitch.Commands
 
             await DatabaseSeedHelper.SeedDatabase(_dbContext);
 
-            _configHelper = new Mock<IConfigHelper>();
+            _configHelper = new Mock<IConfigHelperService>();
             _twitchHelperService = new Mock<ITwitchHelperService>();
 
             _twitchHelperService

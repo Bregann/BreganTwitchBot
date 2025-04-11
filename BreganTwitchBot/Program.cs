@@ -130,14 +130,14 @@ builder.Services.AddSingleton<ITwitchApiConnection>(provider =>
 });
 
 // Helper bits
-builder.Services.AddSingleton<IConfigHelper, ConfigHelperService>();
+builder.Services.AddSingleton<IConfigHelperService, ConfigHelperService>();
 
 // Twitch events
 builder.Services.AddTwitchLibEventSubWebsockets();
 builder.Services.AddHostedService<WebsocketHostedService>();
 builder.Services.AddSingleton<ITwitchHelperService, TwitchHelperService>();
 builder.Services.AddSingleton<ITwitchApiInteractionService, TwitchApiInteractionService>();
-builder.Services.AddSingleton<IConfigHelper, ConfigHelperService>();
+builder.Services.AddSingleton<IConfigHelperService, ConfigHelperService>();
 
 // Twitch commands
 builder.Services.AddSingleton<ICommandHandler, CommandHandler>();

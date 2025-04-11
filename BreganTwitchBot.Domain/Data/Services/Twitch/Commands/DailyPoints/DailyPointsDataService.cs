@@ -18,7 +18,7 @@ using System.Xml.Serialization;
 
 namespace BreganTwitchBot.Domain.Data.Services.Twitch.Commands.DailyPoints
 {
-    public class DailyPointsDataService(AppDbContext context, IConfigHelper configHelper, ITwitchHelperService twitchHelperService, IRecurringJobManager recurringJobManager) : IDailyPointsDataService
+    public class DailyPointsDataService(AppDbContext context, IConfigHelperService configHelper, ITwitchHelperService twitchHelperService, IRecurringJobManager recurringJobManager) : IDailyPointsDataService
     {
         /// <summary>
         /// Schedule daily points collection for the broadcaster. When the stream goes live a 30 minute timer is started to allow collecting points.

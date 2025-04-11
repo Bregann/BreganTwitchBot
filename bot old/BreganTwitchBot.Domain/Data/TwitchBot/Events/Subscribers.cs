@@ -7,63 +7,6 @@ namespace BreganTwitchBot.Domain.Data.TwitchBot.Events
 {
     public class Subscribers
     {
-        public static async Task HandleGiftSubscriptionEvent(TwitchLib.Client.Enums.SubscriptionPlan subType, string gifterUsername, string recipientUsername, string gifterUserId, string recipientUserId)
-        {
-            try
-            {
-                var subName = "";
-
-                switch (subType)
-                {
-                    case TwitchLib.Client.Enums.SubscriptionPlan.NotSet:
-                    case TwitchLib.Client.Enums.SubscriptionPlan.Prime:
-                    case TwitchLib.Client.Enums.SubscriptionPlan.Tier1:
-                        await PointsHelper.AddUserPoints(gifterUserId, 20000);
-                        await PointsHelper.AddUserPoints(recipientUserId, 5000);
-                        StreamStatsService.UpdateStreamStat(25000, StatTypes.PointsGainedSubscribing);
-                        subName = "tier 1";
-                        break;
-
-                    case TwitchLib.Client.Enums.SubscriptionPlan.Tier2:
-                        await PointsHelper.AddUserPoints(gifterUserId, 40000);
-                        await PointsHelper.AddUserPoints(recipientUserId, 5000);
-                        StreamStatsService.UpdateStreamStat(45000, StatTypes.PointsGainedSubscribing);
-                        subName = "tier 2";
-                        break;
-
-                    case TwitchLib.Client.Enums.SubscriptionPlan.Tier3:
-                        await PointsHelper.AddUserPoints(gifterUserId, 100000);
-                        await PointsHelper.AddUserPoints(recipientUserId, 5000);
-                        StreamStatsService.UpdateStreamStat(105000, StatTypes.PointsGainedSubscribing);
-                        subName = "tier 3";
-                        break;
-                    default:
-                        break;
-                }
-
-                using (var context = new DatabaseContext())
-                {
-                    var user = context.Users.Where(x => x.TwitchUserId == gifterUserId).FirstOrDefault();
-
-                    if (user != null)
-                    {
-                        user.GiftedSubsThisMonth++;
-                        context.SaveChanges();
-                    }
-                }
-
-                Log.Information($"[Sub Leaderboard] +1 to {gifterUsername}");
-
-                StreamStatsService.UpdateStreamStat(1, StatTypes.NewGiftedSubs);
-                TwitchHelper.SendMessage($"Thank you {gifterUsername} for gifting {recipientUsername} a {subName} subscription PogChamp <3 blocksGuinea1 blocksGuinea2 blocksGuinea3 blocksW blocksOK blocksGuinea blocksMarge blocksBitrate blocksSWIRL blocksFail blocksWOT blocksBANNED blocksJ0F blocksWOTG blocksGuineaG blocksEcho");
-            }
-
-            catch (Exception ex)
-            {
-                Log.Fatal(ex.Message);
-            }
-        }
-
         public static async Task HandleNewSubscriberEvent(TwitchLib.Client.Enums.SubscriptionPlan subType, string username, string userId)
         {
             var subName = "";

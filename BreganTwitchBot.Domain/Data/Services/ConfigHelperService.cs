@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 
 namespace BreganTwitchBot.Domain.Data.Services
 {
-    public class ConfigHelperService : IConfigHelper
+    public class ConfigHelperService : IConfigHelperService
     {
         public List<ChannelConfig> _channelConfigs = new ();
         private IServiceProvider _serviceProvider;
@@ -46,6 +46,38 @@ namespace BreganTwitchBot.Domain.Data.Services
                 _channelConfigs.First(x => x.Channel.BroadcasterTwitchChannelId == broadcasterId).DailyPointsCollectingAllowed = status;
                 _channelConfigs.First(x => x.Channel.BroadcasterTwitchChannelId == broadcasterId).LastDailyPointsAllowed = DateTime.UtcNow;
                 Log.Information($"Updated daily points status for {broadcasterId} to {status}");
+            }
+        }
+
+        public async Task UpdateStreamLiveStatus(string broadcasterId, bool status)
+        {
+            using (var scope = _serviceProvider.CreateScope())
+            {
+                var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+                await context.ChannelConfig
+                    .Where(x => x.Channel.BroadcasterTwitchChannelId == broadcasterId)
+                    .ExecuteUpdateAsync(setters => setters
+                        .SetProperty(x => x.StreamAnnounced, status)
+                        .SetProperty(x => status == true ? x.LastStreamStartDate : x.LastStreamEndDate, DateTime.UtcNow)
+                        .SetProperty(x => x.StreamHappenedThisWeek, true)
+                );
+
+                await context.SaveChangesAsync();
+
+                _channelConfigs.First(x => x.Channel.BroadcasterTwitchChannelId == broadcasterId).StreamAnnounced = status;
+
+                if (status)
+                {
+                    _channelConfigs.First(x => x.Channel.BroadcasterTwitchChannelId == broadcasterId).LastStreamStartDate = DateTime.UtcNow;
+                }
+                else
+                {
+                    _channelConfigs.First(x => x.Channel.BroadcasterTwitchChannelId == broadcasterId).LastStreamEndDate = DateTime.UtcNow;
+                }
+
+                _channelConfigs.First(x => x.Channel.BroadcasterTwitchChannelId == broadcasterId).StreamHappenedThisWeek = true;
+                Log.Information($"Updated stream live status for {broadcasterId} to {status}");
             }
         }
 
