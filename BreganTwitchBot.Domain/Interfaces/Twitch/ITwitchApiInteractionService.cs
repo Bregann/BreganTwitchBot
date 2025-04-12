@@ -15,5 +15,6 @@ namespace BreganTwitchBot.Domain.Interfaces.Twitch
         Task SendChatMessage(TwitchAPI apiClient, string broadcasterChannelId, string twitchChannelClientId, string message, string? originalMessageId = null);
         Task<GetChattersResult> GetChattersAsync(TwitchAPI apiClient, string broadcasterChannelId, string moderatorId);
         Task SendAnnouncementMessage(TwitchAPI apiClient, string broadcasterChannelId, string twitchChannelClientId, string message);
+        Task ShoutoutChannel(TwitchAPI apiClient, string broadcasterChannelId, string shoutoutChannelId, string moderatorId);
     }
 }

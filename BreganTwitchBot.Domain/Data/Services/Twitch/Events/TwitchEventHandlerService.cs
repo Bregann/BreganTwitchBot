@@ -13,7 +13,7 @@ using System.Threading.Tasks;
 
 namespace BreganTwitchBot.Domain.Data.Services.Twitch.Events
 {
-    public class TwitchEventHandlerService(ITwitchHelperService twitchHelperService) : ITwitchEventHandlerService
+    public class TwitchEventHandlerService(ITwitchHelperService twitchHelperService, ITwitchApiInteractionService twitchApiInteractionService, ITwitchApiConnection twitchApiConnection) : ITwitchEventHandlerService
     {
         public async Task HandleChannelCheerEvent(BitsCheeredParams cheerParams)
         {
@@ -113,6 +113,22 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch.Events
 
             var winnersString = string.Join(", ", winners);
             await twitchHelperService.SendTwitchMessageToChannel(channelPollEndParams.BroadcasterChannelId, channelPollEndParams.BroadcasterChannelName, $"The poll has ended! The winning options are: {winnersString}. Thank you for voting!");
+        }
+
+        public async Task HandleRaidEvent(ChannelRaidParams raidParams)
+        {
+            await twitchHelperService.SendTwitchMessageToChannel(raidParams.BroadcasterChannelId, raidParams.BroadcasterChannelName, $"Welcome {raidParams.RaidingChannelName} and their {raidParams.Viewers} viewers! Thank you for the raid! <3 Make sure to check out their channel at https://twitch.tv/{raidParams.RaidingChannelName.ToLower()}");
+
+            // if their viewers are greater than 5 we can give them a shoutout as it's probably not a troll raid
+            if (raidParams.Viewers > 5)
+            {
+                var channel = twitchApiConnection.GetBotTwitchApiClientFromBroadcasterChannelId(raidParams.BroadcasterChannelId);
+
+                if (channel != null)
+                {
+                    await twitchApiInteractionService.ShoutoutChannel(channel.ApiClient, raidParams.BroadcasterChannelId, raidParams.RaidingChannelId, channel.TwitchChannelClientId);
+                }
+            }
         }
     }
 }

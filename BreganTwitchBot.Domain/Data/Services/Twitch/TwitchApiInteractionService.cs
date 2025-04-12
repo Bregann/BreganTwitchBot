@@ -64,7 +64,7 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch
         public async Task<GetChattersResult> GetChattersAsync(TwitchAPI apiClient, string broadcasterChannelId, string moderatorId)
         {
             var res = await apiClient.Helix.Chat.GetChattersAsync(broadcasterChannelId, moderatorId, 1000);
-            
+
             var chatters = res.Data.Select(item => new Chatters
             {
                 UserId = item.UserId,
@@ -93,6 +93,11 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch
         public async Task SendAnnouncementMessage(TwitchAPI apiClient, string broadcasterChannelId, string twitchChannelClientId, string message)
         {
             await apiClient.Helix.Chat.SendChatAnnouncementAsync(broadcasterChannelId, twitchChannelClientId, message, AnnouncementColors.Green);
+        }
+
+        public async Task ShoutoutChannel(TwitchAPI apiClient, string broadcasterChannelId, string shoutoutChannelId, string moderatorId)
+        {
+            await apiClient.Helix.Chat.SendShoutoutAsync(broadcasterChannelId, shoutoutChannelId, moderatorId);
         }
     }
 }

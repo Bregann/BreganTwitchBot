@@ -32,7 +32,7 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch
         /// </summary>
         /// <param name="channelName">The twitch channel name</param>
         /// <param name="databaseChannelId">This is the database generated id from the row</param>
-        /// <param name="twitchChannelClientId">The twitch channel ID</param>
+        /// <param name="twitchChannelClientId">The twitch channel ID. Could be a bot or broadcaster</param>
         /// <param name="accessToken">The twitch channel access token</param>
         /// <param name="refreshToken">Twitch channel refresh token</param>
         /// <param name="type">if it is a bot account or a broadcaster account</param>

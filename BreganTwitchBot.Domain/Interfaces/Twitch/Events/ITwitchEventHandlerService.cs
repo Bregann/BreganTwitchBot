@@ -18,5 +18,6 @@ namespace BreganTwitchBot.Domain.Interfaces.Twitch.Events
         Task HandlePredictionBeginEvent(ChannelPredictionBeginParams channelPredictionBeginParams);
         Task HandlePollBeginEvent(ChannelPollBeginParams channelPollBeginParams);
         Task HandlePollEndEvent(ChannelPollEndParams channelPollEndParams);
+        Task HandleRaidEvent(ChannelRaidParams raidParams);
     }
 }

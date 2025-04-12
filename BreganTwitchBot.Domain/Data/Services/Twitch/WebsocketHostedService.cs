@@ -111,6 +111,11 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch
             await configHelperService.UpdateStreamLiveStatus(args.Notification.Payload.Event.BroadcasterUserId, true);
         }
 
+        private async Task OnChannelBan(object sender, ChannelBanArgs args)
+        {
+            Log.Information($"[Twitch Events] Channel ban: {args.Notification.Payload.Event.UserName} ({args.Notification.Payload.Event.UserId}) in {args.Notification.Payload.Event.BroadcasterUserName} ({args.Notification.Payload.Event.BroadcasterUserId})");
+        }
+
         private async Task OnChannelUnban(object sender, ChannelUnbanArgs args)
         {
             Log.Information($"[Twitch Events] Channel unban: {args.Notification.Payload.Event.UserName} ({args.Notification.Payload.Event.UserId}) in {args.Notification.Payload.Event.BroadcasterUserName}");
@@ -223,29 +228,36 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch
             await twitchEventHandlerService.HandlePollBeginEvent(pollBeginParams);
         }
 
-        private Task OnCustomRewardRedeemed(object sender, ChannelPointsCustomRewardArgs args)
+        private async Task OnCustomRewardRedeemed(object sender, ChannelPointsCustomRewardArgs args)
         {
-            throw new NotImplementedException();
+            Log.Information($"[Twitch Events] Channel custom reward redeemed: {args.Notification.Payload.Event.BroadcasterUserName} ({args.Notification.Payload.Event.BroadcasterUserId}) - {args.Notification.Payload.Event.Title}");
         }
 
-        private Task OnAutomaticRewardRedeemed(object sender, ChannelPointsAutomaticRewardRedemptionArgs args)
+        private async Task OnAutomaticRewardRedeemed(object sender, ChannelPointsAutomaticRewardRedemptionArgs args)
         {
-            throw new NotImplementedException();
+            Log.Information($"[Twitch Events] Channel automatic reward redeemed: {args.Notification.Payload.Event.BroadcasterUserName} ({args.Notification.Payload.Event.BroadcasterUserId}) - {args.Notification.Payload.Event.Message}");
         }
 
-        private Task OnChannelBan(object sender, ChannelBanArgs args)
+        private async Task OnChannelRaid(object sender, ChannelRaidArgs args)
         {
-            throw new NotImplementedException();
-        }
+            var raidParams = new ChannelRaidParams
+            {
+                BroadcasterChannelId = args.Notification.Payload.Event.ToBroadcasterUserId,
+                BroadcasterChannelName = args.Notification.Payload.Event.ToBroadcasterUserName,
+                RaidingChannelId = args.Notification.Payload.Event.FromBroadcasterUserId,
+                RaidingChannelName = args.Notification.Payload.Event.FromBroadcasterUserName,
+                Viewers = args.Notification.Payload.Event.Viewers
+            };
 
-        private Task OnChannelRaid(object sender, ChannelRaidArgs args)
-        {
-            throw new NotImplementedException();
+            Log.Information($"[Twitch Events] Channel raid: {raidParams.RaidingChannelName} ({raidParams.RaidingChannelId}) raided {raidParams.BroadcasterChannelName} ({raidParams.BroadcasterChannelId}) with {raidParams.Viewers} viewers");
+
+            await twitchEventHandlerService.HandleRaidEvent(raidParams);
         }
 
         private Task OnChannelUpdate(object sender, ChannelUpdateArgs args)
         {
-            throw new NotImplementedException();
+            Log.Information($"[Twitch Events] Channel update: {args.Notification.Payload.Event.BroadcasterUserName} ({args.Notification.Payload.Event.BroadcasterUserId}). Title: {args.Notification.Payload.Event.Title} | Category: {args.Notification.Payload.Event.CategoryName}");
+            return Task.CompletedTask;
         }
 
         private async Task OnChannelChatMessageReceived(object sender, ChannelChatMessageArgs args)
