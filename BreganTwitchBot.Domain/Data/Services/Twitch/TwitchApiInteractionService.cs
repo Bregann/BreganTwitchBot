@@ -4,6 +4,8 @@ using TwitchLib.Api;
 using TwitchLib.Api.Helix.Models.Moderation.CheckAutoModStatus;
 using System.Linq;
 using TwitchLib.Api.Helix.Models.Chat;
+using TwitchLib.Api.Helix.Models.Moderation.WarnChatUser.Request;
+using TwitchLib.Api.Helix.Models.Moderation.BanUser;
 
 namespace BreganTwitchBot.Domain.Data.Services.Twitch
 {
@@ -98,6 +100,40 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch
         public async Task ShoutoutChannel(TwitchAPI apiClient, string broadcasterChannelId, string shoutoutChannelId, string moderatorId)
         {
             await apiClient.Helix.Chat.SendShoutoutAsync(broadcasterChannelId, shoutoutChannelId, moderatorId);
+        }
+
+        public async Task WarnUser(TwitchAPI apiClient, string broadcasterChannelId, string moderatorId, string userId, string message)
+        {
+            var warn = new WarnChatUserRequest
+            {
+                UserId = userId,
+                Reason = message
+            };
+
+            await apiClient.Helix.Moderation.WarnChatUserAsync(broadcasterChannelId, moderatorId, warn);
+        }
+
+        public async Task TimeoutUser(TwitchAPI apiClient, string broadcasterChannelId, string moderatorId, string userId, int durationInSeconds, string reason)
+        {
+            var timeout = new BanUserRequest
+            {
+                UserId = userId,
+                Duration = durationInSeconds,
+                Reason = reason
+            };
+
+            await apiClient.Helix.Moderation.BanUserAsync(broadcasterChannelId, moderatorId, timeout);
+        }
+
+        public async Task BanUser(TwitchAPI apiClient, string broadcasterChannelId, string moderatorId, string userId, string reason)
+        {
+            var ban = new BanUserRequest
+            {
+                UserId = userId,
+                Reason = reason
+            };
+
+            await apiClient.Helix.Moderation.BanUserAsync(broadcasterChannelId, moderatorId, ban);
         }
     }
 }

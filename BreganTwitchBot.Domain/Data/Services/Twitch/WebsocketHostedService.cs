@@ -206,7 +206,7 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch
             
             Log.Information($"[Twitch Events] Channel poll end: {pollEndParams.BroadcasterChannelName} ({pollEndParams.BroadcasterChannelId}) - {pollEndParams.PollTitle}");
 
-            await twitchEventHandlerService.HandlePollBeginEvent(pollEndParams);
+            await twitchEventHandlerService.HandlePollEndEvent(pollEndParams);
         }
 
         private async Task OnPollBegin(object sender, ChannelPollBeginArgs args)

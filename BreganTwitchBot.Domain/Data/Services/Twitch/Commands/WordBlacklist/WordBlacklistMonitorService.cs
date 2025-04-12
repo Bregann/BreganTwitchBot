@@ -2,8 +2,10 @@
 using BreganTwitchBot.Domain.Data.Database.Models;
 using BreganTwitchBot.Domain.DTOs.Twitch.Commands.WordBlacklist;
 using BreganTwitchBot.Domain.Enums;
+using BreganTwitchBot.Domain.Interfaces.Twitch;
 using BreganTwitchBot.Domain.Interfaces.Twitch.Commands;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage.Json;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
@@ -15,8 +17,11 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch.Commands.WordBlacklist
 {
     public class WordBlacklistMonitorService : IWordBlacklistMonitorService
     {
-        internal List<WordBlacklistItem> _wordBlacklist = new List<WordBlacklistItem>();
-        public WordBlacklistMonitorService(IServiceProvider serviceProvider)
+        internal List<WordBlacklistItem> _wordBlacklist = [];
+        internal List<WordBlacklistUser> _wordBlacklistUsers = [];
+        private readonly ITwitchHelperService _twitchHelperService;
+
+        public WordBlacklistMonitorService(IServiceProvider serviceProvider, ITwitchHelperService twitchHelperService)
         {
             // Load the words from the database
             using (var scope = serviceProvider.CreateScope())
@@ -31,6 +36,8 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch.Commands.WordBlacklist
                     })
                     .ToList();
             }
+
+            _twitchHelperService = twitchHelperService;
         }
 
         public (bool IsBlacklisted, WordType? BlacklistType) IsWordBlacklisted(string word, string broadcasterId)
@@ -66,6 +73,64 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch.Commands.WordBlacklist
             if (wordToRemove != null)
             {
                 _wordBlacklist.Remove(wordToRemove);
+            }
+        }
+
+        public async Task CheckMessageForBlacklistedWords(string message, string userId, string broadcasterId)
+        {
+            // Check if the message contains any blacklisted words
+            var blacklistedWords = _wordBlacklist.Where(x => x.BroadcasterId == broadcasterId && message.Contains(x.Word, StringComparison.CurrentCultureIgnoreCase)).ToList();
+
+            if (blacklistedWords.Count != 0)
+            {
+                WordType? wordType = null;
+                foreach (var blacklistedWord in blacklistedWords)
+                {
+                    // check the wordtype type, if it's greater than the current wordType, set it
+                    if (wordType == null || blacklistedWord.WordType > wordType)
+                    {
+                        wordType = blacklistedWord.WordType;
+                    }
+                }
+
+                switch (wordType)
+                {
+                    case WordType.TempBanWord:
+                        await _twitchHelperService.TimeoutUser(broadcasterId, userId, 300, "You have been timed out for using blacklisted words.");
+                        break;
+                    case WordType.PermBanWord:
+                        await _twitchHelperService.BanUser(broadcasterId, userId, "You have been banned for using blacklisted words.");
+                        break;
+                    case WordType.StrikeWord:
+                        if (_wordBlacklistUsers.Any(x => x.UserId == userId && x.BroadcasterId == broadcasterId))
+                        {
+                            await _twitchHelperService.TimeoutUser(broadcasterId, userId, 300, "You have been timed out for using blacklisted words after a warning.");
+                            _wordBlacklistUsers.Remove(_wordBlacklistUsers.First(x => x.UserId == userId && x.BroadcasterId == broadcasterId));
+                        }
+                        else
+                        {
+                            _wordBlacklistUsers.Add(new WordBlacklistUser
+                            {
+                                UserId = userId,
+                                BroadcasterId = broadcasterId,
+                                AddedAt = DateTime.UtcNow
+                            });
+
+                            await _twitchHelperService.WarnUser(broadcasterId, userId, "You have been warned for using blacklisted words. Further violations may result in a timeout or ban.");
+                        }
+                        break;
+                }
+            }
+        }
+
+        public void RemoveWarnedUsers()
+        {
+            // Remove users who have been warned for more than 5 minutes
+            var now = DateTime.UtcNow;
+            var usersToRemove = _wordBlacklistUsers.Where(x => (now - x.AddedAt).TotalMinutes > 5).ToList();
+            foreach (var user in usersToRemove)
+            {
+                _wordBlacklistUsers.Remove(user);
             }
         }
     }

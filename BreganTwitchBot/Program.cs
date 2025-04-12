@@ -13,11 +13,14 @@ using BreganTwitchBot.Domain.Data.Services.Twitch.Commands.Hours;
 using BreganTwitchBot.Domain.Data.Services.Twitch.Commands.Linking;
 using BreganTwitchBot.Domain.Data.Services.Twitch.Commands.Points;
 using BreganTwitchBot.Domain.Data.Services.Twitch.Commands.TwitchBosses;
+using BreganTwitchBot.Domain.Data.Services.Twitch.Commands.WordBlacklist;
+using BreganTwitchBot.Domain.Data.Services.Twitch.Events;
 using BreganTwitchBot.Domain.Enums;
 using BreganTwitchBot.Domain.Helpers;
 using BreganTwitchBot.Domain.Interfaces.Helpers;
 using BreganTwitchBot.Domain.Interfaces.Twitch;
 using BreganTwitchBot.Domain.Interfaces.Twitch.Commands;
+using BreganTwitchBot.Domain.Interfaces.Twitch.Events;
 using Hangfire;
 using Hangfire.Dashboard.BasicAuthorization;
 using Hangfire.MemoryStorage;
@@ -139,6 +142,8 @@ builder.Services.AddSingleton<ITwitchHelperService, TwitchHelperService>();
 builder.Services.AddSingleton<ITwitchApiInteractionService, TwitchApiInteractionService>();
 builder.Services.AddSingleton<IConfigHelperService, ConfigHelperService>();
 
+builder.Services.AddSingleton<ITwitchEventHandlerService, TwitchEventHandlerService>();
+
 // Twitch commands
 builder.Services.AddSingleton<ICommandHandler, CommandHandler>();
 
@@ -168,6 +173,10 @@ builder.Services.AddScoped<ILinkingDataService, LinkingDataService>();
 
 builder.Services.AddSingleton<TwitchBossesCommandService>();
 builder.Services.AddSingleton<ITwitchBossesDataService, TwitchBossesDataService>();
+
+builder.Services.AddSingleton<WordBlacklistCommandService>();
+builder.Services.AddScoped<IWordBlacklistDataService, WordBlacklistDataService>();
+builder.Services.AddSingleton<IWordBlacklistMonitorService, WordBlacklistMonitorService>();
 
 // hangfire
 builder.Services.AddHangfireServer(options => options.SchedulePollingInterval = TimeSpan.FromSeconds(10));

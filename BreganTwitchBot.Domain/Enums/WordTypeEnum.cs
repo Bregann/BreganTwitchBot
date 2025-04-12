@@ -4,7 +4,6 @@
     {
         PermBanWord,
         TempBanWord,
-        WarningWord,
         StrikeWord
     }
 }

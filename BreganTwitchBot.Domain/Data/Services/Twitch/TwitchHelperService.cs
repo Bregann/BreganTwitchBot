@@ -408,5 +408,64 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch
                 return;
             }
         }
+
+        public async Task WarnUser(string broadcasterChannelId, string userId, string message)
+        {
+            var apiClient = connection.GetBotTwitchApiClientFromBroadcasterChannelId(broadcasterChannelId);
+
+            if (apiClient == null)
+            {
+                Log.Error($"[Twitch Helper Service] Error warning user {userId} in {broadcasterChannelId}, apiClient is null");
+                return;
+            }
+
+            try
+            {
+                await twitchApiInteractionService.WarnUser(apiClient.ApiClient, broadcasterChannelId, apiClient.TwitchChannelClientId, userId, message);
+                Log.Information($"[Twitch Helper Service] Warned user {userId} in {broadcasterChannelId}. Message contents: {message}");
+            }
+            catch (Exception ex)
+            {
+                Log.Error($"[Twitch Helper Service] Error warning user {userId} in {broadcasterChannelId}, {ex.Message}");
+            }
+        }
+
+        public async Task TimeoutUser(string broadcasterChannelId, string userId, int timeoutDurationInSeconds, string reason)
+        {
+            var apiClient = connection.GetBotTwitchApiClientFromBroadcasterChannelId(broadcasterChannelId);
+            if (apiClient == null)
+            {
+                Log.Error($"[Twitch Helper Service] Error timing out user {userId} in {broadcasterChannelId}, apiClient is null");
+                return;
+            }
+            try
+            {
+                await twitchApiInteractionService.TimeoutUser(apiClient.ApiClient, broadcasterChannelId, apiClient.TwitchChannelClientId, userId, timeoutDurationInSeconds, reason);
+                Log.Information($"[Twitch Helper Service] Timed out user {userId} in {broadcasterChannelId}. Timeout duration: {timeoutDurationInSeconds}");
+            }
+            catch (Exception ex)
+            {
+                Log.Error($"[Twitch Helper Service] Error timing out user {userId} in {broadcasterChannelId}, {ex.Message}");
+            }
+        }
+
+        public async Task BanUser(string broadcasterChannelId, string userId, string reason)
+        {
+            var apiClient = connection.GetBotTwitchApiClientFromBroadcasterChannelId(broadcasterChannelId);
+            if (apiClient == null)
+            {
+                Log.Error($"[Twitch Helper Service] Error banning user {userId} in {broadcasterChannelId}, apiClient is null");
+                return;
+            }
+            try
+            {
+                await twitchApiInteractionService.BanUser(apiClient.ApiClient, broadcasterChannelId, apiClient.TwitchChannelClientId, userId, reason);
+                Log.Information($"[Twitch Helper Service] Banned user {userId} in {broadcasterChannelId}");
+            }
+            catch (Exception ex)
+            {
+                Log.Error($"[Twitch Helper Service] Error banning user {userId} in {broadcasterChannelId}, {ex.Message}");
+            }
+        }
     }
 }

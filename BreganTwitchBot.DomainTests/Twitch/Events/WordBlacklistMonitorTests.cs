@@ -6,6 +6,9 @@ using BreganTwitchBot.DomainTests.Helpers;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.EntityFrameworkCore;
 using Testcontainers.PostgreSql;
+using Moq;
+using BreganTwitchBot.Domain.Interfaces.Twitch;
+using BreganTwitchBot.Domain.DTOs.Twitch.Commands.WordBlacklist;
 
 namespace BreganTwitchBot.DomainTests.Twitch.Events
 {
@@ -15,6 +18,7 @@ namespace BreganTwitchBot.DomainTests.Twitch.Events
         private PostgreSqlContainer _postgresContainer;
         private AppDbContext _dbContext;
         private IServiceProvider _serviceProvider;
+        private Mock<ITwitchHelperService> _twitchHelperServiceMock;
         private WordBlacklistMonitorService _monitorService;
 
         // Assume DatabaseSeedHelper adds these words:
@@ -51,8 +55,9 @@ namespace BreganTwitchBot.DomainTests.Twitch.Events
             serviceCollection.AddScoped(provider => _dbContext);
 
             _serviceProvider = serviceCollection.BuildServiceProvider();
+            _twitchHelperServiceMock = new Mock<ITwitchHelperService>();
 
-            _monitorService = new WordBlacklistMonitorService(_serviceProvider);
+            _monitorService = new WordBlacklistMonitorService(_serviceProvider, _twitchHelperServiceMock.Object);
         }
 
         [TearDown]
@@ -234,6 +239,127 @@ namespace BreganTwitchBot.DomainTests.Twitch.Events
 
             var currentListStateJson = System.Text.Json.JsonSerializer.Serialize(_monitorService._wordBlacklist);
             Assert.That(currentListStateJson, Is.EqualTo(initialListStateJson));
+        }
+
+        [Test]
+        public void RemoveWarnedUsers_NoWarnedUsers_ListRemainsUnchanged()
+        {
+            var initialCount = _monitorService._wordBlacklistUsers.Count;
+            _monitorService.RemoveWarnedUsers();
+            Assert.That(_monitorService._wordBlacklistUsers, Has.Count.EqualTo(initialCount));
+        }
+
+        [Test]
+        public void RemoveWarnedUsers_OneWarnedUser_ListIsCleared()
+        {
+            var userId = "12345";
+            var broadcasterId = DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId;
+            _monitorService._wordBlacklistUsers.Add(new WordBlacklistUser
+            {
+                UserId = userId,
+                BroadcasterId = broadcasterId,
+                AddedAt = DateTime.UtcNow.AddMinutes(-10)
+            });
+
+            _monitorService.RemoveWarnedUsers();
+            Assert.That(_monitorService._wordBlacklistUsers, Has.Count.EqualTo(0));
+        }
+
+        [Test]
+        public void RemoveWarnedUsers_NewWarnedUser_ListIsNotCleared()
+        {
+            var userId = "12345";
+            var broadcasterId = DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId;
+            _monitorService._wordBlacklistUsers.Add(new WordBlacklistUser
+            {
+                UserId = userId,
+                BroadcasterId = broadcasterId,
+                AddedAt = DateTime.UtcNow
+            });
+
+            _monitorService.RemoveWarnedUsers();
+            Assert.That(_monitorService._wordBlacklistUsers, Has.Count.EqualTo(1));
+        }
+
+        [Test]
+        public async Task CheckMessageForBlacklistedWords_ContainsBlacklistedWord_TimesOutUser()
+        {
+            var message = "This is a test message with a blacklisted word. seededtempbanword";
+            var userId = "12345";
+            var broadcasterId = DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId;
+            var blacklistedWord = DatabaseSeedHelper.SeededChannel1TempBanWord;
+
+            _monitorService.AddWordToBlacklist(blacklistedWord, broadcasterId, WordType.TempBanWord);
+
+            await _monitorService.CheckMessageForBlacklistedWords(message, userId, broadcasterId);
+
+            _twitchHelperServiceMock.Verify(x => x.TimeoutUser(broadcasterId, userId, 300, It.IsAny<string>()), Times.Once);
+        }
+
+        [Test]
+        public async Task CheckMessageForBlacklistedWords_ContainsBlacklistedWordAndUserAlreadyWarned_TimesOutUser()
+        {
+            var message = "This is a test message with a blacklisted word. seededtempbanword";
+            var userId = "12345";
+            var broadcasterId = DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId;
+            var blacklistedWord = DatabaseSeedHelper.SeededChannel1TempBanWord;
+
+            _monitorService.AddWordToBlacklist(blacklistedWord, broadcasterId, WordType.StrikeWord);
+            _monitorService._wordBlacklistUsers.Add(new WordBlacklistUser
+            {
+                UserId = userId,
+                BroadcasterId = broadcasterId,
+                AddedAt = DateTime.UtcNow
+            });
+
+            await _monitorService.CheckMessageForBlacklistedWords(message, userId, broadcasterId);
+
+            _twitchHelperServiceMock.Verify(x => x.TimeoutUser(broadcasterId, userId, 300, It.IsAny<string>()), Times.Once);
+        }
+
+        [Test]
+        public async Task CheckMessageForBlacklistedWords_ContainsBlacklistedWordAndUserNotWarned_WarnsUser()
+        {
+            var message = "This is a test message with a blacklisted word. seededbannedword";
+            var userId = "12345";
+            var broadcasterId = DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId;
+            var blacklistedWord = DatabaseSeedHelper.SeededChannel1BannedWord;
+
+            _monitorService.AddWordToBlacklist(blacklistedWord, broadcasterId, WordType.StrikeWord);
+
+            await _monitorService.CheckMessageForBlacklistedWords(message, userId, broadcasterId);
+
+            _twitchHelperServiceMock.Verify(x => x.WarnUser(broadcasterId, userId, It.IsAny<string>()), Times.Once);
+        }
+
+        [Test]
+        public async Task CheckMessageForBlacklistedWords_ContainsMultipleBlacklistedWords_TimesOutUser()
+        {
+            var message = "This is a test message with a blacklisted word and another blacklisted word. seededtempbanword seededbannedword";
+            var userId = "12345";
+            var broadcasterId = DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId;
+            var blacklistedWord1 = DatabaseSeedHelper.SeededChannel1BannedWord;
+            var blacklistedWord2 = DatabaseSeedHelper.SeededChannel1TempBanWord;
+
+            _monitorService.AddWordToBlacklist(blacklistedWord1, broadcasterId, WordType.PermBanWord);
+            _monitorService.AddWordToBlacklist(blacklistedWord2, broadcasterId, WordType.TempBanWord);
+
+            await _monitorService.CheckMessageForBlacklistedWords(message, userId, broadcasterId);
+
+            _twitchHelperServiceMock.Verify(x => x.TimeoutUser(broadcasterId, userId, 300, It.IsAny<string>()), Times.Once);
+        }
+
+        [Test]
+        public async Task CheckMessageForBlacklistedWords_NoBlacklistedWords_NoActionTaken()
+        {
+            var message = "This is a test message without any blacklisted words.";
+            var userId = "12345";
+            var broadcasterId = DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId;
+
+            await _monitorService.CheckMessageForBlacklistedWords(message, userId, broadcasterId);
+
+            _twitchHelperServiceMock.Verify(x => x.TimeoutUser(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<int>(), It.IsAny<string>()), Times.Never);
+            _twitchHelperServiceMock.Verify(x => x.WarnUser(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()), Times.Never);
         }
     }
 }

@@ -13,5 +13,8 @@
         Task RemovePointsFromUser(string broadcasterChannelId, string viewerChannelId, long pointsToRemove, string broadcasterChannelName, string viewerUsername);
         Task AddOrUpdateUserToDatabase(string broadcasterChannelId, string userChannelId, string broadcasterUsername, string userChannelName, bool addMinutes = false);
         Task SendAnnouncementMessageToChannel(string broadcasterChannelId, string broadcasterChannelName, string message);
+        Task WarnUser(string broadcasterChannelId, string userId, string message);
+        Task TimeoutUser(string broadcasterChannelId, string userId, int timeoutDurationInSeconds, string reason);
+        Task BanUser(string broadcasterChannelId, string userId, string reason);
     }
 }

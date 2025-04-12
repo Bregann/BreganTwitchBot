@@ -33,7 +33,7 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch.Commands.WordBlacklist
             }
 
             // check if the word is already in the database
-            var wordToAdd = msgParams.MessageParts[1].ToLower().Trim();
+            var wordToAdd = string.Join(" ", msgParams.MessageParts.Skip(1)).ToLower().Trim();
 
             var existingWord = await context.Blacklist.AnyAsync(x => x.Word == wordToAdd && x.WordType == wordType && x.Channel.BroadcasterTwitchChannelName == msgParams.BroadcasterChannelName);
 
