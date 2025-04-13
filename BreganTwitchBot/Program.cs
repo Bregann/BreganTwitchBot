@@ -23,6 +23,8 @@ using BreganTwitchBot.Domain.Interfaces.Helpers;
 using BreganTwitchBot.Domain.Interfaces.Twitch;
 using BreganTwitchBot.Domain.Interfaces.Twitch.Commands;
 using BreganTwitchBot.Domain.Interfaces.Twitch.Events;
+using Discord.Interactions;
+using Discord.WebSocket;
 using Hangfire;
 using Hangfire.Dashboard.BasicAuthorization;
 using Hangfire.MemoryStorage;
@@ -182,6 +184,8 @@ builder.Services.AddSingleton<IWordBlacklistMonitorService, WordBlacklistMonitor
 
 // Discord
 builder.Services.AddSingleton<IDiscordService, DiscordService>();
+builder.Services.AddSingleton<DiscordSocketClient>();
+builder.Services.AddSingleton<InteractionService>();
 
 // hangfire
 builder.Services.AddHangfireServer(options => options.SchedulePollingInterval = TimeSpan.FromSeconds(10));
