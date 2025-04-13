@@ -1,6 +1,7 @@
 using BreganTwitchBot.Domain.Data.Database.Context;
 using BreganTwitchBot.Domain.Data.Database.Models;
 using BreganTwitchBot.Domain.Data.Services;
+using BreganTwitchBot.Domain.Data.Services.Discord;
 using BreganTwitchBot.Domain.Data.Services.Twitch;
 using BreganTwitchBot.Domain.Data.Services.Twitch.Commands;
 using BreganTwitchBot.Domain.Data.Services.Twitch.Commands._8Ball;
@@ -17,6 +18,7 @@ using BreganTwitchBot.Domain.Data.Services.Twitch.Commands.WordBlacklist;
 using BreganTwitchBot.Domain.Data.Services.Twitch.Events;
 using BreganTwitchBot.Domain.Enums;
 using BreganTwitchBot.Domain.Helpers;
+using BreganTwitchBot.Domain.Interfaces.Discord;
 using BreganTwitchBot.Domain.Interfaces.Helpers;
 using BreganTwitchBot.Domain.Interfaces.Twitch;
 using BreganTwitchBot.Domain.Interfaces.Twitch.Commands;
@@ -177,6 +179,9 @@ builder.Services.AddSingleton<ITwitchBossesDataService, TwitchBossesDataService>
 builder.Services.AddSingleton<WordBlacklistCommandService>();
 builder.Services.AddScoped<IWordBlacklistDataService, WordBlacklistDataService>();
 builder.Services.AddSingleton<IWordBlacklistMonitorService, WordBlacklistMonitorService>();
+
+// Discord
+builder.Services.AddSingleton<IDiscordService, DiscordService>();
 
 // hangfire
 builder.Services.AddHangfireServer(options => options.SchedulePollingInterval = TimeSpan.FromSeconds(10));

@@ -7,6 +7,7 @@
         TwitchAPIClientID,
         TwitchAPISecret,
         OpenAiApiKey,
-        GeminiApiKey
+        GeminiApiKey,
+        DiscordBotToken
     }
 }
