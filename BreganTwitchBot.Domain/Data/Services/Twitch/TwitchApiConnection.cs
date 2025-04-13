@@ -1,5 +1,9 @@
-﻿using BreganTwitchBot.Domain.Enums;
+﻿using BreganTwitchBot.Domain.Data.Database.Context;
+using BreganTwitchBot.Domain.Enums;
+using BreganTwitchBot.Domain.Interfaces.Helpers;
 using BreganTwitchBot.Domain.Interfaces.Twitch;
+using BreganTwitchBot.Domain.Interfaces.Twitch.Commands;
+using Microsoft.Extensions.DependencyInjection;
 using Serilog;
 using System.Collections.Concurrent;
 using TwitchLib.Api;
@@ -23,7 +27,7 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch
                 &scope=bits:read+channel:moderate+moderator:read:chatters+channel:read:subscriptions+moderation:read+channel:read:redemptions+channel:read:hype_train+channel:manage:broadcast+channel:manage:redemptions+channel:manage:polls+channel:manage:predictions+channel:manage:raids+channel:read:vips+moderator:manage:shoutouts+moderator:read:followers+moderator:manage:unban_requests
  */
 
-    public class TwitchApiConnection : ITwitchApiConnection
+    public class TwitchApiConnection(IServiceProvider serviceProvider) : ITwitchApiConnection
     {
         private readonly ConcurrentDictionary<string, TwitchAccount> ApiClients = new();
 
@@ -93,17 +97,60 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch
             return ApiClients.Values.Where(x => x.Type == AccountType.Bot).ToArray();
         }
 
+        public string[] GetAllBroadcasterChannelIds()
+        {
+            return ApiClients.Values.Select(x => x.BroadcasterChannelId).Distinct().ToArray();
+        }
+
         /// <summary>
-        /// Refreshes the access token for the provided channel name
+        /// Refreshes the all the access tokens
         /// </summary>
         /// <param name="channelName"></param>
         /// <param name="newAccessToken"></param>
-        public void RefreshApiKey(string channelName, string newAccessToken)
+        public async Task RefreshAllApiKeys()
         {
-            if (ApiClients.TryGetValue(channelName, out var account))
+            using (var scope = serviceProvider.CreateScope())
             {
-                account.ApiClient.Settings.AccessToken = newAccessToken;
-                ApiClients[channelName] = account;
+                var environmentalSettingHelper = scope.ServiceProvider.GetRequiredService<IEnvironmentalSettingHelper>();
+                var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+                var clientSecret = environmentalSettingHelper.TryGetEnviromentalSettingValue(EnvironmentalSettingEnum.TwitchAPISecret);
+
+                // loop through all the api clients and refresh the access token
+                foreach (var apiClient in ApiClients.Values)
+                {
+                    try
+                    {
+                        var newAccessToken = await apiClient.ApiClient.Auth.RefreshAuthTokenAsync(apiClient.RefreshToken, clientSecret);
+                        apiClient.ApiClient.Settings.AccessToken = newAccessToken.AccessToken;
+                        apiClient.AccessToken = newAccessToken.AccessToken;
+                        apiClient.RefreshToken = newAccessToken.RefreshToken;
+
+                        // update the access token in the database
+                        var channel = await context.Channels.FindAsync(apiClient.DatabaseChannelId);
+                        if (channel != null)
+                        {
+                            if(apiClient.Type == AccountType.Bot)
+                            {
+                                channel.BotTwitchChannelOAuthToken = newAccessToken.AccessToken;
+                                channel.BotTwitchChannelRefreshToken = newAccessToken.RefreshToken;
+                            }
+                            else
+                            {
+                                channel.BroadcasterTwitchChannelOAuthToken = newAccessToken.AccessToken;
+                                channel.BroadcasterTwitchChannelRefreshToken = newAccessToken.RefreshToken;
+                            }
+
+                            await context.SaveChangesAsync();
+                        }
+
+                        Log.Information($"[Twitch API Connection] Refreshed access token for {apiClient.TwitchUsername}");
+                    }
+                    catch (Exception ex)
+                    {
+                        Log.Error($"[Twitch API Connection] Error refreshing access token for {apiClient.TwitchUsername}: {ex.Message}");
+                    }
+                }
             }
         }
 
@@ -113,8 +160,8 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch
             public int DatabaseChannelId { get; }
             public string TwitchChannelClientId { get; }
             public string TwitchUsername { get; }
-            public string AccessToken { get; }
-            public string RefreshToken { get; }
+            public string AccessToken { get; set; }
+            public string RefreshToken { get; set;  }
             public AccountType Type { get; }
             public string BroadcasterChannelId { get; }
             public string BroadcasterChannelName { get; }

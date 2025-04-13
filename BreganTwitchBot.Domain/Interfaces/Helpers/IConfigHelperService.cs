@@ -9,7 +9,7 @@ namespace BreganTwitchBot.Domain.Interfaces.Helpers
     public interface IConfigHelperService
     {
         Task UpdateDailyPointsStatus(string broadcasterId, bool status);
-        (bool DailyPointsAllowed, DateTime LastStreamDate, DateTime LastDailyPointedAllowedDate) GetDailyPointsStatus(string broadcasterId);
+        (bool DailyPointsAllowed, DateTime LastStreamDate, DateTime LastDailyPointedAllowedDate, bool StreamHappenedThisWeek) GetDailyPointsStatus(string broadcasterId);
         Task UpdateStreamLiveStatus(string broadcasterId, bool status);
     }
 }

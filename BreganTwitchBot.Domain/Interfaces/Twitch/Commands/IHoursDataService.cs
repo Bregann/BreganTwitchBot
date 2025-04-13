@@ -12,5 +12,6 @@ namespace BreganTwitchBot.Domain.Interfaces.Twitch.Commands
     {
         Task UpdateWatchtimeForChannel(string broadcasterId);
         Task<string> GetHoursCommand(ChannelChatMessageReceivedParams msgParams, HoursWatchTypes hoursType);
+        Task ResetMinutes();
     }
 }

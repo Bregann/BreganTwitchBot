@@ -75,8 +75,9 @@ namespace BreganTwitchBot.DomainTests.Twitch.Commands
                 .ReturnsAsync(DatabaseSeedHelper.Channel1ChannelCurrencyName);
 
             var mockRecurringJobManager = new Mock<IRecurringJobManager>();
+            var mockTwitchApiService = new Mock<ITwitchApiConnection>();
 
-            _dailyPointsDataService = new DailyPointsDataService(_dbContext, _configHelper.Object, _twitchHelperService.Object, mockRecurringJobManager.Object);
+            _dailyPointsDataService = new DailyPointsDataService(_dbContext, _configHelper.Object, _twitchHelperService.Object, mockRecurringJobManager.Object, mockTwitchApiService.Object);
         }
 
         [TearDown]
@@ -114,7 +115,7 @@ namespace BreganTwitchBot.DomainTests.Twitch.Commands
         public async Task AllowDailyPointsCollecting_ShouldNotResetStreaksWhenStreamToday_StreaksNotReset()
         {
             _configHelper.Setup(x => x.GetDailyPointsStatus(DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId))
-                .Returns((false, DateTime.UtcNow, DateTime.UtcNow));
+                .Returns((false, DateTime.UtcNow, DateTime.UtcNow, false));
 
             await _dailyPointsDataService.AllowDailyPointsCollecting(DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId);
 
@@ -136,7 +137,7 @@ namespace BreganTwitchBot.DomainTests.Twitch.Commands
         public async Task HandlePointsClaimed_AttemptToClaimWhenPointsDisabled_ShouldNotAllowClaimingPoints(PointsClaimType pointsClaimType)
         {
             _configHelper.Setup(x => x.GetDailyPointsStatus(DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId))
-                .Returns((false, DateTime.UtcNow, DateTime.UtcNow));
+                .Returns((false, DateTime.UtcNow, DateTime.UtcNow, false));
 
             var msgParams = MessageParamsHelper.CreateChatMessageParams("!daily", "123", new string[] { "!daily" });
             var response = await _dailyPointsDataService.HandlePointsClaimed(msgParams, pointsClaimType);
@@ -152,7 +153,7 @@ namespace BreganTwitchBot.DomainTests.Twitch.Commands
         public async Task HandlePointsClaimed_AttemptToClaimWithInvalidUsername_CorrectMessageReturned(PointsClaimType pointsClaimType)
         {
             _configHelper.Setup(x => x.GetDailyPointsStatus(DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId))
-                .Returns((true, DateTime.UtcNow, DateTime.UtcNow));
+                .Returns((true, DateTime.UtcNow, DateTime.UtcNow, false));
 
             _twitchHelperService.Setup(x => x.GetTwitchUserIdFromUsername(It.IsAny<string>()))
                 .ReturnsAsync((string?)null);
@@ -170,7 +171,7 @@ namespace BreganTwitchBot.DomainTests.Twitch.Commands
         public async Task HandlePointsClaimed_AttemptToClaimWithPointsAlreadyClaimed_CorrectMessageReturned(PointsClaimType pointsClaimType)
         {
             _configHelper.Setup(x => x.GetDailyPointsStatus(DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId))
-                .Returns((true, DateTime.UtcNow, DateTime.UtcNow));
+                .Returns((true, DateTime.UtcNow, DateTime.UtcNow, false));
 
             _dbContext.TwitchDailyPoints.Where(x => x.Channel.BroadcasterTwitchChannelId == DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId && x.User.TwitchUserId == DatabaseSeedHelper.Channel1User1TwitchUserId && x.PointsClaimType == pointsClaimType)
                 .First().PointsClaimed = true;
@@ -189,7 +190,7 @@ namespace BreganTwitchBot.DomainTests.Twitch.Commands
         public async Task HandlePointsClaimed_AttemptToClaimNormallyWithNewHighestStreak_CorrectMessageReturnedAndDataSet(PointsClaimType pointsClaimType, int expectedStreakNumber, int expectedPoints)
         {
             _configHelper.Setup(x => x.GetDailyPointsStatus(DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId))
-                .Returns((true, DateTime.UtcNow, DateTime.UtcNow));
+                .Returns((true, DateTime.UtcNow, DateTime.UtcNow, false));
 
             var msgParams = MessageParamsHelper.CreateChatMessageParams("!daily", "123", new string[] { "!daily" });
             var response = await _dailyPointsDataService.HandlePointsClaimed(msgParams, pointsClaimType);
@@ -226,7 +227,7 @@ namespace BreganTwitchBot.DomainTests.Twitch.Commands
         public async Task HandlePointsClaimed_AttemptToClaimNormallyWithHighestStreakAlreadyHigher_HighestStreakIsNotUpdated(PointsClaimType pointsClaimType)
         {
             _configHelper.Setup(x => x.GetDailyPointsStatus(DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId))
-                .Returns((true, DateTime.UtcNow, DateTime.UtcNow));
+                .Returns((true, DateTime.UtcNow, DateTime.UtcNow, false));
 
             var dailyPoints = await _dbContext.TwitchDailyPoints
                 .Where(x => x.Channel.BroadcasterTwitchChannelId == DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId && x.User.TwitchUserId == DatabaseSeedHelper.Channel1User1TwitchUserId && x.PointsClaimType == pointsClaimType)
@@ -256,7 +257,7 @@ namespace BreganTwitchBot.DomainTests.Twitch.Commands
         public async Task HandlePointsClaimed_ClaimPointsWhenAtMilestone_BonusMessageSent(PointsClaimType pointsClaimType, int currentTotalClaims)
         {
             _configHelper.Setup(x => x.GetDailyPointsStatus(DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId))
-                            .Returns((true, DateTime.UtcNow, DateTime.UtcNow));
+                            .Returns((true, DateTime.UtcNow, DateTime.UtcNow, false));
 
             var dailyPoints = await _dbContext.TwitchDailyPoints
                 .Where(x => x.Channel.BroadcasterTwitchChannelId == DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId && x.User.TwitchUserId == DatabaseSeedHelper.Channel1User1TwitchUserId && x.PointsClaimType == pointsClaimType)

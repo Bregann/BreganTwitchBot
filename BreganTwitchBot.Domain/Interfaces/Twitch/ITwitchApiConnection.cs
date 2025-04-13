@@ -15,6 +15,7 @@ namespace BreganTwitchBot.Domain.Interfaces.Twitch
         public TwitchAccount? GetBotTwitchApiClientFromBroadcasterChannelId(string broadcasterChannelId);
         public TwitchAccount[] GetAllApiClients();
         public TwitchAccount[] GetAllBotApiClients();
-        public void RefreshApiKey(string channelName, string newAccessToken);
+        Task RefreshAllApiKeys();
+        string[] GetAllBroadcasterChannelIds();
     }
 }

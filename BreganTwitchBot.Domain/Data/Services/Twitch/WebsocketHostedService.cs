@@ -3,6 +3,7 @@ using BreganTwitchBot.Domain.DTOs.Twitch.EventSubEvents;
 using BreganTwitchBot.Domain.Enums;
 using BreganTwitchBot.Domain.Interfaces.Helpers;
 using BreganTwitchBot.Domain.Interfaces.Twitch;
+using BreganTwitchBot.Domain.Interfaces.Twitch.Commands;
 using BreganTwitchBot.Domain.Interfaces.Twitch.Events;
 using Microsoft.Extensions.Hosting;
 using Serilog;
@@ -13,7 +14,15 @@ using TwitchLib.EventSub.Websockets.Core.EventArgs.Channel;
 
 namespace BreganTwitchBot.Domain.Data.Services.Twitch
 {
-    public class WebsocketHostedService(ITwitchApiConnection twitchApiConnection, ICommandHandler commandHandler, ITwitchHelperService twitchHelperService, ITwitchEventHandlerService twitchEventHandlerService, IConfigHelperService configHelperService) : IHostedService
+    public class WebsocketHostedService(
+        ITwitchApiConnection twitchApiConnection,
+        ICommandHandler commandHandler,
+        ITwitchHelperService twitchHelperService,
+        ITwitchEventHandlerService twitchEventHandlerService,
+        IConfigHelperService configHelperService,
+        IWordBlacklistMonitorService wordBlacklistMonitorService,
+        IDailyPointsDataService dailyPointsDataService
+    ) : IHostedService
     {
         private readonly Dictionary<string, EventSubWebsocketClient> _userConnections = [];
 
@@ -109,6 +118,7 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch
             Log.Information($"[Twitch Events] Stream online: {args.Notification.Payload.Event.BroadcasterUserName} ({args.Notification.Payload.Event.BroadcasterUserId})");
 
             await configHelperService.UpdateStreamLiveStatus(args.Notification.Payload.Event.BroadcasterUserId, true);
+            await dailyPointsDataService.AllowDailyPointsCollecting(args.Notification.Payload.Event.BroadcasterUserId);
         }
 
         private async Task OnChannelBan(object sender, ChannelBanArgs args)
@@ -279,6 +289,11 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch
 
             await twitchHelperService.AddOrUpdateUserToDatabase(msgParams.BroadcasterChannelId, msgParams.ChatterChannelId, msgParams.BroadcasterChannelName, msgParams.ChatterChannelName);
             await commandHandler.HandleCommandAsync(msgParams.Message.Split(' ')[0], msgParams);
+            
+            if(!msgParams.IsMod && !msgParams.IsBroadcaster)
+            {
+                await wordBlacklistMonitorService.CheckMessageForBlacklistedWords(msgParams.Message, msgParams.ChatterChannelId, msgParams.BroadcasterChannelId);
+            }
         }
 
         private Task OnErrorOccurred(object sender, ErrorOccuredArgs args)

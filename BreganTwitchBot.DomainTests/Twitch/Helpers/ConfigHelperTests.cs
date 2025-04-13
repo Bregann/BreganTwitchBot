@@ -93,14 +93,15 @@ namespace BreganTwitchBot.DomainTests.Twitch.Helpers
         [Test]
         public async Task GetDailyPointsStatus_GetDailyPointsStatus_ReturnsCorrectValues()
         {
-            var (DailyPointsAllowed, LastStreamDate, LastDailyPointedAllowedDate) = _configHelperService.GetDailyPointsStatus(DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId);
+            var status = _configHelperService.GetDailyPointsStatus(DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId);
             var config = await _dbContext.ChannelConfig.FirstAsync(x => x.Channel.BroadcasterTwitchChannelId == DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId);
 
             Assert.Multiple(() =>
             {
-                Assert.That(DailyPointsAllowed, Is.EqualTo(config.DailyPointsCollectingAllowed));
-                Assert.That(LastStreamDate, Is.EqualTo(config.LastStreamEndDate).Within(30).Seconds);
-                Assert.That(LastDailyPointedAllowedDate, Is.EqualTo(config.LastDailyPointsAllowed).Within(30).Seconds);
+                Assert.That(status.DailyPointsAllowed, Is.EqualTo(config.DailyPointsCollectingAllowed));
+                Assert.That(status.LastStreamDate, Is.EqualTo(config.LastStreamEndDate).Within(30).Seconds);
+                Assert.That(status.LastDailyPointedAllowedDate, Is.EqualTo(config.LastDailyPointsAllowed).Within(30).Seconds);
+                Assert.That(status.StreamHappenedThisWeek, Is.EqualTo(config.StreamHappenedThisWeek));
             });
         }
 

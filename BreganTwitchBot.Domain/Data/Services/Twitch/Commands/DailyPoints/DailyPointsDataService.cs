@@ -18,7 +18,7 @@ using System.Xml.Serialization;
 
 namespace BreganTwitchBot.Domain.Data.Services.Twitch.Commands.DailyPoints
 {
-    public class DailyPointsDataService(AppDbContext context, IConfigHelperService configHelper, ITwitchHelperService twitchHelperService, IRecurringJobManager recurringJobManager) : IDailyPointsDataService
+    public class DailyPointsDataService(AppDbContext context, IConfigHelperService configHelper, ITwitchHelperService twitchHelperService, IRecurringJobManager recurringJobManager, ITwitchApiConnection twitchApiConnection) : IDailyPointsDataService
     {
         /// <summary>
         /// Schedule daily points collection for the broadcaster. When the stream goes live a 30 minute timer is started to allow collecting points.
@@ -104,7 +104,7 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch.Commands.DailyPoints
 
             // allow the point collecting and let the users know
             await configHelper.UpdateDailyPointsStatus(broadcasterId, true);
-            await twitchHelperService.SendTwitchMessageToChannel(broadcasterId, channelName!, $"Don't forget to claim your daily, weekly, monthly and yearly {await twitchHelperService.GetPointsName(broadcasterId, channelName!)} with !daily, !weekly, !monthly and !yearly PogChamp KEKW");
+            await twitchHelperService.SendAnnouncementMessageToChannel(broadcasterId, channelName!, $"Don't forget to claim your daily, weekly, monthly and yearly {await twitchHelperService.GetPointsName(broadcasterId, channelName!)} with !daily, !weekly, !monthly and !yearly PogChamp KEKW");
             await twitchHelperService.SendTwitchMessageToChannel(broadcasterId, channelName!, $"Top 5 lost streaks: {string.Join(", ", top5LostStreaks.Select(x => $"{x.User.TwitchUsername} - {x.CurrentStreak}"))}");
 
             // create a recurring job to remind the users to collect their points
@@ -113,6 +113,61 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch.Commands.DailyPoints
                 () => twitchHelperService.SendTwitchMessageToChannel(broadcasterId, channelName!, $"Don't forget to claim your daily, weekly, monthly and yearly {twitchHelperService.GetPointsName(broadcasterId, channelName!)} with !daily, !weekly, !monthly and !yearly PogChamp KEKW", null),
                 "*/30 * * * *"
             );
+        }
+
+        public async Task AnnouncePointsReminder(string broadcasterId)
+        {
+            var dailyPointsStatus = configHelper.GetDailyPointsStatus(broadcasterId);
+            var channelName = await twitchHelperService.GetTwitchUserIdFromUsername(broadcasterId);
+
+            if (dailyPointsStatus.DailyPointsAllowed)
+            {
+                await twitchHelperService.SendAnnouncementMessageToChannel(broadcasterId, channelName!, $"Don't forget to claim your daily, weekly, monthly and yearly {await twitchHelperService.GetPointsName(broadcasterId, channelName!)} with !daily, !weekly, !monthly and !yearly PogChamp KEKW");
+            }
+        }
+
+        public async Task ResetStreaks()
+        {
+            var channels = twitchApiConnection.GetAllBroadcasterChannelIds();
+
+            // for weekly check if stream happened this week and only reset if it has
+            foreach (var channelId in channels)
+            {
+                var config = configHelper.GetDailyPointsStatus(channelId);
+
+                if (config.StreamHappenedThisWeek)
+                {
+                    var usersReset = await context.TwitchDailyPoints
+                        .Where(x => x.Channel.BroadcasterTwitchChannelId == channelId && x.PointsClaimType == PointsClaimType.Weekly && x.PointsClaimed == false)
+                        .ExecuteUpdateAsync(setters => setters
+                            .SetProperty(x => x.CurrentStreak, 0)
+                            .SetProperty(x => x.PointsClaimed, false));
+
+                    Log.Information($"Reset {usersReset} users streaks for channel {channelId}");
+                }
+            }
+
+            if (DateTime.UtcNow.Day == 1)
+            {
+                var monthlyUsersReset = await context.TwitchDailyPoints
+                    .Where(x => x.PointsClaimType == PointsClaimType.Monthly && x.PointsClaimed == false)
+                    .ExecuteUpdateAsync(setters => setters
+                        .SetProperty(x => x.CurrentStreak, 0)
+                        .SetProperty(x => x.PointsClaimed, false));
+
+                Log.Information($"Reset {monthlyUsersReset} users streaks for monthly points");
+            }
+
+            if (DateTime.UtcNow.Month == 1 && DateTime.UtcNow.Day == 1)
+            {
+                var yearlyUsersReset = await context.TwitchDailyPoints
+                    .Where(x => x.PointsClaimType == PointsClaimType.Yearly && x.PointsClaimed == false)
+                    .ExecuteUpdateAsync(setters => setters
+                        .SetProperty(x => x.CurrentStreak, 0)
+                        .SetProperty(x => x.PointsClaimed, false));
+
+                Log.Information($"Reset {yearlyUsersReset} users streaks for yearly points");
+            }
         }
 
         public async Task<string> HandlePointsClaimed(ChannelChatMessageReceivedParams msgParams, PointsClaimType pointsClaimType)

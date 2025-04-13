@@ -81,10 +81,10 @@ namespace BreganTwitchBot.Domain.Data.Services
             }
         }
 
-        public (bool DailyPointsAllowed, DateTime LastStreamDate, DateTime LastDailyPointedAllowedDate) GetDailyPointsStatus(string broadcasterId)
+        public (bool DailyPointsAllowed, DateTime LastStreamDate, DateTime LastDailyPointedAllowedDate, bool StreamHappenedThisWeek) GetDailyPointsStatus(string broadcasterId)
         {
             var config = _channelConfigs.First(x => x.Channel.BroadcasterTwitchChannelId == broadcasterId);
-            return (DailyPointsAllowed: config.DailyPointsCollectingAllowed, LastStreamDate: config.LastStreamEndDate, LastDailyPointedAllowedDate: config.LastDailyPointsAllowed);
+            return (DailyPointsAllowed: config.DailyPointsCollectingAllowed, LastStreamDate: config.LastStreamEndDate, LastDailyPointedAllowedDate: config.LastDailyPointsAllowed, config.StreamHappenedThisWeek);
         }
     }
 }

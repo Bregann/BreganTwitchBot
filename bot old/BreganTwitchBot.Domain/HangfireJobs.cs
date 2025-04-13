@@ -22,23 +22,13 @@ namespace BreganTwitchBot.Domain
 
         public static void SetupHangfireJobs()
         {
-            RecurringJob.AddOrUpdate("CheckDailyPointsStreamStatus", () => CheckDailyPointsStreamStatus(), "*/30 * * * * *");
-            RecurringJob.AddOrUpdate("RefreshApi", () => RefreshApi(), "45 * * * *");
-            RecurringJob.AddOrUpdate("TimeTrackerHoursUpdate", () => TimeTrackerHoursUpdate(), "* * * * *"); //every minute
-            RecurringJob.AddOrUpdate("GetStreamStatus", () => GetStreamStatus(), "*/20 * * * * *");
             RecurringJob.AddOrUpdate("StreamStatsViewerUpdate", () => StreamStatsViewerUpdate(), "* * * * *"); //every minute
-            RecurringJob.AddOrUpdate("AnnounceDiscord", () => AnnounceDiscord(), "30 * * * *");
-            RecurringJob.AddOrUpdate("ClearWarnedUsers", () => ClearWarnedUsers(), "*/5 * * * *");
-            RecurringJob.AddOrUpdate("ResetMinutes", () => ResetMinutes(), "0 3 * * *");
-            RecurringJob.AddOrUpdate("CheckBotConnectionState", () => CheckBotConnectionState(), "*/10 * * * * *");
             RecurringJob.AddOrUpdate("FollowerCheck", () => FollowerCheck(), "0 * * * *");
             RecurringJob.AddOrUpdate("GetDiscordMemberCount", () => GetDiscordMemberCount(), "*/10 * * * *");
             RecurringJob.AddOrUpdate("UpdateLeaderboardRoles", () => UpdateLeaderboardRoles(), "0 2 * * *");
             RecurringJob.AddOrUpdate("DiscordDailyReset", () => DiscordDailyReset(), "0 3 * * *");
             RecurringJob.AddOrUpdate("CheckBirthdays", () => CheckBirthdays(), "0 6 * * *");
-            RecurringJob.AddOrUpdate("DailyPointsReminder", () => DailyPointsAnnouncementJob(), "20 * * * *");
             RecurringJob.AddOrUpdate("UpdateStatsInDatabase", () => UpdateStatsInDatabase(), "*/20 * * * * *");
-            RecurringJob.AddOrUpdate("ResetTwitchStreaks", () => ResetTwitchStreaks(), "0 2 * * *");
 
             //todo: add a job for every 5 mins, get active chatters and update users in stream
             Log.Information("[Job Scheduler] Job Scheduler Setup");
@@ -65,14 +55,6 @@ namespace BreganTwitchBot.Domain
             _raidFollowersJobStarted = true;
         }
 
-        public static void DailyPointsAnnouncementJob()
-        {
-            if (AppConfig.DailyPointsCollectingAllowed)
-            {
-                TwitchHelper.SendMessage($"Don't forget to claim your daily {AppConfig.PointsName} with !daily, your weekly points with !weekly, your monthly points with !monthly and your yearly points with !yearly PogChamp");
-            }
-        }
-
         public static void StartDoublePingPreventionJob()
         {
             BackgroundJob.Schedule(() => DoublePingPrevention(), TimeSpan.FromMinutes(10));
@@ -83,154 +65,10 @@ namespace BreganTwitchBot.Domain
             BackgroundJob.Schedule(() => TwitchBosses.StartBossFightCountdown(), TimeSpan.FromMinutes(60));
         }
 
-        public static async Task CheckDailyPointsStreamStatus()
-        {
-            await Data.TwitchBot.Commands.DailyPoints.DailyPoints.CheckLiveStreamStatus();
-            return;
-        }
-
-        public static async Task RefreshApi()
-        {
-            try
-            {
-                var streamerRefresh = await TwitchApiConnection.ApiClient.Auth.RefreshAuthTokenAsync(AppConfig.BroadcasterRefresh, AppConfig.TwitchAPISecret, AppConfig.TwitchAPIClientID);
-                TwitchApiConnection.ApiClient.Settings.AccessToken = streamerRefresh.AccessToken;
-                AppConfig.UpdateStreamerApiCredentials(streamerRefresh.RefreshToken, streamerRefresh.AccessToken);
-
-                Log.Information($"[Refresh Job] Streamer token {streamerRefresh.AccessToken} successfully refreshed! Expires in: {streamerRefresh.ExpiresIn} | Refresh: {streamerRefresh.RefreshToken}");
-
-                var botRefresh = await TwitchApiConnection.ApiClient.Auth.RefreshAuthTokenAsync(AppConfig.TwitchBotApiRefresh, AppConfig.TwitchAPISecret, AppConfig.TwitchAPIClientID);
-                TwitchApiConnection.ApiClient.Settings.AccessToken = botRefresh.AccessToken;
-                AppConfig.UpdateBotApiCredentials(botRefresh.RefreshToken, botRefresh.AccessToken);
-
-                Log.Information($"[Refresh Job] Bot token {botRefresh.AccessToken} successfully refreshed! Expires in: {botRefresh.ExpiresIn} | Refresh: {botRefresh.RefreshToken}");
-            }
-            catch (Exception e)
-            {
-                Log.Fatal($"[Refresh Job] Error refreshing {e}");
-                return;
-            }
-
-            TwitchPubSubConnection.PubSubClient.SendTopics(AppConfig.BroadcasterOAuth);
-        }
-
-        public static async Task TimeTrackerHoursUpdate()
-        {
-            await Data.TwitchBot.Watchtime.UpdateUserWatchtime();
-        }
-
-        public static async Task GetStreamStatus()
-        {
-            await AppConfig.CheckAndUpdateIfStreamIsLive();
-            return;
-        }
-
         public static async Task StreamStatsViewerUpdate()
         {
             await StreamStatsService.GetUserListAndViewCountAndAddToTables();
             return;
-        }
-
-        public static void AnnounceDiscord()
-        {
-            if (AppConfig.StreamerLive)
-            {
-                TwitchHelper.SendMessage("💬 Make sure to join the Discord! https://discord.gg/jAjKtHZ");
-
-                //I am lazy so sellout here🚨
-                TwitchHelper.SendMessage("🚨🚨 Remember you can use code 'blocks' in the Hypixel store to support @blocksssssss 🚨🚨");
-                return;
-            }
-        }
-
-        public static void ClearWarnedUsers()
-        {
-            WordBlacklistData.ClearOutWarnedUsers();
-        }
-
-        public static void ResetMinutes()
-        {
-            if (DateTime.UtcNow.Day == 1)
-            {
-                using (var dbContext = new DatabaseContext())
-                {
-                    var usersToReset = dbContext.Watchtime.Where(x => x.MinutesWatchedThisMonth != 0).ToList();
-
-                    foreach (var user in usersToReset)
-                    {
-                        user.MinutesWatchedThisMonth = 0;
-                    }
-
-                    dbContext.SaveChanges();
-                    Log.Information("[Minutes Job] Monthly minutes reset");
-                }
-            }
-
-            if (DateTime.UtcNow.DayOfWeek == DayOfWeek.Monday)
-            {
-                using (var dbContext = new DatabaseContext())
-                {
-                    var usersToReset = dbContext.Watchtime.Where(x => x.MinutesWatchedThisWeek != 0).ToList();
-
-                    foreach (var user in usersToReset)
-                    {
-                        user.MinutesWatchedThisWeek = 0;
-                    }
-
-                    dbContext.SaveChanges();
-                    Log.Information("[Minutes Job] Weekly minutes reset");
-                }
-            }
-
-            using (var dbContext = new DatabaseContext())
-            {
-                var usersToReset = dbContext.Watchtime.Where(x => x.MinutesWatchedThisStream != 0).ToList();
-
-                foreach (var user in usersToReset)
-                {
-                    user.MinutesWatchedThisStream = 0;
-                }
-
-                dbContext.SaveChanges();
-                Log.Information("[Minutes Job] Stream minutes reset");
-            }
-        }
-
-        public static async Task CheckBotConnectionState()
-        {
-            if (TwitchBotConnection.Client.JoinedChannels.Count != 0)
-            {
-                _connectionsAttempt = 0;
-                return;
-            }
-
-            while (_connectionsAttempt != 5)
-            {
-                try
-                {
-                    if (TwitchBotConnection.Client.JoinedChannels.Count == 0)
-                    {
-                        TwitchBotConnection.Client.Disconnect();
-                        Log.Warning("[Disconnect Job] Bot has lost connection from the channel - disconnected in hope of reconnecting");
-                        TwitchBotConnection.Client.Connect();
-                        _connectionsAttempt++;
-                    }
-                }
-                catch (Exception e)
-                {
-                    Log.Error($"[Disconnect Job] Bot an error reconnecting to the Twitch chat - {e}");
-                    _connectionsAttempt++;
-                }
-            }
-
-            if (_connectionsAttempt == 5 && TwitchBotConnection.Client.JoinedChannels.Count == 0)
-            {
-                Log.Information("Bot will shutdown");
-                await DiscordConnection.DiscordClient.LogoutAsync();
-                await Task.Delay(10000);
-                Environment.Exit(0);
-                return;
-            }
         }
 
         public static async Task FollowerCheck()
@@ -361,40 +199,6 @@ namespace BreganTwitchBot.Domain
         public static async Task UpdateStatsInDatabase()
         {
             await StreamStatsService.UpdateStatsInDatabase();
-        }
-
-        public static async Task ResetTwitchStreaks()
-        {
-            using(var context = new DatabaseContext())
-            {
-                //Reset weekly streaks
-                if (DateTime.UtcNow.DayOfWeek == DayOfWeek.Monday && AppConfig.StreamHappenedThisWeek)
-                {
-                    await context.DailyPoints.Where(x => x.WeeklyClaimed == false && x.CurrentWeeklyStreak != 0).ExecuteUpdateAsync(x => x.SetProperty(s => s.CurrentWeeklyStreak, 0));
-                    await context.DailyPoints.Where(x => x.WeeklyClaimed == true).ExecuteUpdateAsync(x => x.SetProperty(s => s.WeeklyClaimed, false));
-                    Log.Information("[Daily Points] Weekly streaks reset");
-                }
-
-                //Reset monthly streaks
-                if (DateTime.UtcNow.Day == 1)
-                {
-                    await context.DailyPoints.Where(x => x.MonthlyClaimed == false && x.CurrentMonthlyStreak != 0).ExecuteUpdateAsync(x => x.SetProperty(s => s.CurrentMonthlyStreak, 0));
-                    await context.DailyPoints.Where(x => x.MonthlyClaimed == true).ExecuteUpdateAsync(x => x.SetProperty(s => s.MonthlyClaimed, false));
-                    Log.Information("[Daily Points] Monthly streaks reset");
-                }
-
-                //Reset yearly streaks
-                if (DateTime.UtcNow.Day == 1 && DateTime.UtcNow.Month == 1)
-                {
-                    await context.DailyPoints.Where(x => x.YearlyClaimed == false && x.CurrentYearlyStreak != 0).ExecuteUpdateAsync(x => x.SetProperty(s => s.CurrentYearlyStreak, 0));
-                    await context.DailyPoints.Where(x => x.YearlyClaimed == true).ExecuteUpdateAsync(x => x.SetProperty(s => s.YearlyClaimed, false));
-                    Log.Information("[Daily Points] Yearly streaks reset");
-                }
-
-                await context.SaveChangesAsync();
-            }
-
-            await AppConfig.SetStreamThisWeekToFalse();
         }
     }
 }

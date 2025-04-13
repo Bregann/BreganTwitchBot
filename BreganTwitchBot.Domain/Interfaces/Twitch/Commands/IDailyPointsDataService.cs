@@ -15,5 +15,7 @@ namespace BreganTwitchBot.Domain.Interfaces.Twitch.Commands
         Task AllowDailyPointsCollecting(string broadcasterId);
         Task<string> HandlePointsClaimed(ChannelChatMessageReceivedParams msgParams, PointsClaimType pointsClaimType);
         Task<string> HandleStreakCheckCommand(ChannelChatMessageReceivedParams msgParams, PointsClaimType pointsClaimType);
+        Task AnnouncePointsReminder(string broadcasterId);
+        Task ResetStreaks();
     }
 }

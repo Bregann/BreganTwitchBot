@@ -123,6 +123,24 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch.Commands.Hours
             Log.Information($"Watchtime update completed. {chatters.Chatters.Count} users updated");
         }
 
+        public async Task ResetMinutes()
+        {
+            if (DateTime.UtcNow.Day == 1 && DateTime.UtcNow.Month == 1)
+            {
+                await context.ChannelUserWatchtime.Where(x => x.MinutesWatchedThisYear != 0).ExecuteUpdateAsync(setters => setters.SetProperty(x => x.MinutesWatchedThisYear, 0));
+            }
+
+            if (DateTime.UtcNow.Day == 1)
+            {
+                await context.ChannelUserWatchtime.Where(x => x.MinutesWatchedThisMonth != 0).ExecuteUpdateAsync(setters => setters.SetProperty(x => x.MinutesWatchedThisMonth, 0));
+            }
+
+            if (DateTime.UtcNow.DayOfWeek == DayOfWeek.Monday)
+            {
+                await context.ChannelUserWatchtime.Where(x => x.MinutesWatchedThisWeek != 0).ExecuteUpdateAsync(setters => setters.SetProperty(x => x.MinutesWatchedThisWeek, 0));
+            }
+        }
+
         public async Task<string> GetHoursCommand(ChannelChatMessageReceivedParams msgParams, HoursWatchTypes hoursType)
         {
             var twitchIdToCheck = msgParams.ChatterChannelId;

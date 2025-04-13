@@ -121,7 +121,7 @@ builder.Services.AddSingleton<ITwitchApiConnection>(provider =>
 
         var channelsToConnectTo = dbContext.Channels.ToArray();
 
-        var connection = new TwitchApiConnection();
+        var connection = new TwitchApiConnection(scope.ServiceProvider);
 
         foreach (var channel in channelsToConnectTo)
         {
@@ -241,8 +241,7 @@ app.MapHangfireDashboard("/hangfire", new DashboardOptions
 using (var scope = app.Services.CreateScope())
 {
     var hangfireJobs = scope.ServiceProvider.GetRequiredService<HangfireJobServiceHelper>();
-    await hangfireJobs.SetupHangfireJobs();
+    hangfireJobs.SetupHangfireJobs();
 }
-
 
 app.Run();

@@ -1,16 +1,25 @@
 ﻿using BreganTwitchBot.Domain.Data.Database.Context;
 using BreganTwitchBot.Domain.Data.Services.Twitch;
 using BreganTwitchBot.Domain.Interfaces.Twitch;
+using BreganTwitchBot.Domain.Interfaces.Twitch.Commands;
 using Hangfire;
 using Serilog;
 
 namespace BreganTwitchBot.Domain.Helpers
 {
-    public class HangfireJobServiceHelper(ITwitchApiConnection twitchApiConnection, ITwitchHelperService twitchHelperService, AppDbContext context)
+    public class HangfireJobServiceHelper(ITwitchApiConnection twitchApiConnection, ITwitchHelperService twitchHelperService, IHoursDataService hoursDataService, IWordBlacklistMonitorService wordBlacklistMonitorService, IDailyPointsDataService dailyPointsDataService)
     {
-        public async Task SetupHangfireJobs()
+        public void SetupHangfireJobs()
         {
             RecurringJob.AddOrUpdate("BigBenBong", () => BigBenBong(), "0 * * * *");
+            RecurringJob.AddOrUpdate("TimeTrackerHoursUpdate", () => TimeTrackerHoursUpdate(), "* * * * *");
+            RecurringJob.AddOrUpdate("RemoveWarnedUsers", () => RemoveWarnedUsers(), "* * * * *");
+            RecurringJob.AddOrUpdate("ResetMinutes", () => ResetMinutes(), "0 3 * * *");
+            RecurringJob.AddOrUpdate("DailyPointsReminder", () => AnnouncePointsReminderMessage(), "20 * * * *");
+            RecurringJob.AddOrUpdate("ResetTwitchStreaks", () => ResetTwitchStreaks(), "0 2 * * *");
+            RecurringJob.AddOrUpdate("RefreshApi", () => RefreshApi(), "45 * * * *");
+
+            Log.Information("[Job Scheduler] Job Scheduler Setup");
         }
 
         public async Task BigBenBong()
@@ -103,6 +112,46 @@ namespace BreganTwitchBot.Domain.Helpers
 
                 Log.Information($"[Hangfire Job Service] Big Ben Bonged in channel name {bot.BroadcasterChannelName}");
             }
+        }
+
+        public async Task TimeTrackerHoursUpdate()
+        {
+            var channels = twitchApiConnection.GetAllBroadcasterChannelIds();
+
+            foreach (var channelId in channels)
+            {
+                await hoursDataService.UpdateWatchtimeForChannel(channelId);
+            }
+        }
+
+        public void RemoveWarnedUsers()
+        {
+            wordBlacklistMonitorService.RemoveWarnedUsers();
+        }
+
+        public async Task ResetMinutes()
+        {
+            await hoursDataService.ResetMinutes();
+        }
+
+        public async Task AnnouncePointsReminderMessage()
+        {
+            var channels = twitchApiConnection.GetAllBroadcasterChannelIds();
+
+            foreach (var channelId in channels)
+            {
+                await dailyPointsDataService.AnnouncePointsReminder(channelId);
+            }
+        }
+
+        public async Task ResetTwitchStreaks()
+        {
+            await dailyPointsDataService.ResetStreaks();
+        }
+
+        public async Task RefreshApi()
+        {
+            await twitchApiConnection.RefreshAllApiKeys();
         }
     }
 }
