@@ -25,7 +25,7 @@ namespace BreganTwitchBot.DomainTests.Twitch.Commands
         private TwitchBossesDataService _twitchBossesDataService;
 
         [SetUp]
-        public async Task Setup()
+        public void Setup()
         {
             _twitchHelperService = new Mock<ITwitchHelperService>();
 

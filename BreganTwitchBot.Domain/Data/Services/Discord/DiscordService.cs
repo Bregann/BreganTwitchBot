@@ -50,30 +50,120 @@ namespace BreganTwitchBot.Domain.Data.Services.Discord
             }
 
             // Hook the handler BEFORE starting
-#if DEBUG
-            _client.Ready += async () =>
-            {
-                await _interactionService.RegisterCommandsToGuildAsync(196696160486948864, true);
-            };
-#else
-            _client.Ready += async () =>
-            {
-                await _interactionService.RegisterCommandsGloballyAsync(true);
-            };
-#endif
-
-            _client.InteractionCreated += async interaction =>
-            {
-                var ctx = new SocketInteractionContext(_client, interaction);
-                await _interactionService.ExecuteCommandAsync(ctx, _services);
-            };
+            _client.Ready += Ready;
+            _client.InteractionCreated += InteractionCreated;
+            _client.Disconnected += Disconnected;
+            _client.GuildMembersDownloaded += GuildMembersDownloaded;
+            _client.Log += LogData;
+            _client.UserVoiceStateUpdated += UserVoiceStateUpdated;
+            _client.UserLeft += UserLeft;
+            _client.UserJoined += UserJoined;
+            _client.MessageUpdated += MessageUpdated;
+            _client.MessageReceived += MessageReceived;
+            _client.UserIsTyping += UserIsTyping;
+            _client.MessageDeleted += MessageDeleted;
+            _client.ButtonExecuted += ButtonExecuted;
+            _client.PresenceUpdated += PresenceUpdated;
 
             await _client.LoginAsync(TokenType.Bot, token);
             await _client.StartAsync();
 
             await _interactionService.AddModulesAsync(Assembly.GetEntryAssembly(), _services);
 
-            Log.Information("Discord Setup");
+
+
+            Serilog.Log.Information("Discord Setup");
+        }
+
+        private Task PresenceUpdated(SocketUser arg1, SocketPresence arg2, SocketPresence arg3)
+        {
+            throw new NotImplementedException();
+        }
+
+        private Task ButtonExecuted(SocketMessageComponent arg)
+        {
+            throw new NotImplementedException();
+        }
+
+        private Task MessageDeleted(Cacheable<IMessage, ulong> arg1, Cacheable<IMessageChannel, ulong> arg2)
+        {
+            throw new NotImplementedException();
+        }
+
+        private Task UserIsTyping(Cacheable<IUser, ulong> arg1, Cacheable<IMessageChannel, ulong> arg2)
+        {
+            Log.Information($"[Discord Typing] {arg1.Value.Username} is typing a message in {arg2.Value.Name}");
+            return Task.CompletedTask;
+        }
+
+        private Task MessageReceived(SocketMessage arg)
+        {
+            throw new NotImplementedException();
+        }
+
+        private async Task MessageUpdated(Cacheable<IMessage, ulong> oldMessage, SocketMessage newMessage, ISocketMessageChannel channel)
+        {
+            await oldMessage.GetOrDownloadAsync();
+
+            if (oldMessage.Value == null)
+            {
+                return;
+            }
+
+            if (oldMessage.Value.Content.ToLower() == newMessage.Content.ToLower())
+            {
+                return;
+            }
+
+            Log.Information($"[Discord Message Updated] Sender: {newMessage.Author.Username} \n Old Message: {oldMessage.Value.Content} \n New Message: {newMessage.Content}");
+        }
+
+        private Task UserJoined(SocketGuildUser arg)
+        {
+            throw new NotImplementedException();
+        }
+
+        private Task UserLeft(SocketGuild arg1, SocketUser arg2)
+        {
+            throw new NotImplementedException();
+        }
+
+        private Task UserVoiceStateUpdated(SocketUser arg1, SocketVoiceState arg2, SocketVoiceState arg3)
+        {
+            throw new NotImplementedException();
+        }
+
+        private Task LogData(LogMessage arg)
+        {
+            Log.Information($"[Discord] {arg.Severity} - {arg.Source} - {arg.Message} - {arg.Exception}");
+            return Task.CompletedTask;
+        }
+
+        private Task GuildMembersDownloaded(SocketGuild arg)
+        {
+            throw new NotImplementedException();
+        }
+
+        private Task Disconnected(Exception arg)
+        {
+            Log.Warning("[Discord] Disconnected from Discord");
+            return Task.CompletedTask;
+        }
+
+        private async Task InteractionCreated(SocketInteraction interaction)
+        {
+            var ctx = new SocketInteractionContext(_client, interaction);
+            await _interactionService.ExecuteCommandAsync(ctx, _services);
+        }
+
+        private async Task Ready()
+        {
+
+#if DEBUG
+            await _interactionService.RegisterCommandsToGuildAsync(196696160486948864, true);
+#else
+            await _interactionService.RegisterCommandsGloballyAsync(true);
+#endif
         }
 
         public async Task StopAsync()

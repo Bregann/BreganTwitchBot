@@ -58,5 +58,6 @@ namespace BreganTwitchBot.Domain.Data.Database.Models
         public ulong? DiscordReactionRoleChannelId { get; set; } = null;
         public ulong? DiscordGeneralChannelId { get; set; } = null;
         public ulong? DiscordBanRoleChannelId { get; set; } = null;
+        public ulong? DiscordModeratorRoleId { get; set; } = null;
     }
 }

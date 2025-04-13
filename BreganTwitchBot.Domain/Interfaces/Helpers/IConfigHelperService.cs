@@ -1,4 +1,5 @@
-﻿using System;
+﻿using BreganTwitchBot.Domain.DTOs.Helpers;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -11,5 +12,6 @@ namespace BreganTwitchBot.Domain.Interfaces.Helpers
         Task UpdateDailyPointsStatus(string broadcasterId, bool status);
         (bool DailyPointsAllowed, DateTime LastStreamDate, DateTime LastDailyPointedAllowedDate, bool StreamHappenedThisWeek) GetDailyPointsStatus(string broadcasterId);
         Task UpdateStreamLiveStatus(string broadcasterId, bool status);
+        DiscordConfig? GetDiscordConfig(ulong discordGuildId);
     }
 }

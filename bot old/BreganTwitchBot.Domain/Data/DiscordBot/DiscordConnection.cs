@@ -46,29 +46,19 @@ namespace BreganTwitchBot.Domain.Data.DiscordBot
                 .BuildServiceProvider();
 
             DiscordClient.Ready += Ready;
-            DiscordClient.Disconnected += Disconnected;
             DiscordClient.GuildMembersDownloaded += GuildMembersDownloaded;
             DiscordClient.InteractionCreated += InteractionCreated;
-            DiscordClient.Log += LogData;
             DiscordClient.UserVoiceStateUpdated += UserVoiceStateUpdated;
             DiscordClient.UserLeft += UserLeft;
             DiscordClient.UserJoined += UserJoined;
-            DiscordClient.MessageUpdated += MessageUpdated;
             DiscordClient.MessageReceived += MessageReceived;
-            DiscordClient.UserIsTyping += UserIsTyping;
             DiscordClient.MessageDeleted += MessageDeleted;
+
             DiscordClient.ButtonExecuted += ButtonPressed;
             DiscordClient.PresenceUpdated += PresenceUpdated;
-            DiscordClient.Log += LogError;
 
             await DiscordClient.LoginAsync(TokenType.Bot, AppConfig.DiscordAPIKey);
             await DiscordClient.StartAsync();
-        }
-
-        private static Task LogError(LogMessage arg)
-        {
-            Log.Information(arg.Message);
-            return Task.CompletedTask;
         }
 
         private static async Task PresenceUpdated(SocketUser user, SocketPresence previous, SocketPresence newUserUpdate)
@@ -121,12 +111,6 @@ namespace BreganTwitchBot.Domain.Data.DiscordBot
             }
         }
 
-        private static Task UserIsTyping(Cacheable<IUser, ulong> arg1, Cacheable<IMessageChannel, ulong> arg2)
-        {
-            Log.Information($"[Discord Typing] {arg1.Value.Username} is typing a message in {arg2.Value.Name}");
-            return Task.CompletedTask;
-        }
-
         private static async Task MessageReceived(SocketMessage arg)
         {
             try
@@ -143,23 +127,6 @@ namespace BreganTwitchBot.Domain.Data.DiscordBot
                 Log.Fatal($"[Discord Message Received] Error with received message: {e}- {e.InnerException}");
                 return;
             }
-        }
-
-        private static async Task MessageUpdated(Cacheable<IMessage, ulong> oldMessage, SocketMessage newMessage, ISocketMessageChannel channel)
-        {
-            await oldMessage.GetOrDownloadAsync();
-
-            if (oldMessage.Value == null)
-            {
-                return;
-            }
-
-            if (oldMessage.Value.Content.ToLower() == newMessage.Content.ToLower())
-            {
-                return;
-            }
-
-            Log.Information($"[Discord Message Updated] Sender: {newMessage.Author.Username} \n Old Message: {oldMessage.Value.Content} \n New Message: {newMessage.Content}");
         }
 
         private static async Task UserJoined(SocketGuildUser userJoined)
@@ -182,19 +149,6 @@ namespace BreganTwitchBot.Domain.Data.DiscordBot
         private static async Task UserVoiceStateUpdated(SocketUser user, SocketVoiceState prevState, SocketVoiceState newState)
         {
             await VoiceStateUpdatedEvent.AddOrRemoveVCRole(user, newState);
-        }
-
-        private static Task Disconnected(Exception arg)
-        {
-            ConnectionStatus = false;
-            Log.Warning("[Discord] Disconnected from Discord");
-            return Task.CompletedTask;
-        }
-
-        private static Task LogData(LogMessage arg)
-        {
-            Log.Information($"{arg}");
-            return Task.CompletedTask;
         }
 
         private static async Task InteractionCreated(SocketInteraction arg)

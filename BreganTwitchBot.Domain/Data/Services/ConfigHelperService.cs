@@ -1,5 +1,6 @@
 ﻿using BreganTwitchBot.Domain.Data.Database.Context;
 using BreganTwitchBot.Domain.Data.Database.Models;
+using BreganTwitchBot.Domain.DTOs.Helpers;
 using BreganTwitchBot.Domain.Interfaces.Helpers;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -85,6 +86,28 @@ namespace BreganTwitchBot.Domain.Data.Services
         {
             var config = _channelConfigs.First(x => x.Channel.BroadcasterTwitchChannelId == broadcasterId);
             return (DailyPointsAllowed: config.DailyPointsCollectingAllowed, LastStreamDate: config.LastStreamEndDate, LastDailyPointedAllowedDate: config.LastDailyPointsAllowed, config.StreamHappenedThisWeek);
+        }
+
+        public DiscordConfig? GetDiscordConfig(ulong discordGuildId)
+        {
+            var config = _channelConfigs.Where(x => x.Channel.DiscordGuildId == discordGuildId).FirstOrDefault();
+
+            return config == null
+                ? null
+                : new DiscordConfig
+            {
+                DiscordGuildOwnerId = config.DiscordGuildOwnerId,
+                DiscordEventChannelId = config.DiscordEventChannelId,
+                DiscordStreamAnnouncementChannelId = config.DiscordStreamAnnouncementChannelId,
+                DiscordUserLinkingChannelId = config.DiscordUserLinkingChannelId,
+                DiscordUserCommandsChannelId = config.DiscordUserCommandsChannelId,
+                DiscordUserRankUpAnnouncementChannelId = config.DiscordUserRankUpAnnouncementChannelId,
+                DiscordGiveawayChannelId = config.DiscordGiveawayChannelId,
+                DiscordReactionRoleChannelId = config.DiscordReactionRoleChannelId,
+                DiscordGeneralChannelId = config.DiscordGeneralChannelId,
+                DiscordBanRoleChannelId = config.DiscordBanRoleChannelId,
+                DiscordModeratorRoleId = config.DiscordModeratorRoleId
+                };
         }
     }
 }

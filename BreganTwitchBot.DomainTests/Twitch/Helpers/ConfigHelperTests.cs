@@ -136,5 +136,19 @@ namespace BreganTwitchBot.DomainTests.Twitch.Helpers
                 Assert.That(config.StreamHappenedThisWeek, Is.True);
             });
         }
+
+        [Test]
+        public void GetDiscordConfig_NoDiscordGuildId_ReturnsNull()
+        {
+            var discordConfig = _configHelperService.GetDiscordConfig(0);
+            Assert.That(discordConfig, Is.Null);
+        }
+
+        [Test]
+        public void GetDiscordConfig_ValidDiscordGuildId_ReturnsConfig()
+        {
+            var discordConfig = _configHelperService.GetDiscordConfig(DatabaseSeedHelper.DiscordGuildId);
+            Assert.That(discordConfig, Is.Not.Null);
+        }
     }
 }

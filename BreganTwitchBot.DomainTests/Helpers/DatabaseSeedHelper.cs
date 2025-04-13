@@ -30,7 +30,9 @@ namespace BreganTwitchBot.DomainTests.Helpers
 
         public const string SeededChannel1BannedWord = "seededbannedword";
         public const string SeededChannel1TempBanWord = "seededtempbanword";
-        public const string SeededChannel2BannedWord = "seededbannedword"; 
+        public const string SeededChannel2BannedWord = "seededbannedword";
+
+        public const ulong DiscordGuildId = 12345;
 
 
         public static async Task SeedDatabase(AppDbContext context)
@@ -45,7 +47,8 @@ namespace BreganTwitchBot.DomainTests.Helpers
                 BotTwitchChannelName = Channel1BotTwitchChannelName,
                 BroadcasterTwitchChannelId = Channel1BroadcasterTwitchChannelId,
                 BroadcasterTwitchChannelName = Channel1BroadcasterTwitchChannelName,
-                DiscordEnabled = false
+                DiscordEnabled = false,
+                DiscordGuildId = DiscordGuildId
             };
 
             var channel2 = new Channel

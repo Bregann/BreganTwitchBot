@@ -7,25 +7,6 @@ namespace BreganTwitchBot.Domain.Data.DiscordBot.Helpers
 {
     public class DiscordHelper
     {
-        public static async Task SendMessage(ulong channelID, string message)
-        {
-            try
-            {
-                var channel = await DiscordConnection.DiscordClient.GetChannelAsync(channelID) as IMessageChannel;
-
-                if (channel != null)
-                {
-                    await channel.TriggerTypingAsync();
-                    await channel.SendMessageAsync(message);
-                }
-            }
-            catch (Exception e)
-            {
-                Log.Fatal($"[Discord Message Send] Failed to send message - {e}");
-                return;
-            }
-        }
-
         public static bool IsUserMod(ulong userId)
         {
             var user = DiscordConnection.DiscordClient.GetGuild(AppConfig.DiscordGuildID).GetUser(userId);

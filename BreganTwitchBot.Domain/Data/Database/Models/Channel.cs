@@ -35,7 +35,7 @@ namespace BreganTwitchBot.Domain.Data.Database.Models
         public required string BotTwitchChannelRefreshToken { get; set; }
 
         public required bool DiscordEnabled { get; set; } = false;
-        public string? DiscordGuildId { get; set; } = null;
+        public ulong? DiscordGuildId { get; set; } = null;
 
         public virtual ChannelConfig ChannelConfig { get; set; } = null!;
         public virtual ICollection<ChannelRank> ChannelRanks { get; set; } = null!;

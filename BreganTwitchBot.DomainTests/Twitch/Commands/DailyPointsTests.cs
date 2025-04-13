@@ -290,7 +290,7 @@ namespace BreganTwitchBot.DomainTests.Twitch.Commands
         [TestCase(PointsClaimType.Weekly)]
         [TestCase(PointsClaimType.Monthly)]
         [TestCase(PointsClaimType.Yearly)]
-        public async Task HandleStreakCheckCommand_CheckOtherUserInvalidUsername_CorrectExceptionThrown(PointsClaimType pointsClaimType)
+        public void HandleStreakCheckCommand_CheckOtherUserInvalidUsername_CorrectExceptionThrown(PointsClaimType pointsClaimType)
         {
             _twitchHelperService.Setup(x => x.GetTwitchUserIdFromUsername(It.IsAny<string>()))
                 .ReturnsAsync((string?)null);
