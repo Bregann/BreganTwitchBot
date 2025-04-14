@@ -1,6 +1,8 @@
-﻿using BreganTwitchBot.Domain.Interfaces.Discord;
+﻿using BreganTwitchBot.Domain.Data.Database.Context;
+using BreganTwitchBot.Domain.Interfaces.Discord;
 using BreganTwitchBot.Domain.Interfaces.Helpers;
 using Discord;
+using Microsoft.Extensions.DependencyInjection;
 using Serilog;
 using System;
 using System.Collections.Generic;
@@ -10,14 +12,14 @@ using System.Threading.Tasks;
 
 namespace BreganTwitchBot.Domain.Data.Services.Discord
 {
-    public class DiscordHelperService(IDiscordService discordService, IConfigHelperService configHelperService)
+    public class DiscordHelperService(IDiscordService discordService, IConfigHelperService configHelperService, IServiceProvider serviceProvider) : IDiscordHelperService
     {
         public async Task SendMessage(ulong channelId, string message)
         {
-            var channel = discordService.Client.GetChannel(channelId) as IMessageChannel;
-
             try
             {
+                var channel = discordService.Client.GetChannel(channelId) as IMessageChannel;
+
                 if (channel != null)
                 {
                     await channel.TriggerTypingAsync();
@@ -27,6 +29,24 @@ namespace BreganTwitchBot.Domain.Data.Services.Discord
             catch (Exception ex)
             {
                 Log.Fatal($"[Discord Message Send] Failed to send message - {e}");
+            }
+        }
+
+        public async Task SendEmbedMessage(ulong channelId, EmbedBuilder embed)
+        {
+            try
+            {
+                var channel = discordService.Client.GetChannel(channelId) as IMessageChannel;
+
+                if (channel != null)
+                {
+                    await channel.TriggerTypingAsync();
+                    await channel.SendMessageAsync(embed: embed.Build());
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Fatal($"[Discord Message Send] Failed to send message - {ex}");
             }
         }
 
@@ -47,6 +67,17 @@ namespace BreganTwitchBot.Domain.Data.Services.Discord
             }
 
             return false;
+        }
+
+        public string? GetTwitchUsernameFromDiscordUser(ulong userId)
+        {
+            using(var scope = serviceProvider.CreateScope())
+            {
+                var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+                var user = context.ChannelUsers.FirstOrDefault(x => x.DiscordUserId == userId);
+
+                return user?.TwitchUsername;
+            }
         }
     }
 }

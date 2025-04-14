@@ -95,18 +95,16 @@ namespace BreganTwitchBot.Domain.Data.Services
             return config == null
                 ? null
                 : new DiscordConfig
-            {
-                DiscordGuildOwnerId = config.DiscordGuildOwnerId,
-                DiscordEventChannelId = config.DiscordEventChannelId,
-                DiscordStreamAnnouncementChannelId = config.DiscordStreamAnnouncementChannelId,
-                DiscordUserLinkingChannelId = config.DiscordUserLinkingChannelId,
-                DiscordUserCommandsChannelId = config.DiscordUserCommandsChannelId,
-                DiscordUserRankUpAnnouncementChannelId = config.DiscordUserRankUpAnnouncementChannelId,
-                DiscordGiveawayChannelId = config.DiscordGiveawayChannelId,
-                DiscordReactionRoleChannelId = config.DiscordReactionRoleChannelId,
-                DiscordGeneralChannelId = config.DiscordGeneralChannelId,
-                DiscordBanRoleChannelId = config.DiscordBanRoleChannelId,
-                DiscordModeratorRoleId = config.DiscordModeratorRoleId
+                {
+                    DiscordGuildOwnerId = config.DiscordGuildOwnerId,
+                    DiscordEventChannelId = config.DiscordEventChannelId,
+                    DiscordStreamAnnouncementChannelId = config.DiscordStreamAnnouncementChannelId,
+                    DiscordUserCommandsChannelId = config.DiscordUserCommandsChannelId,
+                    DiscordUserRankUpAnnouncementChannelId = config.DiscordUserRankUpAnnouncementChannelId,
+                    DiscordGiveawayChannelId = config.DiscordGiveawayChannelId,
+                    DiscordBanRoleChannelId = config.DiscordBanRoleChannelId,
+                    DiscordModeratorRoleId = config.DiscordModeratorRoleId,
+                    DiscordWelcomeMessageChannelId = config.DiscordWelcomeMessageChannelId
                 };
         }
     }
