@@ -15,5 +15,7 @@ namespace BreganTwitchBot.Domain.Interfaces.Discord
         bool IsUserMod(ulong serverId, ulong userId);
         string? GetTwitchUsernameFromDiscordUser(ulong userId);
         Task AddDiscordXpToUser(ulong serverId, ulong userId, long xpToAdd);
+        Task AddPointsToUser(ulong serverId, ulong userId, long pointsToAdd);
+        Task RemovePointsFromUser(ulong serverId, ulong userId, long pointsToRemove);
     }
 }

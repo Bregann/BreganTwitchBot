@@ -259,7 +259,7 @@ namespace BreganTwitchBot.Domain.Data.Services.Discord
             var command = interaction as SocketSlashCommand;
             var config = _configHelperService.GetDiscordConfig(interaction.GuildId ?? 0);
 
-            if(config == null)
+            if (config == null)
             {
                 await interaction.RespondAsync("This command is not available in this server.", ephemeral: true);
                 return;
@@ -271,6 +271,15 @@ namespace BreganTwitchBot.Domain.Data.Services.Discord
             }
 
             var isMod = _discordHelperService.IsUserMod(command.User.Id, command.GuildId ?? 0);
+
+            // check if they are linked by getting twitch username from their id
+            var twitchUsername = _discordHelperService.GetTwitchUsernameFromDiscordUser(command.User.Id);
+
+            if (twitchUsername == null && command.CommandName != "link")
+            {
+                await interaction.RespondAsync($"You need to link your Twitch account to use this command. Use `/link` to link your account in the channel <#{config.DiscordUserCommandsChannelId}>", ephemeral: true);
+                return;
+            }
 
             // hardcoded socks channel for blocksssssss meh
             if (interaction.Channel.Id != 713365310408884236 && command.CommandName == "socks")

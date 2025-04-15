@@ -167,7 +167,7 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch
 
                 if (userPoints == null)
                 {
-                    Log.Warning($"[Twitch Helper Service] Error removing points from {viewerUsername}, userPoints is null");
+                    Log.Warning($"[Twitch Helper Service] Error adding points to {viewerUsername}, userPoints is null");
                     throw new TwitchUserNotFoundException($"User {viewerUsername} not found in channel {broadcasterChannelName} when attempting to add points");
                 }
 

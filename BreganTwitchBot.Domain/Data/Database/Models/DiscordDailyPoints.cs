@@ -14,6 +14,10 @@ namespace BreganTwitchBot.Domain.Data.Database.Models
 
         public virtual ChannelUser User { get; set; } = null!;
 
+        [ForeignKey(nameof(Channel))]
+        public int ChannelId { get; set; }
+        public virtual Channel Channel { get; set; } = null!;
+
         [Required]
         public required int DiscordDailyStreak { get; set; }
 
