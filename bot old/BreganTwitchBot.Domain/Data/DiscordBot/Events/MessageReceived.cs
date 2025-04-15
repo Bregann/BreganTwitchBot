@@ -89,99 +89,6 @@ namespace BreganTwitchBot.Domain.Data.DiscordBot.Events
             }
         }
 
-        public static void AddDiscordXp(SocketMessage message)
-        {
-            if (message.Attachments.Count > 0)
-            {
-                var attachments = message.Attachments.ToList();
-                Log.Information($"[Discord Message Received] Username: {message.Author} Image URL: {attachments[0].Url} Channel: {message.Channel.Name}");
-                BackgroundJob.Enqueue(() => DiscordLevelling.AddDiscordXp(message.Author.Id, 10, message.Channel.Id));
-                return;
-            }
-
-            //limit it so it needs to be a proper sentence
-            if (message.Content.Length >= 3)
-            {
-                //Check if they are not on cooldown for the xp gains - 5s to prevent spam
-                if (!XpCooldownDict.ContainsKey(message.Author.Id))
-                {
-                    XpCooldownDict.Add(message.Author.Id, DateTime.UtcNow);
-                    BackgroundJob.Enqueue(() => DiscordLevelling.AddDiscordXp(message.Author.Id, 5, message.Channel.Id));
-                    return;
-                }
-
-                if (DateTime.UtcNow - TimeSpan.FromSeconds(2) <= XpCooldownDict[message.Author.Id])
-                {
-                    return;
-                }
-
-                BackgroundJob.Enqueue(() => DiscordLevelling.AddDiscordXp(message.Author.Id, 5, message.Channel.Id));
-                XpCooldownDict[message.Author.Id] = DateTime.UtcNow;
-                return;
-            }
-        }
-
-        public static async Task CheckStreamLiveMessages(SocketMessage message)
-        {
-            if (message.Content.ToLower().StartsWith("stream starts") && message.Author.Id == AppConfig.DiscordGuildOwnerID)
-            {
-                var msg = message as IUserMessage;
-
-                if (msg != null)
-                {
-                    AppConfig.UpdatePinnedMessageAndMessageId(msg.Content, msg.Id);
-                }
-            }
-
-            if (message.Content.ToLower().Contains("streaming today") || message.Content.ToLower().Contains("stream today") || message.Content.ToLower().Contains("when stream"))
-            {
-                if (_lastAskedMessageCount <= 5)
-                {
-                    return;
-                }
-
-                if (message.Author.Id == AppConfig.DiscordGuildOwnerID)
-                {
-                    await DiscordHelper.SendMessage(message.Channel.Id, "https://i.imgur.com/pEjmRjb.png");
-                    return;
-                }
-
-                var origin = new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc);
-                var diff = AppConfig.PinnedMessageDate - origin;
-                var epochSeconds = Math.Floor(diff.TotalSeconds);
-
-                if (DateTime.UtcNow.DayOfWeek != DayOfWeek.Sunday)
-                {
-                    if (AppConfig.PinnedMessageDate.Date != DateTime.UtcNow.Date)
-                    {
-                        await DiscordHelper.SendMessage(message.Channel.Id, "Looking for when the stream starts? Probably not today (ignore this if it's castles week then check <#354732299180441610>). Check <#754372306222186626> for his days off");
-                        _lastAskedMessageCount = 0;
-                        return;
-                    }
-
-                    await DiscordHelper.SendMessage(message.Channel.Id, $"Looking for when the stream starts? The last update I know is: **{AppConfig.PinnedStreamMessage}** which was set <t:{epochSeconds}:R>");
-                    _lastAskedMessageCount = 0;
-                }
-                else
-                {
-                    if (AppConfig.PinnedMessageDate.Date != DateTime.UtcNow.Date)
-                    {
-                        await DiscordHelper.SendMessage(message.Channel.Id, "Looking for when the stream starts? Check the pins in the top right or go to <#754372306222186626> or <#354732299180441610>");
-                        _lastAskedMessageCount = 0;
-                        return;
-                    }
-
-                    await DiscordHelper.SendMessage(message.Channel.Id, $"Looking for when the stream starts? The last update I know is: **{AppConfig.PinnedStreamMessage}** which was set <t:{epochSeconds}:R>");
-                    _lastAskedMessageCount = 0;
-                }
-            }
-
-            if (message.Content.ToLower().Contains("stream late"))
-            {
-                await DiscordHelper.SendMessage(message.Channel.Id, "you donut, go complain in the twitch chat");
-            }
-        }
-
         public static async Task HandleCustomCommand(SocketMessage message)
         {
             var isMod = DiscordHelper.IsUserMod(message.Author.Id);
@@ -214,14 +121,6 @@ namespace BreganTwitchBot.Domain.Data.DiscordBot.Events
                 }
 
                 await DiscordHelper.SendMessage(message.Channel.Id, command.CommandText);
-            }
-        }
-
-        public static async Task PingFoodEnjoyerOnImage(SocketMessage message)
-        {
-            if (message.Author.Id == 153974235809710081 && message.Channel.Id == 1153032190234464347 && message.Content.ToLower().Contains("#ping"))
-            {
-                await DiscordHelper.SendMessage(1153032190234464347, "<@&1164590388296810648> some banging new food just dropped by the legend himself");
             }
         }
     }

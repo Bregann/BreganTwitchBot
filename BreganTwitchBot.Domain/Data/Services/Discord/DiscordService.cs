@@ -24,10 +24,11 @@ namespace BreganTwitchBot.Domain.Data.Services.Discord
         private readonly IServiceProvider _services;
         private readonly IDiscordEventHelperService _discordEventHelperService;
         private readonly IDiscordHelperService _discordHelperService;
+        private readonly IConfigHelperService _configHelperService;
 
         public DiscordSocketClient Client => _client;
 
-        public DiscordService(IEnvironmentalSettingHelper environmentalSettingHelper, IServiceProvider serviceProvider, IDiscordEventHelperService discordEventHelperService, IDiscordHelperService discordHelperService)
+        public DiscordService(IEnvironmentalSettingHelper environmentalSettingHelper, IServiceProvider serviceProvider, IDiscordEventHelperService discordEventHelperService, IDiscordHelperService discordHelperService, IConfigHelperService configHelperService)
         {
             _environmentalSettingHelper = environmentalSettingHelper;
             _services = serviceProvider;
@@ -44,6 +45,7 @@ namespace BreganTwitchBot.Domain.Data.Services.Discord
             _interactionService = new InteractionService(_client.Rest);
             _discordEventHelperService = discordEventHelperService;
             _discordHelperService = discordHelperService;
+            _configHelperService = configHelperService;
         }
 
         public async Task StartAsync()
@@ -102,9 +104,20 @@ namespace BreganTwitchBot.Domain.Data.Services.Discord
             return Task.CompletedTask;
         }
 
-        private Task ButtonExecuted(SocketMessageComponent arg)
+        private async Task ButtonExecuted(SocketMessageComponent arg)
         {
-            throw new NotImplementedException();
+            Log.Information($"[Discord Button Pressed] Sender: {arg.User.Username} \n Button: {arg.Data.CustomId} \n Channel: {arg.Channel.Name} \n ChannelId: {arg.Channel.Id}");
+            await arg.DeferAsync();
+            
+            var res = await _discordEventHelperService.HandleButtonPressEvent(new ButtonPressedEvent
+            {
+                GuildId = arg.GuildId ?? 0,
+                UserId = arg.User.Id,
+                Username = arg.User.Username,
+                CustomId = arg.Data.CustomId
+            });
+
+            await arg.FollowupAsync(res.MessageToSend, ephemeral: res.Ephemeral);
         }
 
         private async Task MessageDeleted(Cacheable<IMessage, ulong> oldMessage, Cacheable<IMessageChannel, ulong> channel)
@@ -143,9 +156,23 @@ namespace BreganTwitchBot.Domain.Data.Services.Discord
             return Task.CompletedTask;
         }
 
-        private Task MessageReceived(SocketMessage arg)
+        private async Task MessageReceived(SocketMessage arg)
         {
-            throw new NotImplementedException();
+            Log.Information($"[Discord Message] Sender: {arg.Author.Username} \n Message: {arg.Content} \n Channel: {arg.Channel.Name} \n ChannelId: {arg.Channel.Id} \n");
+            
+            var messageReceived = new MessageReceivedEvent
+            {
+                GuildId = arg.Channel.Id,
+                UserId = arg.Author.Id,
+                Username = arg.Author.Username,
+                ChannelId = arg.Channel.Id,
+                ChannelName = arg.Channel.Name,
+                MessageContent = arg.Content,
+                HasAttachments = arg.Attachments.Count > 0,
+                MessageId = arg.Id
+            };
+
+            await _discordEventHelperService.HandleMessageReceivedEvent(messageReceived);
         }
 
         private async Task MessageUpdated(Cacheable<IMessage, ulong> oldMessage, SocketMessage newMessage, ISocketMessageChannel channel)
@@ -230,6 +257,13 @@ namespace BreganTwitchBot.Domain.Data.Services.Discord
         private async Task InteractionCreated(SocketInteraction interaction)
         {
             var command = interaction as SocketSlashCommand;
+            var config = _configHelperService.GetDiscordConfig(interaction.GuildId ?? 0);
+
+            if(config == null)
+            {
+                await interaction.RespondAsync("This command is not available in this server.", ephemeral: true);
+                return;
+            }
 
             if (command == null)
             {
@@ -237,6 +271,26 @@ namespace BreganTwitchBot.Domain.Data.Services.Discord
             }
 
             var isMod = _discordHelperService.IsUserMod(command.User.Id, command.GuildId ?? 0);
+
+            // hardcoded socks channel for blocksssssss meh
+            if (interaction.Channel.Id != 713365310408884236 && command.CommandName == "socks")
+            {
+                await interaction.RespondAsync("The socks command is only supported in Blocksssssss Discord in <#713365310408884236> . You can join the Discord here https://discord.gg/s2GGPpj", ephemeral: true);
+                return;
+            }
+
+            // process it if it does match as we don't want to force the user to use the commands channel
+            if (interaction.Channel.Id != 713365310408884236 && command.CommandName == "socks")
+            {
+                var contextSocks = new SocketInteractionContext(_client, interaction);
+                await _interactionService.ExecuteCommandAsync(contextSocks, _services);
+                return;
+            }
+
+            if (interaction.Channel.Id != config.DiscordUserCommandsChannelId && !isMod)
+            {
+                await interaction.RespondAsync($"Please use the bot commands channel! The command channel is <#{config.DiscordUserCommandsChannelId}>", ephemeral: true);
+            }
 
             var ctx = new SocketInteractionContext(_client, interaction);
             await _interactionService.ExecuteCommandAsync(ctx, _services);

@@ -2,6 +2,7 @@
 using BreganTwitchBot.Domain.Interfaces.Discord;
 using BreganTwitchBot.Domain.Interfaces.Helpers;
 using Discord;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Serilog;
 using System;
@@ -69,6 +70,7 @@ namespace BreganTwitchBot.Domain.Data.Services.Discord
             return false;
         }
 
+        //TODO: WRITE TESTS FOR THIS METHOD
         public string? GetTwitchUsernameFromDiscordUser(ulong userId)
         {
             using(var scope = serviceProvider.CreateScope())
@@ -77,6 +79,24 @@ namespace BreganTwitchBot.Domain.Data.Services.Discord
                 var user = context.ChannelUsers.FirstOrDefault(x => x.DiscordUserId == userId);
 
                 return user?.TwitchUsername;
+            }
+        }
+
+        //TODO: WRITE TESTS FOR THIS METHOD
+        public async Task AddDiscordXpToUser(ulong serverId, ulong userId, long baseXpToAdd)
+        {
+            using (var scope = serviceProvider.CreateScope())
+            {
+                var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+                var user = await context.DiscordUserStats.FirstOrDefaultAsync(x => x.User.DiscordUserId == userId && x.Channel.DiscordGuildId == serverId);
+
+                if (user != null)
+                {
+                    user.DiscordXp += baseXpToAdd;
+                    await context.SaveChangesAsync();
+
+                    //TODO: check for level up
+                }
             }
         }
     }

@@ -12,5 +12,7 @@ namespace BreganTwitchBot.Domain.Interfaces.Discord
         Task HandleUserJoinedEvent(EventBase userJoined);
         Task HandleUserLeftEvent(EventBase userLeft);
         Task HandleMessageDeletedEvent(MessageDeletedEvent messageDeletedEvent);
+        Task HandleMessageReceivedEvent(MessageReceivedEvent messageReceivedEvent);
+        Task<(string MessageToSend, bool Ephemeral)> HandleButtonPressEvent(ButtonPressedEvent buttonPressedEvent);
     }
 }

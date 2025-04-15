@@ -6,6 +6,8 @@ using Discord;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
 using System;
+using System.Formats.Asn1;
+using TwitchLib.Api.Helix.Models.Moderation.CheckAutoModStatus;
 
 namespace BreganTwitchBot.Domain.Data.Services.Discord
 {
@@ -131,6 +133,91 @@ namespace BreganTwitchBot.Domain.Data.Services.Discord
                 messageEmbed.AddField("Message ID", messageDeletedEvent.MessageId.ToString());
                 messageEmbed.AddField("Channel ID", messageDeletedEvent.ChannelId.ToString());
                 await discordHelper.SendEmbedMessage(discordConfig.DiscordEventChannelId.Value, messageEmbed);
+            }
+        }
+
+        public async Task HandleMessageReceivedEvent(MessageReceivedEvent messageReceivedEvent)
+        {
+            // george food hardcoded memes, only for blocksssssss
+            if (messageReceivedEvent.UserId == 153974235809710081 && messageReceivedEvent.ChannelId == 1153032190234464347 && messageReceivedEvent.MessageContent.ToLower().Contains("#ping"))
+            {
+                await discordHelper.SendMessage(1153032190234464347, "<@&1164590388296810648> some banging new food just dropped by the legend himself");
+            }
+
+            if (messageReceivedEvent.HasAttachments)
+            {
+                await discordHelper.AddDiscordXpToUser(messageReceivedEvent.GuildId, messageReceivedEvent.UserId, 10);
+            }
+            else
+            {
+                await discordHelper.AddDiscordXpToUser(messageReceivedEvent.GuildId, messageReceivedEvent.UserId, 5);
+            }
+        }
+
+        public async Task<(string MessageToSend, bool Ephemeral)> HandleButtonPressEvent(ButtonPressedEvent buttonPressedEvent)
+        {
+            var emojiToAdd = "";
+
+            switch (buttonPressedEvent.CustomId)
+            {
+                case "christmas-snowman":
+                    emojiToAdd = "⛄";
+                    break;
+                case "christmas-gift":
+                    emojiToAdd = "🎁";
+                    break;
+                case "christmas-tree":
+                    emojiToAdd = "🎄";
+                    break;
+                case "christmas-santa":
+                    emojiToAdd = "🎅";
+                    break;
+                case "christmas-mrsanta":
+                    emojiToAdd = "🤶";
+                    break;
+                case "christmas-star":
+                    emojiToAdd = "🌟";
+                    break;
+                case "christmas-socks":
+                    emojiToAdd = "🧦";
+                    break;
+                case "christmas-bell":
+                    emojiToAdd = "🔔";
+                    break;
+                case "christmas-deer":
+                    emojiToAdd = "🦌";
+                    break;
+                case "christmas-resetusername":
+                    emojiToAdd = "";
+                    break;
+                default:
+                    return ("invalid button", true);
+            }
+
+            var guild = discordService.Client.GetGuild(buttonPressedEvent.GuildId);
+            var user = guild.GetUser(buttonPressedEvent.UserId);
+
+            if (emojiToAdd == "")
+            {
+                var nickNameToSet = user.Nickname.Replace("⛄", "").Replace("🎁", "").Replace("🎄", "").Replace("🎅", "").Replace("🤶", "").Replace("🌟", "").Replace("🧦", "").Replace("🔔", "").Replace("🦌", "");
+                await user.ModifyAsync(user => user.Nickname = nickNameToSet);
+                return ("Your nickname has been cleared!", true);
+            }
+            else
+            {
+                var nickNameToSet = "";
+
+                if (user.DisplayName != null)
+                {
+                    nickNameToSet = emojiToAdd + user.DisplayName + emojiToAdd;
+                }
+                else
+                {
+                    nickNameToSet = emojiToAdd + user.Username + emojiToAdd;
+                }
+
+                await user.ModifyAsync(user => user.Nickname = nickNameToSet);
+                return ("Your nickname has been set! Woooo", true);
             }
         }
     }

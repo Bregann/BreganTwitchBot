@@ -22,7 +22,7 @@ namespace BreganTwitchBot.Domain.Data.Database.Models
         public required int DiscordLevel { get; set; }
 
         [Required]
-        public required int DiscordXp { get; set; }
+        public required long DiscordXp { get; set; }
 
         [Required]
         public required bool DiscordLevelUpNotifsEnabled { get; set; }
