@@ -10,5 +10,6 @@ namespace BreganTwitchBot.Domain.DTOs.Discord.Commands
     {
         public ulong GuildId { get; set; }
         public ulong UserId { get; set; }
+        public string? CommandText { get; set; }
     }
 }
