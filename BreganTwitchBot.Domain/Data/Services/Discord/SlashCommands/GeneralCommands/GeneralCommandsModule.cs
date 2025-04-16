@@ -125,7 +125,6 @@ namespace BreganTwitchBot.Domain.Data.Services.Discord.SlashCommands.GeneralComm
         }
 
         [SlashCommand("birthday", "[SERVER SPECIFIC!!] Set your birthday to get a Happy Birthday announcement in THE CURRENT SERVER")]
-
         public async Task Birthday([Summary("day", "the day you were born (number)")] int day, [Summary("month", "the month you were born (number)")] int month)
         {
             var command = new AddBirthdayCommand

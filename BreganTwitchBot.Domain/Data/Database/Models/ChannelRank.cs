@@ -21,5 +21,7 @@ namespace BreganTwitchBot.Domain.Data.Database.Models
 
         [Required]
         public required int BonusRankPointsEarned { get; set; }
+
+        public ulong? DiscordRoleId { get; set; }
     }
 }

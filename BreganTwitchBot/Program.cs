@@ -6,6 +6,7 @@ using BreganTwitchBot.Domain.Data.Services.Discord.SlashCommands.Daily;
 using BreganTwitchBot.Domain.Data.Services.Discord.SlashCommands.Gambling;
 using BreganTwitchBot.Domain.Data.Services.Discord.SlashCommands.GeneralCommands;
 using BreganTwitchBot.Domain.Data.Services.Discord.SlashCommands.Levelling;
+using BreganTwitchBot.Domain.Data.Services.Discord.SlashCommands.Linking;
 using BreganTwitchBot.Domain.Data.Services.Twitch;
 using BreganTwitchBot.Domain.Data.Services.Twitch.Commands;
 using BreganTwitchBot.Domain.Data.Services.Twitch.Commands._8Ball;
@@ -198,6 +199,7 @@ builder.Services.AddScoped<IDiscordDailyPointsData, DiscordDailyPointsData>();
 builder.Services.AddScoped<IDiscordGamblingData, DiscordGamblingData>();
 builder.Services.AddScoped<IGeneralCommandsData, GeneralCommandsData>();
 builder.Services.AddScoped<IDiscordLevellingData, DiscordLevellingData>();
+builder.Services.AddScoped<IDiscordLinkingData, DiscordLinkingData>();
 
 // hangfire
 builder.Services.AddHangfireServer(options => options.SchedulePollingInterval = TimeSpan.FromSeconds(10));
