@@ -12,11 +12,5 @@ namespace BreganTwitchBot.Domain.Data.DiscordBot.SlashCommands.Modules.Levelling
             await DeferAsync();
             await Task.Run(async () => await DiscordLevelling.HandleLevelCommand(Context, discordUser));
         }
-
-        [SlashCommand("togglelevelups", "Disable or enable level ups")]
-        public async Task ToggleLevelUpNotifs()
-        {
-            await DiscordLevelling.HandleToggleLevelUpCommand(Context);
-        }
     }
 }

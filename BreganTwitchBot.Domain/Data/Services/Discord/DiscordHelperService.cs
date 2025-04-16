@@ -84,12 +84,12 @@ namespace BreganTwitchBot.Domain.Data.Services.Discord
         }
 
         //TODO: WRITE TESTS FOR THIS METHOD
-        public async Task AddDiscordXpToUser(ulong serverId, ulong userId, long baseXpToAdd)
+        public async Task AddDiscordXpToUser(ulong guildId, ulong channelId, ulong userId, long baseXpToAdd)
         {
             using (var scope = serviceProvider.CreateScope())
             {
                 var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-                var user = await context.DiscordUserStats.FirstOrDefaultAsync(x => x.User.DiscordUserId == userId && x.Channel.DiscordGuildId == serverId);
+                var user = await context.DiscordUserStats.FirstOrDefaultAsync(x => x.User.DiscordUserId == userId && x.Channel.DiscordGuildId == guildId);
 
                 if (user != null)
                 {
@@ -97,6 +97,53 @@ namespace BreganTwitchBot.Domain.Data.Services.Discord
                     await context.SaveChangesAsync();
 
                     //TODO: check for level up
+                    long xpNeededForLevelUp;
+                    var baseXp = 10;
+                    var userLevelledUp = false;
+
+                    //Check if they have levelled up - could be mutliple to slap it in a while loop
+                    while (true)
+                    {
+                        switch (user.DiscordLevel)
+                        {
+                            case 0:
+                                xpNeededForLevelUp = 5;
+                                break;
+                            case 1:
+                                xpNeededForLevelUp = 10;
+                                break;
+                            default:
+                                var lastLevelXp = baseXp * (user.DiscordLevel - 1);
+                                xpNeededForLevelUp = (long)Math.Round(lastLevelXp * 1.08 * user.DiscordLevel);
+                                break;
+                        }
+
+                        if (user.DiscordXp >= xpNeededForLevelUp)
+                        {
+                            user.DiscordLevel++;
+                            await AddPointsToUser(guildId, userId, user.DiscordLevel * 2000);
+                            Log.Information($"[Discord XP Manager Service] {userId} has levelled up to level {user.DiscordLevel} in {guildId}");
+                            await context.SaveChangesAsync();
+                            userLevelledUp = true;
+                            continue;
+                        }
+
+                        break;
+                    }
+
+                    Log.Information("[Discord Levelling] Levelling done");
+
+                    if (userLevelledUp && user.DiscordLevelUpNotifsEnabled)
+                    {
+                        Log.Information("[Discord Levelling] Sending message");
+                        if (user.DiscordLevel == 1 || user.DiscordLevel == 2)
+                        {
+                            return;
+                        }
+
+                        var config = configHelperService.GetDiscordConfig(guildId);
+                        await SendMessage(channelId, $"**GG** <@{user.User.DiscordUserId}> you have levelled up to level **{user.DiscordLevel}**! You have gained **{user.DiscordLevel * 2000:N0}** pooants! (you can disable level up messages by doing /togglelevelups in <#{config.DiscordUserCommandsChannelId}>");
+                    }
                 }
             }
         }
@@ -109,7 +156,13 @@ namespace BreganTwitchBot.Domain.Data.Services.Discord
                 var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
                 var channel = await context.Channels.FirstAsync(x => x.DiscordGuildId == serverId);
 
-                var userPoints = await context.ChannelUserData.FirstAsync(x => x.Channel.DiscordGuildId == serverId && x.ChannelUser.DiscordUserId == userId);
+                var userPoints = await context.ChannelUserData.FirstOrDefaultAsync(x => x.Channel.DiscordGuildId == serverId && x.ChannelUser.DiscordUserId == userId);
+
+                if (userPoints == null)
+                {
+                    Log.Warning("[Discord Helper Service] User points not found. No points added");
+                    return;
+                }
 
                 // check if the new amount of points will make the user above the points cap
                 if (userPoints.Points + pointsToAdd > channel.ChannelConfig.CurrencyPointCap)

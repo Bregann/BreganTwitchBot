@@ -13,26 +13,6 @@ namespace BreganTwitchBot.Domain.Data.DiscordBot.SlashCommands.Data.Levelling
     internal class DiscordLevelling
     {
         private const long baseXp = 10;
-
-        public static async Task AddDiscordXp(ulong discordUserId, int discordXp, ulong discordChannel)
-        {
-            using (var context = new DatabaseContext())
-            {
-                var user = context.Users.Include(x => x.DiscordUserStats).Where(x => x.DiscordUserId == discordUserId).FirstOrDefault();
-
-                if (user == null)
-                {
-                    return;
-                }
-
-                user.DiscordUserStats.DiscordXp += discordXp;
-                context.SaveChanges();
-            }
-
-            await Task.Run(async () => await CheckIfLevelledUp(discordUserId, discordChannel));
-            Log.Information($"[Discord Levelling] {discordXp}xp added to {discordUserId}");
-        }
-
         public static async Task HandleLevelCommand(SocketInteractionContext ctx, IUser discordUser)
         {
             try
@@ -143,99 +123,6 @@ namespace BreganTwitchBot.Domain.Data.DiscordBot.SlashCommands.Data.Levelling
             }
         }
 
-        public static async Task HandleToggleLevelUpCommand(SocketInteractionContext ctx)
-        {
-            using (var context = new DatabaseContext())
-            {
-                var isToggled = context.Users.Include(x => x.DiscordUserStats).Where(x => x.DiscordUserId == ctx.User.Id).First().DiscordUserStats.DiscordLevelUpNotifsEnabled;
-
-                if (isToggled)
-                {
-                    context.Users.Include(x => x.DiscordUserStats).Where(x => x.DiscordUserId == ctx.User.Id).First().DiscordUserStats.DiscordLevelUpNotifsEnabled = false;
-                    await ctx.Interaction.RespondAsync($"{ctx.User.Mention} => Notifications have been disabled!");
-                }
-                else
-                {
-                    context.Users.Include(x => x.DiscordUserStats).Where(x => x.DiscordUserId == ctx.User.Id).First().DiscordUserStats.DiscordLevelUpNotifsEnabled = true;
-                    await ctx.Interaction.RespondAsync($"{ctx.User.Mention} => Notifications have been enabled!");
-                }
-
-                context.SaveChanges();
-            }
-        }
-
-        private static async Task CheckIfLevelledUp(ulong discordUserId, ulong discordChannel)
-        {
-            var xp = GetUserXp(discordUserId);
-            var level = GetUserLevel(discordUserId);
-            long xpNeededForLevelUp;
-            bool userLevelledUp = false;
-
-            if (xp == -1 || level == -1) //if either values don't exist then its set to -1
-            {
-                return;
-            }
-
-            //Check if they have levelled up - could be mutliple to slap it in a while loop
-            while (true)
-            {
-                //work out how much xp for the next level
-                switch (level)
-                {
-                    case 0:
-                        xpNeededForLevelUp = 5;
-                        break;
-
-                    case 1:
-                        xpNeededForLevelUp = 10;
-                        break;
-
-                    default:
-                        var lastLevelXp = baseXp * (level - 1);
-                        xpNeededForLevelUp = (long)Math.Round(lastLevelXp * 1.08 * level);
-                        break;
-                }
-
-                if (xp >= xpNeededForLevelUp)
-                {
-                    level++;
-
-                    using (var context = new DatabaseContext())
-                    {
-                        context.Users.Include(x => x.DiscordUserStats).Where(x => x.DiscordUserId == discordUserId).FirstOrDefault().DiscordUserStats.DiscordLevel++;
-                        context.SaveChanges();
-                    }
-
-                    await DiscordHelper.AddUserPoints(discordUserId, level * 2000);
-                    Log.Information($"[Discord Levelling] {discordUserId} has levelled up to {level}");
-                    userLevelledUp = true;
-                    continue;
-                }
-
-                break;
-            }
-
-            Log.Information("[Discord Levelling] Levelling done");
-
-            bool notifsEnabled;
-
-            using (var context = new DatabaseContext())
-            {
-                notifsEnabled = context.Users.Include(x => x.DiscordUserStats).Where(x => x.DiscordUserId == discordUserId).First().DiscordUserStats.DiscordLevelUpNotifsEnabled;
-            }
-
-            if (notifsEnabled && userLevelledUp)
-            {
-                Log.Information("[Discord Levelling] Sending message");
-                if (level == 1 || level == 2)
-                {
-                    return;
-                }
-
-                await DiscordHelper.SendMessage(discordChannel, $"**GG** <@{discordUserId}> you have levelled up to level **{level}**! You have gained **{level * 2000:N0}** {AppConfig.PointsName}! (you can disable level up messages by doing /togglelevelups in <#{AppConfig.DiscordCommandsChannelID}>)");
-            }
-        }
-
         private static string EditImage(int percentage)
         {
             var random = new Random();
@@ -306,36 +193,6 @@ namespace BreganTwitchBot.Domain.Data.DiscordBot.SlashCommands.Data.Levelling
             bmp.Mutate(x => x.Clear(SixLabors.ImageSharp.Color.FromRgba(0, 0, 0, 0), rect));
             bmp.SaveAsPng("pootest.png");
             return bmp;
-        }
-
-        private static long GetUserXp(ulong userId)
-        {
-            using (var context = new DatabaseContext())
-            {
-                var user = context.Users.Include(x => x.DiscordUserStats).Where(x => x.DiscordUserId == userId).FirstOrDefault();
-
-                if (user == null)
-                {
-                    return 0;
-                }
-
-                return user.DiscordUserStats.DiscordXp;
-            }
-        }
-
-        private static long GetUserLevel(ulong userId)
-        {
-            using (var context = new DatabaseContext())
-            {
-                var user = context.Users.Include(x => x.DiscordUserStats).Where(x => x.DiscordUserId == userId).FirstOrDefault();
-
-                if (user == null)
-                {
-                    return 0;
-                }
-
-                return user.DiscordUserStats.DiscordLevel;
-            }
         }
     }
 }

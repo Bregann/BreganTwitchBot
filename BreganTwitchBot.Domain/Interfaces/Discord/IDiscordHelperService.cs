@@ -14,7 +14,7 @@ namespace BreganTwitchBot.Domain.Interfaces.Discord
         Task SendEmbedMessage(ulong channelId, EmbedBuilder embed);
         bool IsUserMod(ulong serverId, ulong userId);
         string? GetTwitchUsernameFromDiscordUser(ulong userId);
-        Task AddDiscordXpToUser(ulong serverId, ulong userId, long xpToAdd);
+        Task AddDiscordXpToUser(ulong guildId, ulong channelId, ulong userId, long xpToAdd);
         Task AddPointsToUser(ulong serverId, ulong userId, long pointsToAdd);
         Task RemovePointsFromUser(ulong serverId, ulong userId, long pointsToRemove);
     }
