@@ -2,7 +2,9 @@
 using Newtonsoft.Json;
 using RestSharp;
 using Serilog;
+using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Drawing.Processing;
+using SixLabors.ImageSharp.Processing;
 using System.Text;
 using Color = System.Drawing.Color;
 using Image = SixLabors.ImageSharp.Image;
@@ -164,51 +166,5 @@ namespace BreganTwitchBot.Domain.Data.DiscordBot.SlashCommands.Data.GeneralComma
         }
     }
 
-    public class ProfileResponse
-    {
-        [JsonProperty("id")]
-        public required string Id { get; set; }
-
-        [JsonProperty("name")]
-        public required string Name { get; set; }
-
-        [JsonProperty("properties")]
-        public required List<Property> Properties { get; set; }
-    }
-
-    public class Property
-    {
-        [JsonProperty("name")]
-        public required string Name { get; set; }
-
-        [JsonProperty("value")]
-        public required string Value { get; set; }
-    }
-
-    public class DecodedResponse
-    {
-        [JsonProperty("timestamp")]
-        public required long Timestamp { get; set; }
-
-        [JsonProperty("profileId")]
-        public required string ProfileId { get; set; }
-
-        [JsonProperty("profileName")]
-        public required string ProfileName { get; set; }
-
-        [JsonProperty("textures")]
-        public required Textures Textures { get; set; }
-    }
-
-    public class Textures
-    {
-        [JsonProperty("SKIN")]
-        public required Skin Skin { get; set; }
-    }
-
-    public class Skin
-    {
-        [JsonProperty("url")]
-        public required Uri Url { get; set; }
-    }
+   
 }
