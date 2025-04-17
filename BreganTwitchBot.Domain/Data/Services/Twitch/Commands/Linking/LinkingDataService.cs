@@ -7,7 +7,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace BreganTwitchBot.Domain.Data.Services.Twitch.Commands.Linking
 {
-    public class LinkingDataService(AppDbContext context, IDiscordHelperService discordHelperService, IDiscordLinkingData discordLinkingData) : ILinkingDataService
+    public class LinkingDataService(AppDbContext context, IDiscordHelperService discordHelperService, IDiscordRoleManagerService discordRoleManagerService) : ILinkingDataService
     {
         public async Task<string?> HandleLinkCommand(ChannelChatMessageReceivedParams msgParams)
         {
@@ -47,7 +47,7 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch.Commands.Linking
             user.DiscordUserId = linkReq.DiscordUserId;
             await context.SaveChangesAsync();
 
-            await discordLinkingData.AddRolesToUserOnLink(msgParams.ChatterChannelId);
+            await discordRoleManagerService.AddRolesToUserOnLink(msgParams.ChatterChannelId);
             await discordHelperService.AddDiscordUserToDatabaseFromTwitch(msgParams.BroadcasterChannelId, msgParams.ChatterChannelId);
 
             return "Your Twitch and Discord have been linked!";

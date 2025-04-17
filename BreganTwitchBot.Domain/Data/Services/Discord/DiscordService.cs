@@ -5,6 +5,7 @@ using BreganTwitchBot.Domain.Interfaces.Helpers;
 using Discord;
 using Discord.Interactions;
 using Discord.WebSocket;
+using Microsoft.Extensions.DependencyInjection;
 using Serilog;
 using System;
 using System.Collections.Generic;
@@ -16,24 +17,22 @@ using System.Threading.Tasks;
 
 namespace BreganTwitchBot.Domain.Data.Services.Discord
 {
-    public class DiscordService : IDiscordService
+    public class DiscordService : IDiscordService, IDiscordClientProvider
     {
-        private readonly DiscordSocketClient _client;
+        public DiscordSocketClient Client { get; }
+
         private readonly IEnvironmentalSettingHelper _environmentalSettingHelper;
         private readonly InteractionService _interactionService;
         private readonly IServiceProvider _services;
-        private readonly IDiscordEventHelperService _discordEventHelperService;
         private readonly IDiscordUserLookupService _discordUserLookupService;
         private readonly IConfigHelperService _configHelperService;
 
-        public DiscordSocketClient Client => _client;
-
-        public DiscordService(IEnvironmentalSettingHelper environmentalSettingHelper, IServiceProvider serviceProvider, IDiscordEventHelperService discordEventHelperService, IDiscordUserLookupService discordUserLookupService, IConfigHelperService configHelperService)
+        public DiscordService(IEnvironmentalSettingHelper environmentalSettingHelper, IServiceProvider serviceProvider, IDiscordUserLookupService discordUserLookupService, IConfigHelperService configHelperService)
         {
             _environmentalSettingHelper = environmentalSettingHelper;
             _services = serviceProvider;
 
-            _client = new DiscordSocketClient(new DiscordSocketConfig
+            Client = new DiscordSocketClient(new DiscordSocketConfig
             {
                 GatewayIntents = GatewayIntents.All,
                 MessageCacheSize = 2000,
@@ -42,8 +41,7 @@ namespace BreganTwitchBot.Domain.Data.Services.Discord
                 DefaultRetryMode = RetryMode.AlwaysRetry
             });
 
-            _interactionService = new InteractionService(_client.Rest);
-            _discordEventHelperService = discordEventHelperService;
+            _interactionService = new InteractionService(Client.Rest);
             _discordUserLookupService = discordUserLookupService;
             _configHelperService = configHelperService;
         }
@@ -58,23 +56,23 @@ namespace BreganTwitchBot.Domain.Data.Services.Discord
             }
 
             // Hook the handler BEFORE starting
-            _client.Ready += Ready;
-            _client.InteractionCreated += InteractionCreated;
-            _client.Disconnected += Disconnected;
-            _client.GuildMembersDownloaded += GuildMembersDownloaded;
-            _client.Log += LogData;
-            _client.UserVoiceStateUpdated += UserVoiceStateUpdated;
-            _client.UserLeft += UserLeft;
-            _client.UserJoined += UserJoined;
-            _client.MessageUpdated += MessageUpdated;
-            _client.MessageReceived += MessageReceived;
-            _client.UserIsTyping += UserIsTyping;
-            _client.MessageDeleted += MessageDeleted;
-            _client.ButtonExecuted += ButtonExecuted;
-            _client.PresenceUpdated += PresenceUpdated;
+            Client.Ready += Ready;
+            Client.InteractionCreated += InteractionCreated;
+            Client.Disconnected += Disconnected;
+            Client.GuildMembersDownloaded += GuildMembersDownloaded;
+            Client.Log += LogData;
+            Client.UserVoiceStateUpdated += UserVoiceStateUpdated;
+            Client.UserLeft += UserLeft;
+            Client.UserJoined += UserJoined;
+            Client.MessageUpdated += MessageUpdated;
+            Client.MessageReceived += MessageReceived;
+            Client.UserIsTyping += UserIsTyping;
+            Client.MessageDeleted += MessageDeleted;
+            Client.ButtonExecuted += ButtonExecuted;
+            Client.PresenceUpdated += PresenceUpdated;
 
-            await _client.LoginAsync(TokenType.Bot, token);
-            await _client.StartAsync();
+            await Client.LoginAsync(TokenType.Bot, token);
+            await Client.StartAsync();
 
             await _interactionService.AddModulesAsync(Assembly.GetEntryAssembly(), _services);
 
@@ -109,22 +107,27 @@ namespace BreganTwitchBot.Domain.Data.Services.Discord
             Log.Information($"[Discord Button Pressed] Sender: {arg.User.Username} \n Button: {arg.Data.CustomId} \n Channel: {arg.Channel.Name} \n ChannelId: {arg.Channel.Id}");
             await arg.DeferAsync();
             
-            var res = await _discordEventHelperService.HandleButtonPressEvent(new ButtonPressedEvent
+            using(var scope = _services.CreateScope())
             {
-                GuildId = arg.GuildId ?? 0,
-                UserId = arg.User.Id,
-                Username = arg.User.Username,
-                CustomId = arg.Data.CustomId
-            });
+                var discordEventHelperService = scope.ServiceProvider.GetRequiredService<IDiscordEventHelperService>();
 
-            await arg.FollowupAsync(res.MessageToSend, ephemeral: res.Ephemeral);
+                var res = await discordEventHelperService.HandleButtonPressEvent(new ButtonPressedEvent
+                {
+                    GuildId = arg.GuildId ?? 0,
+                    UserId = arg.User.Id,
+                    Username = arg.User.Username,
+                    CustomId = arg.Data.CustomId
+                });
+
+                await arg.FollowupAsync(res.MessageToSend, ephemeral: res.Ephemeral);
+            }
         }
 
         private async Task MessageDeleted(Cacheable<IMessage, ulong> oldMessage, Cacheable<IMessageChannel, ulong> channel)
         {
             await oldMessage.DownloadAsync();
 
-            if (oldMessage.Value.Content == null || oldMessage.Value.Author.Id == _client.CurrentUser.Id)
+            if (oldMessage.Value.Content == null || oldMessage.Value.Author.Id == Client.CurrentUser.Id)
             {
                 return;
             }
@@ -134,18 +137,22 @@ namespace BreganTwitchBot.Domain.Data.Services.Discord
                 return;
             }
 
-            var messageDeleted = new MessageDeletedEvent
+            using (var scope = _services.CreateScope())
             {
-                GuildId = channel.Id,
-                UserId = oldMessage.Value.Author.Id,
-                Username = oldMessage.Value.Author.Username,
-                MessageId = oldMessage.Value.Id,
-                ChannelId = channel.Id,
-                ChannelName = channel.Value.Name,
-                MessageContent = oldMessage.Value.Content
-            };
+                var messageDeleted = new MessageDeletedEvent
+                {
+                    GuildId = channel.Id,
+                    UserId = oldMessage.Value.Author.Id,
+                    Username = oldMessage.Value.Author.Username,
+                    MessageId = oldMessage.Value.Id,
+                    ChannelId = channel.Id,
+                    ChannelName = channel.Value.Name,
+                    MessageContent = oldMessage.Value.Content
+                };
 
-            await _discordEventHelperService.HandleMessageDeletedEvent(messageDeleted);
+                var discordEventHelperService = scope.ServiceProvider.GetRequiredService<IDiscordEventHelperService>();
+                await discordEventHelperService.HandleMessageDeletedEvent(messageDeleted);
+            }
 
             Log.Information($"[Discord Message Deleted] Sender: {oldMessage.Value.Author.Username} \n Message: {oldMessage.Value.Content} \n Channel: {channel.Value.Name} \n ChannelId: {channel.Id}");
         }
@@ -160,19 +167,24 @@ namespace BreganTwitchBot.Domain.Data.Services.Discord
         {
             Log.Information($"[Discord Message] Sender: {arg.Author.Username} \n Message: {arg.Content} \n Channel: {arg.Channel.Name} \n ChannelId: {arg.Channel.Id} \n");
             
-            var messageReceived = new MessageReceivedEvent
+            using(var scope = _services.CreateScope())
             {
-                GuildId = arg.Channel.Id,
-                UserId = arg.Author.Id,
-                Username = arg.Author.Username,
-                ChannelId = arg.Channel.Id,
-                ChannelName = arg.Channel.Name,
-                MessageContent = arg.Content,
-                HasAttachments = arg.Attachments.Count > 0,
-                MessageId = arg.Id
-            };
+                var discordEventHelperService = scope.ServiceProvider.GetRequiredService<IDiscordEventHelperService>();
 
-            await _discordEventHelperService.HandleMessageReceivedEvent(messageReceived);
+                var messageReceived = new MessageReceivedEvent
+                {
+                    GuildId = arg.Channel.Id,
+                    UserId = arg.Author.Id,
+                    Username = arg.Author.Username,
+                    ChannelId = arg.Channel.Id,
+                    ChannelName = arg.Channel.Name,
+                    MessageContent = arg.Content,
+                    HasAttachments = arg.Attachments.Count > 0,
+                    MessageId = arg.Id
+                };
+
+                await discordEventHelperService.HandleMessageReceivedEvent(messageReceived);
+            }
         }
 
         private async Task MessageUpdated(Cacheable<IMessage, ulong> oldMessage, SocketMessage newMessage, ISocketMessageChannel channel)
@@ -194,27 +206,39 @@ namespace BreganTwitchBot.Domain.Data.Services.Discord
 
         private async Task UserJoined(SocketGuildUser arg)
         {
-            var userJoined = new EventBase
+            using(var scope = _services.CreateScope())
             {
-                GuildId = arg.Guild.Id,
-                UserId = arg.Id,
-                Username = arg.Username
-            };
+                var discordEventHelperService = scope.ServiceProvider.GetRequiredService<IDiscordEventHelperService>();
 
-            await _discordEventHelperService.HandleUserJoinedEvent(userJoined);
+                var userJoined = new EventBase
+                {
+                    GuildId = arg.Guild.Id,
+                    UserId = arg.Id,
+                    Username = arg.Username
+                };
+
+                await discordEventHelperService.HandleUserJoinedEvent(userJoined);
+            }
+
             Log.Information($"[Discord User Joined] {arg.Username} joined the server {arg.Guild.Name}");
         }
 
         private async Task UserLeft(SocketGuild arg1, SocketUser arg2)
         {
-            var userLeft = new EventBase
+            using(var scope = _services.CreateScope())
             {
-                GuildId = arg1.Id,
-                UserId = arg2.Id,
-                Username = arg2.Username
-            };
+                var discordEventHelperService = scope.ServiceProvider.GetRequiredService<IDiscordEventHelperService>();
 
-            await _discordEventHelperService.HandleUserLeftEvent(userLeft);
+                var userLeft = new EventBase
+                {
+                    GuildId = arg1.Id,
+                    UserId = arg2.Id,
+                    Username = arg2.Username
+                };
+
+                await discordEventHelperService.HandleUserLeftEvent(userLeft);
+            }
+
             Log.Information($"[Discord User Left] {arg2.Username} left the server {arg1.Name}");
         }
 
@@ -293,7 +317,7 @@ namespace BreganTwitchBot.Domain.Data.Services.Discord
             // process it if it does match as we don't want to force the user to use the commands channel
             if (interaction.Channel.Id != 713365310408884236 && command.CommandName == "socks")
             {
-                var contextSocks = new SocketInteractionContext(_client, interaction);
+                var contextSocks = new SocketInteractionContext(Client, interaction);
                 await _interactionService.ExecuteCommandAsync(contextSocks, _services);
                 return;
             }
@@ -303,15 +327,15 @@ namespace BreganTwitchBot.Domain.Data.Services.Discord
                 await interaction.RespondAsync($"Please use the bot commands channel! The command channel is <#{config.DiscordUserCommandsChannelId}>", ephemeral: true);
             }
 
-            var ctx = new SocketInteractionContext(_client, interaction);
+            var ctx = new SocketInteractionContext(Client, interaction);
             await _interactionService.ExecuteCommandAsync(ctx, _services);
         }
 
         private async Task Ready()
         {
 
-            await _client.SetGameAsync("many users", type: ActivityType.Watching);
-            await _client.DownloadUsersAsync(_client.Guilds);
+            await Client.SetGameAsync("many users", type: ActivityType.Watching);
+            await Client.DownloadUsersAsync(Client.Guilds);
 
 #if DEBUG
             await _interactionService.RegisterCommandsToGuildAsync(196696160486948864, true);
@@ -322,8 +346,8 @@ namespace BreganTwitchBot.Domain.Data.Services.Discord
 
         public async Task StopAsync()
         {
-            await _client.LogoutAsync();
-            await _client.StopAsync();
+            await Client.LogoutAsync();
+            await Client.StopAsync();
         }
     }
 }

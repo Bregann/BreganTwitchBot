@@ -15,7 +15,7 @@ using SixLabors.ImageSharp.Drawing.Processing;
 
 namespace BreganTwitchBot.Domain.Data.Services.Discord.SlashCommands.BlocksSocks
 {
-    public class BlocksSocksModule(IDiscordService discordClient) : InteractionModuleBase<SocketInteractionContext>
+    public class BlocksSocksModule(IDiscordClientProvider discordClient) : InteractionModuleBase<SocketInteractionContext>
     {
         // haven't bothered with DI for this as it's a pretty stupid command and only supporting it because legacy
         // I also just copied this from the old bot as I have no idea how it works lol

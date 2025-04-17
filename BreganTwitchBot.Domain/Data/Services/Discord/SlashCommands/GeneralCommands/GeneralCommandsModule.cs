@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 
 namespace BreganTwitchBot.Domain.Data.Services.Discord.SlashCommands.GeneralCommands
 {
-    public class GeneralCommandModule(IDiscordService discordService, IGeneralCommandsData generalCommandsData) : InteractionModuleBase<SocketInteractionContext>
+    public class GeneralCommandModule(IDiscordClientProvider discordClient, IGeneralCommandsData generalCommandsData) : InteractionModuleBase<SocketInteractionContext>
     {
         // for the most part all the logic is in their own commands and not in the seperate DI service as it's mostly Discord edting stuff
         [SlashCommand("botuptime", "See how long the bot is up for")]
@@ -49,7 +49,7 @@ namespace BreganTwitchBot.Domain.Data.Services.Discord.SlashCommands.GeneralComm
                 await RespondAsync("You silly pumpkin it's not October!");
             }
 
-            var guild = discordService.Client.GetGuild(Context.Guild.Id);
+            var guild = discordClient.Client.GetGuild(Context.Guild.Id);
             var user = guild.GetUser(Context.User.Id);
 
             string nickNameToSet = "";
@@ -75,7 +75,7 @@ namespace BreganTwitchBot.Domain.Data.Services.Discord.SlashCommands.GeneralComm
                 await RespondAsync("You silly firework it's not November!");
             }
 
-            var guild = discordService.Client.GetGuild(Context.Guild.Id);
+            var guild = discordClient.Client.GetGuild(Context.Guild.Id);
             var user = guild.GetUser(Context.User.Id);
             string nickNameToSet = "";
 
@@ -95,7 +95,7 @@ namespace BreganTwitchBot.Domain.Data.Services.Discord.SlashCommands.GeneralComm
         [SlashCommand("unspook", "remove your spooky name")]
         public async Task UnspookName()
         {
-            var guild = discordService.Client.GetGuild(Context.Guild.Id);
+            var guild = discordClient.Client.GetGuild(Context.Guild.Id);
             var user = guild.GetUser(Context.User.Id);
             string nickNameToSet = "";
 
@@ -111,7 +111,7 @@ namespace BreganTwitchBot.Domain.Data.Services.Discord.SlashCommands.GeneralComm
         [SlashCommand("unfirework", "remove your fireworks name")]
         public async Task UnfireworkName()
         {
-            var guild = discordService.Client.GetGuild(Context.Guild.Id);
+            var guild = discordClient.Client.GetGuild(Context.Guild.Id);
             var user = guild.GetUser(Context.User.Id);
             string nickNameToSet = "";
 

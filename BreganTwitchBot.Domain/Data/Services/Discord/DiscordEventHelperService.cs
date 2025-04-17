@@ -12,7 +12,7 @@ using TwitchLib.Api.Helix.Models.Moderation.CheckAutoModStatus;
 
 namespace BreganTwitchBot.Domain.Data.Services.Discord
 {
-    public class DiscordEventHelperService (AppDbContext context, IConfigHelperService configHelper, IDiscordHelperService discordHelper, IDiscordLinkingData discordLinkingData, IDiscordUserLookupService discordUserLookupService) : IDiscordEventHelperService
+    public class DiscordEventHelperService (AppDbContext context, IConfigHelperService configHelper, IDiscordHelperService discordHelper, IDiscordRoleManagerService discordRoleManagerService, IDiscordUserLookupService discordUserLookupService) : IDiscordEventHelperService
     {
         public async Task HandleUserJoinedEvent(EventBase userJoined)
         {
@@ -27,7 +27,7 @@ namespace BreganTwitchBot.Domain.Data.Services.Discord
             var twitchUsername = discordUserLookupService.GetTwitchUsernameFromDiscordUser(userJoined.UserId);
 
             await discordHelper.AddDiscordUserToDatabaseOnGuildJoin(userJoined.GuildId, userJoined.UserId);
-            await discordLinkingData.AddRolesToUserOnGuildJoin(userJoined.UserId, userJoined.GuildId);
+            await discordRoleManagerService.AddRolesToUserOnGuildJoin(userJoined.UserId, userJoined.GuildId);
 
             // Check if the event channel ID is set, if so then send the event message
             if (discordConfig.DiscordEventChannelId != null)

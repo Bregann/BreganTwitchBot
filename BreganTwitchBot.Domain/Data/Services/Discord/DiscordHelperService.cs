@@ -24,7 +24,7 @@ namespace BreganTwitchBot.Domain.Data.Services.Discord
             {
                 using(var scope = serviceProvider.CreateScope())
                 {
-                    var discordService = scope.ServiceProvider.GetRequiredService<IDiscordService>();
+                    var discordService = scope.ServiceProvider.GetRequiredService<IDiscordClientProvider>();
                     var channel = discordService.Client.GetChannel(channelId) as IMessageChannel;
 
                     if (channel != null)
@@ -46,7 +46,7 @@ namespace BreganTwitchBot.Domain.Data.Services.Discord
             {
                 using (var scope = serviceProvider.CreateScope())
                 {
-                    var discordService = scope.ServiceProvider.GetRequiredService<IDiscordService>();
+                    var discordService = scope.ServiceProvider.GetRequiredService<IDiscordClientProvider>();
 
                     var channel = discordService.Client.GetChannel(channelId) as IMessageChannel;
 

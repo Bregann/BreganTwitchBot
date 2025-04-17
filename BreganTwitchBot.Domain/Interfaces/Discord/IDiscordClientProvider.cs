@@ -7,9 +7,8 @@ using System.Threading.Tasks;
 
 namespace BreganTwitchBot.Domain.Interfaces.Discord
 {
-    public interface IDiscordService
+    public interface IDiscordClientProvider
     {
-        Task StartAsync();
-        Task StopAsync();
+        DiscordSocketClient Client { get; }
     }
 }

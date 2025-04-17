@@ -17,7 +17,7 @@ namespace BreganTwitchBot.DomainTests.Twitch.Commands
         private AppDbContext _dbContext;
         private LinkingDataService _linkingDataService;
         private Mock<IDiscordHelperService> _discordHelperServiceMock;
-        private Mock<IDiscordLinkingData> _discordLinkingDataMock;
+        private Mock<IDiscordRoleManagerService> _discordRoleManagerService;
 
         [OneTimeSetUp]
         public async Task OneTimeSetup()
@@ -50,9 +50,9 @@ namespace BreganTwitchBot.DomainTests.Twitch.Commands
 
             // Mock the DiscordHelperService
             _discordHelperServiceMock = new Mock<IDiscordHelperService>();
-            _discordLinkingDataMock = new Mock<IDiscordLinkingData>();
+            _discordRoleManagerService = new Mock<IDiscordRoleManagerService>();
 
-            _linkingDataService = new LinkingDataService(_dbContext, _discordHelperServiceMock.Object, _discordLinkingDataMock.Object);
+            _linkingDataService = new LinkingDataService(_dbContext, _discordHelperServiceMock.Object, _discordRoleManagerService.Object);
         }
 
         [TearDown]

@@ -3,6 +3,7 @@ using BreganTwitchBot.Domain.Data.Database.Models;
 using BreganTwitchBot.Domain.DTOs.Twitch.EventSubEvents;
 using BreganTwitchBot.Domain.Enums;
 using BreganTwitchBot.Domain.Exceptions;
+using BreganTwitchBot.Domain.Interfaces.Discord;
 using BreganTwitchBot.Domain.Interfaces.Discord.Commands;
 using BreganTwitchBot.Domain.Interfaces.Twitch;
 using BreganTwitchBot.Domain.Interfaces.Twitch.Commands;
@@ -17,7 +18,7 @@ using System.Threading.Tasks;
 
 namespace BreganTwitchBot.Domain.Data.Services.Twitch.Commands.Hours
 {
-    public class HoursDataService(AppDbContext context, ITwitchApiInteractionService twitchApiInteractionService, ITwitchApiConnection twitchApiConnection, ITwitchHelperService twitchHelperService, IDiscordLinkingData discordLinkingData) : IHoursDataService
+    public class HoursDataService(AppDbContext context, ITwitchApiInteractionService twitchApiInteractionService, ITwitchApiConnection twitchApiConnection, ITwitchHelperService twitchHelperService, IDiscordRoleManagerService discordRoleManagerService) : IHoursDataService
     {
         public async Task UpdateWatchtimeForChannel(string broadcasterId)
         {
@@ -104,7 +105,7 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch.Commands.Hours
                                 }
                                 else
                                 {
-                                    await discordLinkingData.ApplyRoleOnDiscordWatchtimeRankup(dbUser.TwitchUserId, broadcasterId);
+                                    await discordRoleManagerService.ApplyRoleOnDiscordWatchtimeRankup(dbUser.TwitchUserId, broadcasterId);
                                     await twitchHelperService.SendTwitchMessageToChannel(broadcasterId, channel.BroadcasterTwitchChannelName, $"Congrats you earned {rankEarned.RankName} rank by watching {rankEarned.RankMinutesRequired} minutes in the stream! Your rank has been applied in the Discord");
                                 }
 
