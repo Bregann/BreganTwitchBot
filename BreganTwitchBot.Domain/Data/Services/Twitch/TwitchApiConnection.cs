@@ -15,7 +15,7 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch
                 ?response_type=code
                 &client_id=
                 &redirect_uri=http://localhost
-                scope=clips:edit+user:write:chat+channel:moderate+moderation:read+moderator:manage:banned_users+moderator:read:blocked_terms+moderator:manage:blocked_terms+moderator:read:chat_settings+moderator:manage:chat_settings+moderator:manage:announcements+moderator:manage:chat_messages+moderator:read:chatters+user:read:chat+user:read:emotes
+                &scope=clips:edit+user:write:chat+channel:moderate+moderation:read+moderator:manage:banned_users+moderator:read:blocked_terms+moderator:manage:blocked_terms+moderator:read:chat_settings+moderator:manage:chat_settings+moderator:manage:announcements+moderator:manage:chat_messages+moderator:read:chatters+user:read:chat+user:read:emotes
     */
 
     /* for the broadcaster
@@ -26,7 +26,7 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch
                 &scope=bits:read+channel:moderate+moderator:read:chatters+channel:read:subscriptions+moderation:read+channel:read:redemptions+channel:read:hype_train+channel:manage:broadcast+channel:manage:redemptions+channel:manage:polls+channel:manage:predictions+channel:manage:raids+channel:read:vips+moderator:manage:shoutouts+moderator:read:followers+moderator:manage:unban_requests
  */
 
-    public class TwitchApiConnection(IServiceProvider serviceProvider) : ITwitchApiConnection
+    public class TwitchApiConnection(IServiceProvider serviceProvider, IEnvironmentalSettingHelper environmentalSettingHelper) : ITwitchApiConnection
     {
         private readonly ConcurrentDictionary<string, TwitchAccount> ApiClients = new();
 
@@ -45,7 +45,7 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch
             try
             {
                 var apiClient = new TwitchAPI();
-                apiClient.Settings.ClientId = "gp762nuuoqcoxypju8c569th9wz7q5"; // TODO: move to environmental settings, hardcoded from twitchtokengenerator atm lol
+                apiClient.Settings.ClientId = environmentalSettingHelper.TryGetEnviromentalSettingValue(EnvironmentalSettingEnum.TwitchAPIClientID); // TODO: move to environmental settings, hardcoded from twitchtokengenerator atm lol
                 apiClient.Settings.AccessToken = accessToken;
 
                 ApiClients[channelName.ToLower()] = new TwitchAccount(apiClient, databaseChannelId, twitchChannelClientId, channelName.ToLower(), accessToken, refreshToken, type, broadcasterChannelId, broadcasterChannelName);

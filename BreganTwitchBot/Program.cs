@@ -127,10 +127,11 @@ builder.Services.AddSingleton<ITwitchApiConnection>(provider =>
     using (var scope = provider.CreateScope())
     {
         var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        var envSettingHelper = scope.ServiceProvider.GetRequiredService<IEnvironmentalSettingHelper>();
 
         var channelsToConnectTo = dbContext.Channels.ToArray();
 
-        var connection = new TwitchApiConnection(scope.ServiceProvider);
+        var connection = new TwitchApiConnection(scope.ServiceProvider, envSettingHelper);
 
         foreach (var channel in channelsToConnectTo)
         {
@@ -239,6 +240,9 @@ using (var scope = app.Services.CreateScope())
 
 var environmentalSettingHelper = app.Services.GetService<IEnvironmentalSettingHelper>()!;
 await environmentalSettingHelper.LoadEnvironmentalSettings();
+
+var discordService = app.Services.GetService<IDiscordService>()!;
+await discordService.StartAsync();
 
 // Configure the HTTP request pipeline.
 app.UseSwagger();

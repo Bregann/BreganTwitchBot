@@ -312,6 +312,8 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch
             {
                 await wordBlacklistMonitorService.CheckMessageForBlacklistedWords(msgParams.Message, msgParams.ChatterChannelId, msgParams.BroadcasterChannelId);
             }
+
+            Log.Information($"[Twitch Events] Channel chat message: {msgParams.ChatterChannelName} ({msgParams.ChatterChannelId}) in {msgParams.BroadcasterChannelName} ({msgParams.BroadcasterChannelId}) - {msgParams.Message}");
         }
 
         private Task OnErrorOccurred(object sender, ErrorOccuredArgs args)
