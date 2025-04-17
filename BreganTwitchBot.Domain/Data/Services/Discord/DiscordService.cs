@@ -68,7 +68,7 @@ namespace BreganTwitchBot.Domain.Data.Services.Discord
             await Client.LoginAsync(TokenType.Bot, token);
             await Client.StartAsync();
 
-            await _interactionService.AddModulesAsync(Assembly.GetEntryAssembly(), _services);
+            await _interactionService.AddModulesAsync(Assembly.GetExecutingAssembly(), _services);
 
             Log.Information("Discord Setup");
         }
