@@ -2,6 +2,7 @@
 using BreganTwitchBot.Domain.Enums;
 using BreganTwitchBot.Domain.Interfaces.Helpers;
 using BreganTwitchBot.Domain.Interfaces.Twitch;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Serilog;
 using System.Collections.Concurrent;
@@ -29,6 +30,26 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch
     public class TwitchApiConnection(IServiceProvider serviceProvider, IEnvironmentalSettingHelper environmentalSettingHelper) : ITwitchApiConnection
     {
         private readonly ConcurrentDictionary<string, TwitchAccount> ApiClients = new();
+
+        public async Task InitialiseConnectionsAsync()
+        {
+            using var scope = serviceProvider.CreateScope();
+            {
+                var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+                var channelsToConnectTo = await dbContext.Channels.ToArrayAsync();
+
+                foreach (var channel in channelsToConnectTo)
+                {
+                    Connect(channel.BroadcasterTwitchChannelName, channel.Id, channel.BroadcasterTwitchChannelId,
+                        channel.BroadcasterTwitchChannelOAuthToken, channel.BroadcasterTwitchChannelRefreshToken,
+                        AccountType.Broadcaster, channel.BroadcasterTwitchChannelId, channel.BroadcasterTwitchChannelName);
+
+                    Connect(channel.BotTwitchChannelName, channel.Id, channel.BotTwitchChannelId,
+                        channel.BotTwitchChannelOAuthToken, channel.BotTwitchChannelRefreshToken,
+                        AccountType.Bot, channel.BroadcasterTwitchChannelId, channel.BroadcasterTwitchChannelName);
+                }
+            }
+        }
 
         /// <summary>
         /// Connects to the Twitch API using the provided credentials

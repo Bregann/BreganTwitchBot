@@ -122,25 +122,7 @@ builder.Services.AddHangfire(configuration => configuration
 #endif
 
 // The twitch service
-builder.Services.AddSingleton<ITwitchApiConnection>(provider =>
-{
-    using (var scope = provider.CreateScope())
-    {
-        var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-        var envSettingHelper = scope.ServiceProvider.GetRequiredService<IEnvironmentalSettingHelper>();
-
-        var channelsToConnectTo = dbContext.Channels.ToArray();
-
-        var connection = new TwitchApiConnection(scope.ServiceProvider, envSettingHelper);
-
-        foreach (var channel in channelsToConnectTo)
-        {
-            connection.Connect(channel.BroadcasterTwitchChannelName, channel.Id, channel.BroadcasterTwitchChannelId, channel.BroadcasterTwitchChannelOAuthToken, channel.BroadcasterTwitchChannelRefreshToken, AccountType.Broadcaster, channel.BroadcasterTwitchChannelId, channel.BroadcasterTwitchChannelName);
-            connection.Connect(channel.BotTwitchChannelName, channel.Id, channel.BotTwitchChannelId, channel.BotTwitchChannelOAuthToken, channel.BotTwitchChannelRefreshToken, AccountType.Bot, channel.BroadcasterTwitchChannelId, channel.BroadcasterTwitchChannelName);
-        }
-        return connection;
-    }
-});
+builder.Services.AddSingleton<ITwitchApiConnection, TwitchApiConnection>();
 
 // Helper bits
 builder.Services.AddSingleton<IConfigHelperService, ConfigHelperService>();
@@ -240,6 +222,10 @@ using (var scope = app.Services.CreateScope())
 
 var environmentalSettingHelper = app.Services.GetService<IEnvironmentalSettingHelper>()!;
 await environmentalSettingHelper.LoadEnvironmentalSettings();
+
+// start everything
+var twitchApi = app.Services.GetRequiredService<ITwitchApiConnection>();
+await twitchApi.InitialiseConnectionsAsync();
 
 var discordService = app.Services.GetService<IDiscordService>()!;
 await discordService.StartAsync();
