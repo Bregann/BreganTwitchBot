@@ -291,7 +291,7 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch
 
                 // check if they are in user stats for the specifc broadcaster
                 // if they are then dont process them
-                if (context.ChannelUserStats.Any(x => x.ChannelId == broadcasterChannel.Id))
+                if (context.ChannelUserStats.Any(x => x.ChannelId == broadcasterChannel.Id && x.ChannelUserId == user.Id))
                 {
                     user.TwitchUsername = userChannelName.ToLower().Trim();
                     user.LastSeen = DateTime.UtcNow;
