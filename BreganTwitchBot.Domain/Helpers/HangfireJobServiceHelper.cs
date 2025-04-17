@@ -1,5 +1,6 @@
 ﻿using BreganTwitchBot.Domain.Data.Database.Context;
 using BreganTwitchBot.Domain.Data.Services.Twitch;
+using BreganTwitchBot.Domain.Interfaces.Discord.Commands;
 using BreganTwitchBot.Domain.Interfaces.Twitch;
 using BreganTwitchBot.Domain.Interfaces.Twitch.Commands;
 using Hangfire;
@@ -7,7 +8,7 @@ using Serilog;
 
 namespace BreganTwitchBot.Domain.Helpers
 {
-    public class HangfireJobServiceHelper(ITwitchApiConnection twitchApiConnection, ITwitchHelperService twitchHelperService, IHoursDataService hoursDataService, IWordBlacklistMonitorService wordBlacklistMonitorService, IDailyPointsDataService dailyPointsDataService)
+    public class HangfireJobServiceHelper(ITwitchApiConnection twitchApiConnection, ITwitchHelperService twitchHelperService, IHoursDataService hoursDataService, IWordBlacklistMonitorService wordBlacklistMonitorService, IDailyPointsDataService dailyPointsDataService, IGeneralCommandsData generalCommandsData)
     {
         public void SetupHangfireJobs()
         {
@@ -18,6 +19,7 @@ namespace BreganTwitchBot.Domain.Helpers
             RecurringJob.AddOrUpdate("DailyPointsReminder", () => AnnouncePointsReminderMessage(), "20 * * * *");
             RecurringJob.AddOrUpdate("ResetTwitchStreaks", () => ResetTwitchStreaks(), "0 2 * * *");
             RecurringJob.AddOrUpdate("RefreshApi", () => RefreshApi(), "45 * * * *");
+            RecurringJob.AddOrUpdate("CheckBirthdays", () => CheckBirthdays(), "0 6 * * *");
 
             Log.Information("[Job Scheduler] Job Scheduler Setup");
         }
@@ -152,6 +154,11 @@ namespace BreganTwitchBot.Domain.Helpers
         public async Task RefreshApi()
         {
             await twitchApiConnection.RefreshAllApiKeys();
+        }
+
+        public async Task CheckBirthdays()
+        {
+            await generalCommandsData.CheckForUserBirthdaysAndSendMessage();
         }
     }
 }

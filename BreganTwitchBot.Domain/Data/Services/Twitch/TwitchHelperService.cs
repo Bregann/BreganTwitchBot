@@ -127,7 +127,6 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch
         /// <param name="broadcasterChannelName"></param>
         /// <returns></returns>
         /// <exception cref="UnauthorizedAccessException"></exception>
-
         public async Task EnsureUserHasModeratorPermissions(bool isMod, bool isBroadcaster, string viewerUsername, string viewerChannelId, string broadcasterChannelId, string broadcasterChannelName)
         {
             var isSuperMod = await IsUserSuperModInChannel(broadcasterChannelId, viewerChannelId);

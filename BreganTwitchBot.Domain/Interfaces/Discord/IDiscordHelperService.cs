@@ -1,5 +1,5 @@
-﻿using BreganTwitchBot.Domain.DTOs.Discord.Events;
-using Discord;
+﻿using Discord;
+using Discord.WebSocket;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,12 +10,12 @@ namespace BreganTwitchBot.Domain.Interfaces.Discord
 {
     public interface IDiscordHelperService
     {
-        Task SendMessage(ulong channelId, string message);
-        Task SendEmbedMessage(ulong channelId, EmbedBuilder embed);
-        bool IsUserMod(ulong serverId, ulong userId);
-        string? GetTwitchUsernameFromDiscordUser(ulong userId);
-        Task AddDiscordXpToUser(ulong guildId, ulong channelId, ulong userId, long xpToAdd);
+        Task AddDiscordUserToDatabaseFromTwitch(string broadcasterId, string twitchUserId);
+        Task AddDiscordXpToUser(ulong guildId, ulong channelId, ulong userId, long baseXpToAdd);
         Task AddPointsToUser(ulong serverId, ulong userId, long pointsToAdd);
         Task RemovePointsFromUser(ulong serverId, ulong userId, long pointsToRemove);
+        Task SendEmbedMessage(ulong channelId, EmbedBuilder embed);
+        Task SendMessage(ulong channelId, string message);
+        Task AddDiscordUserToDatabaseOnGuildJoin(ulong guildId, ulong userId);
     }
 }

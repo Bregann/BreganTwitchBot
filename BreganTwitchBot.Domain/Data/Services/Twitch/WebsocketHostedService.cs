@@ -1,10 +1,12 @@
 ﻿using BreganTwitchBot.Domain.Data.Services.Twitch.Commands;
 using BreganTwitchBot.Domain.DTOs.Twitch.EventSubEvents;
 using BreganTwitchBot.Domain.Enums;
+using BreganTwitchBot.Domain.Interfaces.Discord;
 using BreganTwitchBot.Domain.Interfaces.Helpers;
 using BreganTwitchBot.Domain.Interfaces.Twitch;
 using BreganTwitchBot.Domain.Interfaces.Twitch.Commands;
 using BreganTwitchBot.Domain.Interfaces.Twitch.Events;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Serilog;
 using TwitchLib.Api.Core.Enums;
@@ -21,7 +23,8 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch
         ITwitchEventHandlerService twitchEventHandlerService,
         IConfigHelperService configHelperService,
         IWordBlacklistMonitorService wordBlacklistMonitorService,
-        IDailyPointsDataService dailyPointsDataService
+        IServiceProvider serviceProvider,
+        IDiscordHelperService discordHelperService
     ) : IHostedService
     {
         private readonly Dictionary<string, EventSubWebsocketClient> _userConnections = [];
@@ -118,7 +121,23 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch
             Log.Information($"[Twitch Events] Stream online: {args.Notification.Payload.Event.BroadcasterUserName} ({args.Notification.Payload.Event.BroadcasterUserId})");
 
             await configHelperService.UpdateStreamLiveStatus(args.Notification.Payload.Event.BroadcasterUserId, true);
-            await dailyPointsDataService.AllowDailyPointsCollecting(args.Notification.Payload.Event.BroadcasterUserId);
+            var discordEnabled = configHelperService.IsDiscordEnabled(args.Notification.Payload.Event.BroadcasterUserId);
+
+            if (discordEnabled)
+            {
+                var discordConfig = configHelperService.GetDiscordConfig(args.Notification.Payload.Event.BroadcasterUserId);
+                if (discordConfig != null && discordConfig.DiscordStreamAnnouncementChannelId != null)
+                {
+                    await discordHelperService.SendMessage(discordConfig.DiscordStreamAnnouncementChannelId.Value, $"Hey @everyone !!! {args.Notification.Payload.Event.BroadcasterUserName} is now live!! Woooo! Tune in at https://twitch.tv/{args.Notification.Payload.Event.BroadcasterUserName.ToLower()}");
+                }
+            }
+
+            using (var scope = serviceProvider.CreateScope())
+            {
+                var dailyPointsDataService = scope.ServiceProvider.GetRequiredService<IDailyPointsDataService>();
+
+                await dailyPointsDataService.AllowDailyPointsCollecting(args.Notification.Payload.Event.BroadcasterUserId);
+            }
         }
 
         private async Task OnChannelBan(object sender, ChannelBanArgs args)

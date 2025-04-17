@@ -13,5 +13,7 @@ namespace BreganTwitchBot.Domain.Interfaces.Helpers
         (bool DailyPointsAllowed, DateTime LastStreamDate, DateTime LastDailyPointedAllowedDate, bool StreamHappenedThisWeek) GetDailyPointsStatus(string broadcasterId);
         Task UpdateStreamLiveStatus(string broadcasterId, bool status);
         DiscordConfig? GetDiscordConfig(ulong discordGuildId);
+        DiscordConfig? GetDiscordConfig(string broadcasterId);
+        bool IsDiscordEnabled(string broadcasterId);
     }
 }

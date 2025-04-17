@@ -193,6 +193,7 @@ builder.Services.AddSingleton<IDiscordService, DiscordService>();
 builder.Services.AddSingleton<DiscordSocketClient>();
 builder.Services.AddSingleton<InteractionService>();
 builder.Services.AddSingleton<IDiscordHelperService, DiscordHelperService>();
+builder.Services.AddSingleton<IDiscordUserLookupService, DiscordUserLookupService>();
 builder.Services.AddScoped<IDiscordEventHelperService, DiscordEventHelperService>();
 
 builder.Services.AddScoped<IDiscordDailyPointsData, DiscordDailyPointsData>();

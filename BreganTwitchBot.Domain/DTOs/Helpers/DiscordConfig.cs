@@ -14,8 +14,8 @@ namespace BreganTwitchBot.Domain.DTOs.Helpers
         public ulong? DiscordUserCommandsChannelId { get; set; } = null;
         public ulong? DiscordUserRankUpAnnouncementChannelId { get; set; } = null;
         public ulong? DiscordGiveawayChannelId { get; set; } = null;
-        public ulong? DiscordBanRoleChannelId { get; set; } = null;
         public ulong? DiscordModeratorRoleId { get; set; } = null;
         public ulong? DiscordWelcomeMessageChannelId { get; set; } = null;
+        public ulong? DiscordGeneralChannelId { get; set; } = null;
     }
 }

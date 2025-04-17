@@ -47,7 +47,7 @@ namespace BreganTwitchBot.Domain.Data.Services.Discord.SlashCommands.Gambling
 
             if (command.CommandText.Equals("all", StringComparison.OrdinalIgnoreCase))
             {
-                return await SpinPoints(user.Points, command.UserId, command.GuildId);
+                return await SpinPoints(user.Points, command.UserId, command.ChannelId, command.GuildId);
             }
             else
             {
@@ -165,11 +165,11 @@ namespace BreganTwitchBot.Domain.Data.Services.Discord.SlashCommands.Gambling
                 }
 
                 // do the spin
-                return await SpinPoints(convertedPoints, command.UserId, command.GuildId);
+                return await SpinPoints(convertedPoints, command.UserId, command.ChannelId, command.GuildId);
             }
         }
 
-        private async Task<DiscordEmbedData> SpinPoints(long pointsGambled, ulong discordId, ulong guildId)
+        private async Task<DiscordEmbedData> SpinPoints(long pointsGambled, ulong discordId, ulong discordChannelId, ulong guildId)
         {
             var random = new Random();
             var emoteList = new List<string>();
@@ -301,7 +301,7 @@ namespace BreganTwitchBot.Domain.Data.Services.Discord.SlashCommands.Gambling
                 await discordHelperService.AddPointsToUser(guildId, discordId, pointsWon);
             }
 
-            await discordHelperService.AddDiscordXpToUser(guildId, discordId, discordXpToAdd);
+            await discordHelperService.AddDiscordXpToUser(guildId, discordChannelId, discordId, discordXpToAdd);
 
             return embed;
         }

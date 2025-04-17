@@ -58,7 +58,7 @@ namespace BreganTwitchBot.Domain.Data.Services.Discord.SlashCommands.Daily
 
             await context.SaveChangesAsync();
 
-            await discordHelperService.AddDiscordXpToUser(command.GuildId, command.UserId, 200);
+            await discordHelperService.AddDiscordXpToUser(command.GuildId, command.ChannelId, command.UserId, 200);
             await discordHelperService.AddPointsToUser(command.GuildId, command.UserId, pointsToGive);
 
             return new DiscordEmbedData

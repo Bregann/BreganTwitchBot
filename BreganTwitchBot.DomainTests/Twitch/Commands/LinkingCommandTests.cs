@@ -1,26 +1,23 @@
 ﻿using BreganTwitchBot.Domain.Data.Database.Context;
 using BreganTwitchBot.Domain.Data.Database.Models;
 using BreganTwitchBot.Domain.Data.Services.Twitch.Commands.Linking;
-using BreganTwitchBot.Domain.Data.Services.Twitch.Commands.Points;
-using BreganTwitchBot.Domain.Interfaces.Twitch;
+using BreganTwitchBot.Domain.Interfaces.Discord;
+using BreganTwitchBot.Domain.Interfaces.Discord.Commands;
 using BreganTwitchBot.DomainTests.Helpers;
 using Microsoft.EntityFrameworkCore;
 using Moq;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Testcontainers.PostgreSql;
 
 namespace BreganTwitchBot.DomainTests.Twitch.Commands
 {
     [TestFixture]
-    public class LinkingCommandTests
+    public class LinkingDataServiceTests
     {
         private PostgreSqlContainer _postgresContainer;
         private AppDbContext _dbContext;
         private LinkingDataService _linkingDataService;
+        private Mock<IDiscordHelperService> _discordHelperServiceMock;
+        private Mock<IDiscordLinkingData> _discordLinkingDataMock;
 
         [OneTimeSetUp]
         public async Task OneTimeSetup()
@@ -48,9 +45,14 @@ namespace BreganTwitchBot.DomainTests.Twitch.Commands
             await _dbContext.Database.EnsureDeletedAsync();
             await _dbContext.Database.EnsureCreatedAsync();
 
+            // Seed initial data
             await DatabaseSeedHelper.SeedDatabase(_dbContext);
 
-            _linkingDataService = new LinkingDataService(_dbContext);
+            // Mock the DiscordHelperService
+            _discordHelperServiceMock = new Mock<IDiscordHelperService>();
+            _discordLinkingDataMock = new Mock<IDiscordLinkingData>();
+
+            _linkingDataService = new LinkingDataService(_dbContext, _discordHelperServiceMock.Object, _discordLinkingDataMock.Object);
         }
 
         [TearDown]
@@ -66,50 +68,85 @@ namespace BreganTwitchBot.DomainTests.Twitch.Commands
         }
 
         [Test]
-        public async Task HandleLinkCommand_WhenDiscordIsNotEnabled_ReturnsNull()
+        public async Task HandleLinkCommand_DiscordNotEnabled_ReturnsNull()
         {
-            var msgParams = MessageParamsHelper.CreateChatMessageParams("!link", "123", ["!link"]);
+            var msgParams = MessageParamsHelper.CreateChatMessageParams("!link 12345", "msg1", ["!link", "12345"],
+                broadcasterChannelId: DatabaseSeedHelper.Channel2BroadcasterTwitchChannelId,
+                broadcasterChannelName: DatabaseSeedHelper.Channel2BroadcasterTwitchChannelName);
 
             var result = await _linkingDataService.HandleLinkCommand(msgParams);
+
             Assert.That(result, Is.Null);
+            _discordHelperServiceMock.Verify(x => x.AddDiscordUserToDatabaseFromTwitch(
+                It.IsAny<string>(),
+                It.IsAny<string>()), Times.Never);
         }
 
         [Test]
-        public async Task HandleLinkCommand_WhenNoLinkRequestExists_ReturnsErrorMessage()
+        public async Task HandleLinkCommand_NoLinkCodeProvided_ReturnsNoRequestMessage()
         {
-            _dbContext.Channels.First().DiscordEnabled = true;
-            await _dbContext.SaveChangesAsync();
-
-            var msgParams = MessageParamsHelper.CreateChatMessageParams("!link", "123", ["!link"]);
+            var msgParams = MessageParamsHelper.CreateChatMessageParams("!link", "msg2", ["!link"]);
             var result = await _linkingDataService.HandleLinkCommand(msgParams);
+
             Assert.That(result, Is.EqualTo("You have not requested to link your account yet. Please use /link in the discord server to link your account."));
+            _discordHelperServiceMock.Verify(x => x.AddDiscordUserToDatabaseFromTwitch(
+                It.IsAny<string>(),
+                It.IsAny<string>()), Times.Never);
         }
 
         [Test]
-        public async Task HandleLinkCommand_WhenLinkRequestExists_LinksAccounts()
+        public async Task HandleLinkCommand_InvalidLinkCodeFormat_ReturnsInvalidCodeMessage()
         {
-            _dbContext.Channels.First().DiscordEnabled = true;
-            await _dbContext.SaveChangesAsync();
+            var msgParams = MessageParamsHelper.CreateChatMessageParams("!link abcde", "msg3", ["!link", "abcde"]);
+            var result = await _linkingDataService.HandleLinkCommand(msgParams);
 
-            var linkRequest = new DiscordLinkRequests
-            {
-                ChannelId = 1,
-                TwitchUserId = DatabaseSeedHelper.Channel1User1TwitchUserId,
-                DiscordUserId = 123
-            };
+            Assert.That(result, Is.EqualTo("The link code is not valid. Please double check the code and try again"));
+            _discordHelperServiceMock.Verify(x => x.AddDiscordUserToDatabaseFromTwitch(
+                It.IsAny<string>(),
+                It.IsAny<string>()), Times.Never);
+        }
 
-            _dbContext.DiscordLinkRequests.Add(linkRequest);
-            await _dbContext.SaveChangesAsync();
-
-            var msgParams = MessageParamsHelper.CreateChatMessageParams("!link", "123", ["!link"]);
+        [Test]
+        public async Task HandleLinkCommand_NoLinkRequestFound_ReturnsNoRequestMessage()
+        {
+            var msgParams = MessageParamsHelper.CreateChatMessageParams("!link 12345", "msg4", ["!link", "12345"],
+                chatterChannelId: DatabaseSeedHelper.Channel1User2TwitchUserId,
+                chatterChannelName: DatabaseSeedHelper.Channel1User2TwitchUsername);
 
             var result = await _linkingDataService.HandleLinkCommand(msgParams);
+
+            Assert.That(result, Is.EqualTo("You have not requested to link your account yet. Please use /link in the discord server to link your account."));
+            _discordHelperServiceMock.Verify(x => x.AddDiscordUserToDatabaseFromTwitch(
+                It.IsAny<string>(),
+                It.IsAny<string>()), Times.Never);
+        }
+
+        [Test]
+        public async Task HandleLinkCommand_IncorrectLinkCode_ReturnsInvalidCodeMessage()
+        {
+            var msgParams = MessageParamsHelper.CreateChatMessageParams("!link 99999", "msg5", ["!link", "99999"]); // Use incorrect code
+            var result = await _linkingDataService.HandleLinkCommand(msgParams);
+
+            Assert.That(result, Is.EqualTo("The link code is not valid. Please double check the code and try again"));
+            _discordHelperServiceMock.Verify(x => x.AddDiscordUserToDatabaseFromTwitch(
+                It.IsAny<string>(),
+                It.IsAny<string>()), Times.Never);
+        }
+
+        [Test]
+        public async Task HandleLinkCommand_ValidLinkCode_LinksAccountAndReturnsSuccessMessage()
+        {
+            var expectedDiscordId = 1234567890UL;
+            var msgParams = MessageParamsHelper.CreateChatMessageParams("!link 12345", "msg6", ["!link", "12345"]); // Use correct code
+            var result = await _linkingDataService.HandleLinkCommand(msgParams);
+
             Assert.That(result, Is.EqualTo("Your Twitch and Discord have been linked!"));
 
-            var user = _dbContext.ChannelUsers.First(x => x.TwitchUserId == DatabaseSeedHelper.Channel1User1TwitchUserId);
-            _dbContext.Entry(user).Reload();
-
-            Assert.That(user.DiscordUserId, Is.EqualTo(123));
+            var user = await _dbContext.ChannelUsers.FirstAsync(u => u.TwitchUserId == DatabaseSeedHelper.Channel1User1TwitchUserId);
+            Assert.That(user.DiscordUserId, Is.EqualTo(expectedDiscordId));
+            _discordHelperServiceMock.Verify(x => x.AddDiscordUserToDatabaseFromTwitch(
+                It.IsAny<string>(),
+                It.IsAny<string>()), Times.Once);
         }
     }
 }

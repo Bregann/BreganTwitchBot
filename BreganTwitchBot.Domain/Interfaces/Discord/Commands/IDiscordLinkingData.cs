@@ -12,5 +12,6 @@ namespace BreganTwitchBot.Domain.Interfaces.Discord.Commands
         Task<string> NewLinkRequest(DiscordCommand command);
         Task AddRolesToUserOnLink(string twitchUserId);
         Task AddRolesToUserOnGuildJoin(ulong discordUserId, ulong guildId);
+        Task ApplyRoleOnDiscordWatchtimeRankup(string twitchUserId, string broadcasterChannelId);
     }
 }

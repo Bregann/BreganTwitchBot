@@ -18,6 +18,7 @@ namespace BreganTwitchBot.Domain.Data.Services.Discord.SlashCommands.Levelling
             {
                 UserId = Context.User.Id,
                 GuildId = Context.Guild.Id,
+                ChannelId = Context.Channel.Id
             };
 
             var response = await discordLevellingData.HandleToggleLevelUpCommand(command);

@@ -47,7 +47,7 @@ namespace BreganTwitchBot.DomainTests.Helpers
                 BotTwitchChannelName = Channel1BotTwitchChannelName,
                 BroadcasterTwitchChannelId = Channel1BroadcasterTwitchChannelId,
                 BroadcasterTwitchChannelName = Channel1BroadcasterTwitchChannelName,
-                DiscordEnabled = false,
+                DiscordEnabled = true,
                 DiscordGuildId = DiscordGuildId
             };
 
@@ -482,6 +482,17 @@ namespace BreganTwitchBot.DomainTests.Helpers
                 Word = "seededbannedword",
                 WordType = WordType.PermBanWord
             });
+
+            await context.SaveChangesAsync();
+
+            await context.DiscordLinkRequests.AddAsync(new DiscordLinkRequests
+            {
+                DiscordUserId = 1234567890, // Example Discord User ID
+                TwitchLinkCode = 12345,
+                TwitchUsername = Channel1User1TwitchUsername
+            });
+
+            await context.SaveChangesAsync();
         }
     }
 }

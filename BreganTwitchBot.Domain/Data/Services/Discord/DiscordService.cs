@@ -23,12 +23,12 @@ namespace BreganTwitchBot.Domain.Data.Services.Discord
         private readonly InteractionService _interactionService;
         private readonly IServiceProvider _services;
         private readonly IDiscordEventHelperService _discordEventHelperService;
-        private readonly IDiscordHelperService _discordHelperService;
+        private readonly IDiscordUserLookupService _discordUserLookupService;
         private readonly IConfigHelperService _configHelperService;
 
         public DiscordSocketClient Client => _client;
 
-        public DiscordService(IEnvironmentalSettingHelper environmentalSettingHelper, IServiceProvider serviceProvider, IDiscordEventHelperService discordEventHelperService, IDiscordHelperService discordHelperService, IConfigHelperService configHelperService)
+        public DiscordService(IEnvironmentalSettingHelper environmentalSettingHelper, IServiceProvider serviceProvider, IDiscordEventHelperService discordEventHelperService, IDiscordUserLookupService discordUserLookupService, IConfigHelperService configHelperService)
         {
             _environmentalSettingHelper = environmentalSettingHelper;
             _services = serviceProvider;
@@ -44,7 +44,7 @@ namespace BreganTwitchBot.Domain.Data.Services.Discord
 
             _interactionService = new InteractionService(_client.Rest);
             _discordEventHelperService = discordEventHelperService;
-            _discordHelperService = discordHelperService;
+            _discordUserLookupService = discordUserLookupService;
             _configHelperService = configHelperService;
         }
 
@@ -269,11 +269,13 @@ namespace BreganTwitchBot.Domain.Data.Services.Discord
             {
                 return;
             }
+            
+            var user = Client.GetGuild(interaction.GuildId ?? 0).GetUser(command.User.Id);
 
-            var isMod = _discordHelperService.IsUserMod(command.User.Id, command.GuildId ?? 0);
+            var isMod = _discordUserLookupService.IsUserMod(command.User.Id, user);
 
             // check if they are linked by getting twitch username from their id
-            var twitchUsername = _discordHelperService.GetTwitchUsernameFromDiscordUser(command.User.Id);
+            var twitchUsername = _discordUserLookupService.GetTwitchUsernameFromDiscordUser(command.User.Id);
 
             if (twitchUsername == null && command.CommandName != "link")
             {

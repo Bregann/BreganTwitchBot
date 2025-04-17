@@ -20,7 +20,8 @@ namespace BreganTwitchBot.Domain.Data.Services.Discord.SlashCommands.Daily
             var command = new DiscordCommand
             {
                 GuildId = Context.Guild.Id,
-                UserId = Context.User.Id
+                UserId = Context.User.Id,
+                ChannelId = Context.Channel.Id,
             };
 
             var embedData = await discordDailyPointsData.HandleDiscordDailyPointsCommand(command);

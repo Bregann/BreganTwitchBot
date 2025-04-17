@@ -131,6 +131,7 @@ namespace BreganTwitchBot.Domain.Data.Services.Discord.SlashCommands.GeneralComm
             {
                 UserId = Context.User.Id,
                 GuildId = Context.Guild.Id,
+                ChannelId = Context.Channel.Id,
                 Day = day,
                 Month = month
             };

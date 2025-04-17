@@ -80,9 +80,9 @@ namespace BreganTwitchBot.Domain.Data.Database.Models
         public ulong? DiscordGiveawayChannelId { get; set; } = null;
 
         /// <summary>
-        /// The ID of the Discord role that has ban permissions.
+        /// The ID of the Discord channel where general messages are sent.
         /// </summary>
-        public ulong? DiscordBanRoleChannelId { get; set; } = null;
+        public ulong? DiscordGeneralChannelId { get; set; } = null;
 
         /// <summary>
         /// The ID of the Discord role that has moderator permissions.

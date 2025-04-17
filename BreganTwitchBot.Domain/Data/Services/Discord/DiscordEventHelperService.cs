@@ -1,6 +1,7 @@
 ﻿using BreganTwitchBot.Domain.Data.Database.Context;
 using BreganTwitchBot.Domain.DTOs.Discord.Events;
 using BreganTwitchBot.Domain.Interfaces.Discord;
+using BreganTwitchBot.Domain.Interfaces.Discord.Commands;
 using BreganTwitchBot.Domain.Interfaces.Helpers;
 using Discord;
 using Microsoft.EntityFrameworkCore;
@@ -11,7 +12,7 @@ using TwitchLib.Api.Helix.Models.Moderation.CheckAutoModStatus;
 
 namespace BreganTwitchBot.Domain.Data.Services.Discord
 {
-    public class DiscordEventHelperService (IDiscordService discordService, IConfigHelperService configHelper, IDiscordHelperService discordHelper, AppDbContext context) : IDiscordEventHelperService
+    public class DiscordEventHelperService (AppDbContext context, IConfigHelperService configHelper, IDiscordHelperService discordHelper, IDiscordLinkingData discordLinkingData, IDiscordUserLookupService discordUserLookupService) : IDiscordEventHelperService
     {
         public async Task HandleUserJoinedEvent(EventBase userJoined)
         {
@@ -23,7 +24,10 @@ namespace BreganTwitchBot.Domain.Data.Services.Discord
                 return;
             }
 
-            var twitchUsername = discordHelper.GetTwitchUsernameFromDiscordUser(userJoined.UserId);
+            var twitchUsername = discordUserLookupService.GetTwitchUsernameFromDiscordUser(userJoined.UserId);
+
+            await discordHelper.AddDiscordUserToDatabaseOnGuildJoin(userJoined.GuildId, userJoined.UserId);
+            await discordLinkingData.AddRolesToUserOnGuildJoin(userJoined.UserId, userJoined.GuildId);
 
             // Check if the event channel ID is set, if so then send the event message
             if (discordConfig.DiscordEventChannelId != null)
@@ -53,7 +57,7 @@ namespace BreganTwitchBot.Domain.Data.Services.Discord
 
                 if (twitchUsername != null)
                 {
-                    message = $"Welcome <@{userJoined.UserId}> to the server! You already linked to Twitch as {twitchUsername}! {(discordConfig.DiscordUserCommandsChannelId != null ? $"You can use commands in <#{discordConfig.DiscordUserCommandsChannelId.Value}> ! :D" : "")}";
+                    message = $"Welcome <@{userJoined.UserId}> to the server! You are already linked to Twitch as {twitchUsername}! {(discordConfig.DiscordUserCommandsChannelId != null ? $"You can use commands in <#{discordConfig.DiscordUserCommandsChannelId.Value}> ! :D" : "")}";
                 }
                 else
                 {
@@ -146,11 +150,11 @@ namespace BreganTwitchBot.Domain.Data.Services.Discord
 
             if (messageReceivedEvent.HasAttachments)
             {
-                await discordHelper.AddDiscordXpToUser(messageReceivedEvent.GuildId, messageReceivedEvent.UserId, 10);
+                await discordHelper.AddDiscordXpToUser(messageReceivedEvent.GuildId, messageReceivedEvent.ChannelId, messageReceivedEvent.UserId, 10);
             }
             else
             {
-                await discordHelper.AddDiscordXpToUser(messageReceivedEvent.GuildId, messageReceivedEvent.UserId, 5);
+                await discordHelper.AddDiscordXpToUser(messageReceivedEvent.GuildId, messageReceivedEvent.ChannelId, messageReceivedEvent.UserId, 5);
             }
         }
 
@@ -194,31 +198,33 @@ namespace BreganTwitchBot.Domain.Data.Services.Discord
                     return ("invalid button", true);
             }
 
-            var guild = discordService.Client.GetGuild(buttonPressedEvent.GuildId);
-            var user = guild.GetUser(buttonPressedEvent.UserId);
+            return ("", false);
 
-            if (emojiToAdd == "")
-            {
-                var nickNameToSet = user.Nickname.Replace("⛄", "").Replace("🎁", "").Replace("🎄", "").Replace("🎅", "").Replace("🤶", "").Replace("🌟", "").Replace("🧦", "").Replace("🔔", "").Replace("🦌", "");
-                await user.ModifyAsync(user => user.Nickname = nickNameToSet);
-                return ("Your nickname has been cleared!", true);
-            }
-            else
-            {
-                var nickNameToSet = "";
+            //var guild = discordService.Client.GetGuild(buttonPressedEvent.GuildId);
+            //var user = guild.GetUser(buttonPressedEvent.UserId);
 
-                if (user.DisplayName != null)
-                {
-                    nickNameToSet = emojiToAdd + user.DisplayName + emojiToAdd;
-                }
-                else
-                {
-                    nickNameToSet = emojiToAdd + user.Username + emojiToAdd;
-                }
+            //if (emojiToAdd == "")
+            //{
+            //    var nickNameToSet = user.Nickname.Replace("⛄", "").Replace("🎁", "").Replace("🎄", "").Replace("🎅", "").Replace("🤶", "").Replace("🌟", "").Replace("🧦", "").Replace("🔔", "").Replace("🦌", "");
+            //    await user.ModifyAsync(user => user.Nickname = nickNameToSet);
+            //    return ("Your nickname has been cleared!", true);
+            //}
+            //else
+            //{
+            //    var nickNameToSet = "";
 
-                await user.ModifyAsync(user => user.Nickname = nickNameToSet);
-                return ("Your nickname has been set! Woooo", true);
-            }
+            //    if (user.DisplayName != null)
+            //    {
+            //        nickNameToSet = emojiToAdd + user.DisplayName + emojiToAdd;
+            //    }
+            //    else
+            //    {
+            //        nickNameToSet = emojiToAdd + user.Username + emojiToAdd;
+            //    }
+
+            //    await user.ModifyAsync(user => user.Nickname = nickNameToSet);
+            //    return ("Your nickname has been set! Woooo", true);
+            //}
         }
     }
 }

@@ -150,5 +150,33 @@ namespace BreganTwitchBot.DomainTests.Twitch.Helpers
             var discordConfig = _configHelperService.GetDiscordConfig(DatabaseSeedHelper.DiscordGuildId);
             Assert.That(discordConfig, Is.Not.Null);
         }
+
+        [Test]
+        public void GetDiscordConfig_InvalidBroadcasterId_ReturnsNull()
+        {
+            var discordConfig = _configHelperService.GetDiscordConfig("test");
+            Assert.That(discordConfig, Is.Null);
+        }
+
+        [Test]
+        public void GetDiscordConfig_ValidBroadcasterId_ReturnsConfig()
+        {
+            var discordConfig = _configHelperService.GetDiscordConfig(DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId);
+            Assert.That(discordConfig, Is.Not.Null);
+        }
+
+        [Test]
+        public void IsDiscordEnabled_DiscordNotEnabled_ReturnsFalse()
+        {
+            var isEnabled = _configHelperService.IsDiscordEnabled(DatabaseSeedHelper.Channel2BroadcasterTwitchChannelId);
+            Assert.That(isEnabled, Is.False);
+        }
+
+        [Test]
+        public void IsDiscordEnabled_DiscordEnabled_ReturnsTrue()
+        {
+            var isEnabled = _configHelperService.IsDiscordEnabled(DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId);
+            Assert.That(isEnabled, Is.True);
+        }
     }
 }

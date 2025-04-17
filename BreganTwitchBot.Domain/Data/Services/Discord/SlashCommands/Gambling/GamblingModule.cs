@@ -38,6 +38,7 @@ namespace BreganTwitchBot.Domain.Data.Services.Discord.SlashCommands.Gambling
             {
                 GuildId = Context.Guild.Id,
                 UserId = Context.User.Id,
+                ChannelId = Context.Channel.Id,
                 CommandText = pointsBeingGambled
             };
 

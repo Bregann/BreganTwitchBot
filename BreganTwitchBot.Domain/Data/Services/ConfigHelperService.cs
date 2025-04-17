@@ -15,7 +15,7 @@ namespace BreganTwitchBot.Domain.Data.Services
 {
     public class ConfigHelperService : IConfigHelperService
     {
-        public List<ChannelConfig> _channelConfigs = new ();
+        public List<ChannelConfig> _channelConfigs = new();
         private IServiceProvider _serviceProvider;
 
         public ConfigHelperService(IServiceProvider serviceProvider)
@@ -34,7 +34,7 @@ namespace BreganTwitchBot.Domain.Data.Services
             using (var scope = _serviceProvider.CreateScope())
             {
                 var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-                
+
                 await context.ChannelConfig
                     .Where(x => x.Channel.BroadcasterTwitchChannelId == broadcasterId)
                     .ExecuteUpdateAsync(setters => setters
@@ -102,10 +102,35 @@ namespace BreganTwitchBot.Domain.Data.Services
                     DiscordUserCommandsChannelId = config.DiscordUserCommandsChannelId,
                     DiscordUserRankUpAnnouncementChannelId = config.DiscordUserRankUpAnnouncementChannelId,
                     DiscordGiveawayChannelId = config.DiscordGiveawayChannelId,
-                    DiscordBanRoleChannelId = config.DiscordBanRoleChannelId,
                     DiscordModeratorRoleId = config.DiscordModeratorRoleId,
-                    DiscordWelcomeMessageChannelId = config.DiscordWelcomeMessageChannelId
+                    DiscordWelcomeMessageChannelId = config.DiscordWelcomeMessageChannelId,
+                    DiscordGeneralChannelId = config.DiscordGeneralChannelId
                 };
+        }
+
+        public DiscordConfig? GetDiscordConfig(string broadcasterId)
+        {
+            var config = _channelConfigs.FirstOrDefault(x => x.Channel.BroadcasterTwitchChannelId == broadcasterId);
+            return config == null
+                ? null
+                : new DiscordConfig
+                {
+                    DiscordGuildOwnerId = config.DiscordGuildOwnerId,
+                    DiscordEventChannelId = config.DiscordEventChannelId,
+                    DiscordStreamAnnouncementChannelId = config.DiscordStreamAnnouncementChannelId,
+                    DiscordUserCommandsChannelId = config.DiscordUserCommandsChannelId,
+                    DiscordUserRankUpAnnouncementChannelId = config.DiscordUserRankUpAnnouncementChannelId,
+                    DiscordGiveawayChannelId = config.DiscordGiveawayChannelId,
+                    DiscordModeratorRoleId = config.DiscordModeratorRoleId,
+                    DiscordWelcomeMessageChannelId = config.DiscordWelcomeMessageChannelId,
+                    DiscordGeneralChannelId = config.DiscordGeneralChannelId
+                };
+        }
+
+        public bool IsDiscordEnabled(string broadcasterId)
+        {
+            var config = _channelConfigs.FirstOrDefault(x => x.Channel.BroadcasterTwitchChannelId == broadcasterId);
+            return config != null && config.DiscordGuildOwnerId != null;
         }
     }
 }
