@@ -17,7 +17,7 @@ namespace BreganTwitchBot.Domain.Data.Database.Migrations.Postgresql
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "9.0.3")
+                .HasAnnotation("ProductVersion", "9.0.4")
                 .HasAnnotation("Proxies:ChangeTracking", false)
                 .HasAnnotation("Proxies:CheckEquality", false)
                 .HasAnnotation("Proxies:LazyLoading", true)
@@ -58,6 +58,9 @@ namespace BreganTwitchBot.Domain.Data.Database.Migrations.Postgresql
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
+                    b.Property<int>("ChannelId")
+                        .HasColumnType("integer");
+
                     b.Property<int>("ChannelUserId")
                         .HasColumnType("integer");
 
@@ -68,6 +71,8 @@ namespace BreganTwitchBot.Domain.Data.Database.Migrations.Postgresql
                         .HasColumnType("integer");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("ChannelId");
 
                     b.HasIndex("ChannelUserId");
 
@@ -82,6 +87,9 @@ namespace BreganTwitchBot.Domain.Data.Database.Migrations.Postgresql
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
+                    b.Property<int>("ChannelId")
+                        .HasColumnType("integer");
+
                     b.Property<string>("Word")
                         .IsRequired()
                         .HasColumnType("text");
@@ -90,6 +98,8 @@ namespace BreganTwitchBot.Domain.Data.Database.Migrations.Postgresql
                         .HasColumnType("integer");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("ChannelId");
 
                     b.ToTable("Blacklist");
                 });
@@ -134,11 +144,11 @@ namespace BreganTwitchBot.Domain.Data.Database.Migrations.Postgresql
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<string>("DiscordApiKey")
-                        .HasColumnType("text");
+                    b.Property<bool>("DiscordEnabled")
+                        .HasColumnType("boolean");
 
-                    b.Property<string>("DiscordGuildId")
-                        .HasColumnType("text");
+                    b.Property<decimal?>("DiscordGuildId")
+                        .HasColumnType("numeric(20,0)");
 
                     b.HasKey("Id");
 
@@ -153,6 +163,9 @@ namespace BreganTwitchBot.Domain.Data.Database.Migrations.Postgresql
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
+                    b.Property<bool>("BroadcasterLive")
+                        .HasColumnType("boolean");
+
                     b.Property<string>("ChannelCurrencyName")
                         .IsRequired()
                         .HasColumnType("text");
@@ -166,9 +179,6 @@ namespace BreganTwitchBot.Domain.Data.Database.Migrations.Postgresql
                     b.Property<bool>("DailyPointsCollectingAllowed")
                         .HasColumnType("boolean");
 
-                    b.Property<decimal?>("DiscordBanRoleChannelId")
-                        .HasColumnType("numeric(20,0)");
-
                     b.Property<decimal?>("DiscordEventChannelId")
                         .HasColumnType("numeric(20,0)");
 
@@ -181,7 +191,7 @@ namespace BreganTwitchBot.Domain.Data.Database.Migrations.Postgresql
                     b.Property<decimal?>("DiscordGuildOwnerId")
                         .HasColumnType("numeric(20,0)");
 
-                    b.Property<decimal?>("DiscordReactionRoleChannelId")
+                    b.Property<decimal?>("DiscordModeratorRoleId")
                         .HasColumnType("numeric(20,0)");
 
                     b.Property<decimal?>("DiscordStreamAnnouncementChannelId")
@@ -190,13 +200,19 @@ namespace BreganTwitchBot.Domain.Data.Database.Migrations.Postgresql
                     b.Property<decimal?>("DiscordUserCommandsChannelId")
                         .HasColumnType("numeric(20,0)");
 
-                    b.Property<decimal?>("DiscordUserLinkingChannelId")
-                        .HasColumnType("numeric(20,0)");
-
                     b.Property<decimal?>("DiscordUserRankUpAnnouncementChannelId")
                         .HasColumnType("numeric(20,0)");
 
+                    b.Property<decimal?>("DiscordWelcomeMessageChannelId")
+                        .HasColumnType("numeric(20,0)");
+
                     b.Property<DateTime>("LastDailyPointsAllowed")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime>("LastStreamEndDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime>("LastStreamStartDate")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<bool>("StreamAnnounced")
@@ -259,6 +275,9 @@ namespace BreganTwitchBot.Domain.Data.Database.Migrations.Postgresql
                     b.Property<int>("ChannelId")
                         .HasColumnType("integer");
 
+                    b.Property<decimal?>("DiscordRoleId")
+                        .HasColumnType("numeric(20,0)");
+
                     b.Property<int>("RankMinutesRequired")
                         .HasColumnType("integer");
 
@@ -289,6 +308,9 @@ namespace BreganTwitchBot.Domain.Data.Database.Migrations.Postgresql
 
                     b.Property<decimal>("DiscordUserId")
                         .HasColumnType("numeric(20,0)");
+
+                    b.Property<DateTime>("LastSeen")
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("TwitchUserId")
                         .IsRequired()
@@ -326,8 +348,8 @@ namespace BreganTwitchBot.Domain.Data.Database.Migrations.Postgresql
                     b.Property<bool>("IsSuperMod")
                         .HasColumnType("boolean");
 
-                    b.Property<int>("Points")
-                        .HasColumnType("integer");
+                    b.Property<long>("Points")
+                        .HasColumnType("bigint");
 
                     b.Property<int>("TimeoutStrikes")
                         .HasColumnType("integer");
@@ -351,6 +373,9 @@ namespace BreganTwitchBot.Domain.Data.Database.Migrations.Postgresql
                         .HasColumnType("integer");
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("BookWins")
+                        .HasColumnType("integer");
 
                     b.Property<int>("ChannelId")
                         .HasColumnType("integer");
@@ -405,6 +430,9 @@ namespace BreganTwitchBot.Domain.Data.Database.Migrations.Postgresql
                     b.Property<DateTime>("AchievedAt")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<int>("ChannelId")
+                        .HasColumnType("integer");
+
                     b.Property<int>("ChannelRankId")
                         .HasColumnType("integer");
 
@@ -412,6 +440,8 @@ namespace BreganTwitchBot.Domain.Data.Database.Migrations.Postgresql
                         .HasColumnType("integer");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("ChannelId");
 
                     b.HasIndex("ChannelRankId");
 
@@ -539,6 +569,9 @@ namespace BreganTwitchBot.Domain.Data.Database.Migrations.Postgresql
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
+                    b.Property<int>("ChannelId")
+                        .HasColumnType("integer");
+
                     b.Property<int>("ChannelUserId")
                         .HasColumnType("integer");
 
@@ -552,6 +585,8 @@ namespace BreganTwitchBot.Domain.Data.Database.Migrations.Postgresql
                         .HasColumnType("integer");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("ChannelId");
 
                     b.HasIndex("ChannelUserId")
                         .IsUnique();
@@ -567,14 +602,16 @@ namespace BreganTwitchBot.Domain.Data.Database.Migrations.Postgresql
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<int>("ChannelId")
+                    b.Property<int?>("ChannelId")
                         .HasColumnType("integer");
 
-                    b.Property<string>("DiscordUserId")
-                        .IsRequired()
-                        .HasColumnType("text");
+                    b.Property<decimal>("DiscordUserId")
+                        .HasColumnType("numeric(20,0)");
 
-                    b.Property<string>("TwitchUserId")
+                    b.Property<int>("TwitchLinkCode")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("TwitchUsername")
                         .IsRequired()
                         .HasColumnType("text");
 
@@ -645,8 +682,8 @@ namespace BreganTwitchBot.Domain.Data.Database.Migrations.Postgresql
                     b.Property<bool>("DiscordLevelUpNotifsEnabled")
                         .HasColumnType("boolean");
 
-                    b.Property<int>("DiscordXp")
-                        .HasColumnType("integer");
+                    b.Property<long>("DiscordXp")
+                        .HasColumnType("bigint");
 
                     b.Property<int>("PrestigeLevel")
                         .HasColumnType("integer");
@@ -742,34 +779,16 @@ namespace BreganTwitchBot.Domain.Data.Database.Migrations.Postgresql
                     b.Property<int>("ChannelUserId")
                         .HasColumnType("integer");
 
-                    b.Property<int>("CurrentDailyStreak")
+                    b.Property<int>("CurrentStreak")
                         .HasColumnType("integer");
 
-                    b.Property<int>("CurrentMonthlyStreak")
+                    b.Property<int>("HighestStreak")
                         .HasColumnType("integer");
 
-                    b.Property<int>("CurrentYearlyStreak")
+                    b.Property<int>("PointsClaimType")
                         .HasColumnType("integer");
 
-                    b.Property<int>("CurrentlyWeeklyStreak")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("HighestDailyStreak")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("HighestMonthlyStreak")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("HighestWeeklyStreak")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("HighestYearlyStreak")
-                        .HasColumnType("integer");
-
-                    b.Property<bool>("MonthlyPointsClaimed")
-                        .HasColumnType("boolean");
-
-                    b.Property<bool>("PointsClaimedThisStream")
+                    b.Property<bool>("PointsClaimed")
                         .HasColumnType("boolean");
 
                     b.Property<DateTime>("PointsLastClaimed")
@@ -778,23 +797,8 @@ namespace BreganTwitchBot.Domain.Data.Database.Migrations.Postgresql
                     b.Property<long>("TotalPointsClaimed")
                         .HasColumnType("bigint");
 
-                    b.Property<int>("TotalTimesDailyClaimed")
+                    b.Property<int>("TotalTimesClaimed")
                         .HasColumnType("integer");
-
-                    b.Property<int>("TotalTimesMonthlyClaimed")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("TotalTimesWeeklyClaimed")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("TotalTimesYearlyClaimed")
-                        .HasColumnType("integer");
-
-                    b.Property<bool>("WeeklyPointsClaimed")
-                        .HasColumnType("boolean");
-
-                    b.Property<bool>("YearlyPointsClaimed")
-                        .HasColumnType("boolean");
 
                     b.HasKey("Id");
 
@@ -812,6 +816,9 @@ namespace BreganTwitchBot.Domain.Data.Database.Migrations.Postgresql
                         .HasColumnType("integer");
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("BookWins")
+                        .HasColumnType("integer");
 
                     b.Property<int>("ChannelId")
                         .HasColumnType("integer");
@@ -1077,13 +1084,32 @@ namespace BreganTwitchBot.Domain.Data.Database.Migrations.Postgresql
 
             modelBuilder.Entity("BreganTwitchBot.Domain.Data.Database.Models.Birthday", b =>
                 {
+                    b.HasOne("BreganTwitchBot.Domain.Data.Database.Models.Channel", "Channel")
+                        .WithMany()
+                        .HasForeignKey("ChannelId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("BreganTwitchBot.Domain.Data.Database.Models.ChannelUser", "User")
                         .WithMany()
                         .HasForeignKey("ChannelUserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.Navigation("Channel");
+
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("BreganTwitchBot.Domain.Data.Database.Models.Blacklist", b =>
+                {
+                    b.HasOne("BreganTwitchBot.Domain.Data.Database.Models.Channel", "Channel")
+                        .WithMany()
+                        .HasForeignKey("ChannelId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Channel");
                 });
 
             modelBuilder.Entity("BreganTwitchBot.Domain.Data.Database.Models.ChannelConfig", b =>
@@ -1159,6 +1185,12 @@ namespace BreganTwitchBot.Domain.Data.Database.Migrations.Postgresql
 
             modelBuilder.Entity("BreganTwitchBot.Domain.Data.Database.Models.ChannelUserRankProgress", b =>
                 {
+                    b.HasOne("BreganTwitchBot.Domain.Data.Database.Models.Channel", "Channel")
+                        .WithMany()
+                        .HasForeignKey("ChannelId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("BreganTwitchBot.Domain.Data.Database.Models.ChannelRank", "ChannelRank")
                         .WithMany()
                         .HasForeignKey("ChannelRankId")
@@ -1170,6 +1202,8 @@ namespace BreganTwitchBot.Domain.Data.Database.Migrations.Postgresql
                         .HasForeignKey("ChannelUserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("Channel");
 
                     b.Navigation("ChannelRank");
 
@@ -1227,24 +1261,28 @@ namespace BreganTwitchBot.Domain.Data.Database.Migrations.Postgresql
 
             modelBuilder.Entity("BreganTwitchBot.Domain.Data.Database.Models.DiscordDailyPoints", b =>
                 {
+                    b.HasOne("BreganTwitchBot.Domain.Data.Database.Models.Channel", "Channel")
+                        .WithMany()
+                        .HasForeignKey("ChannelId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("BreganTwitchBot.Domain.Data.Database.Models.ChannelUser", "User")
                         .WithOne("DiscordDailyPoints")
                         .HasForeignKey("BreganTwitchBot.Domain.Data.Database.Models.DiscordDailyPoints", "ChannelUserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.Navigation("Channel");
+
                     b.Navigation("User");
                 });
 
             modelBuilder.Entity("BreganTwitchBot.Domain.Data.Database.Models.DiscordLinkRequests", b =>
                 {
-                    b.HasOne("BreganTwitchBot.Domain.Data.Database.Models.Channel", "Channel")
+                    b.HasOne("BreganTwitchBot.Domain.Data.Database.Models.Channel", null)
                         .WithMany("DiscordLinksRequests")
-                        .HasForeignKey("ChannelId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Channel");
+                        .HasForeignKey("ChannelId");
                 });
 
             modelBuilder.Entity("BreganTwitchBot.Domain.Data.Database.Models.DiscordSpinStats", b =>

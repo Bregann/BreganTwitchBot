@@ -189,24 +189,12 @@ builder.Services.AddScoped<IWordBlacklistDataService, WordBlacklistDataService>(
 builder.Services.AddSingleton<IWordBlacklistMonitorService, WordBlacklistMonitorService>();
 
 // Discord
-// Remove the old, simple registration:
-// builder.Services.AddSingleton<InteractionService>();
 
 // Add the new registration with a factory function:
 builder.Services.AddSingleton(serviceProvider => // 'sp' or 'serviceProvider' is the DI container itself
 {
-    // 1. Get the Discord client provider from the DI container
-    //    You already registered this, so the container knows how to provide it.
     var clientProvider = serviceProvider.GetRequiredService<IDiscordClientProvider>();
-
-    // 2. Get the actual DiscordSocketClient from the provider
-    //    Ensure your DiscordService initializes this Client property correctly!
     var discordClient = clientProvider.Client;
-
-    // 3. Create the InteractionService, passing the required client
-    //    You can also provide an InteractionServiceConfig here if needed.
-    //    Example: var config = new InteractionServiceConfig { LogLevel = LogSeverity.Info };
-    //    return new InteractionService(discordClient, config);
     return new InteractionService(discordClient);
 });
 
@@ -214,16 +202,6 @@ builder.Services.AddSingleton(serviceProvider => // 'sp' or 'serviceProvider' is
 builder.Services.AddSingleton<IDiscordService, DiscordService>();
 builder.Services.AddSingleton(sp => (IDiscordClientProvider)sp.GetRequiredService<IDiscordService>());
 
-// Optional: If DiscordService constructs the client, you could also register
-// the client directly if it simplifies things and you don't need IDiscordClientProvider elsewhere.
-// builder.Services.AddSingleton(sp => sp.GetRequiredService<IDiscordService>().Client);
-// Then the InteractionService factory could just ask for DiscordSocketClient:
-/*
-builder.Services.AddSingleton(sp => {
-    var client = sp.GetRequiredService<DiscordSocketClient>();
-    return new InteractionService(client);
-});
-*/
 builder.Services.AddSingleton<DiscordSocketClient>();
 builder.Services.AddSingleton<IDiscordHelperService, DiscordHelperService>();
 builder.Services.AddSingleton<IDiscordUserLookupService, DiscordUserLookupService>();

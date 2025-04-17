@@ -7,25 +7,79 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace BreganTwitchBot.Domain.Data.Database.Migrations.Postgresql
 {
     /// <inheritdoc />
-    public partial class AllTheTables : Migration
+    public partial class Initial : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.AddColumn<bool>(
-                name: "CanUseOpenAi",
-                table: "ChannelUsers",
-                type: "boolean",
-                nullable: false,
-                defaultValue: false);
+            migrationBuilder.CreateTable(
+                name: "ChannelUsers",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    TwitchUserId = table.Column<string>(type: "text", nullable: false),
+                    TwitchUsername = table.Column<string>(type: "text", nullable: false),
+                    DiscordUserId = table.Column<decimal>(type: "numeric(20,0)", nullable: false),
+                    AddedOn = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    LastSeen = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    CanUseOpenAi = table.Column<bool>(type: "boolean", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ChannelUsers", x => x.Id);
+                });
 
-            migrationBuilder.AlterColumn<bool>(
-                name: "DailyPointsCollectingAllowed",
-                table: "ChannelConfig",
-                type: "boolean",
-                nullable: false,
-                oldClrType: typeof(string),
-                oldType: "text");
+            migrationBuilder.CreateTable(
+                name: "Channels",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    BroadcasterTwitchChannelName = table.Column<string>(type: "text", nullable: false),
+                    BroadcasterTwitchChannelId = table.Column<string>(type: "text", nullable: false),
+                    BroadcasterTwitchChannelOAuthToken = table.Column<string>(type: "text", nullable: false),
+                    BroadcasterTwitchChannelRefreshToken = table.Column<string>(type: "text", nullable: false),
+                    BotTwitchChannelName = table.Column<string>(type: "text", nullable: false),
+                    BotTwitchChannelId = table.Column<string>(type: "text", nullable: false),
+                    BotTwitchChannelOAuthToken = table.Column<string>(type: "text", nullable: false),
+                    BotTwitchChannelRefreshToken = table.Column<string>(type: "text", nullable: false),
+                    DiscordEnabled = table.Column<bool>(type: "boolean", nullable: false),
+                    DiscordGuildId = table.Column<decimal>(type: "numeric(20,0)", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Channels", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "EnvironmentalSettings",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Key = table.Column<string>(type: "text", nullable: false),
+                    Value = table.Column<string>(type: "text", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_EnvironmentalSettings", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Users",
+                columns: table => new
+                {
+                    Id = table.Column<string>(type: "text", nullable: false),
+                    FirstName = table.Column<string>(type: "text", nullable: false),
+                    Username = table.Column<string>(type: "text", nullable: false),
+                    Email = table.Column<string>(type: "text", nullable: false),
+                    PasswordHash = table.Column<string>(type: "text", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Users", x => x.Id);
+                });
 
             migrationBuilder.CreateTable(
                 name: "AiBookData",
@@ -55,6 +109,7 @@ namespace BreganTwitchBot.Domain.Data.Database.Migrations.Postgresql
                     Id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     ChannelUserId = table.Column<int>(type: "integer", nullable: false),
+                    ChannelId = table.Column<int>(type: "integer", nullable: false),
                     Day = table.Column<int>(type: "integer", nullable: false),
                     Month = table.Column<int>(type: "integer", nullable: false)
                 },
@@ -67,6 +122,12 @@ namespace BreganTwitchBot.Domain.Data.Database.Migrations.Postgresql
                         principalTable: "ChannelUsers",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_Birthdays_Channels_ChannelId",
+                        column: x => x.ChannelId,
+                        principalTable: "Channels",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -76,11 +137,57 @@ namespace BreganTwitchBot.Domain.Data.Database.Migrations.Postgresql
                     Id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     Word = table.Column<string>(type: "text", nullable: false),
-                    WordType = table.Column<int>(type: "integer", nullable: false)
+                    WordType = table.Column<int>(type: "integer", nullable: false),
+                    ChannelId = table.Column<int>(type: "integer", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Blacklist", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Blacklist_Channels_ChannelId",
+                        column: x => x.ChannelId,
+                        principalTable: "Channels",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "ChannelConfig",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    ChannelId = table.Column<int>(type: "integer", nullable: false),
+                    ChannelCurrencyName = table.Column<string>(type: "text", nullable: false),
+                    CurrencyPointCap = table.Column<long>(type: "bigint", nullable: false),
+                    StreamAnnounced = table.Column<bool>(type: "boolean", nullable: false),
+                    StreamHappenedThisWeek = table.Column<bool>(type: "boolean", nullable: false),
+                    DailyPointsCollectingAllowed = table.Column<bool>(type: "boolean", nullable: false),
+                    LastDailyPointsAllowed = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    LastStreamStartDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    LastStreamEndDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    SubathonActive = table.Column<bool>(type: "boolean", nullable: false),
+                    SubathonTime = table.Column<TimeSpan>(type: "interval", nullable: false),
+                    BroadcasterLive = table.Column<bool>(type: "boolean", nullable: false),
+                    DiscordGuildOwnerId = table.Column<decimal>(type: "numeric(20,0)", nullable: true),
+                    DiscordEventChannelId = table.Column<decimal>(type: "numeric(20,0)", nullable: true),
+                    DiscordStreamAnnouncementChannelId = table.Column<decimal>(type: "numeric(20,0)", nullable: true),
+                    DiscordUserCommandsChannelId = table.Column<decimal>(type: "numeric(20,0)", nullable: true),
+                    DiscordUserRankUpAnnouncementChannelId = table.Column<decimal>(type: "numeric(20,0)", nullable: true),
+                    DiscordGiveawayChannelId = table.Column<decimal>(type: "numeric(20,0)", nullable: true),
+                    DiscordGeneralChannelId = table.Column<decimal>(type: "numeric(20,0)", nullable: true),
+                    DiscordModeratorRoleId = table.Column<decimal>(type: "numeric(20,0)", nullable: true),
+                    DiscordWelcomeMessageChannelId = table.Column<decimal>(type: "numeric(20,0)", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ChannelConfig", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_ChannelConfig_Channels_ChannelId",
+                        column: x => x.ChannelId,
+                        principalTable: "Channels",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -113,7 +220,8 @@ namespace BreganTwitchBot.Domain.Data.Database.Migrations.Postgresql
                     ChannelId = table.Column<int>(type: "integer", nullable: false),
                     RankName = table.Column<string>(type: "text", nullable: false),
                     RankMinutesRequired = table.Column<int>(type: "integer", nullable: false),
-                    BonusRankPointsEarned = table.Column<int>(type: "integer", nullable: false)
+                    BonusRankPointsEarned = table.Column<int>(type: "integer", nullable: false),
+                    DiscordRoleId = table.Column<decimal>(type: "numeric(20,0)", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -139,7 +247,7 @@ namespace BreganTwitchBot.Domain.Data.Database.Migrations.Postgresql
                     IsSuperMod = table.Column<bool>(type: "boolean", nullable: false),
                     TimeoutStrikes = table.Column<int>(type: "integer", nullable: false),
                     WarnStrikes = table.Column<int>(type: "integer", nullable: false),
-                    Points = table.Column<int>(type: "integer", nullable: false)
+                    Points = table.Column<long>(type: "bigint", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -174,7 +282,8 @@ namespace BreganTwitchBot.Domain.Data.Database.Migrations.Postgresql
                     Tier2Wins = table.Column<int>(type: "integer", nullable: false),
                     Tier3Wins = table.Column<int>(type: "integer", nullable: false),
                     JackpotWins = table.Column<int>(type: "integer", nullable: false),
-                    SmorcWins = table.Column<int>(type: "integer", nullable: false)
+                    SmorcWins = table.Column<int>(type: "integer", nullable: false),
+                    BookWins = table.Column<int>(type: "integer", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -286,6 +395,7 @@ namespace BreganTwitchBot.Domain.Data.Database.Migrations.Postgresql
                     Id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     ChannelUserId = table.Column<int>(type: "integer", nullable: false),
+                    ChannelId = table.Column<int>(type: "integer", nullable: false),
                     DiscordDailyStreak = table.Column<int>(type: "integer", nullable: false),
                     DiscordDailyTotalClaims = table.Column<int>(type: "integer", nullable: false),
                     DiscordDailyClaimed = table.Column<bool>(type: "boolean", nullable: false)
@@ -299,6 +409,12 @@ namespace BreganTwitchBot.Domain.Data.Database.Migrations.Postgresql
                         principalTable: "ChannelUsers",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_DiscordDailyPoints_Channels_ChannelId",
+                        column: x => x.ChannelId,
+                        principalTable: "Channels",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -307,9 +423,10 @@ namespace BreganTwitchBot.Domain.Data.Database.Migrations.Postgresql
                 {
                     Id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    ChannelId = table.Column<int>(type: "integer", nullable: false),
-                    TwitchUserId = table.Column<string>(type: "text", nullable: false),
-                    DiscordUserId = table.Column<string>(type: "text", nullable: false)
+                    TwitchUsername = table.Column<string>(type: "text", nullable: false),
+                    DiscordUserId = table.Column<decimal>(type: "numeric(20,0)", nullable: false),
+                    TwitchLinkCode = table.Column<int>(type: "integer", nullable: false),
+                    ChannelId = table.Column<int>(type: "integer", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -318,8 +435,7 @@ namespace BreganTwitchBot.Domain.Data.Database.Migrations.Postgresql
                         name: "FK_DiscordLinkRequests_Channels_ChannelId",
                         column: x => x.ChannelId,
                         principalTable: "Channels",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        principalColumn: "Id");
                 });
 
             migrationBuilder.CreateTable(
@@ -357,7 +473,7 @@ namespace BreganTwitchBot.Domain.Data.Database.Migrations.Postgresql
                     ChannelUserId = table.Column<int>(type: "integer", nullable: false),
                     ChannelId = table.Column<int>(type: "integer", nullable: false),
                     DiscordLevel = table.Column<int>(type: "integer", nullable: false),
-                    DiscordXp = table.Column<int>(type: "integer", nullable: false),
+                    DiscordXp = table.Column<long>(type: "bigint", nullable: false),
                     DiscordLevelUpNotifsEnabled = table.Column<bool>(type: "boolean", nullable: false),
                     PrestigeLevel = table.Column<int>(type: "integer", nullable: false)
                 },
@@ -433,24 +549,13 @@ namespace BreganTwitchBot.Domain.Data.Database.Migrations.Postgresql
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     ChannelUserId = table.Column<int>(type: "integer", nullable: false),
                     ChannelId = table.Column<int>(type: "integer", nullable: false),
-                    CurrentDailyStreak = table.Column<int>(type: "integer", nullable: false),
-                    HighestDailyStreak = table.Column<int>(type: "integer", nullable: false),
-                    TotalTimesDailyClaimed = table.Column<int>(type: "integer", nullable: false),
+                    PointsClaimType = table.Column<int>(type: "integer", nullable: false),
+                    CurrentStreak = table.Column<int>(type: "integer", nullable: false),
+                    HighestStreak = table.Column<int>(type: "integer", nullable: false),
+                    TotalTimesClaimed = table.Column<int>(type: "integer", nullable: false),
                     TotalPointsClaimed = table.Column<long>(type: "bigint", nullable: false),
                     PointsLastClaimed = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    PointsClaimedThisStream = table.Column<bool>(type: "boolean", nullable: false),
-                    WeeklyPointsClaimed = table.Column<bool>(type: "boolean", nullable: false),
-                    CurrentlyWeeklyStreak = table.Column<int>(type: "integer", nullable: false),
-                    HighestWeeklyStreak = table.Column<int>(type: "integer", nullable: false),
-                    TotalTimesWeeklyClaimed = table.Column<int>(type: "integer", nullable: false),
-                    MonthlyPointsClaimed = table.Column<bool>(type: "boolean", nullable: false),
-                    CurrentMonthlyStreak = table.Column<int>(type: "integer", nullable: false),
-                    HighestMonthlyStreak = table.Column<int>(type: "integer", nullable: false),
-                    TotalTimesMonthlyClaimed = table.Column<int>(type: "integer", nullable: false),
-                    YearlyPointsClaimed = table.Column<bool>(type: "boolean", nullable: false),
-                    CurrentYearlyStreak = table.Column<int>(type: "integer", nullable: false),
-                    HighestYearlyStreak = table.Column<int>(type: "integer", nullable: false),
-                    TotalTimesYearlyClaimed = table.Column<int>(type: "integer", nullable: false)
+                    PointsClaimed = table.Column<bool>(type: "boolean", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -479,6 +584,7 @@ namespace BreganTwitchBot.Domain.Data.Database.Migrations.Postgresql
                     Tier1Wins = table.Column<int>(type: "integer", nullable: false),
                     Tier2Wins = table.Column<int>(type: "integer", nullable: false),
                     Tier3Wins = table.Column<int>(type: "integer", nullable: false),
+                    BookWins = table.Column<int>(type: "integer", nullable: false),
                     JackpotWins = table.Column<int>(type: "integer", nullable: false),
                     TotalSpins = table.Column<int>(type: "integer", nullable: false),
                     SmorcWins = table.Column<int>(type: "integer", nullable: false),
@@ -576,12 +682,35 @@ namespace BreganTwitchBot.Domain.Data.Database.Migrations.Postgresql
                 });
 
             migrationBuilder.CreateTable(
+                name: "UserRefreshTokens",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Token = table.Column<string>(type: "text", nullable: false),
+                    UserId = table.Column<string>(type: "text", nullable: false),
+                    ExpiresAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    IsRevoked = table.Column<bool>(type: "boolean", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_UserRefreshTokens", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_UserRefreshTokens_Users_UserId",
+                        column: x => x.UserId,
+                        principalTable: "Users",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "ChannelUserRankProgress",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     ChannelUserId = table.Column<int>(type: "integer", nullable: false),
+                    ChannelId = table.Column<int>(type: "integer", nullable: false),
                     ChannelRankId = table.Column<int>(type: "integer", nullable: false),
                     AchievedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
                 },
@@ -600,6 +729,12 @@ namespace BreganTwitchBot.Domain.Data.Database.Migrations.Postgresql
                         principalTable: "ChannelUsers",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_ChannelUserRankProgress_Channels_ChannelId",
+                        column: x => x.ChannelId,
+                        principalTable: "Channels",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateIndex(
@@ -608,9 +743,25 @@ namespace BreganTwitchBot.Domain.Data.Database.Migrations.Postgresql
                 column: "ChannelUserId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_Birthdays_ChannelId",
+                table: "Birthdays",
+                column: "ChannelId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Birthdays_ChannelUserId",
                 table: "Birthdays",
                 column: "ChannelUserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Blacklist_ChannelId",
+                table: "Blacklist",
+                column: "ChannelId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ChannelConfig_ChannelId",
+                table: "ChannelConfig",
+                column: "ChannelId",
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_ChannelMessages_ChannelId",
@@ -641,6 +792,11 @@ namespace BreganTwitchBot.Domain.Data.Database.Migrations.Postgresql
                 name: "IX_ChannelUserGambleStats_ChannelUserId",
                 table: "ChannelUserGambleStats",
                 column: "ChannelUserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ChannelUserRankProgress_ChannelId",
+                table: "ChannelUserRankProgress",
+                column: "ChannelId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_ChannelUserRankProgress_ChannelRankId",
@@ -675,6 +831,11 @@ namespace BreganTwitchBot.Domain.Data.Database.Migrations.Postgresql
             migrationBuilder.CreateIndex(
                 name: "IX_CustomCommands_ChannelId",
                 table: "CustomCommands",
+                column: "ChannelId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_DiscordDailyPoints_ChannelId",
+                table: "DiscordDailyPoints",
                 column: "ChannelId");
 
             migrationBuilder.CreateIndex(
@@ -744,6 +905,11 @@ namespace BreganTwitchBot.Domain.Data.Database.Migrations.Postgresql
                 name: "IX_UniqueViewers_ChannelId",
                 table: "UniqueViewers",
                 column: "ChannelId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_UserRefreshTokens_UserId",
+                table: "UserRefreshTokens",
+                column: "UserId");
         }
 
         /// <inheritdoc />
@@ -757,6 +923,9 @@ namespace BreganTwitchBot.Domain.Data.Database.Migrations.Postgresql
 
             migrationBuilder.DropTable(
                 name: "Blacklist");
+
+            migrationBuilder.DropTable(
+                name: "ChannelConfig");
 
             migrationBuilder.DropTable(
                 name: "ChannelMessages");
@@ -792,6 +961,9 @@ namespace BreganTwitchBot.Domain.Data.Database.Migrations.Postgresql
                 name: "DiscordUserStats");
 
             migrationBuilder.DropTable(
+                name: "EnvironmentalSettings");
+
+            migrationBuilder.DropTable(
                 name: "StreamViewCounts");
 
             migrationBuilder.DropTable(
@@ -810,19 +982,19 @@ namespace BreganTwitchBot.Domain.Data.Database.Migrations.Postgresql
                 name: "UniqueViewers");
 
             migrationBuilder.DropTable(
+                name: "UserRefreshTokens");
+
+            migrationBuilder.DropTable(
                 name: "ChannelRanks");
 
-            migrationBuilder.DropColumn(
-                name: "CanUseOpenAi",
-                table: "ChannelUsers");
+            migrationBuilder.DropTable(
+                name: "ChannelUsers");
 
-            migrationBuilder.AlterColumn<string>(
-                name: "DailyPointsCollectingAllowed",
-                table: "ChannelConfig",
-                type: "text",
-                nullable: false,
-                oldClrType: typeof(bool),
-                oldType: "boolean");
+            migrationBuilder.DropTable(
+                name: "Users");
+
+            migrationBuilder.DropTable(
+                name: "Channels");
         }
     }
 }

@@ -35,6 +35,7 @@
 
   <ItemGroup>
     <Folder Include="Data\Database\Migrations\" />
+    <Folder Include="Data\Database\Migrations\Postgresql\" />
   </ItemGroup>
 
 </Project>
