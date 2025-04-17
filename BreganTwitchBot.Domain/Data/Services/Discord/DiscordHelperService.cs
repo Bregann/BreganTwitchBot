@@ -1,18 +1,11 @@
 ﻿using BreganTwitchBot.Domain.Data.Database.Context;
 using BreganTwitchBot.Domain.Data.Database.Models;
-using BreganTwitchBot.Domain.Exceptions;
 using BreganTwitchBot.Domain.Interfaces.Discord;
 using BreganTwitchBot.Domain.Interfaces.Helpers;
 using Discord;
-using Discord.WebSocket;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Serilog;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace BreganTwitchBot.Domain.Data.Services.Discord
 {
@@ -22,7 +15,7 @@ namespace BreganTwitchBot.Domain.Data.Services.Discord
         {
             try
             {
-                using(var scope = serviceProvider.CreateScope())
+                using (var scope = serviceProvider.CreateScope())
                 {
                     var discordService = scope.ServiceProvider.GetRequiredService<IDiscordClientProvider>();
                     var channel = discordService.Client.GetChannel(channelId) as IMessageChannel;

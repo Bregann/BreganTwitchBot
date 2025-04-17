@@ -4,17 +4,10 @@ using BreganTwitchBot.Domain.DTOs.Twitch.EventSubEvents;
 using BreganTwitchBot.Domain.Enums;
 using BreganTwitchBot.Domain.Exceptions;
 using BreganTwitchBot.Domain.Interfaces.Discord;
-using BreganTwitchBot.Domain.Interfaces.Discord.Commands;
 using BreganTwitchBot.Domain.Interfaces.Twitch;
 using BreganTwitchBot.Domain.Interfaces.Twitch.Commands;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Security.Cryptography;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace BreganTwitchBot.Domain.Data.Services.Twitch.Commands.Hours
 {
@@ -94,7 +87,7 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch.Commands.Hours
                                 });
 
                                 await twitchHelperService.AddPointsToUser(broadcasterId, dbUser.TwitchUserId, rankEarned.BonusRankPointsEarned, channel.BroadcasterTwitchChannelName, dbUser.TwitchUsername);
-                                
+
                                 if (!channel.DiscordEnabled)
                                 {
                                     await twitchHelperService.SendTwitchMessageToChannel(broadcasterId, channel.BroadcasterTwitchChannelName, $"Congrats you earned the {rankEarned.RankName} rank by watching {rankEarned.RankMinutesRequired} minutes in the stream! Keep watching to earn a higher rank!");

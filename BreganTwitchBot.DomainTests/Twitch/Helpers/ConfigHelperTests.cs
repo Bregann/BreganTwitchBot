@@ -1,16 +1,8 @@
 ﻿using BreganTwitchBot.Domain.Data.Database.Context;
 using BreganTwitchBot.Domain.Data.Services;
-using BreganTwitchBot.Domain.Data.Services.Twitch;
-using BreganTwitchBot.Domain.Interfaces.Twitch;
 using BreganTwitchBot.DomainTests.Helpers;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using Moq;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Testcontainers.PostgreSql;
 
 namespace BreganTwitchBot.DomainTests.Twitch.Helpers

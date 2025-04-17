@@ -246,12 +246,12 @@ namespace BreganTwitchBot.DomainTests.Twitch.Helpers
         {
             var pointsToRemove = 50;
             _dbContext.ChangeTracker.Clear();
-            
+
             await _twitchHelperService.RemovePointsFromUser(DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId, DatabaseSeedHelper.Channel1User1TwitchUserId, pointsToRemove, DatabaseSeedHelper.Channel1BroadcasterTwitchChannelName, DatabaseSeedHelper.Channel1User1TwitchUsername);
-            
+
             var user = await _dbContext.ChannelUserData
                 .FirstAsync(x => x.Channel.BroadcasterTwitchChannelId == DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId && x.ChannelUser.TwitchUserId == DatabaseSeedHelper.Channel1User1TwitchUserId);
-            
+
             Assert.That(user.Points, Is.EqualTo(50));
         }
 
@@ -278,12 +278,12 @@ namespace BreganTwitchBot.DomainTests.Twitch.Helpers
         {
             var pointsToRemove = 9999999;
             _dbContext.ChangeTracker.Clear();
-            
+
             await _twitchHelperService.RemovePointsFromUser(DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId, DatabaseSeedHelper.Channel1User1TwitchUserId, pointsToRemove, DatabaseSeedHelper.Channel1BroadcasterTwitchChannelName, DatabaseSeedHelper.Channel1User1TwitchUsername);
-            
+
             var user = await _dbContext.ChannelUserData
                 .FirstAsync(x => x.Channel.BroadcasterTwitchChannelId == DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId && x.ChannelUser.TwitchUserId == DatabaseSeedHelper.Channel1User1TwitchUserId);
-            
+
             Assert.That(user.Points, Is.EqualTo(0));
         }
 

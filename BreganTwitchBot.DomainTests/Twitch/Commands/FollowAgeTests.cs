@@ -1,16 +1,12 @@
 ﻿using BreganTwitchBot.Domain.Data.Database.Context;
 using BreganTwitchBot.Domain.Data.Services.Twitch;
 using BreganTwitchBot.Domain.Data.Services.Twitch.Commands.FollowAge;
-using BreganTwitchBot.Domain.Data.Services.Twitch.Commands.Points;
 using BreganTwitchBot.Domain.DTOs.Twitch.Api;
-using BreganTwitchBot.Domain.DTOs.Twitch.EventSubEvents;
 using BreganTwitchBot.Domain.Enums;
 using BreganTwitchBot.Domain.Interfaces.Twitch;
-using BreganTwitchBot.Domain.Interfaces.Twitch.Commands;
 using BreganTwitchBot.DomainTests.Helpers;
 using Microsoft.EntityFrameworkCore;
 using Moq;
-using System;
 using Testcontainers.PostgreSql;
 using TwitchLib.Api;
 

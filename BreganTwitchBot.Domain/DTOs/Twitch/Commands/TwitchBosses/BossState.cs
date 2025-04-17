@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace BreganTwitchBot.Domain.DTOs.Twitch.Commands.TwitchBosses
+﻿namespace BreganTwitchBot.Domain.DTOs.Twitch.Commands.TwitchBosses
 {
     public class BossState
     {

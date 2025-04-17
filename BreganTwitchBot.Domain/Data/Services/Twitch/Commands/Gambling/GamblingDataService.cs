@@ -5,12 +5,6 @@ using BreganTwitchBot.Domain.Interfaces.Twitch;
 using BreganTwitchBot.Domain.Interfaces.Twitch.Commands;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net.NetworkInformation;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace BreganTwitchBot.Domain.Data.Services.Twitch.Commands.Gambling
 {
@@ -126,7 +120,7 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch.Commands.Gambling
             var firstEmote = emoteList[0];
 
             // Check if all items in the list match the first emote
-            if (emoteList.All(x => x == firstEmote)) 
+            if (emoteList.All(x => x == firstEmote))
             {
                 if (winMultipliers.ContainsKey(firstEmote))
                 {

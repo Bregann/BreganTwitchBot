@@ -5,7 +5,6 @@ using BreganTwitchBot.Domain.Interfaces.Twitch;
 using BreganTwitchBot.Domain.Interfaces.Twitch.Commands;
 using Microsoft.Extensions.DependencyInjection;
 using System.Reflection;
-using System.Runtime.CompilerServices;
 
 namespace BreganTwitchBot.Domain.Data.Services.Twitch.Commands
 {
@@ -59,7 +58,7 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch.Commands
 
         public void LoadCustomCommands()
         {
-            using(var scope = _serviceProvider.CreateScope())
+            using (var scope = _serviceProvider.CreateScope())
             {
                 var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
                 _customCommands = context.CustomCommands
@@ -111,7 +110,7 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch.Commands
         {
             if (!_customCommands.Any(x => x.Item1 == commandName))
             {
-                _customCommands.Add(new (commandName, broadcasterId));
+                _customCommands.Add(new(commandName, broadcasterId));
             }
         }
     }

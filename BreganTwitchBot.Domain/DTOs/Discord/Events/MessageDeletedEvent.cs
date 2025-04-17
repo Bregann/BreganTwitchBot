@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace BreganTwitchBot.Domain.DTOs.Discord.Events
+﻿namespace BreganTwitchBot.Domain.DTOs.Discord.Events
 {
     public class MessageDeletedEvent : EventBase
     {

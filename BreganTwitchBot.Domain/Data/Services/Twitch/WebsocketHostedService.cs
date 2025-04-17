@@ -1,5 +1,4 @@
-﻿using BreganTwitchBot.Domain.Data.Services.Twitch.Commands;
-using BreganTwitchBot.Domain.DTOs.Twitch.EventSubEvents;
+﻿using BreganTwitchBot.Domain.DTOs.Twitch.EventSubEvents;
 using BreganTwitchBot.Domain.Enums;
 using BreganTwitchBot.Domain.Interfaces.Discord;
 using BreganTwitchBot.Domain.Interfaces.Helpers;
@@ -232,7 +231,7 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch
                     BitsVotes = x.BitsVotes ?? 0
                 }).ToArray()
             };
-            
+
             Log.Information($"[Twitch Events] Channel poll end: {pollEndParams.BroadcasterChannelName} ({pollEndParams.BroadcasterChannelId}) - {pollEndParams.PollTitle}");
 
             await twitchEventHandlerService.HandlePollEndEvent(pollEndParams);
@@ -308,8 +307,8 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch
 
             await twitchHelperService.AddOrUpdateUserToDatabase(msgParams.BroadcasterChannelId, msgParams.ChatterChannelId, msgParams.BroadcasterChannelName, msgParams.ChatterChannelName);
             await commandHandler.HandleCommandAsync(msgParams.Message.Split(' ')[0], msgParams);
-            
-            if(!msgParams.IsMod && !msgParams.IsBroadcaster)
+
+            if (!msgParams.IsMod && !msgParams.IsBroadcaster)
             {
                 await wordBlacklistMonitorService.CheckMessageForBlacklistedWords(msgParams.Message, msgParams.ChatterChannelId, msgParams.BroadcasterChannelId);
             }

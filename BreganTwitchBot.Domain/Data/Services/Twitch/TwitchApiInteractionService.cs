@@ -1,11 +1,9 @@
 ﻿using BreganTwitchBot.Domain.DTOs.Twitch.Api;
 using BreganTwitchBot.Domain.Interfaces.Twitch;
 using TwitchLib.Api;
-using TwitchLib.Api.Helix.Models.Moderation.CheckAutoModStatus;
-using System.Linq;
 using TwitchLib.Api.Helix.Models.Chat;
-using TwitchLib.Api.Helix.Models.Moderation.WarnChatUser.Request;
 using TwitchLib.Api.Helix.Models.Moderation.BanUser;
+using TwitchLib.Api.Helix.Models.Moderation.WarnChatUser.Request;
 
 namespace BreganTwitchBot.Domain.Data.Services.Twitch
 {

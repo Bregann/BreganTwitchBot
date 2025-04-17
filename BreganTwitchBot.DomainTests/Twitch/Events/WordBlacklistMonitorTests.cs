@@ -1,14 +1,13 @@
 ﻿using BreganTwitchBot.Domain.Data.Database.Context;
 using BreganTwitchBot.Domain.Data.Services.Twitch.Commands.WordBlacklist;
-using BreganTwitchBot.Domain.Data.Database.Models;
-using BreganTwitchBot.Domain.Enums;
-using BreganTwitchBot.DomainTests.Helpers;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.EntityFrameworkCore;
-using Testcontainers.PostgreSql;
-using Moq;
-using BreganTwitchBot.Domain.Interfaces.Twitch;
 using BreganTwitchBot.Domain.DTOs.Twitch.Commands.WordBlacklist;
+using BreganTwitchBot.Domain.Enums;
+using BreganTwitchBot.Domain.Interfaces.Twitch;
+using BreganTwitchBot.DomainTests.Helpers;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
+using Moq;
+using Testcontainers.PostgreSql;
 
 namespace BreganTwitchBot.DomainTests.Twitch.Events
 {

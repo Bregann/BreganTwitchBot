@@ -7,13 +7,7 @@ using Discord.Interactions;
 using Discord.WebSocket;
 using Microsoft.Extensions.DependencyInjection;
 using Serilog;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
-using System.Runtime.CompilerServices;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace BreganTwitchBot.Domain.Data.Services.Discord
 {
@@ -106,8 +100,8 @@ namespace BreganTwitchBot.Domain.Data.Services.Discord
         {
             Log.Information($"[Discord Button Pressed] Sender: {arg.User.Username} \n Button: {arg.Data.CustomId} \n Channel: {arg.Channel.Name} \n ChannelId: {arg.Channel.Id}");
             await arg.DeferAsync();
-            
-            using(var scope = _services.CreateScope())
+
+            using (var scope = _services.CreateScope())
             {
                 var discordEventHelperService = scope.ServiceProvider.GetRequiredService<IDiscordEventHelperService>();
 
@@ -166,8 +160,8 @@ namespace BreganTwitchBot.Domain.Data.Services.Discord
         private async Task MessageReceived(SocketMessage arg)
         {
             Log.Information($"[Discord Message] Sender: {arg.Author.Username} \n Message: {arg.Content} \n Channel: {arg.Channel.Name} \n ChannelId: {arg.Channel.Id} \n");
-            
-            using(var scope = _services.CreateScope())
+
+            using (var scope = _services.CreateScope())
             {
                 var discordEventHelperService = scope.ServiceProvider.GetRequiredService<IDiscordEventHelperService>();
 
@@ -206,7 +200,7 @@ namespace BreganTwitchBot.Domain.Data.Services.Discord
 
         private async Task UserJoined(SocketGuildUser arg)
         {
-            using(var scope = _services.CreateScope())
+            using (var scope = _services.CreateScope())
             {
                 var discordEventHelperService = scope.ServiceProvider.GetRequiredService<IDiscordEventHelperService>();
 
@@ -225,7 +219,7 @@ namespace BreganTwitchBot.Domain.Data.Services.Discord
 
         private async Task UserLeft(SocketGuild arg1, SocketUser arg2)
         {
-            using(var scope = _services.CreateScope())
+            using (var scope = _services.CreateScope())
             {
                 var discordEventHelperService = scope.ServiceProvider.GetRequiredService<IDiscordEventHelperService>();
 
@@ -293,7 +287,7 @@ namespace BreganTwitchBot.Domain.Data.Services.Discord
             {
                 return;
             }
-            
+
             var user = Client.GetGuild(interaction.GuildId ?? 0).GetUser(command.User.Id);
 
             var isMod = _discordUserLookupService.IsUserMod(command.User.Id, user);

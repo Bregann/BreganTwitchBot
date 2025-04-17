@@ -2,11 +2,6 @@
 using BreganTwitchBot.Domain.Interfaces.Discord;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace BreganTwitchBot.Domain.Data.Services.Discord
 {

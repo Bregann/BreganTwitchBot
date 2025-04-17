@@ -1,11 +1,10 @@
-﻿using Moq;
-using Microsoft.EntityFrameworkCore;
-using BreganTwitchBot.Domain.Data.Database.Context;
-using BreganTwitchBot.Domain.Interfaces.Twitch;
+﻿using BreganTwitchBot.Domain.Data.Database.Context;
 using BreganTwitchBot.Domain.Data.Services.Twitch.Commands.Points;
-using BreganTwitchBot.DomainTests.Helpers;
-using BreganTwitchBot.Domain.DTOs.Twitch.EventSubEvents;
 using BreganTwitchBot.Domain.Exceptions;
+using BreganTwitchBot.Domain.Interfaces.Twitch;
+using BreganTwitchBot.DomainTests.Helpers;
+using Microsoft.EntityFrameworkCore;
+using Moq;
 using Testcontainers.PostgreSql;
 
 namespace BreganTwitchBot.DomainTests.Twitch.Commands;

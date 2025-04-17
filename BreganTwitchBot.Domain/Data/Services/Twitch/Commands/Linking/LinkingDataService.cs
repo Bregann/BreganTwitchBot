@@ -1,7 +1,6 @@
 ﻿using BreganTwitchBot.Domain.Data.Database.Context;
 using BreganTwitchBot.Domain.DTOs.Twitch.EventSubEvents;
 using BreganTwitchBot.Domain.Interfaces.Discord;
-using BreganTwitchBot.Domain.Interfaces.Discord.Commands;
 using BreganTwitchBot.Domain.Interfaces.Twitch.Commands;
 using Microsoft.EntityFrameworkCore;
 
@@ -12,7 +11,7 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch.Commands.Linking
         public async Task<string?> HandleLinkCommand(ChannelChatMessageReceivedParams msgParams)
         {
             var channel = await context.Channels.FirstAsync(x => x.BroadcasterTwitchChannelId == msgParams.BroadcasterChannelId);
-            
+
             if (!channel.DiscordEnabled)
             {
                 return null;

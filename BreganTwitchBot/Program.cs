@@ -1,5 +1,4 @@
 using BreganTwitchBot.Domain.Data.Database.Context;
-using BreganTwitchBot.Domain.Data.Database.Models;
 using BreganTwitchBot.Domain.Data.Services;
 using BreganTwitchBot.Domain.Data.Services.Discord;
 using BreganTwitchBot.Domain.Data.Services.Discord.SlashCommands.Daily;

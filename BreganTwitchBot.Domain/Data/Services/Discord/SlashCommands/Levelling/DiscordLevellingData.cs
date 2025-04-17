@@ -2,14 +2,9 @@
 using BreganTwitchBot.Domain.DTOs.Discord.Commands;
 using BreganTwitchBot.Domain.Interfaces.Discord.Commands;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace BreganTwitchBot.Domain.Data.Services.Discord.SlashCommands.Levelling
-{    
+{
     //TODO: WRITE TESTS FOR THIS class
     public class DiscordLevellingData(AppDbContext context) : IDiscordLevellingData
     {

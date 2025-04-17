@@ -1,18 +1,14 @@
 ﻿using BreganTwitchBot.Domain.Data.Database.Context;
 using BreganTwitchBot.Domain.DTOs.Discord.Events;
 using BreganTwitchBot.Domain.Interfaces.Discord;
-using BreganTwitchBot.Domain.Interfaces.Discord.Commands;
 using BreganTwitchBot.Domain.Interfaces.Helpers;
 using Discord;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
-using System;
-using System.Formats.Asn1;
-using TwitchLib.Api.Helix.Models.Moderation.CheckAutoModStatus;
 
 namespace BreganTwitchBot.Domain.Data.Services.Discord
 {
-    public class DiscordEventHelperService (AppDbContext context, IConfigHelperService configHelper, IDiscordHelperService discordHelper, IDiscordRoleManagerService discordRoleManagerService, IDiscordUserLookupService discordUserLookupService) : IDiscordEventHelperService
+    public class DiscordEventHelperService(AppDbContext context, IConfigHelperService configHelper, IDiscordHelperService discordHelper, IDiscordRoleManagerService discordRoleManagerService, IDiscordUserLookupService discordUserLookupService) : IDiscordEventHelperService
     {
         public async Task HandleUserJoinedEvent(EventBase userJoined)
         {

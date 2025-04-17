@@ -2,7 +2,6 @@
 using BreganTwitchBot.Domain.Enums;
 using BreganTwitchBot.Domain.Interfaces.Helpers;
 using BreganTwitchBot.Domain.Interfaces.Twitch;
-using BreganTwitchBot.Domain.Interfaces.Twitch.Commands;
 using Microsoft.Extensions.DependencyInjection;
 using Serilog;
 using System.Collections.Concurrent;
@@ -130,7 +129,7 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch
                         var channel = await context.Channels.FindAsync(apiClient.DatabaseChannelId);
                         if (channel != null)
                         {
-                            if(apiClient.Type == AccountType.Bot)
+                            if (apiClient.Type == AccountType.Bot)
                             {
                                 channel.BotTwitchChannelOAuthToken = newAccessToken.AccessToken;
                                 channel.BotTwitchChannelRefreshToken = newAccessToken.RefreshToken;
@@ -161,7 +160,7 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch
             public string TwitchChannelClientId { get; }
             public string TwitchUsername { get; }
             public string AccessToken { get; set; }
-            public string RefreshToken { get; set;  }
+            public string RefreshToken { get; set; }
             public AccountType Type { get; }
             public string BroadcasterChannelId { get; }
             public string BroadcasterChannelName { get; }

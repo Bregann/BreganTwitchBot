@@ -4,12 +4,7 @@ using BreganTwitchBot.Domain.Exceptions;
 using BreganTwitchBot.Domain.Interfaces.Twitch;
 using BreganTwitchBot.Domain.Interfaces.Twitch.Commands;
 using Microsoft.Extensions.DependencyInjection;
-using System;
-using System.Collections.Generic;
 using System.Data;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace BreganTwitchBot.Domain.Data.Services.Twitch.Commands.CustomCommands
 {
@@ -28,10 +23,10 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch.Commands.CustomCommands
                     var response = await customCommandsDataService.AddNewCustomCommandAsync(msgParams);
                     await twitchHelperService.SendTwitchMessageToChannel(msgParams.BroadcasterChannelId, msgParams.BroadcasterChannelName, response, msgParams.MessageId);
                 }
-                catch (Exception ex) 
+                catch (Exception ex)
                 when (
-                    ex is UnauthorizedAccessException || 
-                    ex is InvalidCommandException || 
+                    ex is UnauthorizedAccessException ||
+                    ex is InvalidCommandException ||
                     ex is DuplicateNameException
                 )
                 {

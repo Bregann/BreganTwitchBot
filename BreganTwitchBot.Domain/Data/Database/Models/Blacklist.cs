@@ -1,5 +1,4 @@
 ﻿using BreganTwitchBot.Domain.Enums;
-using Hangfire;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 

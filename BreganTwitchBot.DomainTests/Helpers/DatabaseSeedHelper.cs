@@ -182,8 +182,8 @@ namespace BreganTwitchBot.DomainTests.Helpers
                 IsSuperMod = false,
                 TimeoutStrikes = 0,
                 WarnStrikes = 0
-            });            
-            
+            });
+
             await context.ChannelUserData.AddAsync(new ChannelUserData
             {
                 ChannelUserId = superModUser.Id,
@@ -219,7 +219,7 @@ namespace BreganTwitchBot.DomainTests.Helpers
                 LastUsed = DateTime.UtcNow.AddDays(1),
                 TimesUsed = 0
             });
-            
+
             await context.CustomCommands.AddAsync(new CustomCommand
             {
                 CommandName = "!readytouse",

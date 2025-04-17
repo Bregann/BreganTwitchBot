@@ -7,14 +7,7 @@ using BreganTwitchBot.Domain.Interfaces.Twitch;
 using BreganTwitchBot.Domain.Interfaces.Twitch.Commands;
 using Hangfire;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Storage;
 using Serilog;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Xml.Serialization;
 
 namespace BreganTwitchBot.Domain.Data.Services.Twitch.Commands.DailyPoints
 {
@@ -26,7 +19,7 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch.Commands.DailyPoints
         /// <param name="broadcasterId"></param>
         /// <returns></returns>
         public async Task ScheduleDailyPointsCollection(string broadcasterId)
-        { 
+        {
             var dailyPointsStatus = configHelper.GetDailyPointsStatus(broadcasterId);
 
             // if it's within the last 20 minutes just allow collecting straight away as this could be due to a disconnection or something like that
@@ -239,7 +232,7 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch.Commands.DailyPoints
             var totalPoints = (user.CurrentStreak * basePointsBonus) + (bonusPoints?.BonusPoints ?? 0);
 
             await twitchHelperService.AddPointsToUser(msgParams.BroadcasterChannelId, msgParams.ChatterChannelId, totalPoints, msgParams.BroadcasterChannelName, msgParams.ChatterChannelName);
-            
+
             user.PointsClaimed = true;
             user.TotalPointsClaimed += totalPoints;
 

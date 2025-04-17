@@ -1,15 +1,10 @@
 ﻿using BreganTwitchBot.Domain.Attributes;
 using BreganTwitchBot.Domain.DTOs.Twitch.EventSubEvents;
-using BreganTwitchBot.Domain.Exceptions;
-using BreganTwitchBot.Domain.Interfaces.Twitch.Commands;
-using BreganTwitchBot.Domain.Interfaces.Twitch;
-using Microsoft.Extensions.DependencyInjection;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using BreganTwitchBot.Domain.Enums;
+using BreganTwitchBot.Domain.Exceptions;
+using BreganTwitchBot.Domain.Interfaces.Twitch;
+using BreganTwitchBot.Domain.Interfaces.Twitch.Commands;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace BreganTwitchBot.Domain.Data.Services.Twitch.Commands.Hours
 {

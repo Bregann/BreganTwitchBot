@@ -1,17 +1,17 @@
 ﻿using BreganTwitchBot.Domain.Interfaces.Discord;
+using Discord;
 using Discord.Interactions;
 using Newtonsoft.Json;
 using RestSharp;
 using Serilog;
+using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.Drawing.Processing;
+using SixLabors.ImageSharp.PixelFormats;
+using SixLabors.ImageSharp.Processing;
 using System.Text;
 using Color = System.Drawing.Color;
-using Image = SixLabors.ImageSharp.Image;
 using DiscordColor = Discord.Color;
-using Discord;
-using SixLabors.ImageSharp.Processing;
-using SixLabors.ImageSharp;
-using SixLabors.ImageSharp.PixelFormats;
-using SixLabors.ImageSharp.Drawing.Processing;
+using Image = SixLabors.ImageSharp.Image;
 
 namespace BreganTwitchBot.Domain.Data.Services.Discord.SlashCommands.BlocksSocks
 {

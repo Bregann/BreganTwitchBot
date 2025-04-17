@@ -6,16 +6,11 @@ using BreganTwitchBot.Domain.Interfaces.Twitch;
 using BreganTwitchBot.Domain.Interfaces.Twitch.Commands;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
-using System;
-using System.Collections.Generic;
 using System.Data;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace BreganTwitchBot.Domain.Data.Services.Twitch.Commands.CustomCommands
 {
-    public class CustomCommandsDataService (AppDbContext context, ITwitchHelperService twitchHelperService, ICommandHandler commandHandler) : ICustomCommandDataService
+    public class CustomCommandsDataService(AppDbContext context, ITwitchHelperService twitchHelperService, ICommandHandler commandHandler) : ICustomCommandDataService
     {
         public async Task HandleCustomCommandAsync(string command, ChannelChatMessageReceivedParams msgParams)
         {
@@ -99,7 +94,7 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch.Commands.CustomCommands
 
             var rowsEdited = await context.CustomCommands
                 .Where(x => x.Channel.BroadcasterTwitchChannelId == msgParams.BroadcasterChannelId && x.CommandName == sanitisedCommandName)
-                .ExecuteUpdateAsync(setters => 
+                .ExecuteUpdateAsync(setters =>
                     setters.SetProperty(x => x.CommandText, commandContent)
                 );
 

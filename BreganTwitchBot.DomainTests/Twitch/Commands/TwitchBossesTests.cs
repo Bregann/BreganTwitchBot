@@ -1,19 +1,9 @@
-﻿using BreganTwitchBot.Domain.Data.Database.Context;
-using BreganTwitchBot.Domain.Data.Services.Twitch.Commands.DailyPoints;
-using BreganTwitchBot.Domain.Data.Services.Twitch.Commands.TwitchBosses;
+﻿using BreganTwitchBot.Domain.Data.Services.Twitch.Commands.TwitchBosses;
 using BreganTwitchBot.Domain.DTOs.Twitch.Commands.TwitchBosses;
-using BreganTwitchBot.Domain.Interfaces.Helpers;
 using BreganTwitchBot.Domain.Interfaces.Twitch;
 using BreganTwitchBot.DomainTests.Helpers;
 using Hangfire;
-using Microsoft.EntityFrameworkCore;
 using Moq;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Testcontainers.PostgreSql;
 
 namespace BreganTwitchBot.DomainTests.Twitch.Commands
 {
@@ -69,7 +59,7 @@ namespace BreganTwitchBot.DomainTests.Twitch.Commands
             };
 
             await _twitchBossesDataService.StartBossFight(DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId, DatabaseSeedHelper.Channel1BroadcasterTwitchChannelName);
-            
+
             Assert.Multiple(() =>
             {
                 Assert.That(_twitchHelperService.Invocations, Has.Count.EqualTo(1));

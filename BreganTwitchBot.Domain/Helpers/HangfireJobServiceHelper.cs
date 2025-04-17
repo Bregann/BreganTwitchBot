@@ -1,6 +1,4 @@
-﻿using BreganTwitchBot.Domain.Data.Database.Context;
-using BreganTwitchBot.Domain.Data.Services.Twitch;
-using BreganTwitchBot.Domain.Interfaces.Discord.Commands;
+﻿using BreganTwitchBot.Domain.Interfaces.Discord.Commands;
 using BreganTwitchBot.Domain.Interfaces.Twitch;
 using BreganTwitchBot.Domain.Interfaces.Twitch.Commands;
 using Hangfire;
