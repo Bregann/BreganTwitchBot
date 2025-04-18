@@ -25,6 +25,9 @@ namespace BreganTwitchBot.Domain.Data.Database.Models
         public required bool IsSub { get; set; }
 
         [Required]
+        public required bool IsVip { get; set; }
+
+        [Required]
         public required bool IsSuperMod { get; set; }
 
         [Required]

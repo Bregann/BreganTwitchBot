@@ -11,7 +11,7 @@
         Task<bool> IsBroadcasterLive(string broadcasterChannelId);
         Task<long> GetPointsForUser(string broadcasterChannelId, string userChannelId, string broadcasterUsername, string userChannelName);
         Task RemovePointsFromUser(string broadcasterChannelId, string viewerChannelId, long pointsToRemove, string broadcasterChannelName, string viewerUsername);
-        Task AddOrUpdateUserToDatabase(string broadcasterChannelId, string userChannelId, string broadcasterUsername, string userChannelName, bool addMinutes = false);
+        Task AddOrUpdateUserToDatabase(string broadcasterChannelId, string userChannelId, string broadcasterUsername, string userChannelName, bool isSub = false, bool isVip = false);
         Task SendAnnouncementMessageToChannel(string broadcasterChannelId, string broadcasterChannelName, string message);
         Task WarnUser(string broadcasterChannelId, string userId, string message);
         Task TimeoutUser(string broadcasterChannelId, string userId, int timeoutDurationInSeconds, string reason);

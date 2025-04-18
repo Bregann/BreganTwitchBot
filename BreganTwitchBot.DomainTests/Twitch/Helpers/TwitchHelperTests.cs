@@ -6,6 +6,7 @@ using BreganTwitchBot.DomainTests.Helpers;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
+using SixLabors.Fonts.Tables.TrueType;
 using Testcontainers.PostgreSql;
 
 namespace BreganTwitchBot.DomainTests.Twitch.Helpers
@@ -360,7 +361,8 @@ namespace BreganTwitchBot.DomainTests.Twitch.Helpers
                 DatabaseSeedHelper.Channel2User1TwitchUserId,
                 DatabaseSeedHelper.Channel1BroadcasterTwitchChannelName,
                 DatabaseSeedHelper.Channel2User1TwitchUsername,
-                addMinutes: true
+                false,
+                false
             );
 
             var user = await _dbContext.ChannelUsers.Include(u => u.ChannelUserWatchtimes)

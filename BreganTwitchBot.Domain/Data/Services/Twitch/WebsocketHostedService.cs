@@ -104,7 +104,6 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch
         private async Task OnFollowReceived(object sender, ChannelFollowArgs args)
         {
             Log.Information($"[Twitch Events] Channel follow: {args.Notification.Payload.Event.UserName} ({args.Notification.Payload.Event.UserId}) in {args.Notification.Payload.Event.BroadcasterUserName}");
-
             await twitchHelperService.AddOrUpdateUserToDatabase(args.Notification.Payload.Event.BroadcasterUserId, args.Notification.Payload.Event.UserId, args.Notification.Payload.Event.BroadcasterUserName, args.Notification.Payload.Event.UserName);
         }
 
@@ -135,7 +134,7 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch
             {
                 var dailyPointsDataService = scope.ServiceProvider.GetRequiredService<IDailyPointsDataService>();
 
-                await dailyPointsDataService.AllowDailyPointsCollecting(args.Notification.Payload.Event.BroadcasterUserId);
+                await dailyPointsDataService.ScheduleDailyPointsCollection(args.Notification.Payload.Event.BroadcasterUserId);
             }
         }
 
@@ -305,7 +304,7 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch
                 IsBroadcaster = args.Notification.Payload.Event.IsBroadcaster
             };
 
-            await twitchHelperService.AddOrUpdateUserToDatabase(msgParams.BroadcasterChannelId, msgParams.ChatterChannelId, msgParams.BroadcasterChannelName, msgParams.ChatterChannelName);
+            await twitchHelperService.AddOrUpdateUserToDatabase(msgParams.BroadcasterChannelId, msgParams.ChatterChannelId, msgParams.BroadcasterChannelName, msgParams.ChatterChannelName, msgParams.IsSub, msgParams.IsVip);
             await commandHandler.HandleCommandAsync(msgParams.Message.Split(' ')[0], msgParams);
 
             if (!msgParams.IsMod && !msgParams.IsBroadcaster)

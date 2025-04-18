@@ -48,7 +48,7 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch.Commands.WordBlacklist
             });
 
             await context.SaveChangesAsync();
-            wordBlacklistMonitorService.AddWordToBlacklist(msgParams.BroadcasterChannelId, wordToAdd, wordType);
+            wordBlacklistMonitorService.AddWordToBlacklist(wordToAdd, msgParams.BroadcasterChannelId, wordType);
 
             return $"The word has been added to the blacklist!";
         }

@@ -23,7 +23,7 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch.Commands.DailyPoints
             var dailyPointsStatus = configHelper.GetDailyPointsStatus(broadcasterId);
 
             // if it's within the last 20 minutes just allow collecting straight away as this could be due to a disconnection or something like that
-            if (DateTime.UtcNow - dailyPointsStatus.LastStreamDate < TimeSpan.FromMinutes(20))
+            if (DateTime.UtcNow - dailyPointsStatus.LastStreamDate < TimeSpan.FromMinutes(20) && dailyPointsStatus.LastDailyPointedAllowedDate.Date == DateTime.UtcNow.Date)
             {
                 await AllowDailyPointsCollecting(broadcasterId);
                 return;
@@ -63,6 +63,7 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch.Commands.DailyPoints
             if (dailyPointsStatus.LastStreamDate.Date == DateTime.UtcNow.Date)
             {
                 await configHelper.UpdateDailyPointsStatus(broadcasterId, true);
+                await twitchHelperService.SendAnnouncementMessageToChannel(broadcasterId, channelName!, $"Don't forget to claim your daily, weekly, monthly and yearly {await twitchHelperService.GetPointsName(broadcasterId, channelName!)} with !daily, !weekly, !monthly and !yearly PogChamp KEKW");
                 await context.SaveChangesAsync();
                 return;
             }
@@ -243,7 +244,7 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch.Commands.DailyPoints
 
             await context.SaveChangesAsync();
 
-            return $"You have claimed your {pointsClaimType.ToString().ToLower()} {pointsName} for {totalPoints:N0} points! You are on a {user.CurrentStreak} day streak!" + (bonusPoints.HasValue ? $" {bonusPoints.Value.ChatMessage}" : string.Empty);
+            return $"You have claimed your {pointsClaimType.ToString().ToLower()} {pointsName} for {totalPoints:N0} points! You are on a {user.CurrentStreak} {(pointsClaimType == PointsClaimType.Daily ? "day" : pointsClaimType.ToString().ToLower().TrimEnd(['l', 'y']))} streak!" + (bonusPoints.HasValue ? $" {bonusPoints.Value.ChatMessage}" : string.Empty);
         }
 
         public async Task<string> HandleStreakCheckCommand(ChannelChatMessageReceivedParams msgParams, PointsClaimType pointsClaimType)
@@ -281,8 +282,8 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch.Commands.DailyPoints
             }
 
             return isCheckingAnotherUser
-                ? $"{usernameToCheck} is on a {user.CurrentStreak} {pointsClaimType.ToString().ToLower().TrimEnd(['l', 'y'])} streak!"
-                : $"You are on a {user.CurrentStreak} {pointsClaimType.ToString().ToLower().TrimEnd(['l', 'y'])} streak!";
+                ? $"{usernameToCheck} is on a {user.CurrentStreak} {(pointsClaimType == PointsClaimType.Daily ? "day" : pointsClaimType.ToString().ToLower().TrimEnd(['l', 'y']))} streak!"
+                : $"You are on a {user.CurrentStreak} {(pointsClaimType == PointsClaimType.Daily ? "day" : pointsClaimType.ToString().ToLower().TrimEnd(['l', 'y']))} streak!";
         }
 
         private static (int BonusPoints, string ChatMessage)? CheckForPointsMilestones(int totalClaims, string pointsName, PointsClaimType pointsClaimType, Dictionary<int, (int MinPoints, int MaxPoints)> streakMilestones)

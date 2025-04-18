@@ -68,7 +68,7 @@ namespace BreganTwitchBot.DomainTests.Twitch.Helpers
         }
 
         [Test]
-        public async Task UpdateDailyPointsStatus_UpdateDailyPointsStatus_NewValueIsSet()
+        public async Task UpdateDailyPointsStatus_UpdateDailyPointsStatusToTrue_NewValueIsSet()
         {
             await _configHelperService.UpdateDailyPointsStatus(DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId, true);
 
@@ -79,6 +79,19 @@ namespace BreganTwitchBot.DomainTests.Twitch.Helpers
             {
                 Assert.That(config.DailyPointsCollectingAllowed, Is.True);
                 Assert.That(config.LastDailyPointsAllowed, Is.EqualTo(DateTime.UtcNow).Within(30).Seconds);
+            });
+        }
+
+        [Test]
+        public async Task UpdateDailyPointsStatus_UpdateDailyPointsStatusToFalse_NewValueIsSet()
+        {
+            await _configHelperService.UpdateDailyPointsStatus(DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId, false);
+            var config = await _dbContext.ChannelConfig.FirstAsync(x => x.Channel.BroadcasterTwitchChannelId == DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId);
+            _dbContext.Entry(config).Reload();
+            Assert.Multiple(() =>
+            {
+                Assert.That(config.DailyPointsCollectingAllowed, Is.False);
+                Assert.That(config.LastDailyPointsAllowed, Is.Not.EqualTo(DateTime.UtcNow).Within(30).Seconds);
             });
         }
 

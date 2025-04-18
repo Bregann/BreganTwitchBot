@@ -30,17 +30,27 @@ namespace BreganTwitchBot.Domain.Data.Services
             {
                 var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
 
-                await context.ChannelConfig
-                    .Where(x => x.Channel.BroadcasterTwitchChannelId == broadcasterId)
-                    .ExecuteUpdateAsync(setters => setters
-                        .SetProperty(x => x.DailyPointsCollectingAllowed, status)
-                        .SetProperty(x => x.LastDailyPointsAllowed, DateTime.UtcNow)
-                );
+                if (status)
+                {
+                    await context.ChannelConfig
+                        .Where(x => x.Channel.BroadcasterTwitchChannelId == broadcasterId)
+                        .ExecuteUpdateAsync(setters => setters
+                            .SetProperty(x => x.DailyPointsCollectingAllowed, status)
+                            .SetProperty(x => x.LastDailyPointsAllowed, DateTime.UtcNow)
+                    );
 
-                await context.SaveChangesAsync();
+                    _channelConfigs.First(x => x.Channel.BroadcasterTwitchChannelId == broadcasterId).LastDailyPointsAllowed = DateTime.UtcNow;
+                }
+                else
+                {
+                    await context.ChannelConfig
+                        .Where(x => x.Channel.BroadcasterTwitchChannelId == broadcasterId)
+                        .ExecuteUpdateAsync(setters => setters
+                            .SetProperty(x => x.DailyPointsCollectingAllowed, status)
+                    );
+                }
 
                 _channelConfigs.First(x => x.Channel.BroadcasterTwitchChannelId == broadcasterId).DailyPointsCollectingAllowed = status;
-                _channelConfigs.First(x => x.Channel.BroadcasterTwitchChannelId == broadcasterId).LastDailyPointsAllowed = DateTime.UtcNow;
                 Log.Information($"Updated daily points status for {broadcasterId} to {status}");
             }
         }
@@ -57,11 +67,13 @@ namespace BreganTwitchBot.Domain.Data.Services
                         .SetProperty(x => x.StreamAnnounced, status)
                         .SetProperty(x => status == true ? x.LastStreamStartDate : x.LastStreamEndDate, DateTime.UtcNow)
                         .SetProperty(x => x.StreamHappenedThisWeek, true)
+                        .SetProperty(x => x.BroadcasterLive, status)
                 );
 
                 await context.SaveChangesAsync();
 
                 _channelConfigs.First(x => x.Channel.BroadcasterTwitchChannelId == broadcasterId).StreamAnnounced = status;
+                _channelConfigs.First(x => x.Channel.BroadcasterTwitchChannelId == broadcasterId).BroadcasterLive = status;
 
                 if (status)
                 {

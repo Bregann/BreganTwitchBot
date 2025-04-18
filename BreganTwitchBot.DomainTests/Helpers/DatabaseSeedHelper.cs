@@ -155,6 +155,7 @@ namespace BreganTwitchBot.DomainTests.Helpers
                 ChannelId = channel.Id,
                 InStream = false,
                 IsSub = false,
+                IsVip = false,
                 IsSuperMod = false,
                 TimeoutStrikes = 0,
                 WarnStrikes = 0
@@ -167,6 +168,7 @@ namespace BreganTwitchBot.DomainTests.Helpers
                 ChannelId = channel.Id,
                 InStream = false,
                 IsSub = false,
+                IsVip = false,
                 IsSuperMod = false,
                 TimeoutStrikes = 0,
                 WarnStrikes = 0
@@ -179,6 +181,7 @@ namespace BreganTwitchBot.DomainTests.Helpers
                 ChannelId = channel2.Id,
                 InStream = false,
                 IsSub = false,
+                IsVip = false,
                 IsSuperMod = false,
                 TimeoutStrikes = 0,
                 WarnStrikes = 0
@@ -191,6 +194,7 @@ namespace BreganTwitchBot.DomainTests.Helpers
                 ChannelId = channel.Id,
                 InStream = false,
                 IsSub = false,
+                IsVip = false,
                 IsSuperMod = true,
                 TimeoutStrikes = 0,
                 WarnStrikes = 0

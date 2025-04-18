@@ -29,6 +29,8 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch.Commands.Hours
                 return;
             }
 
+            Log.Information($"Updating watchtime for channel {broadcasterId}");
+
             var chatters = await twitchApiInteractionService.GetChattersAsync(apiClient.ApiClient, apiClient.BroadcasterChannelId, apiClient.TwitchChannelClientId);
             var channelRanks = await context.ChannelRanks.Where(x => x.ChannelId == channel.Id).ToArrayAsync();
 
@@ -39,72 +41,59 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch.Commands.Hours
                 try
                 {
                     // check if they are in the database already
+                    await twitchHelperService.AddOrUpdateUserToDatabase(broadcasterId, user.UserId, channel.BroadcasterTwitchChannelName, user.UserName);
+
+                    // grab the user
                     var dbUser = await context.ChannelUsers.FirstOrDefaultAsync(x => x.TwitchUserId == user.UserId);
 
                     if (dbUser == null)
                     {
-                        await twitchHelperService.AddOrUpdateUserToDatabase(broadcasterId, user.UserId, channel.BroadcasterTwitchChannelName, user.UserName, true);
-                        continue;
+                        Log.Fatal($"Error finding the db user after adding to the database - {user.UserName} {user.UserId}");
+                        return;
                     }
-                    else
-                    {
-                        // get the watch time of the user
-                        // there is a chance they have been registered in another channel so we need to be careful on the updating
-                        var watchTime = context.ChannelUserWatchtime.FirstOrDefault(x => x.Channel.BroadcasterTwitchChannelId == broadcasterId && x.ChannelUserId == dbUser.Id);
 
-                        if (watchTime == null)
+                    // get the watch time of the user
+                    // there is a chance they have been registered in another channel so we need to be careful on the updating
+                    var watchTime = await context.ChannelUserWatchtime.FirstAsync(x => x.Channel.BroadcasterTwitchChannelId == broadcasterId);
+
+                    watchTime.MinutesInStream += 1;
+                    watchTime.MinutesWatchedThisStream += 1;
+                    watchTime.MinutesWatchedThisWeek += 1;
+                    watchTime.MinutesWatchedThisMonth += 1;
+                    watchTime.MinutesWatchedThisYear += 1;
+
+                    // add points to the user
+
+                    // check if the user has got any ranks
+                    var rankEarned = channelRanks.FirstOrDefault(x => x.RankMinutesRequired == watchTime.MinutesInStream);
+
+                    if (rankEarned != null && rankups != 10)
+                    {
+                        await context.ChannelUserRankProgress.AddAsync(new ChannelUserRankProgress
                         {
-                            await context.ChannelUserWatchtime.AddAsync(new ChannelUserWatchtime
-                            {
-                                ChannelId = channel.Id,
-                                ChannelUserId = dbUser.Id,
-                                MinutesInStream = 1,
-                                MinutesWatchedThisMonth = 1,
-                                MinutesWatchedThisStream = 1,
-                                MinutesWatchedThisWeek = 1,
-                                MinutesWatchedThisYear = 1
-                            });
+                            ChannelUserId = dbUser.Id,
+                            ChannelId = channel.Id,
+                            ChannelRankId = rankEarned.Id,
+                            AchievedAt = DateTime.UtcNow
+                        });
+
+                        await twitchHelperService.AddPointsToUser(broadcasterId, dbUser.TwitchUserId, rankEarned.BonusRankPointsEarned, channel.BroadcasterTwitchChannelName, dbUser.TwitchUsername);
+
+                        if (!channel.DiscordEnabled)
+                        {
+                            await twitchHelperService.SendTwitchMessageToChannel(broadcasterId, channel.BroadcasterTwitchChannelName, $"Congrats you earned the {rankEarned.RankName} rank by watching {rankEarned.RankMinutesRequired} minutes in the stream! Keep watching to earn a higher rank!");
+                        }
+                        else if (channel.DiscordEnabled && dbUser.DiscordUserId == 0)
+                        {
+                            await twitchHelperService.SendTwitchMessageToChannel(broadcasterId, channel.BroadcasterTwitchChannelName, $"Congrats you earned the {rankEarned.RankName} rank by watching {rankEarned.RankMinutesRequired} minutes in the stream! Make sure to join the Discord and link your Twitch account to unlock your rank role!");
                         }
                         else
                         {
-                            watchTime.MinutesInStream += 1;
-                            watchTime.MinutesWatchedThisStream += 1;
-                            watchTime.MinutesWatchedThisWeek += 1;
-                            watchTime.MinutesWatchedThisMonth += 1;
-                            watchTime.MinutesWatchedThisYear += 1;
-
-                            // check if the user has got any ranks
-                            var rankEarned = channelRanks.FirstOrDefault(x => x.RankMinutesRequired == watchTime.MinutesInStream);
-
-                            if (rankEarned != null && rankups != 10)
-                            {
-                                await context.ChannelUserRankProgress.AddAsync(new ChannelUserRankProgress
-                                {
-                                    ChannelUserId = dbUser.Id,
-                                    ChannelId = channel.Id,
-                                    ChannelRankId = rankEarned.Id,
-                                    AchievedAt = DateTime.UtcNow
-                                });
-
-                                await twitchHelperService.AddPointsToUser(broadcasterId, dbUser.TwitchUserId, rankEarned.BonusRankPointsEarned, channel.BroadcasterTwitchChannelName, dbUser.TwitchUsername);
-
-                                if (!channel.DiscordEnabled)
-                                {
-                                    await twitchHelperService.SendTwitchMessageToChannel(broadcasterId, channel.BroadcasterTwitchChannelName, $"Congrats you earned the {rankEarned.RankName} rank by watching {rankEarned.RankMinutesRequired} minutes in the stream! Keep watching to earn a higher rank!");
-                                }
-                                else if (channel.DiscordEnabled && dbUser.DiscordUserId == 0)
-                                {
-                                    await twitchHelperService.SendTwitchMessageToChannel(broadcasterId, channel.BroadcasterTwitchChannelName, $"Congrats you earned the {rankEarned.RankName} rank by watching {rankEarned.RankMinutesRequired} minutes in the stream! Make sure to join the Discord and link your Twitch account to unlock your rank role!");
-                                }
-                                else
-                                {
-                                    await discordRoleManagerService.ApplyRoleOnDiscordWatchtimeRankup(dbUser.TwitchUserId, broadcasterId);
-                                    await twitchHelperService.SendTwitchMessageToChannel(broadcasterId, channel.BroadcasterTwitchChannelName, $"Congrats you earned {rankEarned.RankName} rank by watching {rankEarned.RankMinutesRequired} minutes in the stream! Your rank has been applied in the Discord");
-                                }
-
-                                rankups++;
-                            }
+                            await discordRoleManagerService.ApplyRoleOnDiscordWatchtimeRankup(dbUser.TwitchUserId, broadcasterId);
+                            await twitchHelperService.SendTwitchMessageToChannel(broadcasterId, channel.BroadcasterTwitchChannelName, $"Congrats you earned {rankEarned.RankName} rank by watching {rankEarned.RankMinutesRequired} minutes in the stream! Your rank has been applied in the Discord");
                         }
+
+                        rankups++;
                     }
 
                     await context.SaveChangesAsync();

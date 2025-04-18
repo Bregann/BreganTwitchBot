@@ -141,7 +141,7 @@ namespace BreganTwitchBot.DomainTests.Twitch.Commands
             _twitchApiInteractionService.Setup(x => x.GetChattersAsync(It.IsAny<TwitchAPI>(), It.IsAny<string>(), It.IsAny<string>()))
                 .ReturnsAsync(chattersResult);
 
-            _twitchHelperService.Setup(x => x.AddOrUpdateUserToDatabase(channel.BroadcasterTwitchChannelId, newUser.UserId, channel.BroadcasterTwitchChannelName, newUser.UserName, true))
+            _twitchHelperService.Setup(x => x.AddOrUpdateUserToDatabase(channel.BroadcasterTwitchChannelId, newUser.UserId, channel.BroadcasterTwitchChannelName, newUser.UserName, false, false))
                 .Returns(Task.CompletedTask);
 
             await _hoursDataService.UpdateWatchtimeForChannel(DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId);
@@ -151,7 +151,8 @@ namespace BreganTwitchBot.DomainTests.Twitch.Commands
                 newUser.UserId,
                 channel.BroadcasterTwitchChannelName,
                 newUser.UserName,
-                true), Times.Once);
+                false,
+                false), Times.Once);
         }
 
         [Test]

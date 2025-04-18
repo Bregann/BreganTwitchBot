@@ -264,7 +264,7 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch
         }
 
         //TODO: test this method
-        public async Task AddOrUpdateUserToDatabase(string broadcasterChannelId, string userChannelId, string broadcasterUsername, string userChannelName, bool addMinutes = false)
+        public async Task AddOrUpdateUserToDatabase(string broadcasterChannelId, string userChannelId, string broadcasterUsername, string userChannelName, bool isSub = false, bool isVip = false)
         {
             using (var scope = serviceProvider.CreateScope())
             {
@@ -295,7 +295,13 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch
                 {
                     user.TwitchUsername = userChannelName.ToLower().Trim();
                     user.LastSeen = DateTime.UtcNow;
+
+                    var channelUserData = user.ChannelUserData.First(x => x.ChannelId == broadcasterChannel.Id);
+                    channelUserData.IsSub = isSub;
+                    channelUserData.IsVip = isVip;
+
                     await context.SaveChangesAsync();
+
                     return;
                 }
 
@@ -332,7 +338,8 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch
                     ChannelId = broadcasterChannel.Id,
                     ChannelUserId = user.Id,
                     InStream = true,
-                    IsSub = false,
+                    IsSub = isSub,
+                    IsVip = isVip,
                     IsSuperMod = false,
                     Points = 0,
                     TimeoutStrikes = 0,
@@ -343,11 +350,11 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch
                 {
                     ChannelId = broadcasterChannel.Id,
                     ChannelUserId = user.Id,
-                    MinutesInStream = addMinutes ? 1 : 0,
-                    MinutesWatchedThisMonth = addMinutes ? 1 : 0,
-                    MinutesWatchedThisStream = addMinutes ? 1 : 0,
-                    MinutesWatchedThisWeek = addMinutes ? 1 : 0,
-                    MinutesWatchedThisYear = addMinutes ? 1 : 0
+                    MinutesInStream = 0,
+                    MinutesWatchedThisMonth = 0,
+                    MinutesWatchedThisStream = 0,
+                    MinutesWatchedThisWeek = 0,
+                    MinutesWatchedThisYear = 0
                 });
 
                 context.TwitchDailyPoints.Add(new TwitchDailyPoints

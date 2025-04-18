@@ -12,7 +12,7 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch.Commands.Gambling
     {
         public async Task<string> HandleSpinCommand(ChannelChatMessageReceivedParams msgParams)
         {
-            var streamerLive = await twitchHelperService.IsBroadcasterLive(msgParams.BroadcasterChannelName);
+            var streamerLive = await twitchHelperService.IsBroadcasterLive(msgParams.BroadcasterChannelId);
 
             if (!streamerLive)
             {
