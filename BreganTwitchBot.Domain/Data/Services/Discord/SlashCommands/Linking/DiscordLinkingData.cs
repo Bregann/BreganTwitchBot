@@ -35,7 +35,7 @@ namespace BreganTwitchBot.Domain.Data.Services.Discord.SlashCommands.Linking
                 .FirstOrDefaultAsync(x => x.TwitchUsername == twitchUsername);
 
             var channel = await context.Channels
-                .FirstAsync(x => x.DiscordGuildId == command.GuildId);
+                .FirstAsync(x => x.ChannelConfig.DiscordGuildId == command.GuildId);
 
             if (existingRequest != null)
             {
@@ -55,6 +55,5 @@ namespace BreganTwitchBot.Domain.Data.Services.Discord.SlashCommands.Linking
 
             return $"A link request has been created for the Twitch username {twitchUsername}. Please type ```!link {linkRequest.TwitchLinkCode}``` in https://twitch.tv/{channel.BroadcasterTwitchChannelName} to link your account";
         }
-
     }
 }

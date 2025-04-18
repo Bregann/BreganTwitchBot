@@ -1,18 +1,19 @@
 ﻿using BreganTwitchBot.Domain.Data.Database.Context;
 using BreganTwitchBot.Domain.DTOs.Twitch.EventSubEvents;
 using BreganTwitchBot.Domain.Interfaces.Discord;
+using BreganTwitchBot.Domain.Interfaces.Helpers;
 using BreganTwitchBot.Domain.Interfaces.Twitch.Commands;
 using Microsoft.EntityFrameworkCore;
 
 namespace BreganTwitchBot.Domain.Data.Services.Twitch.Commands.Linking
 {
-    public class LinkingDataService(AppDbContext context, IDiscordHelperService discordHelperService, IDiscordRoleManagerService discordRoleManagerService) : ILinkingDataService
+    public class LinkingDataService(AppDbContext context, IDiscordHelperService discordHelperService, IDiscordRoleManagerService discordRoleManagerService, IConfigHelperService configHelperService) : ILinkingDataService
     {
         public async Task<string?> HandleLinkCommand(ChannelChatMessageReceivedParams msgParams)
         {
-            var channel = await context.Channels.FirstAsync(x => x.BroadcasterTwitchChannelId == msgParams.BroadcasterChannelId);
+            var discordEnabled = configHelperService.IsDiscordEnabled(msgParams.BroadcasterChannelId);
 
-            if (!channel.DiscordEnabled)
+            if (!discordEnabled)
             {
                 return null;
             }
@@ -30,7 +31,7 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch.Commands.Linking
             }
 
             // grab the latest request
-            var linkReq = await context.DiscordLinkRequests.FirstOrDefaultAsync(x => x.TwitchUsername == msgParams.ChatterChannelName);
+            var linkReq = await context.DiscordLinkRequests.FirstOrDefaultAsync(x => x.TwitchUsername == msgParams.ChatterChannelName.ToLower());
 
             if (linkReq == null)
             {

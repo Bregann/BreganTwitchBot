@@ -16,5 +16,6 @@
         Task WarnUser(string broadcasterChannelId, string userId, string message);
         Task TimeoutUser(string broadcasterChannelId, string userId, int timeoutDurationInSeconds, string reason);
         Task BanUser(string broadcasterChannelId, string userId, string reason);
+        Task UpdateMessageCountForUser(string broadcasterChannelId, string userId, string username, string message);
     }
 }

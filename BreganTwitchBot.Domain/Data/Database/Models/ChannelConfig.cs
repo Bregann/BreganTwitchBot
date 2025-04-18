@@ -47,7 +47,14 @@ namespace BreganTwitchBot.Domain.Data.Database.Models
         [Required]
         public required bool BroadcasterLive { get; set; }
 
+        public required bool DiscordEnabled { get; set; } = false;
+
         // Discord related properties
+
+        /// <summary>
+        /// The ID of the Discord guild (server) that this channel is linked to.
+        /// </summary>
+        public ulong? DiscordGuildId { get; set; } = null;
 
         /// <summary>
         /// The ID of the Discord guild (server) that this channel is linked to.

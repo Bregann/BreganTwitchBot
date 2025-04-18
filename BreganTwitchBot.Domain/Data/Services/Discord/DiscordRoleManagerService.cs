@@ -11,7 +11,7 @@ namespace BreganTwitchBot.Domain.Data.Services.Discord
         public async Task AddRolesToUserOnLink(string twitchUserId)
         {
             var broadcastersWithDiscordEnabled = await context.Channels
-                .Where(x => x.DiscordGuildId != null)
+                .Where(x => x.ChannelConfig.DiscordGuildId != null)
                 .ToListAsync();
 
             var dbUser = await context.ChannelUsers
@@ -28,7 +28,7 @@ namespace BreganTwitchBot.Domain.Data.Services.Discord
                 }
 
                 // check if the user is actually in the guild
-                var guild = discordClientProvider.Client.GetGuild(broadcaster.DiscordGuildId!.Value);
+                var guild = discordClientProvider.Client.GetGuild(broadcaster.ChannelConfig.DiscordGuildId!.Value);
                 var user = guild.GetUser(dbUser.DiscordUserId);
 
                 if (user == null)
@@ -54,7 +54,7 @@ namespace BreganTwitchBot.Domain.Data.Services.Discord
 
         public async Task AddRolesToUserOnGuildJoin(ulong discordUserId, ulong guildId)
         {
-            var channel = await context.Channels.FirstOrDefaultAsync(x => x.DiscordGuildId == guildId);
+            var channel = await context.Channels.FirstOrDefaultAsync(x => x.ChannelConfig.DiscordGuildId == guildId);
 
             if (channel == null)
             {
@@ -111,11 +111,11 @@ namespace BreganTwitchBot.Domain.Data.Services.Discord
             var dbUser = await context.ChannelUsers.FirstAsync(x => x.TwitchUserId == twitchUserId);
 
             // check if the user is actually in the guild
-            var guild = discordClientProvider.Client.GetGuild(channel.DiscordGuildId ?? 0);
+            var guild = discordClientProvider.Client.GetGuild(channel.ChannelConfig.DiscordGuildId ?? 0);
 
             if (guild == null)
             {
-                Log.Information($"No guild found with ID {channel.DiscordGuildId}");
+                Log.Information($"No guild found with ID {channel.ChannelConfig.DiscordGuildId}");
                 return;
             }
 
@@ -132,7 +132,7 @@ namespace BreganTwitchBot.Domain.Data.Services.Discord
 
             foreach (var watchtime in watchtimeRanksEarnedByUser)
             {
-                if (watchtime.ChannelRank.DiscordRoleId != null)
+                if (watchtime.ChannelRank.DiscordRoleId != null && watchtime.ChannelRank.DiscordRoleId != 0)
                 {
                     var role = guild.GetRole(watchtime.ChannelRank.DiscordRoleId.Value);
                     if (role != null)

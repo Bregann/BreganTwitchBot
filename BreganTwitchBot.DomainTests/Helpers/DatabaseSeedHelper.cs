@@ -47,8 +47,6 @@ namespace BreganTwitchBot.DomainTests.Helpers
                 BotTwitchChannelName = Channel1BotTwitchChannelName,
                 BroadcasterTwitchChannelId = Channel1BroadcasterTwitchChannelId,
                 BroadcasterTwitchChannelName = Channel1BroadcasterTwitchChannelName,
-                DiscordEnabled = true,
-                DiscordGuildId = DiscordGuildId
             };
 
             var channel2 = new Channel
@@ -61,7 +59,6 @@ namespace BreganTwitchBot.DomainTests.Helpers
                 BotTwitchChannelName = Channel2BotTwitchChannelName,
                 BroadcasterTwitchChannelId = Channel2BroadcasterTwitchChannelId,
                 BroadcasterTwitchChannelName = Channel2BroadcasterTwitchChannelName,
-                DiscordEnabled = false
             };
 
             await context.Channels.AddAsync(channel);
@@ -81,7 +78,9 @@ namespace BreganTwitchBot.DomainTests.Helpers
                 SubathonTime = TimeSpan.FromHours(1),
                 LastStreamStartDate = DateTime.UtcNow.AddDays(-2),
                 LastStreamEndDate = DateTime.UtcNow.AddDays(-1),
-                BroadcasterLive = true
+                BroadcasterLive = true,
+                DiscordEnabled = true,
+                DiscordGuildId = DiscordGuildId
             });
 
             await context.ChannelConfig.AddAsync(new ChannelConfig
@@ -97,7 +96,8 @@ namespace BreganTwitchBot.DomainTests.Helpers
                 SubathonTime = TimeSpan.FromHours(1),
                 LastStreamStartDate = DateTime.UtcNow.AddDays(-2),
                 LastStreamEndDate = DateTime.UtcNow.AddDays(-1),
-                BroadcasterLive = true
+                BroadcasterLive = true,
+                DiscordEnabled = false
             });
 
             await context.SaveChangesAsync();

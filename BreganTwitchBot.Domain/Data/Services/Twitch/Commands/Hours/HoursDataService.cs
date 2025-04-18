@@ -4,6 +4,7 @@ using BreganTwitchBot.Domain.DTOs.Twitch.EventSubEvents;
 using BreganTwitchBot.Domain.Enums;
 using BreganTwitchBot.Domain.Exceptions;
 using BreganTwitchBot.Domain.Interfaces.Discord;
+using BreganTwitchBot.Domain.Interfaces.Helpers;
 using BreganTwitchBot.Domain.Interfaces.Twitch;
 using BreganTwitchBot.Domain.Interfaces.Twitch.Commands;
 using Microsoft.EntityFrameworkCore;
@@ -11,7 +12,7 @@ using Serilog;
 
 namespace BreganTwitchBot.Domain.Data.Services.Twitch.Commands.Hours
 {
-    public class HoursDataService(AppDbContext context, ITwitchApiInteractionService twitchApiInteractionService, ITwitchApiConnection twitchApiConnection, ITwitchHelperService twitchHelperService, IDiscordRoleManagerService discordRoleManagerService) : IHoursDataService
+    public class HoursDataService(AppDbContext context, ITwitchApiInteractionService twitchApiInteractionService, ITwitchApiConnection twitchApiConnection, ITwitchHelperService twitchHelperService, IDiscordRoleManagerService discordRoleManagerService, IConfigHelperService configHelperService) : IHoursDataService
     {
         public async Task UpdateWatchtimeForChannel(string broadcasterId)
         {
@@ -49,12 +50,12 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch.Commands.Hours
                     if (dbUser == null)
                     {
                         Log.Fatal($"Error finding the db user after adding to the database - {user.UserName} {user.UserId}");
-                        return;
+                        continue;
                     }
 
                     // get the watch time of the user
                     // there is a chance they have been registered in another channel so we need to be careful on the updating
-                    var watchTime = await context.ChannelUserWatchtime.FirstAsync(x => x.Channel.BroadcasterTwitchChannelId == broadcasterId);
+                    var watchTime = await context.ChannelUserWatchtime.FirstAsync(x => x.Channel.BroadcasterTwitchChannelId == broadcasterId && x.ChannelUserId == dbUser.Id);
 
                     watchTime.MinutesInStream += 1;
                     watchTime.MinutesWatchedThisStream += 1;
@@ -63,6 +64,8 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch.Commands.Hours
                     watchTime.MinutesWatchedThisYear += 1;
 
                     // add points to the user
+                    var dbUserChannelData = await context.ChannelUserData.FirstAsync(x => x.ChannelUserId == dbUser.Id && x.ChannelId == channel.Id);
+                    dbUserChannelData.Points += (dbUserChannelData.IsSub | dbUserChannelData.IsVip) ? 200 : 100;
 
                     // check if the user has got any ranks
                     var rankEarned = channelRanks.FirstOrDefault(x => x.RankMinutesRequired == watchTime.MinutesInStream);
@@ -77,20 +80,22 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch.Commands.Hours
                             AchievedAt = DateTime.UtcNow
                         });
 
+                        var discordEnabled = configHelperService.IsDiscordEnabled(broadcasterId);
+
                         await twitchHelperService.AddPointsToUser(broadcasterId, dbUser.TwitchUserId, rankEarned.BonusRankPointsEarned, channel.BroadcasterTwitchChannelName, dbUser.TwitchUsername);
 
-                        if (!channel.DiscordEnabled)
+                        if (!discordEnabled)
                         {
-                            await twitchHelperService.SendTwitchMessageToChannel(broadcasterId, channel.BroadcasterTwitchChannelName, $"Congrats you earned the {rankEarned.RankName} rank by watching {rankEarned.RankMinutesRequired} minutes in the stream! Keep watching to earn a higher rank!");
+                            await twitchHelperService.SendTwitchMessageToChannel(broadcasterId, channel.BroadcasterTwitchChannelName, $"Congrats @{dbUser.TwitchUsername}, you earned the {rankEarned.RankName} rank by watching {rankEarned.RankMinutesRequired} minutes in the stream! Keep watching to earn a higher rank!");
                         }
-                        else if (channel.DiscordEnabled && dbUser.DiscordUserId == 0)
+                        else if (discordEnabled && dbUser.DiscordUserId == 0)
                         {
-                            await twitchHelperService.SendTwitchMessageToChannel(broadcasterId, channel.BroadcasterTwitchChannelName, $"Congrats you earned the {rankEarned.RankName} rank by watching {rankEarned.RankMinutesRequired} minutes in the stream! Make sure to join the Discord and link your Twitch account to unlock your rank role!");
+                            await twitchHelperService.SendTwitchMessageToChannel(broadcasterId, channel.BroadcasterTwitchChannelName, $"Congrats @{dbUser.TwitchUsername}, you earned the {rankEarned.RankName} rank by watching {rankEarned.RankMinutesRequired} minutes in the stream! Make sure to join the Discord and link your Twitch account to unlock your rank role!");
                         }
                         else
                         {
                             await discordRoleManagerService.ApplyRoleOnDiscordWatchtimeRankup(dbUser.TwitchUserId, broadcasterId);
-                            await twitchHelperService.SendTwitchMessageToChannel(broadcasterId, channel.BroadcasterTwitchChannelName, $"Congrats you earned {rankEarned.RankName} rank by watching {rankEarned.RankMinutesRequired} minutes in the stream! Your rank has been applied in the Discord");
+                            await twitchHelperService.SendTwitchMessageToChannel(broadcasterId, channel.BroadcasterTwitchChannelName, $"Congrats @{dbUser.TwitchUsername}, you earned {rankEarned.RankName} rank by watching {rankEarned.RankMinutesRequired} minutes in the stream! Your rank has been applied in the Discord");
                         }
 
                         rankups++;

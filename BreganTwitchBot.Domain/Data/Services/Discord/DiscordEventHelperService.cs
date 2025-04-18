@@ -88,7 +88,7 @@ namespace BreganTwitchBot.Domain.Data.Services.Discord
 
                 // check if they are linked, if so then add the twitch username and watch time stats for the channel
                 var twitchUser = await context.ChannelUsers.FirstOrDefaultAsync(x => x.DiscordUserId == userLeft.UserId);
-                var broadcaster = await context.Channels.FirstAsync(x => x.DiscordGuildId == userLeft.GuildId);
+                var broadcaster = await context.Channels.FirstAsync(x => x.ChannelConfig.DiscordGuildId == userLeft.GuildId);
 
                 if (twitchUser != null)
                 {

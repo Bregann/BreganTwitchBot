@@ -5,6 +5,7 @@ using BreganTwitchBot.Domain.Interfaces.Helpers;
 using BreganTwitchBot.Domain.Interfaces.Twitch;
 using BreganTwitchBot.Domain.Interfaces.Twitch.Commands;
 using BreganTwitchBot.Domain.Interfaces.Twitch.Events;
+using Hangfire;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Serilog;
@@ -133,8 +134,10 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch
             using (var scope = serviceProvider.CreateScope())
             {
                 var dailyPointsDataService = scope.ServiceProvider.GetRequiredService<IDailyPointsDataService>();
+                var twitchBossDataService = scope.ServiceProvider.GetRequiredService<ITwitchBossesDataService>();
 
                 await dailyPointsDataService.ScheduleDailyPointsCollection(args.Notification.Payload.Event.BroadcasterUserId);
+                BackgroundJob.Schedule(() => twitchBossDataService.StartBossFightCountdown(args.Notification.Payload.Event.BroadcasterUserId, args.Notification.Payload.Event.BroadcasterUserName, null), TimeSpan.FromMinutes(45));
             }
         }
 
@@ -311,6 +314,8 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch
             {
                 await wordBlacklistMonitorService.CheckMessageForBlacklistedWords(msgParams.Message, msgParams.ChatterChannelId, msgParams.BroadcasterChannelId);
             }
+
+            await twitchHelperService.UpdateMessageCountForUser(msgParams.BroadcasterChannelId, msgParams.ChatterChannelId, msgParams.ChatterChannelName, msgParams.Message);
 
             Log.Information($"[Twitch Events] Channel chat message: {msgParams.ChatterChannelName} ({msgParams.ChatterChannelId}) in {msgParams.BroadcasterChannelName} ({msgParams.BroadcasterChannelId}) - {msgParams.Message}");
         }

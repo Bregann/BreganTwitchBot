@@ -64,7 +64,7 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch.Commands.DailyPoints
             {
                 await configHelper.UpdateDailyPointsStatus(broadcasterId, true);
                 await twitchHelperService.SendAnnouncementMessageToChannel(broadcasterId, channelName!, $"Don't forget to claim your daily, weekly, monthly and yearly {await twitchHelperService.GetPointsName(broadcasterId, channelName!)} with !daily, !weekly, !monthly and !yearly PogChamp KEKW");
-                await context.SaveChangesAsync();
+                Log.Information($"Daily points collection allowed for {broadcasterId} - stream happened today");
                 return;
             }
 
@@ -191,6 +191,7 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch.Commands.DailyPoints
             // increment the streak and total times claimed ready for milestone checking
             user.CurrentStreak++;
             user.TotalTimesClaimed++;
+            user.PointsLastClaimed = DateTime.UtcNow;
 
             //get the milestones for the points claim type
             var milestoneDict = pointsClaimType switch

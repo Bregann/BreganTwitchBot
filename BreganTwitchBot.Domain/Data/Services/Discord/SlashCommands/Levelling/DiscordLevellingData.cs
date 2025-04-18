@@ -10,7 +10,8 @@ namespace BreganTwitchBot.Domain.Data.Services.Discord.SlashCommands.Levelling
     {
         public async Task<string> HandleToggleLevelUpCommand(DiscordCommand command)
         {
-            var user = await context.DiscordUserStats.FirstAsync(x => x.User.DiscordUserId == command.UserId && x.Channel.DiscordGuildId == command.GuildId);
+            var channel = await context.Channels.FirstAsync(x => x.ChannelConfig.DiscordGuildId == command.GuildId);
+            var user = await context.DiscordUserStats.FirstAsync(x => x.User.DiscordUserId == command.UserId && x.ChannelId == channel.Id);
 
             // change level ups toggle and return the enabled or disabled message
             user.DiscordLevelUpNotifsEnabled = !user.DiscordLevelUpNotifsEnabled;

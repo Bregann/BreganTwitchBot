@@ -42,13 +42,13 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch.Commands
 
                     if (attribute != null)
                     {
-                        _commands["!" + attribute.CommandName] = method;
+                        _commands["!" + attribute.CommandName.ToLower()] = method;
 
                         if (attribute.CommandAlias != null)
                         {
                             foreach (var alias in attribute.CommandAlias)
                             {
-                                _commands["!" + alias] = method;
+                                _commands["!" + alias.ToLower()] = method;
                             }
                         }
                     }
@@ -71,7 +71,7 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch.Commands
         public async Task HandleCommandAsync(string command, ChannelChatMessageReceivedParams msgParams)
         {
             // For the predefined commands
-            if (_commands.TryGetValue(command, out var method))
+            if (_commands.TryGetValue(command.ToLower(), out var method))
             {
                 var instance = _serviceProvider.GetRequiredService(method.DeclaringType!);
                 if (instance != null)

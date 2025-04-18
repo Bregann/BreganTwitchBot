@@ -25,8 +25,9 @@ namespace BreganTwitchBot.Domain.Data.Services.Discord.SlashCommands.Gambling
                 };
             }
 
+            var channel = await context.Channels.FirstAsync(x => x.ChannelConfig.DiscordGuildId == command.GuildId);
             var user = await context.ChannelUserData
-                .Where(x => x.Channel.DiscordGuildId == command.GuildId && x.ChannelUser.DiscordUserId == command.UserId)
+                .Where(x => x.ChannelId == channel.Id && x.ChannelUser.DiscordUserId == command.UserId)
                 .FirstAsync();
 
             if (user.Points < 1000)
@@ -303,7 +304,8 @@ namespace BreganTwitchBot.Domain.Data.Services.Discord.SlashCommands.Gambling
 
         private async Task AddWin(ulong guildId, DiscordGambleWinType winType)
         {
-            var stats = await context.DiscordSpinStats.FirstAsync(x => x.Channel.DiscordGuildId == guildId);
+            var channel = await context.Channels.FirstAsync(x => x.ChannelConfig.DiscordGuildId == guildId);
+            var stats = await context.DiscordSpinStats.FirstAsync(x => x.ChannelId == channel.Id);
 
             stats.GrapesWins += winType == DiscordGambleWinType.GrapesWins ? 1 : 0;
             stats.PineappleWins += winType == DiscordGambleWinType.PineappleWins ? 1 : 0;

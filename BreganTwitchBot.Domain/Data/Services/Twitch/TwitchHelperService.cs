@@ -473,5 +473,34 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch
                 Log.Error($"[Twitch Helper Service] Error banning user {userId} in {broadcasterChannelId}, {ex.Message}");
             }
         }
+
+        //todo: test method
+        public async Task UpdateMessageCountForUser(string broadcasterChannelId, string userId, string username, string message)
+        {
+            using (var scope = serviceProvider.CreateScope())
+            {
+                var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+                var channel = await context.Channels.FirstAsync(x => x.BroadcasterTwitchChannelId == broadcasterChannelId);
+
+                await context.ChannelMessages.AddAsync(new ChannelMessages
+                {
+                    ChannelId = channel.Id,
+                    Message = message,
+                    Username = username
+                });
+
+                var user = await context.ChannelUsers.FirstOrDefaultAsync(x => x.TwitchUserId == userId);
+                if (user == null)
+                {
+                    Log.Error($"[Twitch Helper Service] Error updating message count for user {username}, user is null");
+                    return;
+                }
+
+                var userStats = await context.ChannelUserStats.FirstAsync(x => x.ChannelId == channel.Id && x.ChannelUserId == user.Id);
+                userStats.TotalMessages += 1;
+
+                await context.SaveChangesAsync();
+            }
+        }
     }
 }

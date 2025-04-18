@@ -13,8 +13,9 @@ namespace BreganTwitchBot.Domain.Data.Services.Discord.SlashCommands.Daily
         //TODO: WRITE TESTS FOR METHOD
         public async Task<DiscordEmbedData> HandleDiscordDailyPointsCommand(DiscordCommand command)
         {
+            var channel = await context.Channels.FirstAsync(x => x.ChannelConfig.DiscordGuildId == command.GuildId);
             var user = await context.DiscordDailyPoints
-                .FirstAsync(x => x.Channel.DiscordGuildId == command.GuildId && x.User.DiscordUserId == command.UserId);
+                .FirstAsync(x => x.ChannelId == channel.Id && x.User.DiscordUserId == command.UserId);
 
             // Check if the user has already claimed their daily points
             if (user.DiscordDailyClaimed)

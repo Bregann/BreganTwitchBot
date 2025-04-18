@@ -97,7 +97,7 @@ namespace BreganTwitchBot.Domain.Data.Services
 
         public DiscordConfig? GetDiscordConfig(ulong discordGuildId)
         {
-            var config = _channelConfigs.Where(x => x.Channel.DiscordGuildId == discordGuildId).FirstOrDefault();
+            var config = _channelConfigs.Where(x => x.DiscordGuildId == discordGuildId).FirstOrDefault();
 
             return config == null
                 ? null
@@ -111,7 +111,8 @@ namespace BreganTwitchBot.Domain.Data.Services
                     DiscordGiveawayChannelId = config.DiscordGiveawayChannelId,
                     DiscordModeratorRoleId = config.DiscordModeratorRoleId,
                     DiscordWelcomeMessageChannelId = config.DiscordWelcomeMessageChannelId,
-                    DiscordGeneralChannelId = config.DiscordGeneralChannelId
+                    DiscordGeneralChannelId = config.DiscordGeneralChannelId,
+                    DiscordGuildId = config.DiscordGuildId
                 };
         }
 
@@ -137,7 +138,8 @@ namespace BreganTwitchBot.Domain.Data.Services
         public bool IsDiscordEnabled(string broadcasterId)
         {
             var config = _channelConfigs.FirstOrDefault(x => x.Channel.BroadcasterTwitchChannelId == broadcasterId);
-            return config != null && config.DiscordGuildOwnerId != null;
+
+            return config != null && config.DiscordEnabled;
         }
     }
 }

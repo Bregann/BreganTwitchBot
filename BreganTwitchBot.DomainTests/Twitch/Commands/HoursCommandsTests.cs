@@ -1,10 +1,12 @@
 ﻿using BreganTwitchBot.Domain.Data.Database.Context;
+using BreganTwitchBot.Domain.Data.Services;
 using BreganTwitchBot.Domain.Data.Services.Twitch;
 using BreganTwitchBot.Domain.Data.Services.Twitch.Commands.Hours;
 using BreganTwitchBot.Domain.DTOs.Twitch.Api;
 using BreganTwitchBot.Domain.Enums;
 using BreganTwitchBot.Domain.Exceptions;
 using BreganTwitchBot.Domain.Interfaces.Discord;
+using BreganTwitchBot.Domain.Interfaces.Helpers;
 using BreganTwitchBot.Domain.Interfaces.Twitch;
 using BreganTwitchBot.DomainTests.Helpers;
 using Microsoft.EntityFrameworkCore;
@@ -22,6 +24,7 @@ namespace BreganTwitchBot.DomainTests.Twitch.Commands
         private Mock<ITwitchApiConnection> _twitchApiConnection;
         private Mock<ITwitchHelperService> _twitchHelperService;
         private Mock<IDiscordRoleManagerService> _discordRoleManagerService;
+        private Mock<IConfigHelperService> _configHelperService;
 
         private HoursDataService _hoursDataService;
 
@@ -57,6 +60,7 @@ namespace BreganTwitchBot.DomainTests.Twitch.Commands
             _twitchApiConnection = new Mock<ITwitchApiConnection>();
             _twitchHelperService = new Mock<ITwitchHelperService>();
             _discordRoleManagerService = new Mock<IDiscordRoleManagerService>();
+            _configHelperService = new Mock<IConfigHelperService>();
 
             //Mock channel 1 broadcaster to be correct
             _twitchApiConnection.Setup(x => x.GetBotTwitchApiClientFromBroadcasterChannelId(DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId))
@@ -66,7 +70,7 @@ namespace BreganTwitchBot.DomainTests.Twitch.Commands
             _twitchApiConnection.Setup(x => x.GetTwitchApiClientFromChannelName(DatabaseSeedHelper.Channel2BroadcasterTwitchChannelName))
                 .Returns(value: null);
 
-            _hoursDataService = new HoursDataService(_dbContext, _twitchApiInteractionService.Object, _twitchApiConnection.Object, _twitchHelperService.Object, _discordRoleManagerService.Object);
+            _hoursDataService = new HoursDataService(_dbContext, _twitchApiInteractionService.Object, _twitchApiConnection.Object, _twitchHelperService.Object, _discordRoleManagerService.Object, _configHelperService.Object);
         }
 
         [TearDown]

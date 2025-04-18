@@ -11,5 +11,6 @@
         public ulong? DiscordModeratorRoleId { get; set; } = null;
         public ulong? DiscordWelcomeMessageChannelId { get; set; } = null;
         public ulong? DiscordGeneralChannelId { get; set; } = null;
+        public ulong? DiscordGuildId { get; set; } = null;
     }
 }

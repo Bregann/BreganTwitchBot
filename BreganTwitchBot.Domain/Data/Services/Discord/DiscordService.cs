@@ -328,7 +328,7 @@ namespace BreganTwitchBot.Domain.Data.Services.Discord
         private async Task Ready()
         {
 
-            await Client.SetGameAsync("many users", type: ActivityType.Watching);
+            await Client.SetGameAsync("todo: this message", type: ActivityType.Watching);
             await Client.DownloadUsersAsync(Client.Guilds);
 
 #if DEBUG

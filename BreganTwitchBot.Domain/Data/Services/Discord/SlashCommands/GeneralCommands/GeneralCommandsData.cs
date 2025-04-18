@@ -15,8 +15,9 @@ namespace BreganTwitchBot.Domain.Data.Services.Discord.SlashCommands.GeneralComm
         public async Task<string> AddUserBirthday(AddBirthdayCommand command)
         {
             // Check if the user has already added their birthday
+            var channel = await context.Channels.FirstAsync(x => x.ChannelConfig.DiscordGuildId == command.GuildId);
             var existingBirthday = await context.Birthdays
-                .FirstOrDefaultAsync(x => x.User.DiscordUserId == command.UserId && x.Channel.DiscordGuildId == command.GuildId);
+                .FirstOrDefaultAsync(x => x.User.DiscordUserId == command.UserId && x.ChannelId == channel.Id);
 
             if (existingBirthday != null)
             {
@@ -64,9 +65,6 @@ namespace BreganTwitchBot.Domain.Data.Services.Discord.SlashCommands.GeneralComm
             }
 
             // Add to database
-            var channel = await context.Channels
-                .FirstAsync(x => x.DiscordGuildId == command.GuildId);
-
             var channelUser = await context.ChannelUsers.
                 FirstAsync(x => x.DiscordUserId == command.UserId);
 
@@ -97,17 +95,17 @@ namespace BreganTwitchBot.Domain.Data.Services.Discord.SlashCommands.GeneralComm
 
             foreach (var birthday in birthdays)
             {
-                var config = configHelper.GetDiscordConfig(birthday.Channel.DiscordGuildId ?? 0);
+                var config = configHelper.GetDiscordConfig(birthday.Channel.ChannelConfig.DiscordGuildId ?? 0);
 
                 if (config == null)
                 {
-                    Log.Information($"No config found for guild {birthday.Channel.DiscordGuildId}");
+                    Log.Information($"No config found for guild {birthday.Channel.ChannelConfig.DiscordGuildId}");
                     continue;
                 }
 
                 if (config.DiscordGeneralChannelId == null)
                 {
-                    Log.Information($"No general channel found for guild {birthday.Channel.DiscordGuildId}");
+                    Log.Information($"No general channel found for guild {birthday.Channel.ChannelConfig.DiscordGuildId}");
                     continue;
                 }
 
