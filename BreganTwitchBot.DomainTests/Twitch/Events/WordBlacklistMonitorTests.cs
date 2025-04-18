@@ -153,7 +153,7 @@ namespace BreganTwitchBot.DomainTests.Twitch.Events
         [Test]
         public void AddWordToBlacklist_AddNewWord_WordIsAddedToInMemoryList()
         {
-            var word = DatabaseSeedHelper.SeededChannel1BannedWord;
+            var word = DatabaseSeedHelper.SeededChannel1BannedWord + "new";
             var broadcasterId = DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId;
             var wordType = WordType.PermBanWord;
             var initialCount = _monitorService._wordBlacklist.Count;
@@ -173,7 +173,7 @@ namespace BreganTwitchBot.DomainTests.Twitch.Events
                 Assert.That(addedItem.WordType, Is.EqualTo(wordType));
             });
 
-            Assert.That(_monitorService._wordBlacklist.Any(i => i.Word == DatabaseSeedHelper.SeededChannel1BannedWord && i.BroadcasterId == DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId), Is.True);
+            Assert.That(_monitorService._wordBlacklist.Any(i => i.Word == word && i.BroadcasterId == DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId), Is.True);
         }
 
         [Test]
@@ -182,7 +182,6 @@ namespace BreganTwitchBot.DomainTests.Twitch.Events
             var wordToRemove = DatabaseSeedHelper.SeededChannel1BannedWord;
             var broadcasterId = DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId;
 
-            _monitorService.AddWordToBlacklist(wordToRemove, broadcasterId, WordType.PermBanWord);
             _monitorService.AddWordToBlacklist(DatabaseSeedHelper.SeededChannel1TempBanWord, broadcasterId, WordType.TempBanWord);
             _monitorService.AddWordToBlacklist(DatabaseSeedHelper.SeededChannel2BannedWord, DatabaseSeedHelper.Channel2BroadcasterTwitchChannelId, WordType.PermBanWord);
 

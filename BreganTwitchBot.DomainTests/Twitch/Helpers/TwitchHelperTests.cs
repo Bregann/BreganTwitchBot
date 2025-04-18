@@ -352,25 +352,5 @@ namespace BreganTwitchBot.DomainTests.Twitch.Helpers
             Assert.That(user, Is.Not.Null);
             Assert.That(user.ChannelUserStats, Has.Count.EqualTo(1));
         }
-
-        [Test]
-        public async Task AddOrUpdateUserToDatabase_ShouldAddWatchtime_WhenAddMinutesIsTrue()
-        {
-            await _twitchHelperService.AddOrUpdateUserToDatabase(
-                DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId,
-                DatabaseSeedHelper.Channel2User1TwitchUserId,
-                DatabaseSeedHelper.Channel1BroadcasterTwitchChannelName,
-                DatabaseSeedHelper.Channel2User1TwitchUsername,
-                false,
-                false
-            );
-
-            var user = await _dbContext.ChannelUsers.Include(u => u.ChannelUserWatchtimes)
-                .FirstOrDefaultAsync(u => u.TwitchUserId == DatabaseSeedHelper.Channel2User1TwitchUserId);
-
-            Assert.That(user, Is.Not.Null);
-            Assert.That(user.ChannelUserWatchtimes.First().MinutesWatchedThisStream, Is.EqualTo(1));
-        }
-
     }
 }

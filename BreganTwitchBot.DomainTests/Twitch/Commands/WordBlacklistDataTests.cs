@@ -158,8 +158,8 @@ namespace BreganTwitchBot.DomainTests.Twitch.Commands
             Assert.That(addedWord, Is.Not.Null);
 
             _wordBlacklistMonitorServiceMock.Verify(x => x.AddWordToBlacklist(
-                DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId,
                 wordToAdd,
+                DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId,
                 wordType), Times.Once);
         }
 
@@ -193,8 +193,8 @@ namespace BreganTwitchBot.DomainTests.Twitch.Commands
             Assert.That(addedWord, Is.Not.Null);
 
             _wordBlacklistMonitorServiceMock.Verify(x => x.AddWordToBlacklist(
-                DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId,
                 wordToAdd,
+                DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId,
                 wordType), Times.Once);
         }
 
@@ -222,8 +222,8 @@ namespace BreganTwitchBot.DomainTests.Twitch.Commands
             Assert.That(addedWord, Is.Not.Null);
 
             _wordBlacklistMonitorServiceMock.Verify(x => x.AddWordToBlacklist(
-                DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId,
                 expectedStoredWord,
+                DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId,
                 wordType), Times.Once);
         }
     }

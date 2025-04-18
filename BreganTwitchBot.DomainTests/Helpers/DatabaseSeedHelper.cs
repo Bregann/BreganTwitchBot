@@ -483,7 +483,7 @@ namespace BreganTwitchBot.DomainTests.Helpers
             await context.Blacklist.AddAsync(new Blacklist
             {
                 ChannelId = channel2.Id,
-                Word = "seededbannedword",
+                Word = "seededbannedword2",
                 WordType = WordType.PermBanWord
             });
 

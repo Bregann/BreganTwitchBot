@@ -86,6 +86,9 @@ namespace BreganTwitchBot.DomainTests.Twitch.Commands
         [Test]
         public async Task HandleLinkCommand_NoLinkCodeProvided_ReturnsNoRequestMessage()
         {
+            // mock the config helper to return discord enabled
+            _configHelperServiceMock.Setup(x => x.IsDiscordEnabled(It.IsAny<string>())).Returns(true);
+
             var msgParams = MessageParamsHelper.CreateChatMessageParams("!link", "msg2", ["!link"]);
             var result = await _linkingDataService.HandleLinkCommand(msgParams);
 
@@ -98,6 +101,9 @@ namespace BreganTwitchBot.DomainTests.Twitch.Commands
         [Test]
         public async Task HandleLinkCommand_InvalidLinkCodeFormat_ReturnsInvalidCodeMessage()
         {
+            // mock the config helper to return discord enabled
+            _configHelperServiceMock.Setup(x => x.IsDiscordEnabled(It.IsAny<string>())).Returns(true);
+
             var msgParams = MessageParamsHelper.CreateChatMessageParams("!link abcde", "msg3", ["!link", "abcde"]);
             var result = await _linkingDataService.HandleLinkCommand(msgParams);
 
@@ -110,6 +116,9 @@ namespace BreganTwitchBot.DomainTests.Twitch.Commands
         [Test]
         public async Task HandleLinkCommand_NoLinkRequestFound_ReturnsNoRequestMessage()
         {
+            // mock the config helper to return discord enabled
+            _configHelperServiceMock.Setup(x => x.IsDiscordEnabled(It.IsAny<string>())).Returns(true);
+
             var msgParams = MessageParamsHelper.CreateChatMessageParams("!link 12345", "msg4", ["!link", "12345"],
                 chatterChannelId: DatabaseSeedHelper.Channel1User2TwitchUserId,
                 chatterChannelName: DatabaseSeedHelper.Channel1User2TwitchUsername);
@@ -125,6 +134,9 @@ namespace BreganTwitchBot.DomainTests.Twitch.Commands
         [Test]
         public async Task HandleLinkCommand_IncorrectLinkCode_ReturnsInvalidCodeMessage()
         {
+            // mock the config helper to return discord enabled
+            _configHelperServiceMock.Setup(x => x.IsDiscordEnabled(It.IsAny<string>())).Returns(true);
+
             var msgParams = MessageParamsHelper.CreateChatMessageParams("!link 99999", "msg5", ["!link", "99999"]); // Use incorrect code
             var result = await _linkingDataService.HandleLinkCommand(msgParams);
 
@@ -137,6 +149,9 @@ namespace BreganTwitchBot.DomainTests.Twitch.Commands
         [Test]
         public async Task HandleLinkCommand_ValidLinkCode_LinksAccountAndReturnsSuccessMessage()
         {
+            // mock the config helper to return discord enabled
+            _configHelperServiceMock.Setup(x => x.IsDiscordEnabled(It.IsAny<string>())).Returns(true);
+
             var expectedDiscordId = 1234567890UL;
             var msgParams = MessageParamsHelper.CreateChatMessageParams("!link 12345", "msg6", ["!link", "12345"]); // Use correct code
             var result = await _linkingDataService.HandleLinkCommand(msgParams);

@@ -206,7 +206,7 @@ namespace BreganTwitchBot.DomainTests.Twitch.Commands
             else
             {
                 Assert.That(dailyPoints.TotalPointsClaimed, Is.EqualTo(expectedPoints));
-                Assert.That(response, Is.EqualTo($"You have claimed your {pointsClaimType.ToString().ToLower()} {DatabaseSeedHelper.Channel1ChannelCurrencyName} for {expectedPoints:N0} points! You are on a {expectedStreakNumber} day streak!"));
+                Assert.That(response, Is.EqualTo($"You have claimed your {pointsClaimType.ToString().ToLower()} {DatabaseSeedHelper.Channel1ChannelCurrencyName} for {expectedPoints:N0} points! You are on a {expectedStreakNumber} {(pointsClaimType == PointsClaimType.Daily ? "day" : pointsClaimType.ToString().ToLower().TrimEnd(['l', 'y']))} streak!"));
             }
         }
 
@@ -300,7 +300,7 @@ namespace BreganTwitchBot.DomainTests.Twitch.Commands
         {
             var msgParams = MessageParamsHelper.CreateChatMessageParams("!streak", "123", new string[] { "!streak" });
             var response = await _dailyPointsDataService.HandleStreakCheckCommand(msgParams, pointsClaimType);
-            Assert.That(response, Is.EqualTo($"You are on a {currentStreak} {pointsClaimType.ToString().ToLower().TrimEnd(['l', 'y'])} streak!"));
+            Assert.That(response, Is.EqualTo($"You are on a {currentStreak} {(pointsClaimType == PointsClaimType.Daily ? "day" : pointsClaimType.ToString().ToLower().TrimEnd(['l', 'y']))} streak!"));
         }
 
         [Test]
@@ -316,7 +316,7 @@ namespace BreganTwitchBot.DomainTests.Twitch.Commands
             var msgParams = MessageParamsHelper.CreateChatMessageParams($"!streak {DatabaseSeedHelper.Channel1User2TwitchUsername}", "123", new string[] { "!streak", DatabaseSeedHelper.Channel1User2TwitchUsername });
             var response = await _dailyPointsDataService.HandleStreakCheckCommand(msgParams, pointsClaimType);
 
-            Assert.That(response, Is.EqualTo($"{DatabaseSeedHelper.Channel1User2TwitchUsername} is on a {currentStreak} {pointsClaimType.ToString().ToLower().TrimEnd(['l', 'y'])} streak!"));
+            Assert.That(response, Is.EqualTo($"{DatabaseSeedHelper.Channel1User2TwitchUsername} is on a {currentStreak} {(pointsClaimType == PointsClaimType.Daily ? "day" : pointsClaimType.ToString().ToLower().TrimEnd(['l', 'y']))} streak!"));
         }
     }
 }

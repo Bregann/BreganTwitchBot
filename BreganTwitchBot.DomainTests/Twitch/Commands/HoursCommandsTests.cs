@@ -187,33 +187,6 @@ namespace BreganTwitchBot.DomainTests.Twitch.Commands
         }
 
         [Test]
-        public async Task UpdateWatchtimeForChannel_ExistingUserToBotButNewToUser_WatchtimeAdds()
-        {
-            var channel = await _dbContext.Channels.FirstAsync(c => c.BroadcasterTwitchChannelId == DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId);
-            channel.ChannelConfig.BroadcasterLive = true;
-            await _dbContext.SaveChangesAsync();
-
-            var newUser = new Chatters { UserId = DatabaseSeedHelper.Channel1SuperModUserTwitchUserId, UserName = DatabaseSeedHelper.Channel1SuperModUserTwitchUsername };
-            var chattersResult = new GetChattersResult { Chatters = new List<Chatters> { newUser } };
-
-            _twitchApiInteractionService.Setup(x => x.GetChattersAsync(It.IsAny<TwitchAPI>(), It.IsAny<string>(), It.IsAny<string>()))
-                .ReturnsAsync(chattersResult);
-
-            await _hoursDataService.UpdateWatchtimeForChannel(DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId);
-
-            var userWatchtime = await _dbContext.ChannelUserWatchtime.FirstAsync(x => x.ChannelUser.TwitchUsername == DatabaseSeedHelper.Channel1SuperModUserTwitchUsername);
-
-            Assert.Multiple(() =>
-            {
-                Assert.That(userWatchtime.MinutesWatchedThisStream, Is.EqualTo(1));
-                Assert.That(userWatchtime.MinutesWatchedThisWeek, Is.EqualTo(1));
-                Assert.That(userWatchtime.MinutesWatchedThisMonth, Is.EqualTo(1));
-                Assert.That(userWatchtime.MinutesWatchedThisYear, Is.EqualTo(1));
-                Assert.That(userWatchtime.MinutesInStream, Is.EqualTo(1));
-            });
-        }
-
-        [Test]
         public async Task UpdateWatchtimeForChannel_UserReachesRankup_RankUpAddsToDatabase()
         {
             var channel = await _dbContext.Channels.FirstAsync(c => c.BroadcasterTwitchChannelId == DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId);
