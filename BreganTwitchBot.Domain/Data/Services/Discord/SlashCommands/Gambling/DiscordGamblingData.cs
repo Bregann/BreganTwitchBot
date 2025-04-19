@@ -179,7 +179,7 @@ namespace BreganTwitchBot.Domain.Data.Services.Discord.SlashCommands.Gambling
                 cheeseWins: 1/3448 (29)
              */
 
-            await discordHelperService.RemovePointsFromUser(discordId, guildId, pointsGambled);
+            await discordHelperService.RemovePointsFromUser(guildId, discordId, pointsGambled);
 
             var randomSpin = random.Next(1, 10001);
             long pointsWon = 0;
@@ -313,6 +313,7 @@ namespace BreganTwitchBot.Domain.Data.Services.Discord.SlashCommands.Gambling
             stats.CucumberWins += winType == DiscordGambleWinType.CucumberWins ? 1 : 0;
             stats.EggplantWins += winType == DiscordGambleWinType.EggplantWins ? 1 : 0;
             stats.CheeseWins += winType == DiscordGambleWinType.CheeseWins ? 1 : 0;
+            stats.DiscordTotalSpins++;
 
             await context.SaveChangesAsync();
         }

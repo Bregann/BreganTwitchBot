@@ -165,9 +165,18 @@ namespace BreganTwitchBot.Domain.Data.Services.Discord
             {
                 var discordEventHelperService = scope.ServiceProvider.GetRequiredService<IDiscordEventHelperService>();
 
+                // convert channel to guildCHannel
+                var guildChannel = arg.Channel as SocketGuildChannel;
+
+                if (guildChannel == null)
+                {
+                    Log.Warning($"[Discord Message] Channel is not a guild channel. ChannelId: {arg.Channel.Id}");
+                    return;
+                }
+
                 var messageReceived = new MessageReceivedEvent
                 {
-                    GuildId = arg.Channel.Id,
+                    GuildId = guildChannel.Guild.Id,
                     UserId = arg.Author.Id,
                     Username = arg.Author.Username,
                     ChannelId = arg.Channel.Id,
@@ -309,7 +318,7 @@ namespace BreganTwitchBot.Domain.Data.Services.Discord
             }
 
             // process it if it does match as we don't want to force the user to use the commands channel
-            if (interaction.Channel.Id != 713365310408884236 && command.CommandName == "socks")
+            if (interaction.Channel.Id == 713365310408884236 && command.CommandName == "socks")
             {
                 var contextSocks = new SocketInteractionContext(Client, interaction);
                 await _interactionService.ExecuteCommandAsync(contextSocks, _services);

@@ -61,6 +61,8 @@ namespace BreganTwitchBot.Domain.Data.Services.Discord
         {
             using (var scope = serviceProvider.CreateScope())
             {
+                Log.Information($"[Discord XP Manager Service] Adding {baseXpToAdd} xp to {userId} in {guildId}");
+
                 var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
                 var channel = await context.Channels.FirstAsync(x => x.ChannelConfig.DiscordGuildId == guildId);
                 var user = await context.DiscordUserStats.FirstOrDefaultAsync(x => x.User.DiscordUserId == userId && x.ChannelId == channel.Id);
