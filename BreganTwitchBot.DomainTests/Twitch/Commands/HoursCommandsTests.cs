@@ -1,5 +1,4 @@
 ﻿using BreganTwitchBot.Domain.Data.Database.Context;
-using BreganTwitchBot.Domain.Data.Services;
 using BreganTwitchBot.Domain.Data.Services.Twitch;
 using BreganTwitchBot.Domain.Data.Services.Twitch.Commands.Hours;
 using BreganTwitchBot.Domain.DTOs.Twitch.Api;

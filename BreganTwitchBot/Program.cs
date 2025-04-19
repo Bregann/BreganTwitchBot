@@ -32,6 +32,7 @@ using Discord.Interactions;
 using Discord.WebSocket;
 using Hangfire;
 using Hangfire.Dashboard.BasicAuthorization;
+using Hangfire.PostgreSql;
 using Hangfire.MemoryStorage;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
@@ -108,16 +109,16 @@ builder.Services.AddHangfire(configuration => configuration
 #else
 builder.Services.AddDbContext<PostgresqlContext>(options =>
     options.UseLazyLoadingProxies()
-           .UseNpgsql(Environment.GetEnvironmentVariable("xxxConnStringLive")));
+           .UseNpgsql(Environment.GetEnvironmentVariable("BTBConnStringLive")));
 builder.Services.AddScoped<AppDbContext>(provider => provider.GetService<PostgresqlContext>());
 
-GlobalConfiguration.Configuration.UsePostgreSqlStorage(c => c.UseNpgsqlConnection(Environment.GetEnvironmentVariable("xxxConnString")));
+GlobalConfiguration.Configuration.UsePostgreSqlStorage(c => c.UseNpgsqlConnection(Environment.GetEnvironmentVariable("BTBConnStringLive")));
 
 builder.Services.AddHangfire(configuration => configuration
         .SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
         .UseSimpleAssemblyNameTypeSerializer()
         .UseRecommendedSerializerSettings()
-        .UsePostgreSqlStorage(c => c.UseNpgsqlConnection(Environment.GetEnvironmentVariable("xxxConnString")))
+        .UsePostgreSqlStorage(c => c.UseNpgsqlConnection(Environment.GetEnvironmentVariable("BTBConnStringLive")))
         );
 #endif
 
