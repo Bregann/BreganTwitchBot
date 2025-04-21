@@ -6,7 +6,15 @@ using Serilog;
 
 namespace BreganTwitchBot.Domain.Helpers
 {
-    public class HangfireJobServiceHelper(ITwitchApiConnection twitchApiConnection, ITwitchHelperService twitchHelperService, IHoursDataService hoursDataService, IWordBlacklistMonitorService wordBlacklistMonitorService, IDailyPointsDataService dailyPointsDataService, IGeneralCommandsData generalCommandsData)
+    public class HangfireJobServiceHelper(
+        ITwitchApiConnection twitchApiConnection, 
+        ITwitchHelperService twitchHelperService, 
+        IHoursDataService hoursDataService, 
+        IWordBlacklistMonitorService wordBlacklistMonitorService, 
+        IDailyPointsDataService dailyPointsDataService, 
+        IGeneralCommandsData generalCommandsData,
+        IDiscordDailyPointsData discordDailyPointsData
+        )
     {
         public void SetupHangfireJobs()
         {
@@ -18,6 +26,7 @@ namespace BreganTwitchBot.Domain.Helpers
             RecurringJob.AddOrUpdate("ResetTwitchStreaks", () => ResetTwitchStreaks(), "0 2 * * *");
             RecurringJob.AddOrUpdate("RefreshApi", () => RefreshApi(), "45 * * * *");
             RecurringJob.AddOrUpdate("CheckBirthdays", () => CheckBirthdays(), "0 6 * * *");
+            RecurringJob.AddOrUpdate("ResetDiscordStreaks", () => ResetDiscordStreaks(), "0 0 * * *");
 
             Log.Information("[Job Scheduler] Job Scheduler Setup");
         }
@@ -157,6 +166,11 @@ namespace BreganTwitchBot.Domain.Helpers
         public async Task CheckBirthdays()
         {
             await generalCommandsData.CheckForUserBirthdaysAndSendMessage();
+        }
+
+        public async Task ResetDiscordStreaks()
+        {
+            await discordDailyPointsData.ResetDiscordDailyStreaks();
         }
     }
 }

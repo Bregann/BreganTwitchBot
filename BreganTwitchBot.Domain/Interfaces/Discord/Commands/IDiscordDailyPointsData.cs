@@ -6,5 +6,6 @@ namespace BreganTwitchBot.Domain.Interfaces.Discord.Commands
     public interface IDiscordDailyPointsData
     {
         Task<DiscordEmbedData> HandleDiscordDailyPointsCommand(DiscordCommand command);
+        Task ResetDiscordDailyStreaks();
     }
 }

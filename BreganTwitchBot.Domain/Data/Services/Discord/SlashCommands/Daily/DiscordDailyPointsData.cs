@@ -5,6 +5,7 @@ using BreganTwitchBot.Domain.Interfaces.Discord;
 using BreganTwitchBot.Domain.Interfaces.Discord.Commands;
 using Discord;
 using Microsoft.EntityFrameworkCore;
+using Serilog;
 
 namespace BreganTwitchBot.Domain.Data.Services.Discord.SlashCommands.Daily
 {
@@ -69,6 +70,13 @@ namespace BreganTwitchBot.Domain.Data.Services.Discord.SlashCommands.Daily
                     { "Points Claimed", pointsToGive.ToString("N0") }
                 }
             };
+        }
+
+        //todo: test method
+        public async Task ResetDiscordDailyStreaks()
+        {
+            var usersReset = await context.DiscordDailyPoints.Where(x => x.DiscordDailyClaimed).ExecuteUpdateAsync(x => x.SetProperty(y => y.DiscordDailyClaimed, false));
+            Log.Information($"[Discord Daily Points] Reset {usersReset} users daily points streaks");
         }
 
         private static long PointsToGiveToUser()
