@@ -332,15 +332,51 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch
             return Task.CompletedTask;
         }
 
-        private async Task OnWebsocketDisconnected(object sender, EventArgs e)
+        private async Task OnWebsocketDisconnected(object sender, EventArgs e, string twitchChannelName)
         {
+            var userWebsocketConnection = _userConnections.GetValueOrDefault(twitchChannelName);
 
-            // Don't do this in production. You should implement a better reconnect strategy with exponential backoff
-            //TODO: actually make this work
-            //while (!await _eventSubWebsocketClient.ReconnectAsync())
-            //{
-            //    await Task.Delay(1000);
-            //}
+            if (userWebsocketConnection == null)
+            {
+                Log.Fatal($"[Twitch Events] Websocket disconnected for {twitchChannelName} but no connection found");
+                return;
+            }
+
+            const int maxRetries = 5;
+            int retryAttempt = 0;
+            var random = new Random();
+
+            while (retryAttempt < maxRetries)
+            {
+                Log.Warning($"[Twitch Events] Websocket disconnected for {twitchChannelName}. Attempting reconnect #{retryAttempt + 1}");
+
+                try
+                {
+                    bool reconnected = await userWebsocketConnection.ReconnectAsync();
+
+                    if (reconnected)
+                    {
+                        Log.Information($"[Twitch Events] Successfully reconnected websocket for {twitchChannelName} on attempt #{retryAttempt + 1}");
+                        return;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Log.Error(ex, $"[Twitch Events] Reconnect attempt #{retryAttempt + 1} failed for {twitchChannelName}");
+                }
+
+                retryAttempt++;
+
+                // Exponential backoff with jitter
+                int delay = (int)(Math.Pow(2, retryAttempt) * 1000);
+                int jitter = random.Next(0, 1000);
+                int totalDelay = Math.Min(delay + jitter, 30000); // Cap at 30s
+
+                Log.Warning($"[Twitch Events] Waiting {totalDelay}ms before next reconnect attempt for {twitchChannelName} 💤");
+                await Task.Delay(totalDelay);
+            }
+
+            Log.Fatal($"[Twitch Events] Failed to reconnect websocket for {twitchChannelName} after {maxRetries} attempts 💀");
         }
 
         private async Task OnWebsocketConnected(object sender, WebsocketConnectedArgs e, string twitchChannelName)
@@ -455,7 +491,7 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch
                     }
 
                     userWebSocket.WebsocketConnected += (sender, e) => OnWebsocketConnected(sender, e, apiClient.TwitchUsername);
-                    userWebSocket.WebsocketDisconnected += OnWebsocketDisconnected;
+                    userWebSocket.WebsocketDisconnected += (sender, e) => OnWebsocketDisconnected(sender, e, apiClient.TwitchUsername);
                     userWebSocket.WebsocketReconnected += OnWebsocketReconnected;
                     userWebSocket.ErrorOccurred += OnErrorOccurred;
 
