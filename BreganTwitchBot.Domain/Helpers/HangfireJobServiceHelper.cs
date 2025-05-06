@@ -22,7 +22,7 @@ namespace BreganTwitchBot.Domain.Helpers
             RecurringJob.AddOrUpdate("TimeTrackerHoursUpdate", () => TimeTrackerHoursUpdate(), "* * * * *");
             RecurringJob.AddOrUpdate("RemoveWarnedUsers", () => RemoveWarnedUsers(), "* * * * *");
             RecurringJob.AddOrUpdate("ResetMinutes", () => ResetMinutes(), "0 3 * * *");
-            RecurringJob.AddOrUpdate("DailyPointsReminder", () => AnnouncePointsReminderMessage(), "20 * * * *");
+            RecurringJob.AddOrUpdate("DailyPointsReminder", () => AnnouncePointsReminderMessage(), "*/30 * * * *");
             RecurringJob.AddOrUpdate("ResetTwitchStreaks", () => ResetTwitchStreaks(), "0 2 * * *");
             RecurringJob.AddOrUpdate("RefreshApi", () => RefreshApi(), "45 * * * *");
             RecurringJob.AddOrUpdate("CheckBirthdays", () => CheckBirthdays(), "0 6 * * *");

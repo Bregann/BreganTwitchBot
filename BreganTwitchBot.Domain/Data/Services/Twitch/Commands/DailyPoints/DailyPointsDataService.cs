@@ -101,12 +101,8 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch.Commands.DailyPoints
             await twitchHelperService.SendAnnouncementMessageToChannel(broadcasterId, channelName!, $"Don't forget to claim your daily, weekly, monthly and yearly {await twitchHelperService.GetPointsName(broadcasterId, channelName!)} with !daily, !weekly, !monthly and !yearly PogChamp KEKW");
             await twitchHelperService.SendTwitchMessageToChannel(broadcasterId, channelName!, $"Top 5 lost streaks: {string.Join(", ", top5LostStreaks.Select(x => $"{x.User.TwitchUsername} - {x.CurrentStreak}"))}");
 
-            // create a recurring job to remind the users to collect their points
-            recurringJobManager.AddOrUpdate(
-                $"DailyPointsCollectionReminder-{broadcasterId}",
-                () => twitchHelperService.SendTwitchMessageToChannel(broadcasterId, channelName!, $"Don't forget to claim your daily, weekly, monthly and yearly {twitchHelperService.GetPointsName(broadcasterId, channelName!)} with !daily, !weekly, !monthly and !yearly PogChamp KEKW", null),
-                "*/30 * * * *"
-            );
+            // send announcement message to the channel that points are allowed
+            await AnnouncePointsReminder(broadcasterId);
         }
 
         public async Task AnnouncePointsReminder(string broadcasterId)
@@ -129,39 +125,60 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch.Commands.DailyPoints
             {
                 var config = configHelper.GetDailyPointsStatus(channelId);
 
-                if (config.StreamHappenedThisWeek)
+                // check if the last stream was within the last 7 days, if it was then reset the streaks
+                if (config.StreamHappenedThisWeek && config.LastStreamDate.Date.AddDays(7) >= DateTime.UtcNow.Date)
                 {
-                    var usersReset = await context.TwitchDailyPoints
-                        .Where(x => x.Channel.BroadcasterTwitchChannelId == channelId && x.PointsClaimType == PointsClaimType.Weekly && x.PointsClaimed == false)
-                        .ExecuteUpdateAsync(setters => setters
-                            .SetProperty(x => x.CurrentStreak, 0)
-                            .SetProperty(x => x.PointsClaimed, false));
-
+                    var usersReset = await ResetStreaks(channelId, PointsClaimType.Weekly);
                     Log.Information($"Reset {usersReset} users streaks for channel {channelId}");
+
+                    // reset everybodies points claimed for the week where true
+                    var rowsChanged = await ResetClaims(channelId, PointsClaimType.Weekly);
+                    Log.Information($"Reset {rowsChanged} users to allow weekly points collecting for channel {channelId}");
+                }
+
+                //check if the stream has happened in the last month and only reset if it has
+                if (DateTime.UtcNow.Day == 1 && config.LastStreamDate.Date.AddDays(30) >= DateTime.UtcNow.Date)
+                {
+                    var monthlyUsersReset = await ResetStreaks(channelId, PointsClaimType.Monthly);
+                    Log.Information($"Reset {monthlyUsersReset} users streaks for monthly points");
+
+                    // reset everybodies points claimed for the month where true
+                    var rowsChanged = await ResetClaims(channelId, PointsClaimType.Monthly);
+                    Log.Information($"Reset {rowsChanged} users to allow monthly points collecting");
+                }
+
+                // check if the stream has happened in the last year and only reset if it has
+                if (DateTime.UtcNow.Month == 1 && DateTime.UtcNow.Day == 1 && config.LastStreamDate.Date.AddDays(365) >= DateTime.UtcNow.Date)
+                {
+                    var yearlyUsersReset = await ResetStreaks(channelId, PointsClaimType.Yearly);
+                    Log.Information($"Reset {yearlyUsersReset} users streaks for yearly points");
+
+
+                    // reset everybodies points claimed for the year where true
+                    var rowsChanged = await ResetClaims(channelId, PointsClaimType.Yearly);
+                    Log.Information($"Reset {rowsChanged} users to allow yearly points collecting");
                 }
             }
+        }
 
-            if (DateTime.UtcNow.Day == 1)
-            {
-                var monthlyUsersReset = await context.TwitchDailyPoints
-                    .Where(x => x.PointsClaimType == PointsClaimType.Monthly && x.PointsClaimed == false)
-                    .ExecuteUpdateAsync(setters => setters
-                        .SetProperty(x => x.CurrentStreak, 0)
-                        .SetProperty(x => x.PointsClaimed, false));
+        private async Task<int> ResetStreaks(string broadcasterId, PointsClaimType claimType)
+        {
+            var rowsAffected = await context.TwitchDailyPoints
+                        .Where(x => x.Channel.BroadcasterTwitchChannelId == broadcasterId && x.PointsClaimType == claimType && x.PointsClaimed == false)
+                        .ExecuteUpdateAsync(setters => setters
+                            .SetProperty(x => x.CurrentStreak, 0));
 
-                Log.Information($"Reset {monthlyUsersReset} users streaks for monthly points");
-            }
+            return rowsAffected;
+        }
 
-            if (DateTime.UtcNow.Month == 1 && DateTime.UtcNow.Day == 1)
-            {
-                var yearlyUsersReset = await context.TwitchDailyPoints
-                    .Where(x => x.PointsClaimType == PointsClaimType.Yearly && x.PointsClaimed == false)
-                    .ExecuteUpdateAsync(setters => setters
-                        .SetProperty(x => x.CurrentStreak, 0)
-                        .SetProperty(x => x.PointsClaimed, false));
+        private async Task<int> ResetClaims(string broadcasterId, PointsClaimType claimType)
+        {
+            var rowsChanged = await context.TwitchDailyPoints
+                        .Where(x => x.Channel.BroadcasterTwitchChannelId == broadcasterId && x.PointsClaimType == claimType && x.PointsClaimed == true)
+                        .ExecuteUpdateAsync(setters => setters
+                            .SetProperty(x => x.PointsClaimed, false));
 
-                Log.Information($"Reset {yearlyUsersReset} users streaks for yearly points");
-            }
+            return rowsChanged;
         }
 
         public async Task<string> HandlePointsClaimed(ChannelChatMessageReceivedParams msgParams, PointsClaimType pointsClaimType)

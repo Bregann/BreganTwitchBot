@@ -30,7 +30,7 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch.Commands.WordBlacklist
             // check if the word is already in the database
             var wordToAdd = string.Join(" ", msgParams.MessageParts.Skip(1)).ToLower().Trim();
 
-            var existingWord = await context.Blacklist.AnyAsync(x => x.Word == wordToAdd && x.WordType == wordType && x.Channel.BroadcasterTwitchChannelName == msgParams.BroadcasterChannelName);
+            var existingWord = await context.Blacklist.AnyAsync(x => x.Word == wordToAdd && x.WordType == wordType && x.Channel.BroadcasterTwitchChannelId == msgParams.BroadcasterChannelId);
 
             if (existingWord)
             {
@@ -38,7 +38,7 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch.Commands.WordBlacklist
             }
 
             // add the word to the database
-            var channel = await context.Channels.FirstAsync(x => x.BroadcasterTwitchChannelName == msgParams.BroadcasterChannelName);
+            var channel = await context.Channels.FirstAsync(x => x.BroadcasterTwitchChannelId == msgParams.BroadcasterChannelId);
 
             context.Blacklist.Add(new Blacklist
             {
@@ -72,7 +72,7 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch.Commands.WordBlacklist
             var wordToRemove = msgParams.MessageParts[1].ToLower().Trim();
 
             // remove the word from the database
-            var itemsRemoved = await context.Blacklist.Where((x => x.Word == wordToRemove && x.WordType == wordType && x.Channel.BroadcasterTwitchChannelName == msgParams.BroadcasterChannelName)).ExecuteDeleteAsync();
+            var itemsRemoved = await context.Blacklist.Where((x => x.Word == wordToRemove && x.WordType == wordType && x.Channel.BroadcasterTwitchChannelId == msgParams.BroadcasterChannelId)).ExecuteDeleteAsync();
 
             if (itemsRemoved == 0)
             {
