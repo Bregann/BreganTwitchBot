@@ -57,7 +57,7 @@ namespace BreganTwitchBot.Domain.Data.Services.Discord
                 }
                 else
                 {
-                    message = $"Welcome <@{userJoined.UserId}> to the server! ${(discordConfig.DiscordUserCommandsChannelId != null ? $"To access awesome features head over to <#{discordConfig.DiscordUserCommandsChannelId.Value}> and use the command /link to link your Twitch account to the bot!! :D" : "")}";
+                    message = $"Welcome <@{userJoined.UserId}> to the server! {(discordConfig.DiscordUserCommandsChannelId != null ? $"To access awesome features head over to <#{discordConfig.DiscordUserCommandsChannelId.Value}> and use the command /link to link your Twitch account to the bot!! :D" : "")}";
                 }
 
                 await discordHelper.SendMessage(discordConfig.DiscordWelcomeMessageChannelId.Value, message);
