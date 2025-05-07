@@ -109,7 +109,7 @@ namespace BreganTwitchBot.Domain.Data.Services.Discord.SlashCommands.GeneralComm
                     continue;
                 }
 
-                await discordHelperService.SendMessage(config.DiscordGeneralChannelId.Value, $"Happy birthday to you! Happy birthday to you! Happy birthday dear @<{birthday.User.DiscordUserId}>! Happy birthday to you!");
+                await discordHelperService.SendMessage(config.DiscordGeneralChannelId.Value, $"Happy birthday to you! Happy birthday to you! Happy birthday dear <@{birthday.User.DiscordUserId}>! Happy birthday to you!");
             }
         }
     }
