@@ -68,12 +68,14 @@ namespace BreganTwitchBot.Domain.Data.Services
                         .SetProperty(x => status == true ? x.LastStreamStartDate : x.LastStreamEndDate, DateTime.UtcNow)
                         .SetProperty(x => x.StreamHappenedThisWeek, true)
                         .SetProperty(x => x.BroadcasterLive, status)
+                        .SetProperty(x => x.DailyPointsCollectingAllowed, status)
                 );
 
                 await context.SaveChangesAsync();
 
                 _channelConfigs.First(x => x.Channel.BroadcasterTwitchChannelId == broadcasterId).StreamAnnounced = status;
                 _channelConfigs.First(x => x.Channel.BroadcasterTwitchChannelId == broadcasterId).BroadcasterLive = status;
+                _channelConfigs.First(x => x.Channel.BroadcasterTwitchChannelId == broadcasterId).DailyPointsCollectingAllowed = status;
 
                 if (status)
                 {
