@@ -134,10 +134,15 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch
             using (var scope = serviceProvider.CreateScope())
             {
                 var dailyPointsDataService = scope.ServiceProvider.GetRequiredService<IDailyPointsDataService>();
-                var twitchBossDataService = scope.ServiceProvider.GetRequiredService<ITwitchBossesDataService>();
 
                 await dailyPointsDataService.ScheduleDailyPointsCollection(args.Notification.Payload.Event.BroadcasterUserId);
-                BackgroundJob.Schedule(() => twitchBossDataService.StartBossFightCountdown(args.Notification.Payload.Event.BroadcasterUserId, args.Notification.Payload.Event.BroadcasterUserName, null), TimeSpan.FromMinutes(45));
+
+                BackgroundJob.Schedule<ITwitchBossesDataService>(svc =>
+                    svc.StartBossFightCountdown(
+                        args.Notification.Payload.Event.BroadcasterUserId,
+                        args.Notification.Payload.Event.BroadcasterUserName,
+                        null),
+                    TimeSpan.FromMinutes(45));
             }
         }
 
