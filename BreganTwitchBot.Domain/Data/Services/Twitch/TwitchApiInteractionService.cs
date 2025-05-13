@@ -1,5 +1,6 @@
 ﻿using BreganTwitchBot.Domain.DTOs.Twitch.Api;
 using BreganTwitchBot.Domain.Interfaces.Twitch;
+using Serilog;
 using TwitchLib.Api;
 using TwitchLib.Api.Helix.Models.Chat;
 using TwitchLib.Api.Helix.Models.Moderation.BanUser;
@@ -61,7 +62,7 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch
             await apiClient.Helix.Chat.SendChatMessage(broadcasterChannelId, twitchChannelClientId, message, originalMessageId);
         }
 
-        public async Task<GetChattersResult> GetChattersAsync(TwitchAPI apiClient, string broadcasterChannelId, string moderatorId)
+        public async Task<GetChattersResponse> GetChattersAsync(TwitchAPI apiClient, string broadcasterChannelId, string moderatorId)
         {
             var res = await apiClient.Helix.Chat.GetChattersAsync(broadcasterChannelId, moderatorId, 1000);
 
@@ -84,7 +85,7 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch
                 }
             }
 
-            return new GetChattersResult
+            return new GetChattersResponse
             {
                 Chatters = chatters
             };
@@ -132,6 +133,34 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch
             };
 
             await apiClient.Helix.Moderation.BanUserAsync(broadcasterChannelId, moderatorId, ban);
+        }
+
+        public async Task<GetStreamsResponse?> GetStreams(TwitchAPI apiClient, string broadcasterId)
+        {
+            try
+            {
+                var res = await apiClient.Helix.Streams.GetStreamsAsync(userIds: new List<string> { broadcasterId });
+
+                if (res != null)
+                {
+                    return res.Streams.Length == 0
+                        ? null
+                        : new GetStreamsResponse
+                        {
+                            GameId = res.Streams[0].GameId,
+                            GameName = res.Streams[0].GameName,
+                            ViewerCount = res.Streams[0].ViewerCount,
+                            StartedAt = res.Streams[0].StartedAt
+                        };
+                }
+
+                return null;
+            }
+            catch (Exception ex)
+            {
+                Log.Fatal(ex, $"Error getting streams for broadcasterId: {broadcasterId}");
+                return null;
+            }
         }
     }
 }

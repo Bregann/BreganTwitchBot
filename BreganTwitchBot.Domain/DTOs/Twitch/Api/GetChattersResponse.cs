@@ -1,6 +1,6 @@
 ﻿namespace BreganTwitchBot.Domain.DTOs.Twitch.Api
 {
-    public class GetChattersResult
+    public class GetChattersResponse
     {
         public required List<Chatters> Chatters { get; set; }
     }

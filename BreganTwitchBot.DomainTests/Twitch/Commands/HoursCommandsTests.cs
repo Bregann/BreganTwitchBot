@@ -139,7 +139,7 @@ namespace BreganTwitchBot.DomainTests.Twitch.Commands
             await _dbContext.SaveChangesAsync();
 
             var newUser = new Chatters { UserId = "newuser123", UserName = "NewUser" };
-            var chattersResult = new GetChattersResult { Chatters = new List<Chatters> { newUser } };
+            var chattersResult = new GetChattersResponse { Chatters = new List<Chatters> { newUser } };
 
             _twitchApiInteractionService.Setup(x => x.GetChattersAsync(It.IsAny<TwitchAPI>(), It.IsAny<string>(), It.IsAny<string>()))
                 .ReturnsAsync(chattersResult);
@@ -166,7 +166,7 @@ namespace BreganTwitchBot.DomainTests.Twitch.Commands
             await _dbContext.SaveChangesAsync();
 
             var newUser = new Chatters { UserId = DatabaseSeedHelper.Channel1User1TwitchUserId, UserName = DatabaseSeedHelper.Channel1User1TwitchUsername };
-            var chattersResult = new GetChattersResult { Chatters = new List<Chatters> { newUser } };
+            var chattersResult = new GetChattersResponse { Chatters = new List<Chatters> { newUser } };
 
             _twitchApiInteractionService.Setup(x => x.GetChattersAsync(It.IsAny<TwitchAPI>(), It.IsAny<string>(), It.IsAny<string>()))
                 .ReturnsAsync(chattersResult);
@@ -193,7 +193,7 @@ namespace BreganTwitchBot.DomainTests.Twitch.Commands
             await _dbContext.SaveChangesAsync();
 
             var newUser = new Chatters { UserId = DatabaseSeedHelper.Channel1User2TwitchUserId, UserName = DatabaseSeedHelper.Channel1User2TwitchUsername };
-            var chattersResult = new GetChattersResult { Chatters = new List<Chatters> { newUser } };
+            var chattersResult = new GetChattersResponse { Chatters = new List<Chatters> { newUser } };
 
             _twitchApiInteractionService.Setup(x => x.GetChattersAsync(It.IsAny<TwitchAPI>(), It.IsAny<string>(), It.IsAny<string>()))
                 .ReturnsAsync(chattersResult);

@@ -1,12 +1,25 @@
-﻿using BreganTwitchBot.Domain.DTOs.Twitch.EventSubEvents;
+﻿using BreganTwitchBot.Domain.Data.Services.Discord;
+using BreganTwitchBot.Domain.DTOs.Twitch.EventSubEvents;
 using BreganTwitchBot.Domain.Enums;
+using BreganTwitchBot.Domain.Interfaces.Discord;
+using BreganTwitchBot.Domain.Interfaces.Helpers;
 using BreganTwitchBot.Domain.Interfaces.Twitch;
+using BreganTwitchBot.Domain.Interfaces.Twitch.Commands;
 using BreganTwitchBot.Domain.Interfaces.Twitch.Events;
+using Hangfire;
+using Microsoft.Extensions.DependencyInjection;
 using Serilog;
 
 namespace BreganTwitchBot.Domain.Data.Services.Twitch.Events
 {
-    public class TwitchEventHandlerService(ITwitchHelperService twitchHelperService, ITwitchApiInteractionService twitchApiInteractionService, ITwitchApiConnection twitchApiConnection) : ITwitchEventHandlerService
+    public class TwitchEventHandlerService(
+        ITwitchHelperService twitchHelperService, 
+        ITwitchApiInteractionService twitchApiInteractionService, 
+        ITwitchApiConnection twitchApiConnection, 
+        IConfigHelperService configHelperService,
+        IDiscordHelperService discordHelperService,
+        IServiceProvider serviceProvider
+        ) : ITwitchEventHandlerService
     {
         public async Task HandleChannelCheerEvent(BitsCheeredParams cheerParams)
         {
@@ -121,6 +134,43 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch.Events
                 {
                     await twitchApiInteractionService.ShoutoutChannel(channel.ApiClient, raidParams.BroadcasterChannelId, raidParams.RaidingChannelId, channel.TwitchChannelClientId);
                 }
+            }
+        }
+
+        public async Task HandleStreamOnline(string broadcasterId, string broadcasterName, bool allowCollectionInstantly = false)
+        {
+            await configHelperService.UpdateStreamLiveStatus(broadcasterId, true);
+            var discordEnabled = configHelperService.IsDiscordEnabled(broadcasterId);
+
+            if (discordEnabled)
+            {
+                var discordConfig = configHelperService.GetDiscordConfig(broadcasterId);
+                if (discordConfig != null && discordConfig.DiscordStreamAnnouncementChannelId != null)
+                {
+                    await discordHelperService.SendMessage(discordConfig.DiscordStreamAnnouncementChannelId.Value, $"Hey @everyone !!! {broadcasterName} is now live!! Woooo! Tune in at https://twitch.tv/{broadcasterName.ToLower()}");
+                }
+            }
+
+            using (var scope = serviceProvider.CreateScope())
+            {
+                var dailyPointsDataService = scope.ServiceProvider.GetRequiredService<IDailyPointsDataService>();
+
+                if (allowCollectionInstantly)
+                {
+                    Log.Information($"Allowing daily points collection instantly for {broadcasterName}");
+                    await dailyPointsDataService.AllowDailyPointsCollecting(broadcasterId);
+                }
+                else
+                {
+                    await dailyPointsDataService.ScheduleDailyPointsCollection(broadcasterId);
+                }
+
+                BackgroundJob.Schedule<ITwitchBossesDataService>(svc =>
+                    svc.StartBossFightCountdown(
+                        broadcasterId,
+                        broadcasterName,
+                        null),
+                    TimeSpan.FromMinutes(45));
             }
         }
     }

@@ -1,12 +1,9 @@
 ﻿using BreganTwitchBot.Domain.DTOs.Twitch.EventSubEvents;
 using BreganTwitchBot.Domain.Enums;
-using BreganTwitchBot.Domain.Interfaces.Discord;
 using BreganTwitchBot.Domain.Interfaces.Helpers;
 using BreganTwitchBot.Domain.Interfaces.Twitch;
 using BreganTwitchBot.Domain.Interfaces.Twitch.Commands;
 using BreganTwitchBot.Domain.Interfaces.Twitch.Events;
-using Hangfire;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Serilog;
 using TwitchLib.Api.Core.Enums;
@@ -23,8 +20,7 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch
         ITwitchEventHandlerService twitchEventHandlerService,
         IConfigHelperService configHelperService,
         IWordBlacklistMonitorService wordBlacklistMonitorService,
-        IServiceProvider serviceProvider,
-        IDiscordHelperService discordHelperService
+        ITwitchApiInteractionService twitchApiInteractionService
     ) : IHostedService
     {
         private readonly Dictionary<string, EventSubWebsocketClient> _userConnections = [];
@@ -119,31 +115,7 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch
         {
             Log.Information($"[Twitch Events] Stream online: {args.Notification.Payload.Event.BroadcasterUserName} ({args.Notification.Payload.Event.BroadcasterUserId})");
 
-            await configHelperService.UpdateStreamLiveStatus(args.Notification.Payload.Event.BroadcasterUserId, true);
-            var discordEnabled = configHelperService.IsDiscordEnabled(args.Notification.Payload.Event.BroadcasterUserId);
-
-            if (discordEnabled)
-            {
-                var discordConfig = configHelperService.GetDiscordConfig(args.Notification.Payload.Event.BroadcasterUserId);
-                if (discordConfig != null && discordConfig.DiscordStreamAnnouncementChannelId != null)
-                {
-                    await discordHelperService.SendMessage(discordConfig.DiscordStreamAnnouncementChannelId.Value, $"Hey @everyone !!! {args.Notification.Payload.Event.BroadcasterUserName} is now live!! Woooo! Tune in at https://twitch.tv/{args.Notification.Payload.Event.BroadcasterUserName.ToLower()}");
-                }
-            }
-
-            using (var scope = serviceProvider.CreateScope())
-            {
-                var dailyPointsDataService = scope.ServiceProvider.GetRequiredService<IDailyPointsDataService>();
-
-                await dailyPointsDataService.ScheduleDailyPointsCollection(args.Notification.Payload.Event.BroadcasterUserId);
-
-                BackgroundJob.Schedule<ITwitchBossesDataService>(svc =>
-                    svc.StartBossFightCountdown(
-                        args.Notification.Payload.Event.BroadcasterUserId,
-                        args.Notification.Payload.Event.BroadcasterUserName,
-                        null),
-                    TimeSpan.FromMinutes(45));
-            }
+            await twitchEventHandlerService.HandleStreamOnline(args.Notification.Payload.Event.BroadcasterUserId, args.Notification.Payload.Event.BroadcasterUserName);
         }
 
         private async Task OnChannelBan(object sender, ChannelBanArgs args)
@@ -388,7 +360,6 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch
         {
             if (!e.IsRequestedReconnect)
             {
-
                 // Subscribe to events based on if a bot or a user
                 var apiClient = twitchApiConnection.GetTwitchApiClientFromChannelName(twitchChannelName);
                 var userWebsocketConnection = _userConnections.GetValueOrDefault(twitchChannelName);
@@ -501,6 +472,22 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch
                     userWebSocket.ErrorOccurred += OnErrorOccurred;
 
                     await userWebSocket.ConnectAsync();
+                }
+
+                // check if the stream is already live. If it is then we need to fire the stream online event from the handler service
+                if (apiClient.Type == AccountType.Broadcaster)
+                {
+                    Log.Information($"[Twitch API Connection] Checking if stream is live for {apiClient.TwitchUsername}");
+                    var response = await twitchApiInteractionService.GetStreams(apiClient.ApiClient, apiClient.TwitchChannelClientId);
+
+                    if (response != null)
+                    {
+                        Log.Information($"[Twitch API Connection] Stream is live for {apiClient.TwitchUsername}. Doing announcement stuff");
+
+                        // check if stream has been up for more than 30 mins
+                        var streamStartedMoreThan30MinsAgo = DateTime.UtcNow - response.StartedAt > TimeSpan.FromMinutes(30);
+                        await twitchEventHandlerService.HandleStreamOnline(apiClient.BroadcasterChannelId, apiClient.BroadcasterChannelName, streamStartedMoreThan30MinsAgo);
+                    }
                 }
             }
         }
