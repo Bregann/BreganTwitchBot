@@ -7,11 +7,11 @@ using Serilog;
 namespace BreganTwitchBot.Domain.Helpers
 {
     public class HangfireJobServiceHelper(
-        ITwitchApiConnection twitchApiConnection, 
-        ITwitchHelperService twitchHelperService, 
-        IHoursDataService hoursDataService, 
-        IWordBlacklistMonitorService wordBlacklistMonitorService, 
-        IDailyPointsDataService dailyPointsDataService, 
+        ITwitchApiConnection twitchApiConnection,
+        ITwitchHelperService twitchHelperService,
+        IHoursDataService hoursDataService,
+        IWordBlacklistMonitorService wordBlacklistMonitorService,
+        IDailyPointsDataService dailyPointsDataService,
         IGeneralCommandsData generalCommandsData,
         IDiscordDailyPointsData discordDailyPointsData
         )

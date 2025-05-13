@@ -1,5 +1,4 @@
-﻿using BreganTwitchBot.Domain.Data.Services.Discord;
-using BreganTwitchBot.Domain.DTOs.Twitch.EventSubEvents;
+﻿using BreganTwitchBot.Domain.DTOs.Twitch.EventSubEvents;
 using BreganTwitchBot.Domain.Enums;
 using BreganTwitchBot.Domain.Interfaces.Discord;
 using BreganTwitchBot.Domain.Interfaces.Helpers;
@@ -13,9 +12,9 @@ using Serilog;
 namespace BreganTwitchBot.Domain.Data.Services.Twitch.Events
 {
     public class TwitchEventHandlerService(
-        ITwitchHelperService twitchHelperService, 
-        ITwitchApiInteractionService twitchApiInteractionService, 
-        ITwitchApiConnection twitchApiConnection, 
+        ITwitchHelperService twitchHelperService,
+        ITwitchApiInteractionService twitchApiInteractionService,
+        ITwitchApiConnection twitchApiConnection,
         IConfigHelperService configHelperService,
         IDiscordHelperService discordHelperService,
         IServiceProvider serviceProvider
