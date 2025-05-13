@@ -70,7 +70,7 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch.Commands.Hours
                     // check if the user has got any ranks
                     var rankEarned = channelRanks.FirstOrDefault(x => x.RankMinutesRequired == watchTime.MinutesInStream);
 
-                    if (rankEarned != null && rankups != 10)
+                    if (rankEarned != null)
                     {
                         await context.ChannelUserRankProgress.AddAsync(new ChannelUserRankProgress
                         {
@@ -83,6 +83,13 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch.Commands.Hours
                         var discordEnabled = configHelperService.IsDiscordEnabled(broadcasterId);
 
                         await twitchHelperService.AddPointsToUser(broadcasterId, dbUser.TwitchUserId, rankEarned.BonusRankPointsEarned, channel.BroadcasterTwitchChannelName, dbUser.TwitchUsername);
+
+                        // check if there has been more than 5 rank ups, if its under then carry on as normal
+                        if (rankups > 5)
+                        {
+                            Log.Information($"Rank up message limit reached for {broadcasterId} - {user.UserName}");
+                            continue;
+                        }
 
                         if (!discordEnabled)
                         {
