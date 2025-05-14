@@ -126,10 +126,10 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch.Commands.DailyPoints
                 var config = configHelper.GetDailyPointsStatus(channelId);
 
                 // check if the last stream was within the last 7 days, if it was then reset the streaks
-                if (config.StreamHappenedThisWeek && config.LastStreamDate.Date.AddDays(7) >= DateTime.UtcNow.Date)
+                if (DateTime.UtcNow.DayOfWeek == DayOfWeek.Monday && config.StreamHappenedThisWeek && config.LastStreamDate.Date.AddDays(7) >= DateTime.UtcNow.Date)
                 {
                     var usersReset = await ResetStreaks(channelId, PointsClaimType.Weekly);
-                    Log.Information($"Reset {usersReset} users streaks for channel {channelId}");
+                    Log.Information($"Reset {usersReset} users streaks for channel {channelId} weekly");
 
                     // reset everybodies points claimed for the week where true
                     var rowsChanged = await ResetClaims(channelId, PointsClaimType.Weekly);
