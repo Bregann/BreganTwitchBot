@@ -166,7 +166,10 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch.Commands.TwitchBosses
 
                 Log.Information($"[Twitch Bosses] Boss state created for {broadcasterName} and boss started");
                 backgroundJobClient.Schedule(() => twitchHelperService.SendAnnouncementMessageToChannel(broadcasterId, broadcasterName, "This is your 1 minute warning! You only have 1 minute left to join the boss fight with !boss"), TimeSpan.FromMinutes(1));
-                backgroundJobClient.Schedule(() => StartBossFight(broadcasterId, broadcasterName), TimeSpan.FromMinutes(2));
+                backgroundJobClient.Schedule<ITwitchBossesDataService>(
+                    x => x.StartBossFight(broadcasterId, broadcasterName),
+                    TimeSpan.FromMinutes(2));
+
                 await twitchHelperService.SendAnnouncementMessageToChannel(broadcasterId, broadcasterName, "The boss countdown has started! You can join the fight by doing !boss");
                 return true;
             }
