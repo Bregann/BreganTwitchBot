@@ -58,5 +58,29 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch.Commands.CustomCommands
                 }
             }
         }
+
+        [TwitchCommand("delcmd", ["delcommand", "cmddel", "commanddel"])]
+        public async Task DeleteCustomCommand(ChannelChatMessageReceivedParams msgParams)
+        {
+            using (var scope = serviceProvider.CreateScope())
+            {
+                var customCommandsDataService = scope.ServiceProvider.GetRequiredService<ICustomCommandDataService>();
+                var twitchHelperService = scope.ServiceProvider.GetRequiredService<ITwitchHelperService>();
+                try
+                {
+                    var response = await customCommandsDataService.DeleteCustomCommandAsync(msgParams);
+                    await twitchHelperService.SendTwitchMessageToChannel(msgParams.BroadcasterChannelId, msgParams.BroadcasterChannelName, response, msgParams.MessageId);
+                }
+                catch (Exception ex)
+                when (
+                    ex is UnauthorizedAccessException ||
+                    ex is CommandNotFoundException ||
+                    ex is InvalidCommandException
+                )
+                {
+                    await twitchHelperService.SendTwitchMessageToChannel(msgParams.BroadcasterChannelId, msgParams.BroadcasterChannelName, ex.Message, msgParams.MessageId);
+                }
+            }
+        }
     }
 }

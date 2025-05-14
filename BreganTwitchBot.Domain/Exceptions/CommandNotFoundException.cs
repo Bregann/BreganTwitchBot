@@ -1,5 +1,4 @@
-﻿
-namespace BreganTwitchBot.Domain.Data.Services.Twitch.Commands.CustomCommands
+﻿namespace BreganTwitchBot.Domain.Exceptions
 {
     [Serializable]
     public class CommandNotFoundException : Exception
