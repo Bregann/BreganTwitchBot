@@ -94,7 +94,7 @@ namespace BreganTwitchBot.Domain.Data.Services
         public (bool DailyPointsAllowed, DateTime LastStreamDate, DateTime LastDailyPointedAllowedDate, bool StreamHappenedThisWeek) GetDailyPointsStatus(string broadcasterId)
         {
             var config = _channelConfigs.First(x => x.Channel.BroadcasterTwitchChannelId == broadcasterId);
-            return (DailyPointsAllowed: config.DailyPointsCollectingAllowed, LastStreamDate: config.LastStreamEndDate, LastDailyPointedAllowedDate: config.LastDailyPointsAllowed, config.StreamHappenedThisWeek);
+            return (DailyPointsAllowed: config.DailyPointsCollectingAllowed, LastStreamDate: config.LastStreamStartDate, LastDailyPointedAllowedDate: config.LastDailyPointsAllowed, config.StreamHappenedThisWeek);
         }
 
         public DiscordConfig? GetDiscordConfig(ulong discordGuildId)

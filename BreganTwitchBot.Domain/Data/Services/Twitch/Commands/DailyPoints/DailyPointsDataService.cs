@@ -8,6 +8,7 @@ using BreganTwitchBot.Domain.Interfaces.Twitch.Commands;
 using Hangfire;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
+using System.Diagnostics;
 
 namespace BreganTwitchBot.Domain.Data.Services.Twitch.Commands.DailyPoints
 {
@@ -21,9 +22,11 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch.Commands.DailyPoints
         public async Task ScheduleDailyPointsCollection(string broadcasterId)
         {
             var dailyPointsStatus = configHelper.GetDailyPointsStatus(broadcasterId);
+            var botUptime = DateTime.UtcNow - Process.GetCurrentProcess().StartTime.ToUniversalTime();
 
             // if it's within the last 20 minutes just allow collecting straight away as this could be due to a disconnection or something like that
-            if (DateTime.UtcNow - dailyPointsStatus.LastStreamDate < TimeSpan.FromMinutes(20) && dailyPointsStatus.LastDailyPointedAllowedDate.Date == DateTime.UtcNow.Date)
+            // also allow straight away for bot uptime less than 60 seconds
+            if ((DateTime.UtcNow - dailyPointsStatus.LastStreamDate < TimeSpan.FromMinutes(20) && dailyPointsStatus.LastDailyPointedAllowedDate.Date == DateTime.UtcNow.Date) || botUptime.TotalSeconds < 60)
             {
                 await AllowDailyPointsCollecting(broadcasterId);
                 return;

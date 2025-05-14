@@ -97,11 +97,11 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch.Commands.TwitchBosses
 
             foreach (var viewer in bossState.ViewersJoined)
             {
-                await twitchHelperService.AddPointsToUser(broadcasterId, viewer.UserId, rndPointAmount, broadcasterName, viewer.Username);
+                await twitchHelperService.AddPointsToUser(broadcasterId, viewer.UserId, amountToDistribute, broadcasterName, viewer.Username);
             }
 
             var pointsName = await twitchHelperService.GetPointsName(broadcasterId, broadcasterName);
-            await twitchHelperService.SendTwitchMessageToChannel(broadcasterId, broadcasterName, $"The boss has been defeated! {bossState.ViewersJoined.Count} people have survived the fight and have won {rndPointAmount:N0} {pointsName} each! {amountToDistribute:N0} {pointsName} have been distributed in total! PogChamp");
+            await twitchHelperService.SendTwitchMessageToChannel(broadcasterId, broadcasterName, $"The boss has been defeated! {bossState.ViewersJoined.Count} people have survived the fight and have won {amountToDistribute:N0} {pointsName} each! {amountToDistribute * bossState.ViewersJoined.Count:N0} {pointsName} have been distributed in total! PogChamp");
 
             //Reset the boss state
             _bossState[broadcasterId].ViewersJoined.Clear();
