@@ -12,7 +12,7 @@ using System.Diagnostics;
 
 namespace BreganTwitchBot.Domain.Data.Services.Twitch.Commands.DailyPoints
 {
-    public class DailyPointsDataService(AppDbContext context, IConfigHelperService configHelper, ITwitchHelperService twitchHelperService, IRecurringJobManager recurringJobManager, ITwitchApiConnection twitchApiConnection) : IDailyPointsDataService
+    public class DailyPointsDataService(AppDbContext context, IConfigHelperService configHelper, ITwitchHelperService twitchHelperService, ITwitchApiConnection twitchApiConnection) : IDailyPointsDataService
     {
         /// <summary>
         /// Schedule daily points collection for the broadcaster. When the stream goes live a 30 minute timer is started to allow collecting points.
@@ -34,20 +34,6 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch.Commands.DailyPoints
 
             BackgroundJob.Schedule(() => AllowDailyPointsCollecting(broadcasterId), TimeSpan.FromMinutes(30));
             Log.Information($"Scheduled daily points collection for {broadcasterId}");
-        }
-
-        /// <summary>
-        /// Cancel daily points collection for the broadcaster
-        /// </summary>
-        /// <param name="broadcasterId"></param>
-        public async Task CancelDailyPointsCollection(string broadcasterId)
-        {
-            RecurringJob.RemoveIfExists($"DailyPointsCollection-{broadcasterId}");
-            RecurringJob.RemoveIfExists($"DailyPointsCollectionReminder-{broadcasterId}");
-
-            await configHelper.UpdateDailyPointsStatus(broadcasterId, false);
-
-            Log.Information($"Cancelled daily points collection for {broadcasterId}");
         }
 
         /// <summary>

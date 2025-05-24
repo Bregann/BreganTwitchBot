@@ -108,6 +108,7 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch.Commands.TwitchBosses
             _bossState[broadcasterId].TwitchMods.Clear();
             _bossState[broadcasterId].BossCountdownEnabled = false;
             _bossState[broadcasterId].BossInProgress = false;
+            Log.Information($"[Twitch Bosses] Boss fight for {broadcasterName} has ended and the state has been reset. Broadcaster ID: {broadcasterId}");
         }
 
         public string HandleBossCommand(ChannelChatMessageReceivedParams msgParams)
@@ -176,7 +177,7 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch.Commands.TwitchBosses
 
             if (boss.BossCountdownEnabled || boss.BossInProgress)
             {
-                Log.Warning($"[Twitch Bosses] Boss countdown is already enabled or boss is in progress for {broadcasterName}");
+                Log.Warning($"[Twitch Bosses] Boss countdown is already enabled or boss is in progress for {broadcasterName}. Did not start boss - broadcaster id {broadcasterId}");
                 return false;
             }
 

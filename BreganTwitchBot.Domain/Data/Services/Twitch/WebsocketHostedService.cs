@@ -297,6 +297,11 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch
             Log.Information($"[Twitch Events] Channel chat message: {msgParams.ChatterChannelName} ({msgParams.ChatterChannelId}) in {msgParams.BroadcasterChannelName} ({msgParams.BroadcasterChannelId}) - {msgParams.Message}");
         }
 
+        private async Task OnSuspiciousUserMessage(object sender, ChannelSuspiciousUserMessageArgs args)
+        {
+            Log.Information($"[Twitch Events] Channel suspicious user message: {args.Notification.Payload.Event.UserName} ({args.Notification.Payload.Event.UserId}) in {args.Notification.Payload.Event.BroadcasterUserName} ({args.Notification.Payload.Event.BroadcasterUserId}) - {args.Notification.Payload.Event.Message.Text}");
+        }
+
         private Task OnErrorOccurred(object sender, ErrorOccuredArgs args)
         {
             Log.Fatal(args.Exception, "Websocket error occurred");
@@ -389,6 +394,7 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch
                         await apiClient.ApiClient.Helix.EventSub.CreateEventSubSubscriptionAsync("channel.raid", "1", new Dictionary<string, string>() { { "to_broadcaster_user_id", apiClient.BroadcasterChannelId } }, EventSubTransportMethod.Websocket, userWebsocketConnection.SessionId);
                         await apiClient.ApiClient.Helix.EventSub.CreateEventSubSubscriptionAsync("stream.online", "1", new Dictionary<string, string>() { { "broadcaster_user_id", apiClient.BroadcasterChannelId } }, EventSubTransportMethod.Websocket, userWebsocketConnection.SessionId);
                         await apiClient.ApiClient.Helix.EventSub.CreateEventSubSubscriptionAsync("stream.offline", "1", new Dictionary<string, string>() { { "broadcaster_user_id", apiClient.BroadcasterChannelId } }, EventSubTransportMethod.Websocket, userWebsocketConnection.SessionId);
+                        await apiClient.ApiClient.Helix.EventSub.CreateEventSubSubscriptionAsync("channel.suspicious_user.message", "1", new Dictionary<string, string>() { { "broadcaster_user_id", apiClient.BroadcasterChannelId }, { "moderator_user_id", apiClient.TwitchChannelClientId } }, EventSubTransportMethod.Websocket, userWebsocketConnection.SessionId);
 
                         Log.Information($"[Twitch API Connection] Subscribed to bot events for {apiClient.TwitchUsername}");
 
@@ -433,6 +439,10 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch
         {
             var apiClients = twitchApiConnection.GetAllApiClients();
 
+#if DEBUG
+            await twitchApiConnection.RefreshAllApiKeys();
+#endif
+
             foreach (var apiClient in apiClients)
             {
                 if (!_userConnections.ContainsKey(apiClient.TwitchUsername))
@@ -447,6 +457,7 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch
                         userWebSocket.ChannelRaid += OnChannelRaid;
                         userWebSocket.StreamOnline += OnStreamOnline;
                         userWebSocket.StreamOffline += OnStreamOffline;
+                        userWebSocket.ChannelSuspiciousUserMessage += OnSuspiciousUserMessage;
                     }
                     else
                     {

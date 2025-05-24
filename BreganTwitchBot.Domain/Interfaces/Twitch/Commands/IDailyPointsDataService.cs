@@ -6,7 +6,6 @@ namespace BreganTwitchBot.Domain.Interfaces.Twitch.Commands
     public interface IDailyPointsDataService
     {
         Task ScheduleDailyPointsCollection(string broadcasterId);
-        Task CancelDailyPointsCollection(string broadcasterId);
         Task AllowDailyPointsCollecting(string broadcasterId);
         Task<string> HandlePointsClaimed(ChannelChatMessageReceivedParams msgParams, PointsClaimType pointsClaimType);
         Task<string> HandleStreakCheckCommand(ChannelChatMessageReceivedParams msgParams, PointsClaimType pointsClaimType);

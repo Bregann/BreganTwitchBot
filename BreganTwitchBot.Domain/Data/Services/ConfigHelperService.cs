@@ -10,7 +10,7 @@ namespace BreganTwitchBot.Domain.Data.Services
 {
     public class ConfigHelperService : IConfigHelperService
     {
-        public List<ChannelConfig> _channelConfigs = new();
+        internal List<ChannelConfig> _channelConfigs = [];
         private IServiceProvider _serviceProvider;
 
         public ConfigHelperService(IServiceProvider serviceProvider)
@@ -71,8 +71,6 @@ namespace BreganTwitchBot.Domain.Data.Services
                         .SetProperty(x => x.DailyPointsCollectingAllowed, status)
                 );
 
-                await context.SaveChangesAsync();
-
                 _channelConfigs.First(x => x.Channel.BroadcasterTwitchChannelId == broadcasterId).StreamAnnounced = status;
                 _channelConfigs.First(x => x.Channel.BroadcasterTwitchChannelId == broadcasterId).BroadcasterLive = status;
                 _channelConfigs.First(x => x.Channel.BroadcasterTwitchChannelId == broadcasterId).DailyPointsCollectingAllowed = status;
@@ -87,6 +85,8 @@ namespace BreganTwitchBot.Domain.Data.Services
                 }
 
                 _channelConfigs.First(x => x.Channel.BroadcasterTwitchChannelId == broadcasterId).StreamHappenedThisWeek = true;
+
+                await context.SaveChangesAsync();
                 Log.Information($"Updated stream live status for {broadcasterId} to {status}");
             }
         }

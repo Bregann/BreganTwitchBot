@@ -16,7 +16,7 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch
                 ?response_type=code
                 &client_id=
                 &redirect_uri=http://localhost
-                &scope=clips:edit+user:write:chat+moderator:manage:warnings+channel:moderate+moderation:read+moderator:manage:banned_users+moderator:read:blocked_terms+moderator:manage:blocked_terms+moderator:read:chat_settings+moderator:manage:chat_settings+moderator:manage:announcements+moderator:manage:chat_messages+moderator:read:chatters+user:read:chat+user:read:emotes
+                &scope=clips:edit+moderator:read:suspicious_users+user:write:chat+moderator:manage:warnings+channel:moderate+moderation:read+moderator:manage:banned_users+moderator:read:blocked_terms+moderator:manage:blocked_terms+moderator:read:chat_settings+moderator:manage:chat_settings+moderator:manage:announcements+moderator:manage:chat_messages+moderator:read:chatters+user:read:chat+user:read:emotes
     */
 
     /* for the broadcaster
