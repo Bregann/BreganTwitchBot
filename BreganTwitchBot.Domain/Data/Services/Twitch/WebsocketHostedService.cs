@@ -110,6 +110,7 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch
             Log.Information($"[Twitch Events] Stream offline: {args.Notification.Payload.Event.BroadcasterUserName} ({args.Notification.Payload.Event.BroadcasterUserId})");
 
             await configHelperService.UpdateStreamLiveStatus(args.Notification.Payload.Event.BroadcasterUserId, false);
+            await configHelperService.UpdateDailyPointsStatus(args.Notification.Payload.Event.BroadcasterUserId, false);
         }
 
         private async Task OnStreamOnline(object sender, StreamOnlineArgs args)

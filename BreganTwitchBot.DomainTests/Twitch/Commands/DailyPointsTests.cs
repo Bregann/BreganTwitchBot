@@ -68,7 +68,7 @@ namespace BreganTwitchBot.DomainTests.Twitch.Commands
             var mockRecurringJobManager = new Mock<IRecurringJobManager>();
             var mockTwitchApiService = new Mock<ITwitchApiConnection>();
 
-            _dailyPointsDataService = new DailyPointsDataService(_dbContext, _configHelper.Object, _twitchHelperService.Object, mockRecurringJobManager.Object, mockTwitchApiService.Object);
+            _dailyPointsDataService = new DailyPointsDataService(_dbContext, _configHelper.Object, _twitchHelperService.Object, mockTwitchApiService.Object);
         }
 
         [TearDown]

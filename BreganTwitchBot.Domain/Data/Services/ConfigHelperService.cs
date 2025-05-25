@@ -5,13 +5,16 @@ using BreganTwitchBot.Domain.Interfaces.Helpers;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Serilog;
+using System.Collections.Concurrent;
 
 namespace BreganTwitchBot.Domain.Data.Services
 {
     public class ConfigHelperService : IConfigHelperService
     {
-        internal List<ChannelConfig> _channelConfigs = [];
+        internal ConcurrentDictionary<string, ChannelConfig> _channelConfigs = new();
         private IServiceProvider _serviceProvider;
+        private readonly ConcurrentDictionary<string, object> _channelLocks = new();
+        private readonly ConcurrentDictionary<ulong, object> _discordGuildLocks = new();
 
         public ConfigHelperService(IServiceProvider serviceProvider)
         {
@@ -20,7 +23,13 @@ namespace BreganTwitchBot.Domain.Data.Services
             using (var scope = _serviceProvider.CreateScope())
             {
                 var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-                _channelConfigs = context.ChannelConfig.Include(c => c.Channel).ToList();
+                var configs = context.ChannelConfig.Include(c => c.Channel).ToList();
+
+                foreach (var config in configs)
+                {
+                    _channelConfigs[config.Channel.BroadcasterTwitchChannelId] = config;
+                    Log.Information($"Loaded config for channel {config.Channel.BroadcasterTwitchChannelName} from database");
+                }
             }
         }
 
@@ -39,7 +48,6 @@ namespace BreganTwitchBot.Domain.Data.Services
                             .SetProperty(x => x.LastDailyPointsAllowed, DateTime.UtcNow)
                     );
 
-                    _channelConfigs.First(x => x.Channel.BroadcasterTwitchChannelId == broadcasterId).LastDailyPointsAllowed = DateTime.UtcNow;
                 }
                 else
                 {
@@ -50,7 +58,19 @@ namespace BreganTwitchBot.Domain.Data.Services
                     );
                 }
 
-                _channelConfigs.First(x => x.Channel.BroadcasterTwitchChannelId == broadcasterId).DailyPointsCollectingAllowed = status;
+                lock (GetLock(broadcasterId))
+                {
+                    if (_channelConfigs.TryGetValue(broadcasterId, out var config))
+                    {
+                        config.DailyPointsCollectingAllowed = status;
+
+                        if (status)
+                        {
+                            config.LastDailyPointsAllowed = DateTime.UtcNow;
+                        }
+                    }
+                }
+
                 Log.Information($"Updated daily points status for {broadcasterId} to {status}");
             }
         }
@@ -60,50 +80,75 @@ namespace BreganTwitchBot.Domain.Data.Services
             using (var scope = _serviceProvider.CreateScope())
             {
                 var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+                var now = DateTime.UtcNow;
 
                 await context.ChannelConfig
                     .Where(x => x.Channel.BroadcasterTwitchChannelId == broadcasterId)
                     .ExecuteUpdateAsync(setters => setters
                         .SetProperty(x => x.StreamAnnounced, status)
-                        .SetProperty(x => status == true ? x.LastStreamStartDate : x.LastStreamEndDate, DateTime.UtcNow)
+                        .SetProperty(x => status == true ? x.LastStreamStartDate : x.LastStreamEndDate, now)
                         .SetProperty(x => x.StreamHappenedThisWeek, true)
                         .SetProperty(x => x.BroadcasterLive, status)
-                        .SetProperty(x => x.DailyPointsCollectingAllowed, status)
                 );
 
-                _channelConfigs.First(x => x.Channel.BroadcasterTwitchChannelId == broadcasterId).StreamAnnounced = status;
-                _channelConfigs.First(x => x.Channel.BroadcasterTwitchChannelId == broadcasterId).BroadcasterLive = status;
-                _channelConfigs.First(x => x.Channel.BroadcasterTwitchChannelId == broadcasterId).DailyPointsCollectingAllowed = status;
-
-                if (status)
+                lock (GetLock(broadcasterId))
                 {
-                    _channelConfigs.First(x => x.Channel.BroadcasterTwitchChannelId == broadcasterId).LastStreamStartDate = DateTime.UtcNow;
-                }
-                else
-                {
-                    _channelConfigs.First(x => x.Channel.BroadcasterTwitchChannelId == broadcasterId).LastStreamEndDate = DateTime.UtcNow;
+                    if (_channelConfigs.TryGetValue(broadcasterId, out var config))
+                    {
+                        config.StreamAnnounced = status;
+                        config.BroadcasterLive = status;
+                        config.StreamHappenedThisWeek = true;
+
+                        if (status)
+                        {
+                            config.LastStreamStartDate = now;
+                            Log.Information($"Stream for {broadcasterId} is now LIVE! Started at {now}");
+                        }
+                        else
+                        {
+                            config.LastStreamEndDate = now;
+                            Log.Information($"Stream for {broadcasterId} ended at {now}");
+                        }
+                    }
                 }
 
-                _channelConfigs.First(x => x.Channel.BroadcasterTwitchChannelId == broadcasterId).StreamHappenedThisWeek = true;
-
-                await context.SaveChangesAsync();
                 Log.Information($"Updated stream live status for {broadcasterId} to {status}");
             }
         }
 
         public (bool DailyPointsAllowed, DateTime LastStreamDate, DateTime LastDailyPointedAllowedDate, bool StreamHappenedThisWeek) GetDailyPointsStatus(string broadcasterId)
         {
-            var config = _channelConfigs.First(x => x.Channel.BroadcasterTwitchChannelId == broadcasterId);
-            return (DailyPointsAllowed: config.DailyPointsCollectingAllowed, LastStreamDate: config.LastStreamStartDate, LastDailyPointedAllowedDate: config.LastDailyPointsAllowed, config.StreamHappenedThisWeek);
+            lock (GetLock(broadcasterId))
+            {
+                if (_channelConfigs.TryGetValue(broadcasterId, out var config))
+                {
+                    return (
+                        DailyPointsAllowed: config.DailyPointsCollectingAllowed,
+                        LastStreamDate: config.LastStreamEndDate,
+                        LastDailyPointedAllowedDate: config.LastDailyPointsAllowed,
+                        StreamHappenedThisWeek: config.StreamHappenedThisWeek
+                    );
+                }
+
+                throw new KeyNotFoundException($"No config found for broadcasterId {broadcasterId}");
+            }
         }
 
         public DiscordConfig? GetDiscordConfig(ulong discordGuildId)
         {
-            var config = _channelConfigs.Where(x => x.DiscordGuildId == discordGuildId).FirstOrDefault();
+            lock (GetDiscordLock(discordGuildId))
+            {
+                var channelConfigEntry = _channelConfigs.FirstOrDefault(x => x.Value.DiscordGuildId == discordGuildId);
 
-            return config == null
-                ? null
-                : new DiscordConfig
+                if (channelConfigEntry.Value == null)
+                {
+                    Log.Warning($"No Discord config found for guild ID {discordGuildId}");
+                    return null;
+                }
+
+                var config = channelConfigEntry.Value;
+
+                return new DiscordConfig
                 {
                     DiscordGuildOwnerId = config.DiscordGuildOwnerId,
                     DiscordEventChannelId = config.DiscordEventChannelId,
@@ -116,14 +161,22 @@ namespace BreganTwitchBot.Domain.Data.Services
                     DiscordGeneralChannelId = config.DiscordGeneralChannelId,
                     DiscordGuildId = config.DiscordGuildId
                 };
+            }
         }
 
         public DiscordConfig? GetDiscordConfig(string broadcasterId)
         {
-            var config = _channelConfigs.FirstOrDefault(x => x.Channel.BroadcasterTwitchChannelId == broadcasterId);
-            return config == null
-                ? null
-                : new DiscordConfig
+            lock (GetLock(broadcasterId))
+            {
+                var channelConfigEntry = _channelConfigs.TryGetValue(broadcasterId, out var config);
+
+                if (config == null)
+                {
+                    Log.Warning($"No Discord config found for broadcaster id {broadcasterId}");
+                    return null;
+                }
+
+                return new DiscordConfig
                 {
                     DiscordGuildOwnerId = config.DiscordGuildOwnerId,
                     DiscordEventChannelId = config.DiscordEventChannelId,
@@ -133,15 +186,34 @@ namespace BreganTwitchBot.Domain.Data.Services
                     DiscordGiveawayChannelId = config.DiscordGiveawayChannelId,
                     DiscordModeratorRoleId = config.DiscordModeratorRoleId,
                     DiscordWelcomeMessageChannelId = config.DiscordWelcomeMessageChannelId,
-                    DiscordGeneralChannelId = config.DiscordGeneralChannelId
+                    DiscordGeneralChannelId = config.DiscordGeneralChannelId,
+                    DiscordGuildId = config.DiscordGuildId
                 };
+            }
         }
 
         public bool IsDiscordEnabled(string broadcasterId)
         {
-            var config = _channelConfigs.FirstOrDefault(x => x.Channel.BroadcasterTwitchChannelId == broadcasterId);
+            lock (GetLock(broadcasterId))
+            {
+                if (!_channelConfigs.TryGetValue(broadcasterId, out var config))
+                {
+                    Log.Warning($"No config found for broadcasterId {broadcasterId}");
+                    return false;
+                }
 
-            return config != null && config.DiscordEnabled;
+                return config.DiscordEnabled;
+            }
+        }
+
+        private object GetLock(string broadcasterId)
+        {
+            return _channelLocks.GetOrAdd(broadcasterId, _ => new object());
+        }
+
+        private object GetDiscordLock(ulong discordGuildId)
+        {
+            return _discordGuildLocks.GetOrAdd(discordGuildId, _ => new object());
         }
     }
 }

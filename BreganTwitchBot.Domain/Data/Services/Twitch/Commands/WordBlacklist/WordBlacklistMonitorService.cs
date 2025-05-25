@@ -71,7 +71,7 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch.Commands.WordBlacklist
         public async Task CheckMessageForBlacklistedWords(string message, string userId, string broadcasterId)
         {
             // Check if the message contains any blacklisted words
-            var blacklistedWords = _wordBlacklist.Where(x => x.BroadcasterId == broadcasterId && message.Contains(x.Word, StringComparison.CurrentCultureIgnoreCase)).ToList();
+            var blacklistedWords = _wordBlacklist.Where(x => x.BroadcasterId == broadcasterId && message.ToLower().Contains(x.Word, StringComparison.CurrentCultureIgnoreCase)).ToList();
 
             if (blacklistedWords.Count != 0)
             {
