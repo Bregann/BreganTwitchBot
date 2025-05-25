@@ -92,6 +92,7 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch.Commands.Leaderboards
             {
                 var leaderboardsDataService = scope.ServiceProvider.GetRequiredService<ILeaderboardsDataService>();
                 var twitchHelperService = scope.ServiceProvider.GetRequiredService<ITwitchHelperService>();
+
                 try
                 {
                     var response = await leaderboardsDataService.HandleLeaderboardCommand(msgParams, type);
