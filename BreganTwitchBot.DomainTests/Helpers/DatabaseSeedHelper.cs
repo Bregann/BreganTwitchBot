@@ -205,13 +205,25 @@ namespace BreganTwitchBot.DomainTests.Helpers
             await context.ChannelUserStats.AddAsync(new ChannelUserStats
             {
                 BitsDonatedThisMonth = 0,
-                BossesDone = 0,
-                BossesPointsWon = 0,
+                BossesDone = 10,
+                BossesPointsWon = 55555,
                 GiftedSubsThisMonth = 0,
                 MarblesWins = 0,
                 TotalMessages = 0,
                 ChannelId = channel.Id,
                 ChannelUserId = channelUser.Id
+            });
+
+            await context.ChannelUserStats.AddAsync(new ChannelUserStats
+            {
+                BitsDonatedThisMonth = 0,
+                BossesDone = 3,
+                BossesPointsWon = 7373,
+                GiftedSubsThisMonth = 0,
+                MarblesWins = 0,
+                TotalMessages = 0,
+                ChannelId = channel.Id,
+                ChannelUserId = channelUser2.Id
             });
 
 
@@ -418,18 +430,34 @@ namespace BreganTwitchBot.DomainTests.Helpers
 
             await context.ChannelUserGambleStats.AddAsync(new ChannelUserGambleStats
             {
-                BookWins = 0,
+                BookWins = 11111,
                 ChannelId = channel.Id,
                 ChannelUserId = channelUser.Id,
+                JackpotWins = 5555,
+                PointsGambled = 4444444,
+                PointsLost = 333333333,
+                PointsWon = 2111,
+                SmorcWins = 123121,
+                Tier1Wins = 44,
+                Tier2Wins = 3,
+                Tier3Wins = 11,
+                TotalSpins = 22
+            });
+
+            await context.ChannelUserGambleStats.AddAsync(new ChannelUserGambleStats
+            {
+                BookWins = 1,
+                ChannelId = channel.Id,
+                ChannelUserId = channelUser2.Id,
                 JackpotWins = 0,
                 PointsGambled = 0,
-                PointsLost = 0,
-                PointsWon = 0,
-                SmorcWins = 0,
-                Tier1Wins = 0,
-                Tier2Wins = 0,
-                Tier3Wins = 0,
-                TotalSpins = 0
+                PointsLost = 44,
+                PointsWon = 5555,
+                SmorcWins = 1235,
+                Tier1Wins = 331,
+                Tier2Wins = 357,
+                Tier3Wins = 2222,
+                TotalSpins = 9999
             });
 
             await context.SaveChangesAsync();
@@ -449,9 +477,9 @@ namespace BreganTwitchBot.DomainTests.Helpers
             {
                 ChannelId = channel.Id,
                 ChannelUserId = channelUser2.Id,
-                MinutesWatchedThisStream = 0,
-                MinutesWatchedThisWeek = 1,
-                MinutesWatchedThisMonth = 2,
+                MinutesWatchedThisStream = 10,
+                MinutesWatchedThisWeek = 5,
+                MinutesWatchedThisMonth = 7,
                 MinutesWatchedThisYear = 3,
                 MinutesInStream = 9
             });
