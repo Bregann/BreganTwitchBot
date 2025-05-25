@@ -40,6 +40,7 @@ using Microsoft.IdentityModel.Tokens;
 using Serilog;
 using System.Text;
 using TwitchLib.EventSub.Websockets.Extensions;
+using BreganTwitchBot.Domain.Data.Services.Twitch.Commands.Leaderboards;
 
 Log.Logger = new LoggerConfiguration()
     .WriteTo.Async(x => x.File("/app/Logs/log.log", retainedFileCountLimit: null, rollingInterval: RollingInterval.Day))
@@ -163,6 +164,9 @@ builder.Services.AddScoped<IHoursDataService, HoursDataService>();
 
 builder.Services.AddSingleton<LinkingCommandService>();
 builder.Services.AddScoped<ILinkingDataService, LinkingDataService>();
+
+builder.Services.AddSingleton<LeaderboardsCommandService>();
+builder.Services.AddScoped<ILeaderboardsDataService, LeaderboardsDataService>();
 
 builder.Services.AddSingleton<TwitchBossesCommandService>();
 builder.Services.AddSingleton<ITwitchBossesDataService, TwitchBossesDataService>();
