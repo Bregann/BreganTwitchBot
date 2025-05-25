@@ -10,6 +10,7 @@ using TwitchLib.Api.Core.Enums;
 using TwitchLib.EventSub.Websockets;
 using TwitchLib.EventSub.Websockets.Core.EventArgs;
 using TwitchLib.EventSub.Websockets.Core.EventArgs.Channel;
+using TwitchLib.EventSub.Websockets.Core.EventArgs.Stream;
 
 namespace BreganTwitchBot.Domain.Data.Services.Twitch
 {
@@ -104,14 +105,14 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch
             await twitchHelperService.AddOrUpdateUserToDatabase(args.Notification.Payload.Event.BroadcasterUserId, args.Notification.Payload.Event.UserId, args.Notification.Payload.Event.BroadcasterUserName, args.Notification.Payload.Event.UserName);
         }
 
-        private async Task OnStreamOffline(object sender, TwitchLib.EventSub.Websockets.Core.EventArgs.Stream.StreamOfflineArgs args)
+        private async Task OnStreamOffline(object sender, StreamOfflineArgs args)
         {
             Log.Information($"[Twitch Events] Stream offline: {args.Notification.Payload.Event.BroadcasterUserName} ({args.Notification.Payload.Event.BroadcasterUserId})");
 
             await configHelperService.UpdateStreamLiveStatus(args.Notification.Payload.Event.BroadcasterUserId, false);
         }
 
-        private async Task OnStreamOnline(object sender, TwitchLib.EventSub.Websockets.Core.EventArgs.Stream.StreamOnlineArgs args)
+        private async Task OnStreamOnline(object sender, StreamOnlineArgs args)
         {
             Log.Information($"[Twitch Events] Stream online: {args.Notification.Payload.Event.BroadcasterUserName} ({args.Notification.Payload.Event.BroadcasterUserId})");
 
@@ -189,6 +190,7 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch
                     Title = x.Title
                 }).ToArray()
             };
+
             Log.Information($"[Twitch Events] Channel prediction begin: {predictionBeginParams.BroadcasterChannelName} ({predictionBeginParams.BroadcasterChannelId}) - {predictionBeginParams.PredictionTitle}");
 
             await twitchEventHandlerService.HandlePredictionBeginEvent(predictionBeginParams);
@@ -300,6 +302,8 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch
         private async Task OnSuspiciousUserMessage(object sender, ChannelSuspiciousUserMessageArgs args)
         {
             Log.Information($"[Twitch Events] Channel suspicious user message: {args.Notification.Payload.Event.UserName} ({args.Notification.Payload.Event.UserId}) in {args.Notification.Payload.Event.BroadcasterUserName} ({args.Notification.Payload.Event.BroadcasterUserId}) - {args.Notification.Payload.Event.Message.Text}");
+
+            await wordBlacklistMonitorService.CheckMessageForBlacklistedWords(args.Notification.Payload.Event.Message.Text, args.Notification.Payload.Event.UserId, args.Notification.Payload.Event.BroadcasterUserId);
         }
 
         private Task OnErrorOccurred(object sender, ErrorOccuredArgs args)
