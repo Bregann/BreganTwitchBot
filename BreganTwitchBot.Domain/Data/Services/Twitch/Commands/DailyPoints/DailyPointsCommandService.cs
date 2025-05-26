@@ -11,7 +11,7 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch.Commands.DailyPoints
 {
     public class DailyPointsCommandService(IServiceProvider serviceProvider)
     {
-        [TwitchCommand("daily", ["dailypoints", "collect"])]
+        [TwitchCommand("daily", ["dailypoints", "collect", "daiylee", "dayly"])]
         public async Task HandleDailyPointsCommand(ChannelChatMessageReceivedParams msgParams)
         {
             await HandleClaimCommand(msgParams, PointsClaimType.Daily);
