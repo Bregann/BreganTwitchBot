@@ -1,64 +1,61 @@
-﻿using BreganTwitchBot.Infrastructure.Database.Context;
-using BreganTwitchBot.Infrastructure.Database.Models;
+﻿using BreganTwitchBot.Domain.Data.Database.Context;
+using BreganTwitchBot.Domain.Data.Database.Models;
+using BreganTwitchBot.Domain.Enums;
+using BreganTwitchBot.Domain.Interfaces.Discord.Commands;
+using BreganTwitchBot.Domain.Interfaces.Helpers;
 using Microsoft.EntityFrameworkCore;
 using OpenAI;
 using OpenAI.Chat;
 
-namespace BreganTwitchBot.Domain.Data.DiscordBot.SlashCommands.Data.OpenAI
+namespace BreganTwitchBot.Domain.Data.Services.Discord.SlashCommands.BookRecs
 {
-    public class OpenAIData
+    public class DiscordBookRecsData(AppDbContext context, IEnvironmentalSettingHelper environmentalSettingHelper) : IDiscordBookRecsData
     {
-        public static async Task<bool> IsAllowedAI(ulong discordUserId)
+        public async Task AddNewLikedItem(ulong discordUserId, string items, AiType likedItemType)
         {
-            using (var context = new DatabaseContext())
+            await IsUserAllowedOpenAi(discordUserId);
+
+            var user = await context.ChannelUsers.FirstAsync(x => x.DiscordUserId == discordUserId);
+
+            var newItems = items.Split(",").Select(x => new AiBookData
             {
-                var user = await context.Users.FirstOrDefaultAsync(x => x.DiscordUserId == discordUserId);
-                if (user == null)
-                {
-                    return false;
-                }
-                return user.CanUseOpenAi;
+                ChannelUserId = user.Id,
+                Value = x.Trim(),
+                AiType = likedItemType
+            });
+
+            await context.AiBookData.AddRangeAsync(newItems);
+            await context.SaveChangesAsync();
+        }
+
+        public async Task RemoveLikedItem(ulong discordUserId, string item)
+        {
+            await IsUserAllowedOpenAi(discordUserId);
+
+            var user = await context.ChannelUsers.FirstAsync(x => x.DiscordUserId == discordUserId);
+
+            var rowsRemoved = await context.AiBookData
+                .Where(x => x.ChannelUserId == user.Id && x.Value.ToLower() == item.Trim().ToLower())
+                .ExecuteDeleteAsync();
+
+            if (rowsRemoved == 0)
+            {
+                throw new InvalidOperationException("No matching liked item found to remove.");
             }
         }
 
-        public static async Task AddNewLikedItem(ulong discordUserId, string items, AiType likedItemType)
+        public async Task<string[]> AnalyseBooks(ulong discordUserId, string imageUrl, string fileType, bool isGemini)
         {
-            using (var context = new DatabaseContext())
-            {
-                var user = await context.Users.FirstOrDefaultAsync(x => x.DiscordUserId == discordUserId);
-                if (user == null)
-                {
-                    return;
-                }
+            await IsUserAllowedOpenAi(discordUserId);
 
-                var newItems = items.Split(",").Select(x => new AiBookData
-                {
-                    TwitchUserId = user.TwitchUserId,
-                    Value = x.Trim(),
-                    AiType = likedItemType
-                });
+            var user = await context.ChannelUsers.FirstAsync(x => x.DiscordUserId == discordUserId);
 
-                await context.AiBookData.AddRangeAsync(newItems);
-                await context.SaveChangesAsync();
-            }
-        }
+            var books = string.Join(",", await context.AiBookData.Where(x => x.ChannelUserId == user.Id && x.AiType == AiType.Book).Select(x => x.Value).ToListAsync());
+            var authors = string.Join(",", await context.AiBookData.Where(x => x.ChannelUserId == user.Id && x.AiType == AiType.Author).Select(x => x.Value).ToListAsync());
+            var genres = string.Join(",", await context.AiBookData.Where(x => x.ChannelUserId == user.Id && x.AiType == AiType.Genre).Select(x => x.Value).ToListAsync());
+            var series = string.Join(",", await context.AiBookData.Where(x => x.ChannelUserId == user.Id && x.AiType == AiType.Series).Select(x => x.Value).ToListAsync());
 
-        public static async Task<string[]> AnalyseBooks(ulong discordUserId, string imageUrl, string fileType, bool isGemini)
-        {
-            using (var context = new DatabaseContext())
-            {
-                var user = await context.Users.FirstOrDefaultAsync(x => x.DiscordUserId == discordUserId);
-                if (user == null)
-                {
-                    return ["User Not Found"];
-                }
-
-                var books = string.Join(",", await context.AiBookData.Where(x => x.TwitchUserId == user.TwitchUserId && x.AiType == AiType.Book).Select(x => x.Value).ToListAsync());
-                var authors = string.Join(",", await context.AiBookData.Where(x => x.TwitchUserId == user.TwitchUserId && x.AiType == AiType.Author).Select(x => x.Value).ToListAsync());
-                var genres = string.Join(",", await context.AiBookData.Where(x => x.TwitchUserId == user.TwitchUserId && x.AiType == AiType.Genre).Select(x => x.Value).ToListAsync());
-                var series = string.Join(",", await context.AiBookData.Where(x => x.TwitchUserId == user.TwitchUserId && x.AiType == AiType.Series).Select(x => x.Value).ToListAsync());
-
-                string developerPrompt = @"
+            string developerPrompt = @"
 You are an AI that analyzes images of bookshelves in charity shops, identifies books, and provides tailored recommendations based on user preferences. The user will provide a list of favourite authors, genres, books, and book series, and your goal is to suggest books they might not have heard of but are likely to enjoy based on their preferences.
 
 You must reply with sass and slay energy and call the user bestie. Use emojis if needed.
@@ -113,16 +110,16 @@ Then list genres and their respective books as follows:
 - **Always include shelf location details when possible to help the user find the book easily.**
 ";
 
-                using var httpClient = new HttpClient();
-                var response = await httpClient.GetAsync(imageUrl, HttpCompletionOption.ResponseHeadersRead);
-                response.EnsureSuccessStatusCode();
+            using var httpClient = new HttpClient();
+            var response = await httpClient.GetAsync(imageUrl, HttpCompletionOption.ResponseHeadersRead);
+            response.EnsureSuccessStatusCode();
 
-                var contentBytes = await response.Content.ReadAsByteArrayAsync();
-                var binaryData = new BinaryData(contentBytes);
+            var contentBytes = await response.Content.ReadAsByteArrayAsync();
+            var binaryData = new BinaryData(contentBytes);
 
-                List<ChatMessage> messages =
-                [
-                    new UserChatMessage(
+            List<ChatMessage> messages =
+            [
+                new UserChatMessage(
                         ChatMessageContentPart.CreateTextPart(
                             @$"I'm looking for book recommendations based on my preferences. 
                             Here’s what I like:
@@ -134,35 +131,39 @@ Then list genres and their respective books as follows:
                             Could you analyze the image of this bookshelf and recommend some books I might enjoy based on this?"),
                         ChatMessageContentPart.CreateImagePart(binaryData, fileType)),
                     new SystemChatMessage(developerPrompt)
-                ];
+            ];
 
-                if (isGemini)
+            if (isGemini)
+            {
+                var apiKey = environmentalSettingHelper.TryGetEnviromentalSettingValue(EnvironmentalSettingEnum.GeminiApiKey);
+                // Send the request
+                var client = new OpenAIClient(new(apiKey ?? ""), new()
                 {
-                    // Send the request
-                    var client = new OpenAIClient(new(AppConfig.GeminiApiKey), new()
-                    {
-                        Endpoint = new("https://generativelanguage.googleapis.com/v1beta/"),
-                    }).GetChatClient("gemini-2.0-flash");
+                    Endpoint = new("https://generativelanguage.googleapis.com/v1beta/"),
+                }).GetChatClient("gemini-2.5-flash-preview-05-20");
 
-                    ChatCompletion completion = client.CompleteChat(messages, new ChatCompletionOptions { Temperature = 0.4f });
-                    return SplitText(completion.Content[0].Text, 1800);
-                }
-                else
-                {
-                    // Send the request
-                    var client = new ChatClient("gpt-4o-mini", AppConfig.OpenAiApiKey);
+                ChatCompletion completion = client.CompleteChat(messages, new ChatCompletionOptions { Temperature = 0.4f });
+                return SplitText(completion.Content[0].Text, 1800);
+            }
+            else
+            {
+                var apiKey = environmentalSettingHelper.TryGetEnviromentalSettingValue(EnvironmentalSettingEnum.OpenAiApiKey);
 
-                    ChatCompletion completion = client.CompleteChat(messages, new ChatCompletionOptions { Temperature = 0.4f });
-                    return SplitText(completion.Content[0].Text, 1800);
-                }
+                // Send the request
+                var client = new ChatClient("gpt-4o-mini", apiKey ?? "");
+
+                ChatCompletion completion = client.CompleteChat(messages, new ChatCompletionOptions { Temperature = 0.4f });
+                return SplitText(completion.Content[0].Text, 1800);
             }
         }
 
-        private static string[] SplitText(string text, int chunkSize)
-        {
-            return Enumerable.Range(0, (text.Length + chunkSize - 1) / chunkSize)
+        private async Task<bool> IsUserAllowedOpenAi(ulong discordUserId) =>
+            await context.ChannelUsers.AnyAsync(x => x.DiscordUserId == discordUserId && x.CanUseOpenAi)
+                ? true
+                : throw new UnauthorizedAccessException("You are not allowed to use OpenAI features. Please contact the server administrator for assistance.");
+
+        private static string[] SplitText(string text, int chunkSize) => Enumerable.Range(0, (text.Length + chunkSize - 1) / chunkSize)
                          .Select(i => text.Substring(i * chunkSize, Math.Min(chunkSize, text.Length - i * chunkSize)))
                          .ToArray();
-        }
     }
 }

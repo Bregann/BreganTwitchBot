@@ -1,6 +1,7 @@
 using BreganTwitchBot.Domain.Data.Database.Context;
 using BreganTwitchBot.Domain.Data.Services;
 using BreganTwitchBot.Domain.Data.Services.Discord;
+using BreganTwitchBot.Domain.Data.Services.Discord.SlashCommands.BookRecs;
 using BreganTwitchBot.Domain.Data.Services.Discord.SlashCommands.Daily;
 using BreganTwitchBot.Domain.Data.Services.Discord.SlashCommands.Gambling;
 using BreganTwitchBot.Domain.Data.Services.Discord.SlashCommands.GeneralCommands;
@@ -15,6 +16,7 @@ using BreganTwitchBot.Domain.Data.Services.Twitch.Commands.DailyPoints;
 using BreganTwitchBot.Domain.Data.Services.Twitch.Commands.FollowAge;
 using BreganTwitchBot.Domain.Data.Services.Twitch.Commands.Gambling;
 using BreganTwitchBot.Domain.Data.Services.Twitch.Commands.Hours;
+using BreganTwitchBot.Domain.Data.Services.Twitch.Commands.Leaderboards;
 using BreganTwitchBot.Domain.Data.Services.Twitch.Commands.Linking;
 using BreganTwitchBot.Domain.Data.Services.Twitch.Commands.Points;
 using BreganTwitchBot.Domain.Data.Services.Twitch.Commands.TwitchBosses;
@@ -32,15 +34,14 @@ using Discord.Interactions;
 using Discord.WebSocket;
 using Hangfire;
 using Hangfire.Dashboard.BasicAuthorization;
-using Hangfire.PostgreSql;
 using Hangfire.MemoryStorage;
+using Hangfire.PostgreSql;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Serilog;
 using System.Text;
 using TwitchLib.EventSub.Websockets.Extensions;
-using BreganTwitchBot.Domain.Data.Services.Twitch.Commands.Leaderboards;
 
 Log.Logger = new LoggerConfiguration()
     .WriteTo.Async(x => x.File("/app/Logs/log.log", retainedFileCountLimit: null, rollingInterval: RollingInterval.Day))
@@ -200,6 +201,7 @@ builder.Services.AddScoped<IDiscordGamblingData, DiscordGamblingData>();
 builder.Services.AddScoped<IGeneralCommandsData, GeneralCommandsData>();
 builder.Services.AddScoped<IDiscordLevellingData, DiscordLevellingData>();
 builder.Services.AddScoped<IDiscordLinkingData, DiscordLinkingData>();
+builder.Services.AddScoped<IDiscordBookRecsData, DiscordBookRecsData>();
 
 // hangfire
 builder.Services.AddHangfireServer(options => options.SchedulePollingInterval = TimeSpan.FromSeconds(10));

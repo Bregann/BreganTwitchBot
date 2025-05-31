@@ -8,7 +8,7 @@ using Serilog;
 
 namespace BreganTwitchBot.Domain.Data.Services.Twitch.Commands.Leaderboards
 {
-    public class LeaderboardsCommandService (IServiceProvider serviceProvider)
+    public class LeaderboardsCommandService(IServiceProvider serviceProvider)
     {
         [TwitchCommand("pointslb", ["pointsleaderboard", "lbpoints"])]
         public async Task HandlePointsLbCommand(ChannelChatMessageReceivedParams msgParams)

@@ -33,7 +33,9 @@ namespace BreganTwitchBot.DomainTests.Helpers
         public const string SeededChannel2BannedWord = "seededbannedword";
 
         public const ulong DiscordGuildId = 12345;
-
+        public const ulong DiscordUserId1 = 112233445566778899UL;
+        public const ulong DiscordUserId2 = 998877665544332211UL;
+        public const ulong DiscordUserNonExistentId = 101010101010101010UL;
 
         public static async Task SeedDatabase(AppDbContext context)
         {
@@ -105,8 +107,8 @@ namespace BreganTwitchBot.DomainTests.Helpers
             var channelUser = new ChannelUser
             {
                 AddedOn = DateTime.UtcNow,
-                CanUseOpenAi = false,
-                DiscordUserId = 0,
+                CanUseOpenAi = true,
+                DiscordUserId = DiscordUserId1,
                 TwitchUserId = Channel1User1TwitchUserId,
                 TwitchUsername = Channel1User1TwitchUsername,
                 LastSeen = DateTime.UtcNow
@@ -116,7 +118,7 @@ namespace BreganTwitchBot.DomainTests.Helpers
             {
                 AddedOn = DateTime.UtcNow,
                 CanUseOpenAi = false,
-                DiscordUserId = 0,
+                DiscordUserId = DiscordUserId2,
                 TwitchUserId = Channel1User2TwitchUserId,
                 TwitchUsername = Channel1User2TwitchUsername,
                 LastSeen = DateTime.UtcNow
