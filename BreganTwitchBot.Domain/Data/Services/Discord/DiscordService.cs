@@ -299,7 +299,7 @@ namespace BreganTwitchBot.Domain.Data.Services.Discord
 
             var user = Client.GetGuild(interaction.GuildId ?? 0).GetUser(command.User.Id);
 
-            var isMod = _discordUserLookupService.IsUserMod(command.User.Id, user);
+            var isMod = _discordUserLookupService.IsUserMod(interaction.GuildId ?? 0, user);
 
             // check if they are linked by getting twitch username from their id
             var twitchUsername = _discordUserLookupService.GetTwitchUsernameFromDiscordUser(command.User.Id);
