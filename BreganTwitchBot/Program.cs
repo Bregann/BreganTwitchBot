@@ -1,4 +1,3 @@
-using BreganTwitchBot.Domain.Data.Database.Context;
 using BreganTwitchBot.Domain.Data.Services;
 using BreganTwitchBot.Domain.Data.Services.Discord;
 using BreganTwitchBot.Domain.Data.Services.Discord.SlashCommands.BookRecs;
@@ -22,6 +21,7 @@ using BreganTwitchBot.Domain.Data.Services.Twitch.Commands.Points;
 using BreganTwitchBot.Domain.Data.Services.Twitch.Commands.TwitchBosses;
 using BreganTwitchBot.Domain.Data.Services.Twitch.Commands.WordBlacklist;
 using BreganTwitchBot.Domain.Data.Services.Twitch.Events;
+using BreganTwitchBot.Domain.Database.Context;
 using BreganTwitchBot.Domain.Enums;
 using BreganTwitchBot.Domain.Helpers;
 using BreganTwitchBot.Domain.Interfaces.Discord;
@@ -48,7 +48,7 @@ Log.Logger = new LoggerConfiguration()
     .WriteTo.Console()
     .Enrich.WithProperty("Application", "BreganTwitchBot-Api" + (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Development" ? "-Test" : ""))
     .WriteTo.Seq("http://192.168.1.20:5341")
-    .CreateLogger(); Log.Information("Logger Setup");
+    .CreateLogger();
 
 Log.Information("Logger Setup");
 

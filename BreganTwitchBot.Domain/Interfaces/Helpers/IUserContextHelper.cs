@@ -1,4 +1,4 @@
-﻿using BreganTwitchBot.Domain.Data.Database.Models;
+﻿using BreganTwitchBot.Domain.Database.Models;
 
 namespace BreganTwitchBot.Domain.Interfaces.Helpers
 {

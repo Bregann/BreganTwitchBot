@@ -1,5 +1,5 @@
-﻿using BreganTwitchBot.Domain.Data.Database.Context;
-using BreganTwitchBot.Domain.Data.Services.Twitch.Commands.DailyPoints;
+﻿using BreganTwitchBot.Domain.Data.Services.Twitch.Commands.DailyPoints;
+using BreganTwitchBot.Domain.Database.Context;
 using BreganTwitchBot.Domain.Enums;
 using BreganTwitchBot.Domain.Exceptions;
 using BreganTwitchBot.Domain.Interfaces.Helpers;
