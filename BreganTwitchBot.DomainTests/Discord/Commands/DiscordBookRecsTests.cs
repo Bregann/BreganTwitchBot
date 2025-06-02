@@ -1,6 +1,6 @@
-﻿using BreganTwitchBot.Domain.Data.Database.Models;
-using BreganTwitchBot.Domain.Data.Services.Discord.SlashCommands.BookRecs;
+﻿using BreganTwitchBot.Domain.Data.Services.Discord.SlashCommands.BookRecs;
 using BreganTwitchBot.Domain.Database.Context;
+using BreganTwitchBot.Domain.Database.Models;
 using BreganTwitchBot.Domain.Enums;
 using BreganTwitchBot.Domain.Interfaces.Helpers;
 using BreganTwitchBot.DomainTests.Helpers;

@@ -1,5 +1,4 @@
-﻿using BreganTwitchBot.Domain.Data.Database.Models;
-using BreganTwitchBot.Domain.Database.Context;
+﻿using BreganTwitchBot.Domain.Database.Context;
 using BreganTwitchBot.Domain.Database.Models;
 using BreganTwitchBot.Domain.DTOs.Auth.Requests;
 using BreganTwitchBot.Domain.DTOs.Auth.Responses;

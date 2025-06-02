@@ -4,7 +4,7 @@ using BreganTwitchBot.Domain.Interfaces.Twitch.Commands;
 using Hangfire;
 using Serilog;
 
-namespace BreganTwitchBot.Domain.Helpers
+namespace BreganTwitchBot.Domain.Services.Helpers
 {
     public class HangfireJobServiceHelper(
         ITwitchApiConnection twitchApiConnection,

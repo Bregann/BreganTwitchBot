@@ -4,7 +4,7 @@ using BreganTwitchBot.Domain.Interfaces.Helpers;
 using Microsoft.AspNetCore.Http;
 using System.Security.Claims;
 
-namespace BreganTwitchBot.Domain.Helpers
+namespace BreganTwitchBot.Domain.Services.Helpers
 {
     public class UserContextHelper(IHttpContextAccessor httpContextAccessor, AppDbContext context) : IUserContextHelper
     {

@@ -1,5 +1,5 @@
-﻿using BreganTwitchBot.Domain.Data.Database.Models;
-using BreganTwitchBot.Domain.Database.Context;
+﻿using BreganTwitchBot.Domain.Database.Context;
+using BreganTwitchBot.Domain.Database.Models;
 using BreganTwitchBot.Domain.Enums;
 
 namespace BreganTwitchBot.DomainTests.Helpers

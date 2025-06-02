@@ -268,5 +268,16 @@ namespace BreganTwitchBot.DomainTests.Twitch.Commands
             Assert.That(response, Does.Contain(expectedMessageType));
             Assert.That(response, Does.Contain("cooluser2 has"));
         }
+
+        [Test]
+        public async Task ResetStreamMinutesForBroadcaster_ValidBroadcaster_ResetsMinutes()
+        {
+            var channel = await _dbContext.Channels.FirstAsync(c => c.BroadcasterTwitchChannelId == DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId);
+
+            await _hoursDataService.ResetStreamMinutesForBroadcaster(channel.BroadcasterTwitchChannelId);
+
+            var userWatchtime = await _dbContext.ChannelUserWatchtime.FirstAsync(x => x.ChannelUser.TwitchUserId == DatabaseSeedHelper.Channel1User1TwitchUserId);
+            Assert.That(userWatchtime.MinutesInStream, Is.EqualTo(0));
+        }
     }
 }

@@ -153,6 +153,7 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch.Events
             using (var scope = serviceProvider.CreateScope())
             {
                 var dailyPointsDataService = scope.ServiceProvider.GetRequiredService<IDailyPointsDataService>();
+                var hoursDataService = scope.ServiceProvider.GetRequiredService<IHoursDataService>();
 
                 if (allowCollectionInstantly)
                 {
@@ -161,6 +162,7 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch.Events
                 }
                 else
                 {
+                    await hoursDataService.ResetStreamMinutesForBroadcaster(broadcasterId);
                     await dailyPointsDataService.ScheduleDailyPointsCollection(broadcasterId);
                 }
 

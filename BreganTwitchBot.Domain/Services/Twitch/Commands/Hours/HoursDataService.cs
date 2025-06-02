@@ -1,5 +1,5 @@
-﻿using BreganTwitchBot.Domain.Data.Database.Models;
-using BreganTwitchBot.Domain.Database.Context;
+﻿using BreganTwitchBot.Domain.Database.Context;
+using BreganTwitchBot.Domain.Database.Models;
 using BreganTwitchBot.Domain.DTOs.Twitch.EventSubEvents;
 using BreganTwitchBot.Domain.Enums;
 using BreganTwitchBot.Domain.Exceptions;
@@ -136,6 +136,12 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch.Commands.Hours
             {
                 await context.ChannelUserWatchtime.Where(x => x.MinutesWatchedThisWeek != 0).ExecuteUpdateAsync(setters => setters.SetProperty(x => x.MinutesWatchedThisWeek, 0));
             }
+        }
+
+        public async Task ResetStreamMinutesForBroadcaster(string broadcasterId)
+        {
+            var rowsChanged = await context.ChannelUserWatchtime.Where(x => x.MinutesWatchedThisStream != 0 && x.Channel.BroadcasterTwitchChannelId == broadcasterId).ExecuteUpdateAsync(setters => setters.SetProperty(x => x.MinutesWatchedThisStream, 0));
+            Log.Information($"Reset {rowsChanged} rows of stream minutes for broadcaster {broadcasterId}");
         }
 
         public async Task<string> GetHoursCommand(ChannelChatMessageReceivedParams msgParams, HoursWatchTypes hoursType)
