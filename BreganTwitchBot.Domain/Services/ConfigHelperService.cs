@@ -124,7 +124,7 @@ namespace BreganTwitchBot.Domain.Data.Services
                 {
                     return (
                         DailyPointsAllowed: config.DailyPointsCollectingAllowed,
-                        LastStreamDate: config.LastStreamEndDate,
+                        LastStreamDate: config.LastStreamStartDate,
                         LastDailyPointedAllowedDate: config.LastDailyPointsAllowed,
                         StreamHappenedThisWeek: config.StreamHappenedThisWeek
                     );

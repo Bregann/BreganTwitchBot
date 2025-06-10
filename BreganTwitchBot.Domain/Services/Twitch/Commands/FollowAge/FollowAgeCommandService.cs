@@ -8,7 +8,7 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch.Commands.FollowAge
 {
     public class FollowAgeCommandService(IServiceProvider serviceProvider)
     {
-        [TwitchCommand("followage", ["followtime", "howlong"])]
+        [TwitchCommand("followage", ["followtime", "howlong", "followerage"])]
         public async Task FollowAgeCommand(ChannelChatMessageReceivedParams msgParams)
         {
             using (var scope = serviceProvider.CreateScope())
