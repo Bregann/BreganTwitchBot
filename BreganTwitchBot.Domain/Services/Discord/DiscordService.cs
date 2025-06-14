@@ -277,7 +277,7 @@ namespace BreganTwitchBot.Domain.Data.Services.Discord
 
         private Task Disconnected(Exception arg)
         {
-            Log.Warning("[Discord] Disconnected from Discord");
+            Log.Information("[Discord] Disconnected from Discord");
             return Task.CompletedTask;
         }
 

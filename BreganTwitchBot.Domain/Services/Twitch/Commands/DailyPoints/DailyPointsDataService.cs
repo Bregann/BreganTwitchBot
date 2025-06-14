@@ -49,7 +49,7 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch.Commands.DailyPoints
             var channelName = await twitchHelperService.GetTwitchUserIdFromUsername(broadcasterId);
 
             // don't reset streaks if there has been a stream today
-            if (dailyPointsStatus.LastStreamDate.Date == DateTime.UtcNow.Date)
+            if (dailyPointsStatus.LastDailyPointedAllowedDate.Date == DateTime.UtcNow.Date)
             {
                 await configHelper.UpdateDailyPointsStatus(broadcasterId, true);
                 await twitchHelperService.SendAnnouncementMessageToChannel(broadcasterId, channelName!, $"Don't forget to claim your daily, weekly, monthly and yearly {await twitchHelperService.GetPointsName(broadcasterId, channelName!)} with !daily, !weekly, !monthly and !yearly PogChamp KEKW");
