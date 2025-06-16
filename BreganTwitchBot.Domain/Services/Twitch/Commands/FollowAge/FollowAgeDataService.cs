@@ -4,7 +4,7 @@ using BreganTwitchBot.Domain.Interfaces.Twitch;
 using BreganTwitchBot.Domain.Interfaces.Twitch.Commands;
 using Serilog;
 
-namespace BreganTwitchBot.Domain.Data.Services.Twitch.Commands.FollowAge
+namespace BreganTwitchBot.Domain.Services.Twitch.Commands.FollowAge
 {
     public class FollowAgeDataService(ITwitchApiConnection twitchApiConnection, ITwitchApiInteractionService twitchApiInteractionService) : IFollowAgeDataService
     {

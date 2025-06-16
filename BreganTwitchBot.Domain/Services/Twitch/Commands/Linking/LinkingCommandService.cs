@@ -5,7 +5,7 @@ using BreganTwitchBot.Domain.Interfaces.Twitch.Commands;
 using Microsoft.Extensions.DependencyInjection;
 using Serilog;
 
-namespace BreganTwitchBot.Domain.Data.Services.Twitch.Commands.Linking
+namespace BreganTwitchBot.Domain.Services.Twitch.Commands.Linking
 {
     public class LinkingCommandService(IServiceProvider serviceProvider)
     {

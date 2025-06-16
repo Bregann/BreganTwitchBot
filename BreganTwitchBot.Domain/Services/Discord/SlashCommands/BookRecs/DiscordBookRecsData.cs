@@ -7,7 +7,7 @@ using Microsoft.EntityFrameworkCore;
 using OpenAI;
 using OpenAI.Chat;
 
-namespace BreganTwitchBot.Domain.Data.Services.Discord.SlashCommands.BookRecs
+namespace BreganTwitchBot.Domain.Services.Discord.SlashCommands.BookRecs
 {
     public class DiscordBookRecsData(AppDbContext context, IEnvironmentalSettingHelper environmentalSettingHelper) : IDiscordBookRecsData
     {

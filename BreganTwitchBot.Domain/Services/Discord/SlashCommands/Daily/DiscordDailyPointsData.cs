@@ -7,7 +7,7 @@ using Discord;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
 
-namespace BreganTwitchBot.Domain.Data.Services.Discord.SlashCommands.Daily
+namespace BreganTwitchBot.Domain.Services.Discord.SlashCommands.Daily
 {
     public class DiscordDailyPointsData(AppDbContext context, IDiscordHelperService discordHelperService) : IDiscordDailyPointsData
     {

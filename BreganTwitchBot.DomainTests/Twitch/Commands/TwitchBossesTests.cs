@@ -1,4 +1,4 @@
-﻿using BreganTwitchBot.Domain.Data.Services.Twitch.Commands.TwitchBosses;
+﻿using BreganTwitchBot.Domain.Services.Twitch.Commands.TwitchBosses;
 using BreganTwitchBot.Domain.DTOs.Twitch.Commands.TwitchBosses;
 using BreganTwitchBot.Domain.Interfaces.Twitch;
 using BreganTwitchBot.DomainTests.Helpers;

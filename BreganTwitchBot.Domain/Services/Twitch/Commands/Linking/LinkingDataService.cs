@@ -5,7 +5,7 @@ using BreganTwitchBot.Domain.Interfaces.Helpers;
 using BreganTwitchBot.Domain.Interfaces.Twitch.Commands;
 using Microsoft.EntityFrameworkCore;
 
-namespace BreganTwitchBot.Domain.Data.Services.Twitch.Commands.Linking
+namespace BreganTwitchBot.Domain.Services.Twitch.Commands.Linking
 {
     public class LinkingDataService(AppDbContext context, IDiscordHelperService discordHelperService, IDiscordRoleManagerService discordRoleManagerService, IConfigHelperService configHelperService) : ILinkingDataService
     {

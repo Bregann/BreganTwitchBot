@@ -7,7 +7,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Serilog;
 using System.Collections.Concurrent;
 
-namespace BreganTwitchBot.Domain.Data.Services
+namespace BreganTwitchBot.Domain.Services
 {
     public class ConfigHelperService : IConfigHelperService
     {

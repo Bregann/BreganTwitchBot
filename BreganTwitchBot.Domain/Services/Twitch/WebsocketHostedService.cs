@@ -12,7 +12,7 @@ using TwitchLib.EventSub.Websockets.Core.EventArgs;
 using TwitchLib.EventSub.Websockets.Core.EventArgs.Channel;
 using TwitchLib.EventSub.Websockets.Core.EventArgs.Stream;
 
-namespace BreganTwitchBot.Domain.Data.Services.Twitch
+namespace BreganTwitchBot.Domain.Services.Twitch
 {
     public class WebsocketHostedService(
         ITwitchApiConnection twitchApiConnection,

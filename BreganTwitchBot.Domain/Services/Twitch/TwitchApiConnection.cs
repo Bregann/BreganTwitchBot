@@ -9,7 +9,7 @@ using System.Collections.Concurrent;
 using TwitchLib.Api;
 using TwitchLib.Api.Core.Exceptions;
 
-namespace BreganTwitchBot.Domain.Data.Services.Twitch
+namespace BreganTwitchBot.Domain.Services.Twitch
 {
     /* for the bot
         * https://id.twitch.tv/oauth2/authorize

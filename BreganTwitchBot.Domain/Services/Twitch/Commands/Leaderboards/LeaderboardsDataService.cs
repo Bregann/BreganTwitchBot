@@ -5,7 +5,7 @@ using BreganTwitchBot.Domain.Interfaces.Twitch.Commands;
 using Microsoft.EntityFrameworkCore;
 using System.Text;
 
-namespace BreganTwitchBot.Domain.Data.Services.Twitch.Commands.Leaderboards
+namespace BreganTwitchBot.Domain.Services.Twitch.Commands.Leaderboards
 {
     public class LeaderboardsDataService(AppDbContext context) : ILeaderboardsDataService
     {

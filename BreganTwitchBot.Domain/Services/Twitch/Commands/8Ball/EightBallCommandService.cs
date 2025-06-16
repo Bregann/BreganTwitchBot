@@ -3,7 +3,7 @@ using BreganTwitchBot.Domain.DTOs.Twitch.EventSubEvents;
 using BreganTwitchBot.Domain.Interfaces.Twitch;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace BreganTwitchBot.Domain.Data.Services.Twitch.Commands._8Ball
+namespace BreganTwitchBot.Domain.Services.Twitch.Commands._8Ball
 {
     public class EightBallCommandService(IServiceProvider serviceProvider)
     {

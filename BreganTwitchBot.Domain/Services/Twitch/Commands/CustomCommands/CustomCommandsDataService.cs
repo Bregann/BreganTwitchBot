@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using Serilog;
 using System.Data;
 
-namespace BreganTwitchBot.Domain.Data.Services.Twitch.Commands.CustomCommands
+namespace BreganTwitchBot.Domain.Services.Twitch.Commands.CustomCommands
 {
     public class CustomCommandsDataService(AppDbContext context, ITwitchHelperService twitchHelperService, ICommandHandler commandHandler) : ICustomCommandDataService
     {

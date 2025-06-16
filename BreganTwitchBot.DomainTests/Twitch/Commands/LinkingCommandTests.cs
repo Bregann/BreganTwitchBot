@@ -1,4 +1,4 @@
-﻿using BreganTwitchBot.Domain.Data.Services.Twitch.Commands.Linking;
+﻿using BreganTwitchBot.Domain.Services.Twitch.Commands.Linking;
 using BreganTwitchBot.Domain.Database.Context;
 using BreganTwitchBot.Domain.Interfaces.Discord;
 using BreganTwitchBot.Domain.Interfaces.Helpers;

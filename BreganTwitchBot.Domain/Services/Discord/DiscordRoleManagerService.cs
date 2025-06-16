@@ -3,7 +3,7 @@ using BreganTwitchBot.Domain.Interfaces.Discord;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
 
-namespace BreganTwitchBot.Domain.Data.Services.Discord
+namespace BreganTwitchBot.Domain.Services.Discord
 {
     public class DiscordRoleManagerService(AppDbContext context, IDiscordClientProvider discordClientProvider) : IDiscordRoleManagerService
     {

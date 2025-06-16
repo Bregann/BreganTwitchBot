@@ -13,7 +13,7 @@ using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
 
-namespace BreganTwitchBot.Domain.Data.Services
+namespace BreganTwitchBot.Domain.Services
 {
     public class AuthService(AppDbContext dbContext) : IAuthService
     {

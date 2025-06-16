@@ -5,7 +5,7 @@ using Discord;
 using Discord.Interactions;
 using Serilog;
 
-namespace BreganTwitchBot.Domain.Data.Services.Discord.SlashCommands.BookRecs
+namespace BreganTwitchBot.Domain.Services.Discord.SlashCommands.BookRecs
 {
     public class DiscordRecsModule(IDiscordBookRecsData discordBookRecsData, IDiscordHelperService discordHelperService) : InteractionModuleBase<SocketInteractionContext>
     {

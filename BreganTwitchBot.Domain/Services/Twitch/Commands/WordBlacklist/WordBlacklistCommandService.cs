@@ -6,7 +6,7 @@ using BreganTwitchBot.Domain.Interfaces.Twitch;
 using BreganTwitchBot.Domain.Interfaces.Twitch.Commands;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace BreganTwitchBot.Domain.Data.Services.Twitch.Commands.WordBlacklist
+namespace BreganTwitchBot.Domain.Services.Twitch.Commands.WordBlacklist
 {
     public class WordBlacklistCommandService(IServiceProvider serviceProvider)
     {

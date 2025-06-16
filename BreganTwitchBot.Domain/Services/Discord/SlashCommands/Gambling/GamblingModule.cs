@@ -3,7 +3,7 @@ using BreganTwitchBot.Domain.Interfaces.Discord.Commands;
 using Discord;
 using Discord.Interactions;
 
-namespace BreganTwitchBot.Domain.Data.Services.Discord.SlashCommands.Gambling
+namespace BreganTwitchBot.Domain.Services.Discord.SlashCommands.Gambling
 {
     public class DailyPointsModule(IDiscordGamblingData discordGamblingDataService) : InteractionModuleBase<SocketInteractionContext>
     {

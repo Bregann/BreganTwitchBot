@@ -4,7 +4,7 @@ using BreganTwitchBot.Domain.Interfaces.Twitch;
 using BreganTwitchBot.Domain.Interfaces.Twitch.Commands;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace BreganTwitchBot.Domain.Data.Services.Twitch.Commands.TwitchBosses
+namespace BreganTwitchBot.Domain.Services.Twitch.Commands.TwitchBosses
 {
     public class TwitchBossesCommandService(IServiceProvider serviceProvider)
     {

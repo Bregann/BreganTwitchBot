@@ -4,7 +4,7 @@ using BreganTwitchBot.Domain.Interfaces.Helpers;
 using Discord.WebSocket;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace BreganTwitchBot.Domain.Data.Services.Discord
+namespace BreganTwitchBot.Domain.Services.Discord
 {
     public class DiscordUserLookupService(IConfigHelperService configHelperService, IServiceProvider serviceProvider) : IDiscordUserLookupService
     {

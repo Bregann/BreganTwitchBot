@@ -6,7 +6,7 @@ using Discord;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
 
-namespace BreganTwitchBot.Domain.Data.Services.Discord
+namespace BreganTwitchBot.Domain.Services.Discord
 {
     public class DiscordEventHelperService(AppDbContext context, IConfigHelperService configHelper, IDiscordHelperService discordHelper, IDiscordRoleManagerService discordRoleManagerService, IDiscordUserLookupService discordUserLookupService) : IDiscordEventHelperService
     {

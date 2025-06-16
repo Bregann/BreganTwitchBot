@@ -9,7 +9,7 @@ using Hangfire;
 using Microsoft.Extensions.DependencyInjection;
 using Serilog;
 
-namespace BreganTwitchBot.Domain.Data.Services.Twitch.Events
+namespace BreganTwitchBot.Domain.Services.Twitch.Events
 {
     public class TwitchEventHandlerService(
         ITwitchHelperService twitchHelperService,

@@ -1,4 +1,4 @@
-﻿using BreganTwitchBot.Domain.Data.Services.Discord.SlashCommands.BookRecs;
+﻿using BreganTwitchBot.Domain.Services.Discord.SlashCommands.BookRecs;
 using BreganTwitchBot.Domain.Database.Context;
 using BreganTwitchBot.Domain.Database.Models;
 using BreganTwitchBot.Domain.Enums;

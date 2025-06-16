@@ -2,7 +2,7 @@
 using BreganTwitchBot.Domain.Interfaces.Discord.Commands;
 using Discord.Interactions;
 
-namespace BreganTwitchBot.Domain.Data.Services.Discord.SlashCommands.Linking
+namespace BreganTwitchBot.Domain.Services.Discord.SlashCommands.Linking
 {
     public class DiscordLinkingCommandModule(IDiscordLinkingData discordLinkingData) : InteractionModuleBase<SocketInteractionContext>
     {

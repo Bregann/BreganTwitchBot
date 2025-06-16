@@ -10,7 +10,7 @@ using BreganTwitchBot.Domain.Interfaces.Twitch.Commands;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
 
-namespace BreganTwitchBot.Domain.Data.Services.Twitch.Commands.Hours
+namespace BreganTwitchBot.Domain.Services.Twitch.Commands.Hours
 {
     public class HoursDataService(AppDbContext context, ITwitchApiInteractionService twitchApiInteractionService, ITwitchApiConnection twitchApiConnection, ITwitchHelperService twitchHelperService, IDiscordRoleManagerService discordRoleManagerService, IConfigHelperService configHelperService) : IHoursDataService
     {

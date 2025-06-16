@@ -7,7 +7,7 @@ using BreganTwitchBot.Domain.Interfaces.Discord.Commands;
 using Discord;
 using Microsoft.EntityFrameworkCore;
 
-namespace BreganTwitchBot.Domain.Data.Services.Discord.SlashCommands.Gambling
+namespace BreganTwitchBot.Domain.Services.Discord.SlashCommands.Gambling
 {
     //TODO: Test this class
     public class DiscordGamblingData(AppDbContext context, IDiscordHelperService discordHelperService) : IDiscordGamblingData

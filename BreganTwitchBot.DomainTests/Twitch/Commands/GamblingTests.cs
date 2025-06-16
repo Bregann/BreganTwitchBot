@@ -1,4 +1,4 @@
-﻿using BreganTwitchBot.Domain.Data.Services.Twitch.Commands.Gambling;
+﻿using BreganTwitchBot.Domain.Services.Twitch.Commands.Gambling;
 using BreganTwitchBot.Domain.Database.Context;
 using BreganTwitchBot.Domain.Exceptions;
 using BreganTwitchBot.Domain.Interfaces.Twitch;

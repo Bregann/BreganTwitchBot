@@ -9,7 +9,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
-namespace BreganTwitchBot.Domain.Data.Database.Migrations.Postgresql
+namespace BreganTwitchBot.Domain.Database.Migrations.Postgresql
 {
     [DbContext(typeof(PostgresqlContext))]
     [Migration("20250418075416_AddChannelUserDataIsVip")]
@@ -28,7 +28,7 @@ namespace BreganTwitchBot.Domain.Data.Database.Migrations.Postgresql
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
-            modelBuilder.Entity("BreganTwitchBot.Domain.Data.Database.Models.AiBookData", b =>
+            modelBuilder.Entity("BreganTwitchBot.Domain.Database.Models.AiBookData", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -53,7 +53,7 @@ namespace BreganTwitchBot.Domain.Data.Database.Migrations.Postgresql
                     b.ToTable("AiBookData");
                 });
 
-            modelBuilder.Entity("BreganTwitchBot.Domain.Data.Database.Models.Birthday", b =>
+            modelBuilder.Entity("BreganTwitchBot.Domain.Database.Models.Birthday", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -82,7 +82,7 @@ namespace BreganTwitchBot.Domain.Data.Database.Migrations.Postgresql
                     b.ToTable("Birthdays");
                 });
 
-            modelBuilder.Entity("BreganTwitchBot.Domain.Data.Database.Models.Blacklist", b =>
+            modelBuilder.Entity("BreganTwitchBot.Domain.Database.Models.Blacklist", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -107,7 +107,7 @@ namespace BreganTwitchBot.Domain.Data.Database.Migrations.Postgresql
                     b.ToTable("Blacklist");
                 });
 
-            modelBuilder.Entity("BreganTwitchBot.Domain.Data.Database.Models.Channel", b =>
+            modelBuilder.Entity("BreganTwitchBot.Domain.Database.Models.Channel", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -158,7 +158,7 @@ namespace BreganTwitchBot.Domain.Data.Database.Migrations.Postgresql
                     b.ToTable("Channels");
                 });
 
-            modelBuilder.Entity("BreganTwitchBot.Domain.Data.Database.Models.ChannelConfig", b =>
+            modelBuilder.Entity("BreganTwitchBot.Domain.Database.Models.ChannelConfig", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -238,7 +238,7 @@ namespace BreganTwitchBot.Domain.Data.Database.Migrations.Postgresql
                     b.ToTable("ChannelConfig");
                 });
 
-            modelBuilder.Entity("BreganTwitchBot.Domain.Data.Database.Models.ChannelMessages", b =>
+            modelBuilder.Entity("BreganTwitchBot.Domain.Database.Models.ChannelMessages", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -264,7 +264,7 @@ namespace BreganTwitchBot.Domain.Data.Database.Migrations.Postgresql
                     b.ToTable("ChannelMessages");
                 });
 
-            modelBuilder.Entity("BreganTwitchBot.Domain.Data.Database.Models.ChannelRank", b =>
+            modelBuilder.Entity("BreganTwitchBot.Domain.Database.Models.ChannelRank", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -295,7 +295,7 @@ namespace BreganTwitchBot.Domain.Data.Database.Migrations.Postgresql
                     b.ToTable("ChannelRanks");
                 });
 
-            modelBuilder.Entity("BreganTwitchBot.Domain.Data.Database.Models.ChannelUser", b =>
+            modelBuilder.Entity("BreganTwitchBot.Domain.Database.Models.ChannelUser", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -328,7 +328,7 @@ namespace BreganTwitchBot.Domain.Data.Database.Migrations.Postgresql
                     b.ToTable("ChannelUsers");
                 });
 
-            modelBuilder.Entity("BreganTwitchBot.Domain.Data.Database.Models.ChannelUserData", b =>
+            modelBuilder.Entity("BreganTwitchBot.Domain.Database.Models.ChannelUserData", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -372,7 +372,7 @@ namespace BreganTwitchBot.Domain.Data.Database.Migrations.Postgresql
                     b.ToTable("ChannelUserData");
                 });
 
-            modelBuilder.Entity("BreganTwitchBot.Domain.Data.Database.Models.ChannelUserGambleStats", b =>
+            modelBuilder.Entity("BreganTwitchBot.Domain.Database.Models.ChannelUserGambleStats", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -425,7 +425,7 @@ namespace BreganTwitchBot.Domain.Data.Database.Migrations.Postgresql
                     b.ToTable("ChannelUserGambleStats");
                 });
 
-            modelBuilder.Entity("BreganTwitchBot.Domain.Data.Database.Models.ChannelUserRankProgress", b =>
+            modelBuilder.Entity("BreganTwitchBot.Domain.Database.Models.ChannelUserRankProgress", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -456,7 +456,7 @@ namespace BreganTwitchBot.Domain.Data.Database.Migrations.Postgresql
                     b.ToTable("ChannelUserRankProgress");
                 });
 
-            modelBuilder.Entity("BreganTwitchBot.Domain.Data.Database.Models.ChannelUserStats", b =>
+            modelBuilder.Entity("BreganTwitchBot.Domain.Database.Models.ChannelUserStats", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -497,7 +497,7 @@ namespace BreganTwitchBot.Domain.Data.Database.Migrations.Postgresql
                     b.ToTable("ChannelUserStats");
                 });
 
-            modelBuilder.Entity("BreganTwitchBot.Domain.Data.Database.Models.ChannelUserWatchtime", b =>
+            modelBuilder.Entity("BreganTwitchBot.Domain.Database.Models.ChannelUserWatchtime", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -535,7 +535,7 @@ namespace BreganTwitchBot.Domain.Data.Database.Migrations.Postgresql
                     b.ToTable("ChannelUserWatchtime");
                 });
 
-            modelBuilder.Entity("BreganTwitchBot.Domain.Data.Database.Models.CustomCommand", b =>
+            modelBuilder.Entity("BreganTwitchBot.Domain.Database.Models.CustomCommand", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -567,7 +567,7 @@ namespace BreganTwitchBot.Domain.Data.Database.Migrations.Postgresql
                     b.ToTable("CustomCommands");
                 });
 
-            modelBuilder.Entity("BreganTwitchBot.Domain.Data.Database.Models.DiscordDailyPoints", b =>
+            modelBuilder.Entity("BreganTwitchBot.Domain.Database.Models.DiscordDailyPoints", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -600,7 +600,7 @@ namespace BreganTwitchBot.Domain.Data.Database.Migrations.Postgresql
                     b.ToTable("DiscordDailyPoints");
                 });
 
-            modelBuilder.Entity("BreganTwitchBot.Domain.Data.Database.Models.DiscordLinkRequests", b =>
+            modelBuilder.Entity("BreganTwitchBot.Domain.Database.Models.DiscordLinkRequests", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -628,7 +628,7 @@ namespace BreganTwitchBot.Domain.Data.Database.Migrations.Postgresql
                     b.ToTable("DiscordLinkRequests");
                 });
 
-            modelBuilder.Entity("BreganTwitchBot.Domain.Data.Database.Models.DiscordSpinStats", b =>
+            modelBuilder.Entity("BreganTwitchBot.Domain.Database.Models.DiscordSpinStats", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -668,7 +668,7 @@ namespace BreganTwitchBot.Domain.Data.Database.Migrations.Postgresql
                     b.ToTable("DiscordSpinStats");
                 });
 
-            modelBuilder.Entity("BreganTwitchBot.Domain.Data.Database.Models.DiscordUserStats", b =>
+            modelBuilder.Entity("BreganTwitchBot.Domain.Database.Models.DiscordUserStats", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -703,7 +703,7 @@ namespace BreganTwitchBot.Domain.Data.Database.Migrations.Postgresql
                     b.ToTable("DiscordUserStats");
                 });
 
-            modelBuilder.Entity("BreganTwitchBot.Domain.Data.Database.Models.EnvironmentalSetting", b =>
+            modelBuilder.Entity("BreganTwitchBot.Domain.Database.Models.EnvironmentalSetting", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -724,7 +724,7 @@ namespace BreganTwitchBot.Domain.Data.Database.Migrations.Postgresql
                     b.ToTable("EnvironmentalSettings");
                 });
 
-            modelBuilder.Entity("BreganTwitchBot.Domain.Data.Database.Models.StreamViewCount", b =>
+            modelBuilder.Entity("BreganTwitchBot.Domain.Database.Models.StreamViewCount", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -748,7 +748,7 @@ namespace BreganTwitchBot.Domain.Data.Database.Migrations.Postgresql
                     b.ToTable("StreamViewCounts");
                 });
 
-            modelBuilder.Entity("BreganTwitchBot.Domain.Data.Database.Models.Subathon", b =>
+            modelBuilder.Entity("BreganTwitchBot.Domain.Database.Models.Subathon", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -771,7 +771,7 @@ namespace BreganTwitchBot.Domain.Data.Database.Migrations.Postgresql
                     b.ToTable("Subathons");
                 });
 
-            modelBuilder.Entity("BreganTwitchBot.Domain.Data.Database.Models.TwitchDailyPoints", b =>
+            modelBuilder.Entity("BreganTwitchBot.Domain.Database.Models.TwitchDailyPoints", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -815,7 +815,7 @@ namespace BreganTwitchBot.Domain.Data.Database.Migrations.Postgresql
                     b.ToTable("TwitchDailyPoints");
                 });
 
-            modelBuilder.Entity("BreganTwitchBot.Domain.Data.Database.Models.TwitchSlotMachineStats", b =>
+            modelBuilder.Entity("BreganTwitchBot.Domain.Database.Models.TwitchSlotMachineStats", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -858,7 +858,7 @@ namespace BreganTwitchBot.Domain.Data.Database.Migrations.Postgresql
                     b.ToTable("TwitchSlotMachineStats");
                 });
 
-            modelBuilder.Entity("BreganTwitchBot.Domain.Data.Database.Models.TwitchStreamStats", b =>
+            modelBuilder.Entity("BreganTwitchBot.Domain.Database.Models.TwitchStreamStats", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -999,7 +999,7 @@ namespace BreganTwitchBot.Domain.Data.Database.Migrations.Postgresql
                     b.ToTable("TwitchStreamStats");
                 });
 
-            modelBuilder.Entity("BreganTwitchBot.Domain.Data.Database.Models.UniqueViewers", b =>
+            modelBuilder.Entity("BreganTwitchBot.Domain.Database.Models.UniqueViewers", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -1021,7 +1021,7 @@ namespace BreganTwitchBot.Domain.Data.Database.Migrations.Postgresql
                     b.ToTable("UniqueViewers");
                 });
 
-            modelBuilder.Entity("BreganTwitchBot.Domain.Data.Database.Models.User", b =>
+            modelBuilder.Entity("BreganTwitchBot.Domain.Database.Models.User", b =>
                 {
                     b.Property<string>("Id")
                         .ValueGeneratedOnAdd()
@@ -1048,7 +1048,7 @@ namespace BreganTwitchBot.Domain.Data.Database.Migrations.Postgresql
                     b.ToTable("Users");
                 });
 
-            modelBuilder.Entity("BreganTwitchBot.Domain.Data.Database.Models.UserRefreshToken", b =>
+            modelBuilder.Entity("BreganTwitchBot.Domain.Database.Models.UserRefreshToken", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -1077,9 +1077,9 @@ namespace BreganTwitchBot.Domain.Data.Database.Migrations.Postgresql
                     b.ToTable("UserRefreshTokens");
                 });
 
-            modelBuilder.Entity("BreganTwitchBot.Domain.Data.Database.Models.AiBookData", b =>
+            modelBuilder.Entity("BreganTwitchBot.Domain.Database.Models.AiBookData", b =>
                 {
-                    b.HasOne("BreganTwitchBot.Domain.Data.Database.Models.ChannelUser", "User")
+                    b.HasOne("BreganTwitchBot.Domain.Database.Models.ChannelUser", "User")
                         .WithMany()
                         .HasForeignKey("ChannelUserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -1088,15 +1088,15 @@ namespace BreganTwitchBot.Domain.Data.Database.Migrations.Postgresql
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("BreganTwitchBot.Domain.Data.Database.Models.Birthday", b =>
+            modelBuilder.Entity("BreganTwitchBot.Domain.Database.Models.Birthday", b =>
                 {
-                    b.HasOne("BreganTwitchBot.Domain.Data.Database.Models.Channel", "Channel")
+                    b.HasOne("BreganTwitchBot.Domain.Database.Models.Channel", "Channel")
                         .WithMany()
                         .HasForeignKey("ChannelId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("BreganTwitchBot.Domain.Data.Database.Models.ChannelUser", "User")
+                    b.HasOne("BreganTwitchBot.Domain.Database.Models.ChannelUser", "User")
                         .WithMany()
                         .HasForeignKey("ChannelUserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -1107,9 +1107,9 @@ namespace BreganTwitchBot.Domain.Data.Database.Migrations.Postgresql
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("BreganTwitchBot.Domain.Data.Database.Models.Blacklist", b =>
+            modelBuilder.Entity("BreganTwitchBot.Domain.Database.Models.Blacklist", b =>
                 {
-                    b.HasOne("BreganTwitchBot.Domain.Data.Database.Models.Channel", "Channel")
+                    b.HasOne("BreganTwitchBot.Domain.Database.Models.Channel", "Channel")
                         .WithMany()
                         .HasForeignKey("ChannelId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -1118,20 +1118,20 @@ namespace BreganTwitchBot.Domain.Data.Database.Migrations.Postgresql
                     b.Navigation("Channel");
                 });
 
-            modelBuilder.Entity("BreganTwitchBot.Domain.Data.Database.Models.ChannelConfig", b =>
+            modelBuilder.Entity("BreganTwitchBot.Domain.Database.Models.ChannelConfig", b =>
                 {
-                    b.HasOne("BreganTwitchBot.Domain.Data.Database.Models.Channel", "Channel")
+                    b.HasOne("BreganTwitchBot.Domain.Database.Models.Channel", "Channel")
                         .WithOne("ChannelConfig")
-                        .HasForeignKey("BreganTwitchBot.Domain.Data.Database.Models.ChannelConfig", "ChannelId")
+                        .HasForeignKey("BreganTwitchBot.Domain.Database.Models.ChannelConfig", "ChannelId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Channel");
                 });
 
-            modelBuilder.Entity("BreganTwitchBot.Domain.Data.Database.Models.ChannelMessages", b =>
+            modelBuilder.Entity("BreganTwitchBot.Domain.Database.Models.ChannelMessages", b =>
                 {
-                    b.HasOne("BreganTwitchBot.Domain.Data.Database.Models.Channel", "Channel")
+                    b.HasOne("BreganTwitchBot.Domain.Database.Models.Channel", "Channel")
                         .WithMany()
                         .HasForeignKey("ChannelId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -1140,9 +1140,9 @@ namespace BreganTwitchBot.Domain.Data.Database.Migrations.Postgresql
                     b.Navigation("Channel");
                 });
 
-            modelBuilder.Entity("BreganTwitchBot.Domain.Data.Database.Models.ChannelRank", b =>
+            modelBuilder.Entity("BreganTwitchBot.Domain.Database.Models.ChannelRank", b =>
                 {
-                    b.HasOne("BreganTwitchBot.Domain.Data.Database.Models.Channel", "Channel")
+                    b.HasOne("BreganTwitchBot.Domain.Database.Models.Channel", "Channel")
                         .WithMany("ChannelRanks")
                         .HasForeignKey("ChannelId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -1151,15 +1151,15 @@ namespace BreganTwitchBot.Domain.Data.Database.Migrations.Postgresql
                     b.Navigation("Channel");
                 });
 
-            modelBuilder.Entity("BreganTwitchBot.Domain.Data.Database.Models.ChannelUserData", b =>
+            modelBuilder.Entity("BreganTwitchBot.Domain.Database.Models.ChannelUserData", b =>
                 {
-                    b.HasOne("BreganTwitchBot.Domain.Data.Database.Models.Channel", "Channel")
+                    b.HasOne("BreganTwitchBot.Domain.Database.Models.Channel", "Channel")
                         .WithMany()
                         .HasForeignKey("ChannelId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("BreganTwitchBot.Domain.Data.Database.Models.ChannelUser", "ChannelUser")
+                    b.HasOne("BreganTwitchBot.Domain.Database.Models.ChannelUser", "ChannelUser")
                         .WithMany("ChannelUserData")
                         .HasForeignKey("ChannelUserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -1170,15 +1170,15 @@ namespace BreganTwitchBot.Domain.Data.Database.Migrations.Postgresql
                     b.Navigation("ChannelUser");
                 });
 
-            modelBuilder.Entity("BreganTwitchBot.Domain.Data.Database.Models.ChannelUserGambleStats", b =>
+            modelBuilder.Entity("BreganTwitchBot.Domain.Database.Models.ChannelUserGambleStats", b =>
                 {
-                    b.HasOne("BreganTwitchBot.Domain.Data.Database.Models.Channel", "Channel")
+                    b.HasOne("BreganTwitchBot.Domain.Database.Models.Channel", "Channel")
                         .WithMany()
                         .HasForeignKey("ChannelId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("BreganTwitchBot.Domain.Data.Database.Models.ChannelUser", "ChannelUser")
+                    b.HasOne("BreganTwitchBot.Domain.Database.Models.ChannelUser", "ChannelUser")
                         .WithMany("ChannelUserGambleStats")
                         .HasForeignKey("ChannelUserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -1189,21 +1189,21 @@ namespace BreganTwitchBot.Domain.Data.Database.Migrations.Postgresql
                     b.Navigation("ChannelUser");
                 });
 
-            modelBuilder.Entity("BreganTwitchBot.Domain.Data.Database.Models.ChannelUserRankProgress", b =>
+            modelBuilder.Entity("BreganTwitchBot.Domain.Database.Models.ChannelUserRankProgress", b =>
                 {
-                    b.HasOne("BreganTwitchBot.Domain.Data.Database.Models.Channel", "Channel")
+                    b.HasOne("BreganTwitchBot.Domain.Database.Models.Channel", "Channel")
                         .WithMany()
                         .HasForeignKey("ChannelId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("BreganTwitchBot.Domain.Data.Database.Models.ChannelRank", "ChannelRank")
+                    b.HasOne("BreganTwitchBot.Domain.Database.Models.ChannelRank", "ChannelRank")
                         .WithMany()
                         .HasForeignKey("ChannelRankId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("BreganTwitchBot.Domain.Data.Database.Models.ChannelUser", "ChannelUser")
+                    b.HasOne("BreganTwitchBot.Domain.Database.Models.ChannelUser", "ChannelUser")
                         .WithMany("ChannelUserRankProgress")
                         .HasForeignKey("ChannelUserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -1216,15 +1216,15 @@ namespace BreganTwitchBot.Domain.Data.Database.Migrations.Postgresql
                     b.Navigation("ChannelUser");
                 });
 
-            modelBuilder.Entity("BreganTwitchBot.Domain.Data.Database.Models.ChannelUserStats", b =>
+            modelBuilder.Entity("BreganTwitchBot.Domain.Database.Models.ChannelUserStats", b =>
                 {
-                    b.HasOne("BreganTwitchBot.Domain.Data.Database.Models.Channel", "Channel")
+                    b.HasOne("BreganTwitchBot.Domain.Database.Models.Channel", "Channel")
                         .WithMany()
                         .HasForeignKey("ChannelId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("BreganTwitchBot.Domain.Data.Database.Models.ChannelUser", "User")
+                    b.HasOne("BreganTwitchBot.Domain.Database.Models.ChannelUser", "User")
                         .WithMany("ChannelUserStats")
                         .HasForeignKey("ChannelUserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -1235,15 +1235,15 @@ namespace BreganTwitchBot.Domain.Data.Database.Migrations.Postgresql
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("BreganTwitchBot.Domain.Data.Database.Models.ChannelUserWatchtime", b =>
+            modelBuilder.Entity("BreganTwitchBot.Domain.Database.Models.ChannelUserWatchtime", b =>
                 {
-                    b.HasOne("BreganTwitchBot.Domain.Data.Database.Models.Channel", "Channel")
+                    b.HasOne("BreganTwitchBot.Domain.Database.Models.Channel", "Channel")
                         .WithMany()
                         .HasForeignKey("ChannelId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("BreganTwitchBot.Domain.Data.Database.Models.ChannelUser", "ChannelUser")
+                    b.HasOne("BreganTwitchBot.Domain.Database.Models.ChannelUser", "ChannelUser")
                         .WithMany("ChannelUserWatchtimes")
                         .HasForeignKey("ChannelUserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -1254,9 +1254,9 @@ namespace BreganTwitchBot.Domain.Data.Database.Migrations.Postgresql
                     b.Navigation("ChannelUser");
                 });
 
-            modelBuilder.Entity("BreganTwitchBot.Domain.Data.Database.Models.CustomCommand", b =>
+            modelBuilder.Entity("BreganTwitchBot.Domain.Database.Models.CustomCommand", b =>
                 {
-                    b.HasOne("BreganTwitchBot.Domain.Data.Database.Models.Channel", "Channel")
+                    b.HasOne("BreganTwitchBot.Domain.Database.Models.Channel", "Channel")
                         .WithMany("CustomCommands")
                         .HasForeignKey("ChannelId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -1265,17 +1265,17 @@ namespace BreganTwitchBot.Domain.Data.Database.Migrations.Postgresql
                     b.Navigation("Channel");
                 });
 
-            modelBuilder.Entity("BreganTwitchBot.Domain.Data.Database.Models.DiscordDailyPoints", b =>
+            modelBuilder.Entity("BreganTwitchBot.Domain.Database.Models.DiscordDailyPoints", b =>
                 {
-                    b.HasOne("BreganTwitchBot.Domain.Data.Database.Models.Channel", "Channel")
+                    b.HasOne("BreganTwitchBot.Domain.Database.Models.Channel", "Channel")
                         .WithMany()
                         .HasForeignKey("ChannelId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("BreganTwitchBot.Domain.Data.Database.Models.ChannelUser", "User")
+                    b.HasOne("BreganTwitchBot.Domain.Database.Models.ChannelUser", "User")
                         .WithOne("DiscordDailyPoints")
-                        .HasForeignKey("BreganTwitchBot.Domain.Data.Database.Models.DiscordDailyPoints", "ChannelUserId")
+                        .HasForeignKey("BreganTwitchBot.Domain.Database.Models.DiscordDailyPoints", "ChannelUserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -1284,33 +1284,33 @@ namespace BreganTwitchBot.Domain.Data.Database.Migrations.Postgresql
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("BreganTwitchBot.Domain.Data.Database.Models.DiscordLinkRequests", b =>
+            modelBuilder.Entity("BreganTwitchBot.Domain.Database.Models.DiscordLinkRequests", b =>
                 {
-                    b.HasOne("BreganTwitchBot.Domain.Data.Database.Models.Channel", null)
+                    b.HasOne("BreganTwitchBot.Domain.Database.Models.Channel", null)
                         .WithMany("DiscordLinksRequests")
                         .HasForeignKey("ChannelId");
                 });
 
-            modelBuilder.Entity("BreganTwitchBot.Domain.Data.Database.Models.DiscordSpinStats", b =>
+            modelBuilder.Entity("BreganTwitchBot.Domain.Database.Models.DiscordSpinStats", b =>
                 {
-                    b.HasOne("BreganTwitchBot.Domain.Data.Database.Models.Channel", "Channel")
+                    b.HasOne("BreganTwitchBot.Domain.Database.Models.Channel", "Channel")
                         .WithOne("DiscordSpinStats")
-                        .HasForeignKey("BreganTwitchBot.Domain.Data.Database.Models.DiscordSpinStats", "ChannelId")
+                        .HasForeignKey("BreganTwitchBot.Domain.Database.Models.DiscordSpinStats", "ChannelId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Channel");
                 });
 
-            modelBuilder.Entity("BreganTwitchBot.Domain.Data.Database.Models.DiscordUserStats", b =>
+            modelBuilder.Entity("BreganTwitchBot.Domain.Database.Models.DiscordUserStats", b =>
                 {
-                    b.HasOne("BreganTwitchBot.Domain.Data.Database.Models.Channel", "Channel")
+                    b.HasOne("BreganTwitchBot.Domain.Database.Models.Channel", "Channel")
                         .WithMany()
                         .HasForeignKey("ChannelId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("BreganTwitchBot.Domain.Data.Database.Models.ChannelUser", "User")
+                    b.HasOne("BreganTwitchBot.Domain.Database.Models.ChannelUser", "User")
                         .WithMany("DiscordUserStats")
                         .HasForeignKey("ChannelUserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -1321,9 +1321,9 @@ namespace BreganTwitchBot.Domain.Data.Database.Migrations.Postgresql
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("BreganTwitchBot.Domain.Data.Database.Models.StreamViewCount", b =>
+            modelBuilder.Entity("BreganTwitchBot.Domain.Database.Models.StreamViewCount", b =>
                 {
-                    b.HasOne("BreganTwitchBot.Domain.Data.Database.Models.Channel", "Channel")
+                    b.HasOne("BreganTwitchBot.Domain.Database.Models.Channel", "Channel")
                         .WithMany("StreamViewCounts")
                         .HasForeignKey("ChannelId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -1332,15 +1332,15 @@ namespace BreganTwitchBot.Domain.Data.Database.Migrations.Postgresql
                     b.Navigation("Channel");
                 });
 
-            modelBuilder.Entity("BreganTwitchBot.Domain.Data.Database.Models.Subathon", b =>
+            modelBuilder.Entity("BreganTwitchBot.Domain.Database.Models.Subathon", b =>
                 {
-                    b.HasOne("BreganTwitchBot.Domain.Data.Database.Models.Channel", "Channel")
+                    b.HasOne("BreganTwitchBot.Domain.Database.Models.Channel", "Channel")
                         .WithMany("Subathons")
                         .HasForeignKey("ChannelId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("BreganTwitchBot.Domain.Data.Database.Models.ChannelUser", "ChannelUser")
+                    b.HasOne("BreganTwitchBot.Domain.Database.Models.ChannelUser", "ChannelUser")
                         .WithMany("Subathons")
                         .HasForeignKey("ChannelUserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -1351,15 +1351,15 @@ namespace BreganTwitchBot.Domain.Data.Database.Migrations.Postgresql
                     b.Navigation("ChannelUser");
                 });
 
-            modelBuilder.Entity("BreganTwitchBot.Domain.Data.Database.Models.TwitchDailyPoints", b =>
+            modelBuilder.Entity("BreganTwitchBot.Domain.Database.Models.TwitchDailyPoints", b =>
                 {
-                    b.HasOne("BreganTwitchBot.Domain.Data.Database.Models.Channel", "Channel")
+                    b.HasOne("BreganTwitchBot.Domain.Database.Models.Channel", "Channel")
                         .WithMany()
                         .HasForeignKey("ChannelId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("BreganTwitchBot.Domain.Data.Database.Models.ChannelUser", "User")
+                    b.HasOne("BreganTwitchBot.Domain.Database.Models.ChannelUser", "User")
                         .WithMany("TwitchDailyPoints")
                         .HasForeignKey("ChannelUserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -1370,20 +1370,20 @@ namespace BreganTwitchBot.Domain.Data.Database.Migrations.Postgresql
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("BreganTwitchBot.Domain.Data.Database.Models.TwitchSlotMachineStats", b =>
+            modelBuilder.Entity("BreganTwitchBot.Domain.Database.Models.TwitchSlotMachineStats", b =>
                 {
-                    b.HasOne("BreganTwitchBot.Domain.Data.Database.Models.Channel", "Channel")
+                    b.HasOne("BreganTwitchBot.Domain.Database.Models.Channel", "Channel")
                         .WithOne("TwitchSlotMachineStats")
-                        .HasForeignKey("BreganTwitchBot.Domain.Data.Database.Models.TwitchSlotMachineStats", "ChannelId")
+                        .HasForeignKey("BreganTwitchBot.Domain.Database.Models.TwitchSlotMachineStats", "ChannelId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Channel");
                 });
 
-            modelBuilder.Entity("BreganTwitchBot.Domain.Data.Database.Models.TwitchStreamStats", b =>
+            modelBuilder.Entity("BreganTwitchBot.Domain.Database.Models.TwitchStreamStats", b =>
                 {
-                    b.HasOne("BreganTwitchBot.Domain.Data.Database.Models.Channel", "Channel")
+                    b.HasOne("BreganTwitchBot.Domain.Database.Models.Channel", "Channel")
                         .WithMany("TwitchStreamStats")
                         .HasForeignKey("ChannelId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -1392,9 +1392,9 @@ namespace BreganTwitchBot.Domain.Data.Database.Migrations.Postgresql
                     b.Navigation("Channel");
                 });
 
-            modelBuilder.Entity("BreganTwitchBot.Domain.Data.Database.Models.UniqueViewers", b =>
+            modelBuilder.Entity("BreganTwitchBot.Domain.Database.Models.UniqueViewers", b =>
                 {
-                    b.HasOne("BreganTwitchBot.Domain.Data.Database.Models.Channel", "Channel")
+                    b.HasOne("BreganTwitchBot.Domain.Database.Models.Channel", "Channel")
                         .WithMany("UniqueViewers")
                         .HasForeignKey("ChannelId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -1403,9 +1403,9 @@ namespace BreganTwitchBot.Domain.Data.Database.Migrations.Postgresql
                     b.Navigation("Channel");
                 });
 
-            modelBuilder.Entity("BreganTwitchBot.Domain.Data.Database.Models.UserRefreshToken", b =>
+            modelBuilder.Entity("BreganTwitchBot.Domain.Database.Models.UserRefreshToken", b =>
                 {
-                    b.HasOne("BreganTwitchBot.Domain.Data.Database.Models.User", "User")
+                    b.HasOne("BreganTwitchBot.Domain.Database.Models.User", "User")
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -1414,7 +1414,7 @@ namespace BreganTwitchBot.Domain.Data.Database.Migrations.Postgresql
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("BreganTwitchBot.Domain.Data.Database.Models.Channel", b =>
+            modelBuilder.Entity("BreganTwitchBot.Domain.Database.Models.Channel", b =>
                 {
                     b.Navigation("ChannelConfig")
                         .IsRequired();
@@ -1440,7 +1440,7 @@ namespace BreganTwitchBot.Domain.Data.Database.Migrations.Postgresql
                     b.Navigation("UniqueViewers");
                 });
 
-            modelBuilder.Entity("BreganTwitchBot.Domain.Data.Database.Models.ChannelUser", b =>
+            modelBuilder.Entity("BreganTwitchBot.Domain.Database.Models.ChannelUser", b =>
                 {
                     b.Navigation("ChannelUserData");
 

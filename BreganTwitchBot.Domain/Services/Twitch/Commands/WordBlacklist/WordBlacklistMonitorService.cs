@@ -6,14 +6,14 @@ using BreganTwitchBot.Domain.Interfaces.Twitch.Commands;
 using Microsoft.Extensions.DependencyInjection;
 using System.Text.RegularExpressions;
 
-namespace BreganTwitchBot.Domain.Data.Services.Twitch.Commands.WordBlacklist
+namespace BreganTwitchBot.Domain.Services.Twitch.Commands.WordBlacklist
 {
     public class WordBlacklistMonitorService : IWordBlacklistMonitorService
     {
         internal List<WordBlacklistItem> _wordBlacklist = [];
         internal List<WordBlacklistUser> _wordBlacklistUsers = [];
         private readonly ITwitchHelperService _twitchHelperService;
-        static readonly Regex fancyRegex = new Regex(@"[\u2800-\u28FF\u2580-\u259F\u2500-\u257F\u25A0-\u25FF]", RegexOptions.Compiled);
+        private readonly Regex fancyRegex = new(@"[\u2800-\u28FF\u2580-\u259F\u2500-\u257F\u25A0-\u25FF]", RegexOptions.Compiled);
 
         public WordBlacklistMonitorService(IServiceProvider serviceProvider, ITwitchHelperService twitchHelperService)
         {
@@ -75,7 +75,8 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch.Commands.WordBlacklist
             // Check if the message contains any blacklisted words
             var blacklistedWords = _wordBlacklist.Where(x => x.BroadcasterId == broadcasterId && message.ToLower().Contains(x.Word, StringComparison.CurrentCultureIgnoreCase)).ToList();
             // Check the message for any fancy unicode characters
-            bool hasFancyCharacters = fancyRegex.IsMatch(message);
+            var hasFancyCharacters = fancyRegex.IsMatch(message);
+
             WordType? wordType = null;
 
             if (hasFancyCharacters)
@@ -126,17 +127,16 @@ namespace BreganTwitchBot.Domain.Data.Services.Twitch.Commands.WordBlacklist
                     break;
             }
         }
-    }
 
-    public void RemoveWarnedUsers()
-    {
-        // Remove users who have been warned for more than 5 minutes
-        var now = DateTime.UtcNow;
-        var usersToRemove = _wordBlacklistUsers.Where(x => (now - x.AddedAt).TotalMinutes > 5).ToList();
-        foreach (var user in usersToRemove)
+        public void RemoveWarnedUsers()
         {
-            _wordBlacklistUsers.Remove(user);
+            // Remove users who have been warned for more than 5 minutes
+            var now = DateTime.UtcNow;
+            var usersToRemove = _wordBlacklistUsers.Where(x => (now - x.AddedAt).TotalMinutes > 5).ToList();
+            foreach (var user in usersToRemove)
+            {
+                _wordBlacklistUsers.Remove(user);
+            }
         }
     }
-}
 }

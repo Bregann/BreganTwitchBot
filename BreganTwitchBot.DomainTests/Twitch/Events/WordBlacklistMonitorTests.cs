@@ -1,4 +1,4 @@
-﻿using BreganTwitchBot.Domain.Data.Services.Twitch.Commands.WordBlacklist;
+﻿using BreganTwitchBot.Domain.Services.Twitch.Commands.WordBlacklist;
 using BreganTwitchBot.Domain.Database.Context;
 using BreganTwitchBot.Domain.DTOs.Twitch.Commands.WordBlacklist;
 using BreganTwitchBot.Domain.Enums;

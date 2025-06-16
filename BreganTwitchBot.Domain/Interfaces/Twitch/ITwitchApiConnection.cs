@@ -1,5 +1,5 @@
 ﻿using BreganTwitchBot.Domain.Enums;
-using static BreganTwitchBot.Domain.Data.Services.Twitch.TwitchApiConnection;
+using static BreganTwitchBot.Domain.Services.Twitch.TwitchApiConnection;
 
 namespace BreganTwitchBot.Domain.Interfaces.Twitch
 {

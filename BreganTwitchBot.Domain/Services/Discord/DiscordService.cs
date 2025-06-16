@@ -9,7 +9,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Serilog;
 using System.Reflection;
 
-namespace BreganTwitchBot.Domain.Data.Services.Discord
+namespace BreganTwitchBot.Domain.Services.Discord
 {
     public class DiscordService : IDiscordService, IDiscordClientProvider
     {

@@ -7,7 +7,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Serilog;
 
-namespace BreganTwitchBot.Domain.Data.Services.Discord
+namespace BreganTwitchBot.Domain.Services.Discord
 {
     public class DiscordHelperService(IConfigHelperService configHelperService, IServiceProvider serviceProvider) : IDiscordHelperService
     {

@@ -4,7 +4,7 @@ using BreganTwitchBot.Domain.Interfaces.Twitch;
 using ICanHazDadJoke.NET;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace BreganTwitchBot.Domain.Data.Services.Twitch.Commands.DadJoke
+namespace BreganTwitchBot.Domain.Services.Twitch.Commands.DadJoke
 {
     public class DadJokesCommandService(IServiceProvider serviceProvider)
     {

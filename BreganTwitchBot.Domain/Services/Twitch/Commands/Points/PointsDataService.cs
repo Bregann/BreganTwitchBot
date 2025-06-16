@@ -5,7 +5,7 @@ using BreganTwitchBot.Domain.Interfaces.Twitch;
 using BreganTwitchBot.Domain.Interfaces.Twitch.Commands;
 using Microsoft.EntityFrameworkCore;
 
-namespace BreganTwitchBot.Domain.Data.Services.Twitch.Commands.Points
+namespace BreganTwitchBot.Domain.Services.Twitch.Commands.Points
 {
     public class PointsDataService(AppDbContext dbContext, ITwitchHelperService twitchHelperService) : IPointsDataService
     {

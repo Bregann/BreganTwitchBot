@@ -6,7 +6,7 @@ using BreganTwitchBot.Domain.Interfaces.Twitch.Commands;
 using Microsoft.Extensions.DependencyInjection;
 using System.Reflection;
 
-namespace BreganTwitchBot.Domain.Data.Services.Twitch.Commands
+namespace BreganTwitchBot.Domain.Services.Twitch.Commands
 {
     public class CommandHandler : ICommandHandler
     {

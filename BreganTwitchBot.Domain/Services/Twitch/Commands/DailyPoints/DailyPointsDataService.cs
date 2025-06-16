@@ -10,7 +10,7 @@ using Microsoft.EntityFrameworkCore;
 using Serilog;
 using System.Diagnostics;
 
-namespace BreganTwitchBot.Domain.Data.Services.Twitch.Commands.DailyPoints
+namespace BreganTwitchBot.Domain.Services.Twitch.Commands.DailyPoints
 {
     public class DailyPointsDataService(AppDbContext context, IConfigHelperService configHelper, ITwitchHelperService twitchHelperService, ITwitchApiConnection twitchApiConnection) : IDailyPointsDataService
     {

@@ -6,7 +6,7 @@ using BreganTwitchBot.Domain.Interfaces.Twitch.Commands;
 using Microsoft.Extensions.DependencyInjection;
 using Serilog;
 
-namespace BreganTwitchBot.Domain.Data.Services.Twitch.Commands.Leaderboards
+namespace BreganTwitchBot.Domain.Services.Twitch.Commands.Leaderboards
 {
     public class LeaderboardsCommandService(IServiceProvider serviceProvider)
     {

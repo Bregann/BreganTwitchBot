@@ -13,7 +13,7 @@ using Color = System.Drawing.Color;
 using DiscordColor = Discord.Color;
 using Image = SixLabors.ImageSharp.Image;
 
-namespace BreganTwitchBot.Domain.Data.Services.Discord.SlashCommands.BlocksSocks
+namespace BreganTwitchBot.Domain.Services.Discord.SlashCommands.BlocksSocks
 {
     public class BlocksSocksModule(IDiscordClientProvider discordClient) : InteractionModuleBase<SocketInteractionContext>
     {

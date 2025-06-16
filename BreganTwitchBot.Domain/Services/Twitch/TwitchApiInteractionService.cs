@@ -6,7 +6,7 @@ using TwitchLib.Api.Helix.Models.Chat;
 using TwitchLib.Api.Helix.Models.Moderation.BanUser;
 using TwitchLib.Api.Helix.Models.Moderation.WarnChatUser.Request;
 
-namespace BreganTwitchBot.Domain.Data.Services.Twitch
+namespace BreganTwitchBot.Domain.Services.Twitch
 {
     /// <summary>
     /// Service to interact with the Twitch API. This makes it easier to run unit tests as you can't mock with Twitchlib.

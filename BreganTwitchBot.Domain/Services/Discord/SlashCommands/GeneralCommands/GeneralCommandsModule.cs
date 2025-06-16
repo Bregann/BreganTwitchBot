@@ -5,7 +5,7 @@ using Discord;
 using Discord.Interactions;
 using System.Diagnostics;
 
-namespace BreganTwitchBot.Domain.Data.Services.Discord.SlashCommands.GeneralCommands
+namespace BreganTwitchBot.Domain.Services.Discord.SlashCommands.GeneralCommands
 {
     public class GeneralCommandModule(IDiscordClientProvider discordClient, IGeneralCommandsData generalCommandsData) : InteractionModuleBase<SocketInteractionContext>
     {

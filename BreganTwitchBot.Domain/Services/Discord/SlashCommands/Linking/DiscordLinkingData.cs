@@ -4,7 +4,7 @@ using BreganTwitchBot.Domain.DTOs.Discord.Commands;
 using BreganTwitchBot.Domain.Interfaces.Discord.Commands;
 using Microsoft.EntityFrameworkCore;
 
-namespace BreganTwitchBot.Domain.Data.Services.Discord.SlashCommands.Linking
+namespace BreganTwitchBot.Domain.Services.Discord.SlashCommands.Linking
 {
     //TODO: test method
     public class DiscordLinkingData(AppDbContext context) : IDiscordLinkingData

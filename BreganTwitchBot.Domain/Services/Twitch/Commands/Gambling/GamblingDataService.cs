@@ -6,7 +6,7 @@ using BreganTwitchBot.Domain.Interfaces.Twitch.Commands;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
 
-namespace BreganTwitchBot.Domain.Data.Services.Twitch.Commands.Gambling
+namespace BreganTwitchBot.Domain.Services.Twitch.Commands.Gambling
 {
     public class GamblingDataService(ITwitchHelperService twitchHelperService, AppDbContext context) : IGamblingDataService
     {

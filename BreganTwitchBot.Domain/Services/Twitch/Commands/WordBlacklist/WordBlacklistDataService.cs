@@ -7,7 +7,7 @@ using BreganTwitchBot.Domain.Interfaces.Twitch;
 using BreganTwitchBot.Domain.Interfaces.Twitch.Commands;
 using Microsoft.EntityFrameworkCore;
 
-namespace BreganTwitchBot.Domain.Data.Services.Twitch.Commands.WordBlacklist
+namespace BreganTwitchBot.Domain.Services.Twitch.Commands.WordBlacklist
 {
     public class WordBlacklistDataService(AppDbContext context, ITwitchHelperService twitchHelperService, IWordBlacklistMonitorService wordBlacklistMonitorService) : IWordBlacklistDataService
     {

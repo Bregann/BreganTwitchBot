@@ -5,7 +5,7 @@ using BreganTwitchBot.Domain.Interfaces.Twitch.Commands;
 using Hangfire;
 using Serilog;
 
-namespace BreganTwitchBot.Domain.Data.Services.Twitch.Commands.TwitchBosses
+namespace BreganTwitchBot.Domain.Services.Twitch.Commands.TwitchBosses
 {
     public class TwitchBossesDataService(ITwitchHelperService twitchHelperService, IBackgroundJobClient backgroundJobClient) : ITwitchBossesDataService
     {

@@ -1,4 +1,4 @@
-﻿using BreganTwitchBot.Domain.Data.Services;
+﻿using BreganTwitchBot.Domain.Services;
 using BreganTwitchBot.Domain.Database.Context;
 using BreganTwitchBot.DomainTests.Helpers;
 using Microsoft.EntityFrameworkCore;

@@ -1,5 +1,5 @@
-﻿using BreganTwitchBot.Domain.Data.Services.Twitch;
-using BreganTwitchBot.Domain.Data.Services.Twitch.Commands.FollowAge;
+﻿using BreganTwitchBot.Domain.Services.Twitch;
+using BreganTwitchBot.Domain.Services.Twitch.Commands.FollowAge;
 using BreganTwitchBot.Domain.Database.Context;
 using BreganTwitchBot.Domain.DTOs.Twitch.Api;
 using BreganTwitchBot.Domain.Enums;

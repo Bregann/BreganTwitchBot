@@ -7,7 +7,7 @@ using BreganTwitchBot.Domain.Interfaces.Helpers;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
 
-namespace BreganTwitchBot.Domain.Data.Services.Discord.SlashCommands.GeneralCommands
+namespace BreganTwitchBot.Domain.Services.Discord.SlashCommands.GeneralCommands
 {
     // TODO: test this class
     public class GeneralCommandsData(AppDbContext context, IConfigHelperService configHelper, IDiscordHelperService discordHelperService) : IGeneralCommandsData
