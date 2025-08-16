@@ -84,8 +84,8 @@ namespace BreganTwitchBot.Domain.Services.Twitch.Commands.Hours
 
                         await twitchHelperService.AddPointsToUser(broadcasterId, dbUser.TwitchUserId, rankEarned.BonusRankPointsEarned, channel.BroadcasterTwitchChannelName, dbUser.TwitchUsername);
 
-                        // check if there has been more than 5 rank ups, if its under then carry on as normal
-                        if (rankups >= 5)
+                        // check if there has been more than 2 rank ups, if its under then carry on as normal
+                        if (rankups >= 2)
                         {
                             Log.Information($"Rank up message limit reached for {broadcasterId} - {user.UserName}");
                             continue;
