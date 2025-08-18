@@ -9,10 +9,6 @@ jobs:
   build-and-publish:
     runs-on: self-hosted
     steps:
-      - name: Set Execution Policy (ultra-safe)
-        run: Set-ExecutionPolicy Bypass -Scope Process -Force
-        shell: powershell
-
       - name: Checkout repo
         uses: actions/checkout@v4
 
