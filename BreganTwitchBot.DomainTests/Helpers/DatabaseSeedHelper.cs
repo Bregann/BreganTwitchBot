@@ -436,7 +436,7 @@ namespace BreganTwitchBot.DomainTests.Helpers
                 ChannelId = channel.Id,
                 ChannelUserId = channelUser.Id,
                 JackpotWins = 5555,
-                PointsGambled = 4444444,
+                PointsGambled = 100,
                 PointsLost = 333333333,
                 PointsWon = 2111,
                 SmorcWins = 123121,

@@ -104,7 +104,7 @@ namespace BreganTwitchBot.DomainTests.Twitch.Helpers
             Assert.Multiple(() =>
             {
                 Assert.That(status.DailyPointsAllowed, Is.EqualTo(config.DailyPointsCollectingAllowed));
-                Assert.That(status.LastStreamDate, Is.EqualTo(config.LastStreamEndDate).Within(30).Seconds);
+                Assert.That(status.LastStreamDate, Is.EqualTo(config.LastStreamStartDate).Within(30).Seconds);
                 Assert.That(status.LastDailyPointedAllowedDate, Is.EqualTo(config.LastDailyPointsAllowed).Within(30).Seconds);
                 Assert.That(status.StreamHappenedThisWeek, Is.EqualTo(config.StreamHappenedThisWeek));
             });

@@ -133,8 +133,8 @@ namespace BreganTwitchBot.DomainTests.Twitch.Commands
             {
                 Assert.That(result, Is.Not.Null);
                 Assert.That(gambleStats.TotalSpins, Is.EqualTo(1));
-                Assert.That(userGambleStats.PointsGambled, Is.EqualTo(200));
-                Assert.That(userGambleStats.TotalSpins, Is.EqualTo(1));
+                Assert.That(userGambleStats.PointsGambled, Is.EqualTo(300));
+                Assert.That(userGambleStats.TotalSpins, Is.EqualTo(23));
             });
         }
 
@@ -153,8 +153,8 @@ namespace BreganTwitchBot.DomainTests.Twitch.Commands
             {
                 Assert.That(result, Is.Not.Null);
                 Assert.That(gambleStats.TotalSpins, Is.EqualTo(1));
-                Assert.That(userGambleStats.PointsGambled, Is.EqualTo(200));
-                Assert.That(userGambleStats.TotalSpins, Is.EqualTo(1));
+                Assert.That(userGambleStats.PointsGambled, Is.EqualTo(300));
+                Assert.That(userGambleStats.TotalSpins, Is.EqualTo(23));
             });
 
             Assert.That(result, Is.Not.Null);

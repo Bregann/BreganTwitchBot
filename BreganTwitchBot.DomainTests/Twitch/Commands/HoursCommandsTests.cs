@@ -277,7 +277,7 @@ namespace BreganTwitchBot.DomainTests.Twitch.Commands
             await _hoursDataService.ResetStreamMinutesForBroadcaster(channel.BroadcasterTwitchChannelId);
 
             var userWatchtime = await _dbContext.ChannelUserWatchtime.FirstAsync(x => x.ChannelUser.TwitchUserId == DatabaseSeedHelper.Channel1User1TwitchUserId);
-            Assert.That(userWatchtime.MinutesInStream, Is.EqualTo(0));
+            Assert.That(userWatchtime.MinutesWatchedThisStream, Is.EqualTo(0));
         }
     }
 }
