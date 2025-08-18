@@ -5,16 +5,16 @@ on:
     branches:
       - main
     paths:
-      - "BreganTwitchBot/Domain/**"
-      - "BreganTwitchBot/DomainTests/**"
+      - "BreganTwitchBot.Domain/**"
+      - "BreganTwitchBot.DomainTests/**"
       - "BreganTwitchBot.sln"
 
   push:
     branches:
       - main
     paths:
-      - "BreganTwitchBot/Domain/**"
-      - "BreganTwitchBot/DomainTests/**"
+      - "BreganTwitchBot.Domain/**"
+      - "BreganTwitchBot.DomainTests/**"
       - "BreganTwitchBot.sln"
 
 jobs:
