@@ -141,7 +141,7 @@ Then list genres and their respective books as follows:
             {
                 var apiKey = environmentalSettingHelper.TryGetEnviromentalSettingValue(EnvironmentalSettingEnum.GeminiApiKey);
                 // Send the request
-                var client = new OpenAIClient(new(apiKey ?? ""), new()
+                var client = new OpenAIClient(new System.ClientModel.ApiKeyCredential(apiKey ?? ""), new()
                 {
                     Endpoint = new("https://generativelanguage.googleapis.com/v1beta/"),
                 }).GetChatClient("gemini-2.5-flash-preview-05-20");
