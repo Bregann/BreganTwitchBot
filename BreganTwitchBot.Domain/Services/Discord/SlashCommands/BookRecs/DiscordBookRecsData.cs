@@ -137,7 +137,7 @@ Then list genres and their respective books as follows:
                     new SystemChatMessage(developerPrompt)
             ];
 
-            if (isGemini)
+            if (isGemini) 
             { 
                 var apiKey = environmentalSettingHelper.TryGetEnviromentalSettingValue(EnvironmentalSettingEnum.GeminiApiKey);
                 // Send the request
