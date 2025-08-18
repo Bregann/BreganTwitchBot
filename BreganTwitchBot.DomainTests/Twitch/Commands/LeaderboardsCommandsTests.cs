@@ -65,7 +65,7 @@ namespace BreganTwitchBot.DomainTests.Twitch.Commands
         [TestCase(LeaderboardType.MonthlyHours, "#1 - cooluser2 - 7 minutes | #2 - cooluser - 2 minutes")]
         [TestCase(LeaderboardType.PointsWon, "#1 - cooluser2 - 5,555 | #2 - cooluser - 2,111")]
         [TestCase(LeaderboardType.PointsLost, "#1 - cooluser - 333,333,333 | #2 - cooluser2 - 44")]
-        [TestCase(LeaderboardType.PointsGambled, "#1 - cooluser - 4,444,444 | #2 - cooluser2 - 0")]
+        [TestCase(LeaderboardType.PointsGambled, "#1 - cooluser - 100 | #2 - cooluser2 - 0")]
         [TestCase(LeaderboardType.TotalSpins, "#1 - cooluser2 - 9,999 | #2 - cooluser - 22")]
         [TestCase(LeaderboardType.CurrentDailyStreak, "#1 - cooluser2 - 2 | #2 - cooluser - 1")]
         [TestCase(LeaderboardType.HighestDailyStreak, "#1 - cooluser2 - 2 | #2 - cooluser - 1")]
