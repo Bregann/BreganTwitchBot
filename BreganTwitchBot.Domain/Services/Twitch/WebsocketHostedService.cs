@@ -7,10 +7,10 @@ using BreganTwitchBot.Domain.Interfaces.Twitch.Events;
 using Microsoft.Extensions.Hosting;
 using Serilog;
 using TwitchLib.Api.Core.Enums;
+using TwitchLib.EventSub.Core.EventArgs.Channel;
+using TwitchLib.EventSub.Core.EventArgs.Stream;
 using TwitchLib.EventSub.Websockets;
 using TwitchLib.EventSub.Websockets.Core.EventArgs;
-using TwitchLib.EventSub.Websockets.Core.EventArgs.Channel;
-using TwitchLib.EventSub.Websockets.Core.EventArgs.Stream;
 
 namespace BreganTwitchBot.Domain.Services.Twitch
 {
@@ -30,13 +30,13 @@ namespace BreganTwitchBot.Domain.Services.Twitch
         {
             var bitsEvent = new BitsCheeredParams
             {
-                BroadcasterChannelId = args.Notification.Payload.Event.BroadcasterUserId,
-                BroadcasterChannelName = args.Notification.Payload.Event.BroadcasterUserName,
-                ChatterChannelId = args.Notification.Payload.Event.UserId ?? "Anon",
-                ChatterChannelName = args.Notification.Payload.Event.UserName ?? "Anon",
-                Amount = args.Notification.Payload.Event.Bits,
-                Message = args.Notification.Payload.Event.Message,
-                IsAnonymous = args.Notification.Payload.Event.IsAnonymous
+                BroadcasterChannelId = args.Payload.Event.BroadcasterUserId,
+                BroadcasterChannelName = args.Payload.Event.BroadcasterUserName,
+                ChatterChannelId = args.Payload.Event.UserId ?? "Anon",
+                ChatterChannelName = args.Payload.Event.UserName ?? "Anon",
+                Amount = args.Payload.Event.Bits,
+                Message = args.Payload.Event.Message,
+                IsAnonymous = args.Payload.Event.IsAnonymous
             };
 
             Log.Information($"[Twitch Events] Bits cheered: {bitsEvent.Amount} from {bitsEvent.ChatterChannelName} in {bitsEvent.BroadcasterChannelName}");
@@ -48,14 +48,14 @@ namespace BreganTwitchBot.Domain.Services.Twitch
         {
             var resubEvent = new ChannelResubscribeParams
             {
-                BroadcasterChannelId = args.Notification.Payload.Event.BroadcasterUserId,
-                BroadcasterChannelName = args.Notification.Payload.Event.BroadcasterUserName,
-                ChatterChannelId = args.Notification.Payload.Event.UserId,
-                ChatterChannelName = args.Notification.Payload.Event.UserName,
-                Message = args.Notification.Payload.Event.Message.Text,
-                StreakMonths = args.Notification.Payload.Event.StreakMonths,
-                CumulativeMonths = args.Notification.Payload.Event.CumulativeMonths,
-                SubTier = Enum.TryParse<SubTierEnum>(args.Notification.Payload.Event.Tier, out var tier) ? tier : SubTierEnum.Tier1
+                BroadcasterChannelId = args.Payload.Event.BroadcasterUserId,
+                BroadcasterChannelName = args.Payload.Event.BroadcasterUserName,
+                ChatterChannelId = args.Payload.Event.UserId,
+                ChatterChannelName = args.Payload.Event.UserName,
+                Message = args.Payload.Event.Message.Text,
+                StreakMonths = args.Payload.Event.StreakMonths,
+                CumulativeMonths = args.Payload.Event.CumulativeMonths,
+                SubTier = Enum.TryParse<SubTierEnum>(args.Payload.Event.Tier, out var tier) ? tier : SubTierEnum.Tier1
             };
 
             Log.Information($"[Twitch Events] Channel resubscribe: {resubEvent.ChatterChannelName} in {resubEvent.BroadcasterChannelName}. Tier: {resubEvent.SubTier}");
@@ -67,14 +67,14 @@ namespace BreganTwitchBot.Domain.Services.Twitch
         {
             var giftSubEvent = new ChannelGiftSubParams
             {
-                BroadcasterChannelId = args.Notification.Payload.Event.BroadcasterUserId,
-                BroadcasterChannelName = args.Notification.Payload.Event.BroadcasterUserName,
-                ChatterChannelId = args.Notification.Payload.Event.UserId,
-                ChatterChannelName = args.Notification.Payload.Event.UserName,
-                IsAnonymous = args.Notification.Payload.Event.IsAnonymous,
-                SubTier = Enum.TryParse<SubTierEnum>(args.Notification.Payload.Event.Tier, out var tier) ? tier : SubTierEnum.Tier1,
-                CumulativeTotal = args.Notification.Payload.Event.CumulativeTotal,
-                Total = args.Notification.Payload.Event.Total
+                BroadcasterChannelId = args.Payload.Event.BroadcasterUserId,
+                BroadcasterChannelName = args.Payload.Event.BroadcasterUserName,
+                ChatterChannelId = args.Payload.Event.UserId,
+                ChatterChannelName = args.Payload.Event.UserName,
+                IsAnonymous = args.Payload.Event.IsAnonymous,
+                SubTier = Enum.TryParse<SubTierEnum>(args.Payload.Event.Tier, out var tier) ? tier : SubTierEnum.Tier1,
+                CumulativeTotal = args.Payload.Event.CumulativeTotal,
+                Total = args.Payload.Event.Total
             };
 
             Log.Information($"[Twitch Events] Channel gift sub: {giftSubEvent.ChatterChannelName} in {giftSubEvent.BroadcasterChannelName}. Tier: {giftSubEvent.SubTier}");
@@ -86,12 +86,12 @@ namespace BreganTwitchBot.Domain.Services.Twitch
         {
             var subEvent = new ChannelSubscribeParams
             {
-                BroadcasterChannelId = args.Notification.Payload.Event.BroadcasterUserId,
-                BroadcasterChannelName = args.Notification.Payload.Event.BroadcasterUserName,
-                ChatterChannelId = args.Notification.Payload.Event.UserId,
-                ChatterChannelName = args.Notification.Payload.Event.UserName,
-                SubTier = Enum.TryParse<SubTierEnum>(args.Notification.Payload.Event.Tier, out var tier) ? tier : SubTierEnum.Tier1,
-                IsGift = args.Notification.Payload.Event.IsGift
+                BroadcasterChannelId = args.Payload.Event.BroadcasterUserId,
+                BroadcasterChannelName = args.Payload.Event.BroadcasterUserName,
+                ChatterChannelId = args.Payload.Event.UserId,
+                ChatterChannelName = args.Payload.Event.UserName,
+                SubTier = Enum.TryParse<SubTierEnum>(args.Payload.Event.Tier, out var tier) ? tier : SubTierEnum.Tier1,
+                IsGift = args.Payload.Event.IsGift
             };
 
             Log.Information($"[Twitch Events] Channel subscribe: {subEvent.ChatterChannelName} in {subEvent.BroadcasterChannelName}. Tier: {subEvent.SubTier}");
@@ -101,43 +101,43 @@ namespace BreganTwitchBot.Domain.Services.Twitch
 
         private async Task OnFollowReceived(object sender, ChannelFollowArgs args)
         {
-            Log.Information($"[Twitch Events] Channel follow: {args.Notification.Payload.Event.UserName} ({args.Notification.Payload.Event.UserId}) in {args.Notification.Payload.Event.BroadcasterUserName}");
-            await twitchHelperService.AddOrUpdateUserToDatabase(args.Notification.Payload.Event.BroadcasterUserId, args.Notification.Payload.Event.UserId, args.Notification.Payload.Event.BroadcasterUserName, args.Notification.Payload.Event.UserName);
+            Log.Information($"[Twitch Events] Channel follow: {args.Payload.Event.UserName} ({args.Payload.Event.UserId}) in {args.Payload.Event.BroadcasterUserName}");
+            await twitchHelperService.AddOrUpdateUserToDatabase(args.Payload.Event.BroadcasterUserId, args.Payload.Event.UserId, args.Payload.Event.BroadcasterUserName, args.Payload.Event.UserName);
         }
 
         private async Task OnStreamOffline(object sender, StreamOfflineArgs args)
         {
-            Log.Information($"[Twitch Events] Stream offline: {args.Notification.Payload.Event.BroadcasterUserName} ({args.Notification.Payload.Event.BroadcasterUserId})");
+            Log.Information($"[Twitch Events] Stream offline: {args.Payload.Event.BroadcasterUserName} ({args.Payload.Event.BroadcasterUserId})");
 
-            await configHelperService.UpdateStreamLiveStatus(args.Notification.Payload.Event.BroadcasterUserId, false);
-            await configHelperService.UpdateDailyPointsStatus(args.Notification.Payload.Event.BroadcasterUserId, false);
+            await configHelperService.UpdateStreamLiveStatus(args.Payload.Event.BroadcasterUserId, false);
+            await configHelperService.UpdateDailyPointsStatus(args.Payload.Event.BroadcasterUserId, false);
         }
 
         private async Task OnStreamOnline(object sender, StreamOnlineArgs args)
         {
-            Log.Information($"[Twitch Events] Stream online: {args.Notification.Payload.Event.BroadcasterUserName} ({args.Notification.Payload.Event.BroadcasterUserId})");
+            Log.Information($"[Twitch Events] Stream online: {args.Payload.Event.BroadcasterUserName} ({args.Payload.Event.BroadcasterUserId})");
 
-            await twitchEventHandlerService.HandleStreamOnline(args.Notification.Payload.Event.BroadcasterUserId, args.Notification.Payload.Event.BroadcasterUserName);
+            await twitchEventHandlerService.HandleStreamOnline(args.Payload.Event.BroadcasterUserId, args.Payload.Event.BroadcasterUserName);
         }
 
         private async Task OnChannelBan(object sender, ChannelBanArgs args)
         {
-            Log.Information($"[Twitch Events] Channel ban: {args.Notification.Payload.Event.UserName} ({args.Notification.Payload.Event.UserId}) in {args.Notification.Payload.Event.BroadcasterUserName} ({args.Notification.Payload.Event.BroadcasterUserId})");
+            Log.Information($"[Twitch Events] Channel ban: {args.Payload.Event.UserName} ({args.Payload.Event.UserId}) in {args.Payload.Event.BroadcasterUserName} ({args.Payload.Event.BroadcasterUserId})");
         }
 
         private async Task OnChannelUnban(object sender, ChannelUnbanArgs args)
         {
-            Log.Information($"[Twitch Events] Channel unban: {args.Notification.Payload.Event.UserName} ({args.Notification.Payload.Event.UserId}) in {args.Notification.Payload.Event.BroadcasterUserName}");
+            Log.Information($"[Twitch Events] Channel unban: {args.Payload.Event.UserName} ({args.Payload.Event.UserId}) in {args.Payload.Event.BroadcasterUserName}");
         }
 
         private async Task OnChannelPredictionEnd(object sender, ChannelPredictionEndArgs args)
         {
             var predictionEndParams = new ChannelPredictionEndParams
             {
-                BroadcasterChannelId = args.Notification.Payload.Event.BroadcasterUserId,
-                BroadcasterChannelName = args.Notification.Payload.Event.BroadcasterUserName,
-                PredictionId = args.Notification.Payload.Event.Id,
-                WonOutcome = args.Notification.Payload.Event.Outcomes.Where(x => x.Id == args.Notification.Payload.Event.WinningOutcomeId).Select(x => new ChannelPredictionEndParams.Outcome
+                BroadcasterChannelId = args.Payload.Event.BroadcasterUserId,
+                BroadcasterChannelName = args.Payload.Event.BroadcasterUserName,
+                PredictionId = args.Payload.Event.Id,
+                WonOutcome = args.Payload.Event.Outcomes.Where(x => x.Id == args.Payload.Event.WinningOutcomeId).Select(x => new ChannelPredictionEndParams.Outcome
                 {
                     Id = x.Id,
                     Title = x.Title,
@@ -151,8 +151,8 @@ namespace BreganTwitchBot.Domain.Services.Twitch
                         ChannelPointsUsed = y.ChannelPointsUsed
                     }).ToArray()
                 }).First(),
-                PredictionStatus = args.Notification.Payload.Event.Status,
-                PredictionTitle = args.Notification.Payload.Event.Title
+                PredictionStatus = args.Payload.Event.Status,
+                PredictionTitle = args.Payload.Event.Title
             };
 
             Log.Information($"[Twitch Events] Channel prediction end: {predictionEndParams.BroadcasterChannelName} ({predictionEndParams.BroadcasterChannelId}) - {predictionEndParams.PredictionTitle}");
@@ -164,10 +164,10 @@ namespace BreganTwitchBot.Domain.Services.Twitch
         {
             var predictionLockParams = new ChannelPredictionLockedParams
             {
-                BroadcasterChannelId = args.Notification.Payload.Event.BroadcasterUserId,
-                BroadcasterChannelName = args.Notification.Payload.Event.BroadcasterUserName,
-                PredictionId = args.Notification.Payload.Event.Id,
-                PredictionTitle = args.Notification.Payload.Event.Title,
+                BroadcasterChannelId = args.Payload.Event.BroadcasterUserId,
+                BroadcasterChannelName = args.Payload.Event.BroadcasterUserName,
+                PredictionId = args.Payload.Event.Id,
+                PredictionTitle = args.Payload.Event.Title,
                 PredictionStatus = "Locked"
             };
 
@@ -180,12 +180,12 @@ namespace BreganTwitchBot.Domain.Services.Twitch
         {
             var predictionBeginParams = new ChannelPredictionBeginParams
             {
-                BroadcasterChannelId = args.Notification.Payload.Event.BroadcasterUserId,
-                BroadcasterChannelName = args.Notification.Payload.Event.BroadcasterUserName,
-                PredictionId = args.Notification.Payload.Event.Id,
-                PredictionTitle = args.Notification.Payload.Event.Title,
+                BroadcasterChannelId = args.Payload.Event.BroadcasterUserId,
+                BroadcasterChannelName = args.Payload.Event.BroadcasterUserName,
+                PredictionId = args.Payload.Event.Id,
+                PredictionTitle = args.Payload.Event.Title,
                 PredictionStatus = "Started",
-                PredictionOutcomeOptions = args.Notification.Payload.Event.Outcomes.Select(x => new PredictionOutcomeOption
+                PredictionOutcomeOptions = args.Payload.Event.Outcomes.Select(x => new PredictionOutcomeOption
                 {
                     Id = x.Id,
                     Title = x.Title
@@ -201,10 +201,10 @@ namespace BreganTwitchBot.Domain.Services.Twitch
         {
             var pollEndParams = new ChannelPollEndParams
             {
-                BroadcasterChannelId = args.Notification.Payload.Event.BroadcasterUserId,
-                BroadcasterChannelName = args.Notification.Payload.Event.BroadcasterUserName,
-                PollTitle = args.Notification.Payload.Event.Title,
-                PollEndResults = args.Notification.Payload.Event.Choices.Select(x => new PollEndChoices
+                BroadcasterChannelId = args.Payload.Event.BroadcasterUserId,
+                BroadcasterChannelName = args.Payload.Event.BroadcasterUserName,
+                PollTitle = args.Payload.Event.Title,
+                PollEndResults = args.Payload.Event.Choices.Select(x => new PollEndChoices
                 {
                     Id = x.Id,
                     Title = x.Title,
@@ -223,10 +223,10 @@ namespace BreganTwitchBot.Domain.Services.Twitch
         {
             var pollBeginParams = new ChannelPollBeginParams
             {
-                BroadcasterChannelId = args.Notification.Payload.Event.BroadcasterUserId,
-                BroadcasterChannelName = args.Notification.Payload.Event.BroadcasterUserName,
-                PollTitle = args.Notification.Payload.Event.Title,
-                PollChoices = args.Notification.Payload.Event.Choices.Select(x => new PollStartChoices
+                BroadcasterChannelId = args.Payload.Event.BroadcasterUserId,
+                BroadcasterChannelName = args.Payload.Event.BroadcasterUserName,
+                PollTitle = args.Payload.Event.Title,
+                PollChoices = args.Payload.Event.Choices.Select(x => new PollStartChoices
                 {
                     Id = x.Id,
                     Title = x.Title
@@ -240,23 +240,23 @@ namespace BreganTwitchBot.Domain.Services.Twitch
 
         private async Task OnCustomRewardRedeemed(object sender, ChannelPointsCustomRewardArgs args)
         {
-            Log.Information($"[Twitch Events] Channel custom reward redeemed: {args.Notification.Payload.Event.BroadcasterUserName} ({args.Notification.Payload.Event.BroadcasterUserId}) - {args.Notification.Payload.Event.Title}");
+            Log.Information($"[Twitch Events] Channel custom reward redeemed: {args.Payload.Event.BroadcasterUserName} ({args.Payload.Event.BroadcasterUserId}) - {args.Payload.Event.Title}");
         }
 
         private async Task OnAutomaticRewardRedeemed(object sender, ChannelPointsAutomaticRewardRedemptionArgs args)
         {
-            Log.Information($"[Twitch Events] Channel automatic reward redeemed: {args.Notification.Payload.Event.BroadcasterUserName} ({args.Notification.Payload.Event.BroadcasterUserId}) - {args.Notification.Payload.Event.Message}");
+            Log.Information($"[Twitch Events] Channel automatic reward redeemed: {args.Payload.Event.BroadcasterUserName} ({args.Payload.Event.BroadcasterUserId}) - {args.Payload.Event.Message}");
         }
 
         private async Task OnChannelRaid(object sender, ChannelRaidArgs args)
         {
             var raidParams = new ChannelRaidParams
             {
-                BroadcasterChannelId = args.Notification.Payload.Event.ToBroadcasterUserId,
-                BroadcasterChannelName = args.Notification.Payload.Event.ToBroadcasterUserName,
-                RaidingChannelId = args.Notification.Payload.Event.FromBroadcasterUserId,
-                RaidingChannelName = args.Notification.Payload.Event.FromBroadcasterUserName,
-                Viewers = args.Notification.Payload.Event.Viewers
+                BroadcasterChannelId = args.Payload.Event.ToBroadcasterUserId,
+                BroadcasterChannelName = args.Payload.Event.ToBroadcasterUserName,
+                RaidingChannelId = args.Payload.Event.FromBroadcasterUserId,
+                RaidingChannelName = args.Payload.Event.FromBroadcasterUserName,
+                Viewers = args.Payload.Event.Viewers
             };
 
             Log.Information($"[Twitch Events] Channel raid: {raidParams.RaidingChannelName} ({raidParams.RaidingChannelId}) raided {raidParams.BroadcasterChannelName} ({raidParams.BroadcasterChannelId}) with {raidParams.Viewers} viewers");
@@ -266,7 +266,7 @@ namespace BreganTwitchBot.Domain.Services.Twitch
 
         private Task OnChannelUpdate(object sender, ChannelUpdateArgs args)
         {
-            Log.Information($"[Twitch Events] Channel update: {args.Notification.Payload.Event.BroadcasterUserName} ({args.Notification.Payload.Event.BroadcasterUserId}). Title: {args.Notification.Payload.Event.Title} | Category: {args.Notification.Payload.Event.CategoryName}");
+            Log.Information($"[Twitch Events] Channel update: {args.Payload.Event.BroadcasterUserName} ({args.Payload.Event.BroadcasterUserId}). Title: {args.Payload.Event.Title} | Category: {args.Payload.Event.CategoryName}");
             return Task.CompletedTask;
         }
 
@@ -274,17 +274,17 @@ namespace BreganTwitchBot.Domain.Services.Twitch
         {
             var msgParams = new ChannelChatMessageReceivedParams
             {
-                BroadcasterChannelId = args.Notification.Payload.Event.BroadcasterUserId,
-                BroadcasterChannelName = args.Notification.Payload.Event.BroadcasterUserName,
-                ChatterChannelId = args.Notification.Payload.Event.ChatterUserId,
-                ChatterChannelName = args.Notification.Payload.Event.ChatterUserName,
-                Message = args.Notification.Payload.Event.Message.Text,
-                MessageParts = args.Notification.Payload.Event.Message.Text.Split(' '),
-                MessageId = args.Notification.Payload.Event.MessageId,
-                IsMod = args.Notification.Payload.Event.IsModerator,
-                IsSub = args.Notification.Payload.Event.IsSubscriber,
-                IsVip = args.Notification.Payload.Event.IsVip,
-                IsBroadcaster = args.Notification.Payload.Event.IsBroadcaster
+                BroadcasterChannelId = args.Payload.Event.BroadcasterUserId,
+                BroadcasterChannelName = args.Payload.Event.BroadcasterUserName,
+                ChatterChannelId = args.Payload.Event.ChatterUserId,
+                ChatterChannelName = args.Payload.Event.ChatterUserName,
+                Message = args.Payload.Event.Message.Text,
+                MessageParts = args.Payload.Event.Message.Text.Split(' '),
+                MessageId = args.Payload.Event.MessageId,
+                IsMod = args.Payload.Event.IsModerator,
+                IsSub = args.Payload.Event.IsSubscriber,
+                IsVip = args.Payload.Event.IsVip,
+                IsBroadcaster = args.Payload.Event.IsBroadcaster
             };
 
             await twitchHelperService.AddOrUpdateUserToDatabase(msgParams.BroadcasterChannelId, msgParams.ChatterChannelId, msgParams.BroadcasterChannelName, msgParams.ChatterChannelName, msgParams.IsSub, msgParams.IsVip);
@@ -302,9 +302,9 @@ namespace BreganTwitchBot.Domain.Services.Twitch
 
         private async Task OnSuspiciousUserMessage(object sender, ChannelSuspiciousUserMessageArgs args)
         {
-            Log.Information($"[Twitch Events] Channel suspicious user message: {args.Notification.Payload.Event.UserName} ({args.Notification.Payload.Event.UserId}) in {args.Notification.Payload.Event.BroadcasterUserName} ({args.Notification.Payload.Event.BroadcasterUserId}) - {args.Notification.Payload.Event.Message.Text}");
+            Log.Information($"[Twitch Events] Channel suspicious user message: {args.Payload.Event.UserName} ({args.Payload.Event.UserId}) in {args.Payload.Event.BroadcasterUserName} ({args.Payload.Event.BroadcasterUserId}) - {args.Payload.Event.Message.Text}");
 
-            await wordBlacklistMonitorService.CheckMessageForBlacklistedWords(args.Notification.Payload.Event.Message.Text, args.Notification.Payload.Event.UserId, args.Notification.Payload.Event.BroadcasterUserId);
+            await wordBlacklistMonitorService.CheckMessageForBlacklistedWords(args.Payload.Event.Message.Text, args.Payload.Event.UserId, args.Payload.Event.BroadcasterUserId);
         }
 
         private Task OnErrorOccurred(object sender, ErrorOccuredArgs args)

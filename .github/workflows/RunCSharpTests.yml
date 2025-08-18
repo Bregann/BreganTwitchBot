@@ -1,0 +1,37 @@
+name: Run Domain Tests
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "BreganTwitchBot/Domain/**"
+      - "BreganTwitchBot/DomainTests/**"
+      - "BreganTwitchBot.sln"
+
+  push:
+    branches:
+      - main
+    paths:
+      - "BreganTwitchBot/Domain/**"
+      - "BreganTwitchBot/DomainTests/**"
+      - "BreganTwitchBot.sln"
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '9.0.x'
+
+      - name: Restore dependencies
+        run: dotnet restore BreganTwitchBot.sln
+
+      - name: Run tests
+        run: dotnet test BreganTwitchBot.DomainTests/BreganTwitchBot.DomainTests.csproj --no-build --verbosity normal
