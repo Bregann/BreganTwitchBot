@@ -138,7 +138,7 @@ Then list genres and their respective books as follows:
             ];
 
             if (isGemini)
-            {
+            { 
                 var apiKey = environmentalSettingHelper.TryGetEnviromentalSettingValue(EnvironmentalSettingEnum.GeminiApiKey);
                 // Send the request
                 var client = new OpenAIClient(new System.ClientModel.ApiKeyCredential(apiKey ?? ""), new()
