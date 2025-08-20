@@ -17,7 +17,7 @@ on:
       - "BreganTwitchBot.sln"
 
 jobs:
-  test:
+  format-csharp-code-and-test:
     runs-on: ubuntu-latest
 
     steps:
