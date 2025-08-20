@@ -1,9 +1,9 @@
-﻿using BreganTwitchBot.Domain.Services.Twitch;
-using BreganTwitchBot.Domain.Services.Twitch.Commands.FollowAge;
-using BreganTwitchBot.Domain.Database.Context;
+﻿using BreganTwitchBot.Domain.Database.Context;
 using BreganTwitchBot.Domain.DTOs.Twitch.Api;
 using BreganTwitchBot.Domain.Enums;
 using BreganTwitchBot.Domain.Interfaces.Twitch;
+using BreganTwitchBot.Domain.Services.Twitch;
+using BreganTwitchBot.Domain.Services.Twitch.Commands.FollowAge;
 using BreganTwitchBot.DomainTests.Helpers;
 using Microsoft.EntityFrameworkCore;
 using Moq;

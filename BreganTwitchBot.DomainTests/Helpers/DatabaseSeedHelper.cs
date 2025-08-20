@@ -228,7 +228,6 @@ namespace BreganTwitchBot.DomainTests.Helpers
                 ChannelUserId = channelUser2.Id
             });
 
-
             await context.CustomCommands.AddAsync(new CustomCommand
             {
                 CommandName = "!oncooldown",
@@ -361,7 +360,6 @@ namespace BreganTwitchBot.DomainTests.Helpers
                 PointsClaimType = PointsClaimType.Yearly,
                 TotalTimesClaimed = 5
             });
-
 
             await context.TwitchDailyPoints.AddAsync(new TwitchDailyPoints
             {

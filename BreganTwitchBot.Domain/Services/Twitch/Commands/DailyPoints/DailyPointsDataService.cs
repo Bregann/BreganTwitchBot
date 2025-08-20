@@ -142,7 +142,6 @@ namespace BreganTwitchBot.Domain.Services.Twitch.Commands.DailyPoints
                     var yearlyUsersReset = await ResetStreaks(channelId, PointsClaimType.Yearly);
                     Log.Information($"Reset {yearlyUsersReset} users streaks for yearly points");
 
-
                     // reset everybodies points claimed for the year where true
                     var rowsChanged = await ResetClaims(channelId, PointsClaimType.Yearly);
                     Log.Information($"Reset {rowsChanged} users to allow yearly points collecting");

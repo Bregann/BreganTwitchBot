@@ -1,9 +1,9 @@
-﻿using BreganTwitchBot.Domain.Services.Twitch.Commands.DailyPoints;
-using BreganTwitchBot.Domain.Database.Context;
+﻿using BreganTwitchBot.Domain.Database.Context;
 using BreganTwitchBot.Domain.Enums;
 using BreganTwitchBot.Domain.Exceptions;
 using BreganTwitchBot.Domain.Interfaces.Helpers;
 using BreganTwitchBot.Domain.Interfaces.Twitch;
+using BreganTwitchBot.Domain.Services.Twitch.Commands.DailyPoints;
 using BreganTwitchBot.DomainTests.Helpers;
 using Hangfire;
 using Microsoft.EntityFrameworkCore;

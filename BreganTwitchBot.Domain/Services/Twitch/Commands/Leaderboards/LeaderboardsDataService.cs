@@ -152,7 +152,6 @@ namespace BreganTwitchBot.Domain.Services.Twitch.Commands.Leaderboards
                     break;
             }
 
-
             var usersandItemSb = new StringBuilder();
             var position = 1;
 

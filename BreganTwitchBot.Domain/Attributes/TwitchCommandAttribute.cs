@@ -1,15 +1,9 @@
 ﻿namespace BreganTwitchBot.Domain.Attributes
 {
     [AttributeUsage(AttributeTargets.Method)]
-    public class TwitchCommandAttribute : Attribute
+    public class TwitchCommandAttribute(string commandName, string[]? commandAlias = null) : Attribute
     {
-        public string CommandName { get; }
-        public string[]? CommandAlias { get; }
-
-        public TwitchCommandAttribute(string commandName, string[]? commandAlias = null)
-        {
-            CommandName = commandName.ToLower();
-            CommandAlias = commandAlias;
-        }
+        public string CommandName { get; } = commandName.ToLower();
+        public string[]? CommandAlias { get; } = commandAlias;
     }
 }

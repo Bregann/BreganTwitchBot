@@ -2,8 +2,7 @@
 
 namespace BreganTwitchBot.Domain.Database.Context
 {
-    public class PostgresqlContext : AppDbContext
+    public class PostgresqlContext(DbContextOptions<PostgresqlContext> options) : AppDbContext(options)
     {
-        public PostgresqlContext(DbContextOptions<PostgresqlContext> options) : base(options) { }
     }
 }

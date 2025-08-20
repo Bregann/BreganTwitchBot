@@ -24,7 +24,6 @@ namespace BreganTwitchBot.Domain.Services.Twitch.Commands.Gambling
                 throw new InvalidCommandException("You need to specify an amount to gamble! Usage: !spin <amount> or if you are an absolute mad lad do !spin all");
             }
 
-
             var userPoints = await twitchHelperService.GetPointsForUser(msgParams.BroadcasterChannelId, msgParams.ChatterChannelId, msgParams.BroadcasterChannelName, msgParams.ChatterChannelName);
             var pointsName = await twitchHelperService.GetPointsName(msgParams.BroadcasterChannelId, msgParams.BroadcasterChannelName);
 

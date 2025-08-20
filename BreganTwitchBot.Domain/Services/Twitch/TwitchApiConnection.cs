@@ -82,7 +82,6 @@ namespace BreganTwitchBot.Domain.Services.Twitch
             }
         }
 
-
         /// <summary>
         /// Gets the Twitch API client from the provided channel name
         /// </summary>
@@ -174,30 +173,17 @@ namespace BreganTwitchBot.Domain.Services.Twitch
             }
         }
 
-        public class TwitchAccount
+        public class TwitchAccount(TwitchAPI apiClient, int databaseChannelId, string twitchChannelClientId, string twitchUsername, string acccessToken, string refreshToken, AccountType type, string broadcasterChannelId, string broadcasterChannelName)
         {
-            public TwitchAPI ApiClient { get; }
-            public int DatabaseChannelId { get; }
-            public string TwitchChannelClientId { get; }
-            public string TwitchUsername { get; }
-            public string AccessToken { get; set; }
-            public string RefreshToken { get; set; }
-            public AccountType Type { get; }
-            public string BroadcasterChannelId { get; }
-            public string BroadcasterChannelName { get; }
-
-            public TwitchAccount(TwitchAPI apiClient, int databaseChannelId, string twitchChannelClientId, string twitchUsername, string acccessToken, string refreshToken, AccountType type, string broadcasterChannelId, string broadcasterChannelName)
-            {
-                ApiClient = apiClient;
-                DatabaseChannelId = databaseChannelId;
-                TwitchChannelClientId = twitchChannelClientId;
-                TwitchUsername = twitchUsername;
-                AccessToken = acccessToken;
-                RefreshToken = refreshToken;
-                Type = type;
-                BroadcasterChannelId = broadcasterChannelId;
-                BroadcasterChannelName = broadcasterChannelName;
-            }
+            public TwitchAPI ApiClient { get; } = apiClient;
+            public int DatabaseChannelId { get; } = databaseChannelId;
+            public string TwitchChannelClientId { get; } = twitchChannelClientId;
+            public string TwitchUsername { get; } = twitchUsername;
+            public string AccessToken { get; set; } = acccessToken;
+            public string RefreshToken { get; set; } = refreshToken;
+            public AccountType Type { get; } = type;
+            public string BroadcasterChannelId { get; } = broadcasterChannelId;
+            public string BroadcasterChannelName { get; } = broadcasterChannelName;
         }
     }
 }

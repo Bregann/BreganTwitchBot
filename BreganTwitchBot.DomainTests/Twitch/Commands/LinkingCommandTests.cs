@@ -1,7 +1,7 @@
-﻿using BreganTwitchBot.Domain.Services.Twitch.Commands.Linking;
-using BreganTwitchBot.Domain.Database.Context;
+﻿using BreganTwitchBot.Domain.Database.Context;
 using BreganTwitchBot.Domain.Interfaces.Discord;
 using BreganTwitchBot.Domain.Interfaces.Helpers;
+using BreganTwitchBot.Domain.Services.Twitch.Commands.Linking;
 using BreganTwitchBot.DomainTests.Helpers;
 using Microsoft.EntityFrameworkCore;
 using Moq;

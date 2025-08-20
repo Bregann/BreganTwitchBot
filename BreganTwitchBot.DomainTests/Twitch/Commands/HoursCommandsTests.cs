@@ -1,12 +1,12 @@
-﻿using BreganTwitchBot.Domain.Services.Twitch;
-using BreganTwitchBot.Domain.Services.Twitch.Commands.Hours;
-using BreganTwitchBot.Domain.Database.Context;
+﻿using BreganTwitchBot.Domain.Database.Context;
 using BreganTwitchBot.Domain.DTOs.Twitch.Api;
 using BreganTwitchBot.Domain.Enums;
 using BreganTwitchBot.Domain.Exceptions;
 using BreganTwitchBot.Domain.Interfaces.Discord;
 using BreganTwitchBot.Domain.Interfaces.Helpers;
 using BreganTwitchBot.Domain.Interfaces.Twitch;
+using BreganTwitchBot.Domain.Services.Twitch;
+using BreganTwitchBot.Domain.Services.Twitch.Commands.Hours;
 using BreganTwitchBot.DomainTests.Helpers;
 using Microsoft.EntityFrameworkCore;
 using Moq;

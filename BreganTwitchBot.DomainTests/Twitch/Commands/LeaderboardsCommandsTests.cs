@@ -1,6 +1,6 @@
-﻿using BreganTwitchBot.Domain.Services.Twitch.Commands.Leaderboards;
-using BreganTwitchBot.Domain.Database.Context;
+﻿using BreganTwitchBot.Domain.Database.Context;
 using BreganTwitchBot.Domain.Enums;
+using BreganTwitchBot.Domain.Services.Twitch.Commands.Leaderboards;
 using BreganTwitchBot.DomainTests.Helpers;
 using Microsoft.EntityFrameworkCore;
 using Testcontainers.PostgreSql;

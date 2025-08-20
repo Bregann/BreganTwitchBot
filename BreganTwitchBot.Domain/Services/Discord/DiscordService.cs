@@ -84,7 +84,6 @@ namespace BreganTwitchBot.Domain.Services.Discord
             var previousStatusData = previous.Activities?.Where(x => x.Type == ActivityType.CustomStatus).FirstOrDefault() as CustomStatusGame;
             var newStatusData = newUserUpdate.Activities.Where(x => x.Type == ActivityType.CustomStatus).FirstOrDefault() as CustomStatusGame;
 
-
             //If the statuses match then don't process them
             if (previousStatusData?.State == newStatusData?.State)
             {

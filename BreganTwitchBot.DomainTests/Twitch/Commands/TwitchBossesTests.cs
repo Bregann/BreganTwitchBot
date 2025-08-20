@@ -1,6 +1,6 @@
-﻿using BreganTwitchBot.Domain.Services.Twitch.Commands.TwitchBosses;
-using BreganTwitchBot.Domain.DTOs.Twitch.Commands.TwitchBosses;
+﻿using BreganTwitchBot.Domain.DTOs.Twitch.Commands.TwitchBosses;
 using BreganTwitchBot.Domain.Interfaces.Twitch;
+using BreganTwitchBot.Domain.Services.Twitch.Commands.TwitchBosses;
 using BreganTwitchBot.DomainTests.Helpers;
 using Hangfire;
 using Moq;

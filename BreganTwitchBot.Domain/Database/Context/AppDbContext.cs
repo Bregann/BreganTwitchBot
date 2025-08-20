@@ -3,10 +3,8 @@ using Microsoft.EntityFrameworkCore;
 
 namespace BreganTwitchBot.Domain.Database.Context
 {
-    public partial class AppDbContext : DbContext
+    public partial class AppDbContext(DbContextOptions options) : DbContext(options)
     {
-        public AppDbContext(DbContextOptions options) : base(options) { }
-
         public DbSet<AiBookData> AiBookData { get; set; }
         public DbSet<Birthday> Birthdays { get; set; }
         public DbSet<Blacklist> Blacklist { get; set; }

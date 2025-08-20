@@ -1,8 +1,8 @@
-﻿using BreganTwitchBot.Domain.Services.Discord.SlashCommands.BookRecs;
-using BreganTwitchBot.Domain.Database.Context;
+﻿using BreganTwitchBot.Domain.Database.Context;
 using BreganTwitchBot.Domain.Database.Models;
 using BreganTwitchBot.Domain.Enums;
 using BreganTwitchBot.Domain.Interfaces.Helpers;
+using BreganTwitchBot.Domain.Services.Discord.SlashCommands.BookRecs;
 using BreganTwitchBot.DomainTests.Helpers;
 using Microsoft.EntityFrameworkCore;
 using Moq;
@@ -17,7 +17,6 @@ namespace BreganTwitchBot.DomainTests.Discord.Commands
         private AppDbContext _dbContext;
         private Mock<IEnvironmentalSettingHelper> _mockEnvironmentalSettingHelper;
         private DiscordBookRecsData _discordBookRecsDataService;
-
 
         private const string TestItemBook = "The Hobbit";
         private const string TestItemBookMixed = "The Silmarillion";
@@ -113,7 +112,6 @@ namespace BreganTwitchBot.DomainTests.Discord.Commands
             Assert.That(likedItem.Value, Is.EqualTo(TestItemBookMixed));
         }
 
-
         [Test]
         public void AddNewLikedItem_UserNotAllowed_ThrowsUnauthorizedAccessException()
         {
@@ -159,7 +157,6 @@ namespace BreganTwitchBot.DomainTests.Discord.Commands
             var likedItem = await _dbContext.AiBookData.FirstOrDefaultAsync(x => x.ChannelUserId == user.Id && x.Value == TestItemBook);
             Assert.That(likedItem, Is.Null);
         }
-
 
         [Test]
         public async Task RemoveLikedItemWithUpperCaseName_UserAllowed_RemovesExistingLowercaseItem()
