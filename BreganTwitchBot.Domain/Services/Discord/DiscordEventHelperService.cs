@@ -132,6 +132,8 @@ namespace BreganTwitchBot.Domain.Services.Discord
                 messageEmbed.AddField("User ID", messageDeletedEvent.UserId.ToString());
                 messageEmbed.AddField("Message ID", messageDeletedEvent.MessageId.ToString());
                 messageEmbed.AddField("Channel ID", messageDeletedEvent.ChannelId.ToString());
+                messageEmbed.AddField("Channel Name", messageDeletedEvent.ChannelName);
+                messageEmbed.AddField("Message Content", string.IsNullOrWhiteSpace(messageDeletedEvent.MessageContent) ? "*No content (probably an embed or attachment)*" : messageDeletedEvent.MessageContent);
                 await discordHelper.SendEmbedMessage(discordConfig.DiscordEventChannelId.Value, messageEmbed);
             }
         }
