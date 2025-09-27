@@ -132,7 +132,7 @@ namespace BreganTwitchBot.Domain.Services.Discord
 
             var channelGuild = channel.Value as SocketGuildChannel;
 
-            if(channelGuild == null)
+            if (channelGuild == null)
             {
                 Log.Warning($"[Discord Message Deleted] Channel is not a guild channel. ChannelId: {channel.Id}");
                 return;
