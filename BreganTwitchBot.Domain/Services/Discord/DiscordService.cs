@@ -130,11 +130,19 @@ namespace BreganTwitchBot.Domain.Services.Discord
                 return;
             }
 
+            var channelGuild = channel.Value as SocketGuildChannel;
+
+            if(channelGuild == null)
+            {
+                Log.Warning($"[Discord Message Deleted] Channel is not a guild channel. ChannelId: {channel.Id}");
+                return;
+            }
+
             using (var scope = _services.CreateScope())
             {
                 var messageDeleted = new MessageDeletedEvent
                 {
-                    GuildId = channel.Id,
+                    GuildId = channelGuild.Guild.Id,
                     UserId = oldMessage.Value.Author.Id,
                     Username = oldMessage.Value.Author.Username,
                     MessageId = oldMessage.Value.Id,
