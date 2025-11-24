@@ -3,12 +3,19 @@ using BreganTwitchBot.Domain.DTOs.Discord.Events;
 using BreganTwitchBot.Domain.Interfaces.Discord;
 using BreganTwitchBot.Domain.Interfaces.Helpers;
 using Discord;
+using Discord.WebSocket;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
 
 namespace BreganTwitchBot.Domain.Services.Discord
 {
-    public class DiscordEventHelperService(AppDbContext context, IConfigHelperService configHelper, IDiscordHelperService discordHelper, IDiscordRoleManagerService discordRoleManagerService, IDiscordUserLookupService discordUserLookupService) : IDiscordEventHelperService
+    public class DiscordEventHelperService(
+        AppDbContext context, 
+        IConfigHelperService configHelper, 
+        IDiscordHelperService discordHelper, 
+        IDiscordRoleManagerService discordRoleManagerService, 
+        IDiscordUserLookupService discordUserLookupService
+        ) : IDiscordEventHelperService
     {
         public async Task HandleUserJoinedEvent(EventBase userJoined)
         {
@@ -156,7 +163,7 @@ namespace BreganTwitchBot.Domain.Services.Discord
             }
         }
 
-        public async Task<(string MessageToSend, bool Ephemeral)> HandleButtonPressEvent(ButtonPressedEvent buttonPressedEvent)
+        public async Task<(string MessageToSend, bool Ephemeral)> HandleButtonPressEvent(ButtonPressedEvent buttonPressedEvent, DiscordSocketClient client)
         {
             var emojiToAdd = "";
 
@@ -196,33 +203,31 @@ namespace BreganTwitchBot.Domain.Services.Discord
                     return ("invalid button", true);
             }
 
-            return ("", false);
+            var guild = client.GetGuild(buttonPressedEvent.GuildId);
+            var user = guild.GetUser(buttonPressedEvent.UserId);
 
-            //var guild = discordService.Client.GetGuild(buttonPressedEvent.GuildId);
-            //var user = guild.GetUser(buttonPressedEvent.UserId);
+            if (emojiToAdd == "")
+            {
+                var nickNameToSet = user.Nickname.Replace("⛄", "").Replace("🎁", "").Replace("🎄", "").Replace("🎅", "").Replace("🤶", "").Replace("🌟", "").Replace("🧦", "").Replace("🔔", "").Replace("🦌", "");
+                await user.ModifyAsync(user => user.Nickname = nickNameToSet);
+                return ("Your nickname has been cleared!", true);
+            }
+            else
+            {
+                var nickNameToSet = "";
 
-            //if (emojiToAdd == "")
-            //{
-            //    var nickNameToSet = user.Nickname.Replace("⛄", "").Replace("🎁", "").Replace("🎄", "").Replace("🎅", "").Replace("🤶", "").Replace("🌟", "").Replace("🧦", "").Replace("🔔", "").Replace("🦌", "");
-            //    await user.ModifyAsync(user => user.Nickname = nickNameToSet);
-            //    return ("Your nickname has been cleared!", true);
-            //}
-            //else
-            //{
-            //    var nickNameToSet = "";
+                if (user.DisplayName != null)
+                {
+                    nickNameToSet = emojiToAdd + user.DisplayName + emojiToAdd;
+                }
+                else
+                {
+                    nickNameToSet = emojiToAdd + user.Username + emojiToAdd;
+                }
 
-            //    if (user.DisplayName != null)
-            //    {
-            //        nickNameToSet = emojiToAdd + user.DisplayName + emojiToAdd;
-            //    }
-            //    else
-            //    {
-            //        nickNameToSet = emojiToAdd + user.Username + emojiToAdd;
-            //    }
-
-            //    await user.ModifyAsync(user => user.Nickname = nickNameToSet);
-            //    return ("Your nickname has been set! Woooo", true);
-            //}
+                await user.ModifyAsync(user => user.Nickname = nickNameToSet);
+                return ("Your nickname has been set! Woooo", true);
+            }
         }
     }
 }

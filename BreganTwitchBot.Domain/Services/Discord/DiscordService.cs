@@ -110,7 +110,8 @@ namespace BreganTwitchBot.Domain.Services.Discord
                     UserId = arg.User.Id,
                     Username = arg.User.Username,
                     CustomId = arg.Data.CustomId
-                });
+                },
+                Client);
 
                 await arg.FollowupAsync(res.MessageToSend, ephemeral: res.Ephemeral);
             }
