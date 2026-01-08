@@ -3,6 +3,7 @@ using BreganTwitchBot.Domain.Database.Context;
 using BreganTwitchBot.Domain.DTOs.Twitch.EventSubEvents;
 using BreganTwitchBot.Domain.Interfaces.Twitch;
 using BreganTwitchBot.Domain.Interfaces.Twitch.Commands;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using System.Reflection;
 
@@ -62,8 +63,8 @@ namespace BreganTwitchBot.Domain.Services.Twitch.Commands
             {
                 var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
                 _customCommands = context.CustomCommands
-                    .AsEnumerable()
-                    .Select(x => (x.CommandName, x.Channel.BroadcasterTwitchChannelId))
+                    .Include(x => x.Channel)
+                    .Select(x => new ValueTuple<string, string>(x.CommandName, x.Channel.BroadcasterTwitchChannelId))
                     .ToList();
             }
         }
