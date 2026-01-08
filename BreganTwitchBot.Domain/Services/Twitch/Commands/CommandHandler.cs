@@ -63,7 +63,7 @@ namespace BreganTwitchBot.Domain.Services.Twitch.Commands
                 var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
                 _customCommands = context.CustomCommands
                     .AsEnumerable()
-                    .Select(x => (x.CommandName, x.ChannelId.ToString()))
+                    .Select(x => (x.CommandName, x.Channel.BroadcasterTwitchChannelId))
                     .ToList();
             }
         }
