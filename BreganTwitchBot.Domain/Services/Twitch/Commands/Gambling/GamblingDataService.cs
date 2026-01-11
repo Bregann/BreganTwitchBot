@@ -168,6 +168,10 @@ namespace BreganTwitchBot.Domain.Services.Twitch.Commands.Gambling
                                 break;
                         }
 
+                        // add the winnings to the user
+                        spinResultMessage = $"You have spun {emoteList[0]} | {emoteList[1]} | {emoteList[2]} . You have won {winAmount} {pointsName}!";
+                        await twitchHelperService.AddPointsToUser(broadcasterId, twitchUserId, winAmount, broadcasterUsername, twitchUsername);
+
                         // Gotta have some fun with the book emoji
                         if (firstEmote == "📖")
                         {
