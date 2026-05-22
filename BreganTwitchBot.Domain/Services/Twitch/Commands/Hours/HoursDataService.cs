@@ -35,8 +35,6 @@ namespace BreganTwitchBot.Domain.Services.Twitch.Commands.Hours
             var chatters = await twitchApiInteractionService.GetChattersAsync(apiClient.ApiClient, apiClient.BroadcasterChannelId, apiClient.TwitchChannelClientId);
             var channelRanks = await context.ChannelRanks.Where(x => x.ChannelId == channel.Id).ToArrayAsync();
 
-            var rankups = 0;
-
             foreach (var user in chatters.Chatters)
             {
                 try
@@ -84,28 +82,29 @@ namespace BreganTwitchBot.Domain.Services.Twitch.Commands.Hours
 
                         await twitchHelperService.AddPointsToUser(broadcasterId, dbUser.TwitchUserId, rankEarned.BonusRankPointsEarned, channel.BroadcasterTwitchChannelName, dbUser.TwitchUsername);
 
-                        // check if there has been more than 2 rank ups, if its under then carry on as normal
-                        if (rankups >= 2)
-                        {
-                            Log.Information($"Rank up message limit reached for {broadcasterId} - {user.UserName}");
-                            continue;
-                        }
+                        // Only send a rank-up message if at least 5 chat messages have been sent since the last rank-up message
+                        var chatMessagesSinceLastRankup = twitchHelperService.GetAndResetChatMessageCount(broadcasterId);
 
-                        if (!discordEnabled)
+                        if (chatMessagesSinceLastRankup >= 5)
                         {
-                            await twitchHelperService.SendTwitchMessageToChannel(broadcasterId, channel.BroadcasterTwitchChannelName, $"Congrats @{dbUser.TwitchUsername}, you earned the {rankEarned.RankName} rank by watching {rankEarned.RankMinutesRequired} minutes in the stream! Keep watching to earn a higher rank!");
-                        }
-                        else if (discordEnabled && dbUser.DiscordUserId == 0)
-                        {
-                            await twitchHelperService.SendTwitchMessageToChannel(broadcasterId, channel.BroadcasterTwitchChannelName, $"Congrats @{dbUser.TwitchUsername}, you earned the {rankEarned.RankName} rank by watching {rankEarned.RankMinutesRequired} minutes in the stream! Make sure to join the Discord and link your Twitch account to unlock your rank role!");
+                            if (!discordEnabled)
+                            {
+                                await twitchHelperService.SendTwitchMessageToChannel(broadcasterId, channel.BroadcasterTwitchChannelName, $"Congrats @{dbUser.TwitchUsername}, you earned the {rankEarned.RankName} rank by watching {rankEarned.RankMinutesRequired} minutes in the stream! Keep watching to earn a higher rank!");
+                            }
+                            else if (discordEnabled && dbUser.DiscordUserId == 0)
+                            {
+                                await twitchHelperService.SendTwitchMessageToChannel(broadcasterId, channel.BroadcasterTwitchChannelName, $"Congrats @{dbUser.TwitchUsername}, you earned the {rankEarned.RankName} rank by watching {rankEarned.RankMinutesRequired} minutes in the stream! Make sure to join the Discord and link your Twitch account to unlock your rank role!");
+                            }
+                            else
+                            {
+                                await discordRoleManagerService.ApplyRoleOnDiscordWatchtimeRankup(dbUser.TwitchUserId, broadcasterId);
+                                await twitchHelperService.SendTwitchMessageToChannel(broadcasterId, channel.BroadcasterTwitchChannelName, $"Congrats @{dbUser.TwitchUsername}, you earned {rankEarned.RankName} rank by watching {rankEarned.RankMinutesRequired} minutes in the stream! Your rank has been applied in the Discord");
+                            }
                         }
                         else
                         {
-                            await discordRoleManagerService.ApplyRoleOnDiscordWatchtimeRankup(dbUser.TwitchUserId, broadcasterId);
-                            await twitchHelperService.SendTwitchMessageToChannel(broadcasterId, channel.BroadcasterTwitchChannelName, $"Congrats @{dbUser.TwitchUsername}, you earned {rankEarned.RankName} rank by watching {rankEarned.RankMinutesRequired} minutes in the stream! Your rank has been applied in the Discord");
+                            Log.Information($"Skipping rank up message for {broadcasterId} - {user.UserName} (only {chatMessagesSinceLastRankup} chat messages since last rank-up message)");
                         }
-
-                        rankups++;
                     }
 
                     await context.SaveChangesAsync();

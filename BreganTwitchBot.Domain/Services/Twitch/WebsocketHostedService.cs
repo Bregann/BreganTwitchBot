@@ -287,6 +287,8 @@ namespace BreganTwitchBot.Domain.Services.Twitch
                 IsBroadcaster = args.Payload.Event.IsBroadcaster
             };
 
+            twitchHelperService.IncrementChatMessageCount(msgParams.BroadcasterChannelId);
+
             await twitchHelperService.AddOrUpdateUserToDatabase(msgParams.BroadcasterChannelId, msgParams.ChatterChannelId, msgParams.BroadcasterChannelName, msgParams.ChatterChannelName, msgParams.IsSub, msgParams.IsVip);
             await commandHandler.HandleCommandAsync(msgParams.Message.Split(' ')[0], msgParams);
 

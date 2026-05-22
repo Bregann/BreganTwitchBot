@@ -1,4 +1,5 @@
-﻿using BreganTwitchBot.Domain.Database.Context;
+﻿using System.Collections.Concurrent;
+using BreganTwitchBot.Domain.Database.Context;
 using BreganTwitchBot.Domain.Database.Models;
 using BreganTwitchBot.Domain.Enums;
 using BreganTwitchBot.Domain.Exceptions;
@@ -12,6 +13,7 @@ namespace BreganTwitchBot.Domain.Services.Twitch
     public class TwitchHelperService(ITwitchApiConnection connection, IServiceProvider serviceProvider, ITwitchApiInteractionService twitchApiInteractionService) : ITwitchHelperService
     {
         private readonly Dictionary<string, string> _pointsNames = [];
+        private readonly ConcurrentDictionary<string, int> _chatMessageCounts = new();
 
         /// <summary>
         /// Sends a message to a Twitch channel
@@ -501,6 +503,17 @@ namespace BreganTwitchBot.Domain.Services.Twitch
 
                 await context.SaveChangesAsync();
             }
+        }
+
+        public void IncrementChatMessageCount(string broadcasterChannelId)
+        {
+            _chatMessageCounts.AddOrUpdate(broadcasterChannelId, 1, (_, count) => count + 1);
+        }
+
+        public int GetAndResetChatMessageCount(string broadcasterChannelId)
+        {
+            _chatMessageCounts.TryRemove(broadcasterChannelId, out var count);
+            return count;
         }
     }
 }
