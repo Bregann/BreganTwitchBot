@@ -1,5 +1,4 @@
-﻿using System.Collections.Concurrent;
-using BreganTwitchBot.Domain.Database.Context;
+﻿using BreganTwitchBot.Domain.Database.Context;
 using BreganTwitchBot.Domain.Database.Models;
 using BreganTwitchBot.Domain.Enums;
 using BreganTwitchBot.Domain.Exceptions;
@@ -7,6 +6,7 @@ using BreganTwitchBot.Domain.Interfaces.Twitch;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Serilog;
+using System.Collections.Concurrent;
 
 namespace BreganTwitchBot.Domain.Services.Twitch
 {
@@ -510,10 +510,15 @@ namespace BreganTwitchBot.Domain.Services.Twitch
             _chatMessageCounts.AddOrUpdate(broadcasterChannelId, 1, (_, count) => count + 1);
         }
 
-        public int GetAndResetChatMessageCount(string broadcasterChannelId)
+        public int GetChatMessageCount(string broadcasterChannelId)
         {
-            _chatMessageCounts.TryRemove(broadcasterChannelId, out var count);
+            _chatMessageCounts.TryGetValue(broadcasterChannelId, out var count);
             return count;
+        }
+
+        public void ResetChatMessageCount(string broadcasterChannelId)
+        {
+            _chatMessageCounts.TryRemove(broadcasterChannelId, out _);
         }
     }
 }

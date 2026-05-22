@@ -18,6 +18,7 @@
         Task BanUser(string broadcasterChannelId, string userId, string reason);
         Task UpdateMessageCountForUser(string broadcasterChannelId, string userId, string username, string message);
         void IncrementChatMessageCount(string broadcasterChannelId);
-        int GetAndResetChatMessageCount(string broadcasterChannelId);
+        int GetChatMessageCount(string broadcasterChannelId);
+        void ResetChatMessageCount(string broadcasterChannelId);
     }
 }

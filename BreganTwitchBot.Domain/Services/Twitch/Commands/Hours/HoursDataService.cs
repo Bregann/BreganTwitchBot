@@ -35,6 +35,8 @@ namespace BreganTwitchBot.Domain.Services.Twitch.Commands.Hours
             var chatters = await twitchApiInteractionService.GetChattersAsync(apiClient.ApiClient, apiClient.BroadcasterChannelId, apiClient.TwitchChannelClientId);
             var channelRanks = await context.ChannelRanks.Where(x => x.ChannelId == channel.Id).ToArrayAsync();
 
+            var rankups = 0;
+
             foreach (var user in chatters.Chatters)
             {
                 try
@@ -83,7 +85,14 @@ namespace BreganTwitchBot.Domain.Services.Twitch.Commands.Hours
                         await twitchHelperService.AddPointsToUser(broadcasterId, dbUser.TwitchUserId, rankEarned.BonusRankPointsEarned, channel.BroadcasterTwitchChannelName, dbUser.TwitchUsername);
 
                         // Only send a rank-up message if at least 5 chat messages have been sent since the last rank-up message
-                        var chatMessagesSinceLastRankup = twitchHelperService.GetAndResetChatMessageCount(broadcasterId);
+                        // and we haven't already sent 2 rank-up messages this cycle
+                        if (rankups >= 2)
+                        {
+                            Log.Information($"Rank up message limit reached for {broadcasterId} - {user.UserName}");
+                            continue;
+                        }
+
+                        var chatMessagesSinceLastRankup = twitchHelperService.GetChatMessageCount(broadcasterId);
 
                         if (chatMessagesSinceLastRankup >= 5)
                         {
@@ -100,6 +109,8 @@ namespace BreganTwitchBot.Domain.Services.Twitch.Commands.Hours
                                 await discordRoleManagerService.ApplyRoleOnDiscordWatchtimeRankup(dbUser.TwitchUserId, broadcasterId);
                                 await twitchHelperService.SendTwitchMessageToChannel(broadcasterId, channel.BroadcasterTwitchChannelName, $"Congrats @{dbUser.TwitchUsername}, you earned {rankEarned.RankName} rank by watching {rankEarned.RankMinutesRequired} minutes in the stream! Your rank has been applied in the Discord");
                             }
+
+                            rankups++;
                         }
                         else
                         {
@@ -114,6 +125,12 @@ namespace BreganTwitchBot.Domain.Services.Twitch.Commands.Hours
                     Log.Fatal(ex, $"Error updating user {user.UserName}");
                     continue;
                 }
+            }
+
+            if (rankups > 0)
+            {
+                twitchHelperService.ResetChatMessageCount(broadcasterId);
+                Log.Information($"Reset chat message count for {broadcasterId} after sending {rankups} rank up messages");
             }
 
             Log.Information($"Watchtime update completed. {chatters.Chatters.Count} users updated");
