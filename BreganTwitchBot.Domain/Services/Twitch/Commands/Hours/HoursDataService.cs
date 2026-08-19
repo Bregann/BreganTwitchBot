@@ -84,17 +84,22 @@ namespace BreganTwitchBot.Domain.Services.Twitch.Commands.Hours
 
                         await twitchHelperService.AddPointsToUser(broadcasterId, dbUser.TwitchUserId, rankEarned.BonusRankPointsEarned, channel.BroadcasterTwitchChannelName, dbUser.TwitchUsername);
 
-                        // Only send a rank-up message if at least 5 chat messages have been sent since the last rank-up message
+                        // Only send a rank-up message if the user has actually chatted in the current stream
                         // and we haven't already sent 2 rank-up messages this cycle
+                        // and at least 5 chat messages have been sent since the last rank-up message
                         if (rankups >= 2)
                         {
                             Log.Information($"Rank up message limit reached for {broadcasterId} - {user.UserName}");
-                            continue;
                         }
-
-                        var chatMessagesSinceLastRankup = twitchHelperService.GetChatMessageCount(broadcasterId);
-
-                        if (chatMessagesSinceLastRankup >= 5)
+                        else if (!twitchHelperService.HasUserChattedInCurrentStream(broadcasterId, dbUser.TwitchUserId))
+                        {
+                            Log.Information($"Skipping rank up message for {broadcasterId} - {user.UserName} (user has not chatted in the current stream)");
+                        }
+                        else if (twitchHelperService.GetChatMessageCount(broadcasterId) < 5)
+                        {
+                            Log.Information($"Skipping rank up message for {broadcasterId} - {user.UserName} (fewer than 5 chat messages since the last rank-up message)");
+                        }
+                        else
                         {
                             if (!discordEnabled)
                             {
@@ -111,10 +116,6 @@ namespace BreganTwitchBot.Domain.Services.Twitch.Commands.Hours
                             }
 
                             rankups++;
-                        }
-                        else
-                        {
-                            Log.Information($"Skipping rank up message for {broadcasterId} - {user.UserName} (only {chatMessagesSinceLastRankup} chat messages since last rank-up message)");
                         }
                     }
 

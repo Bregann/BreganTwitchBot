@@ -17,6 +17,9 @@
         Task TimeoutUser(string broadcasterChannelId, string userId, int timeoutDurationInSeconds, string reason);
         Task BanUser(string broadcasterChannelId, string userId, string reason);
         Task UpdateMessageCountForUser(string broadcasterChannelId, string userId, string username, string message);
+        void AddUserToStreamChattersList(string broadcasterChannelId, string chatterUserId);
+        bool HasUserChattedInCurrentStream(string broadcasterChannelId, string chatterUserId);
+        void ClearStreamChattersList(string broadcasterChannelId);
         void IncrementChatMessageCount(string broadcasterChannelId);
         int GetChatMessageCount(string broadcasterChannelId);
         void ResetChatMessageCount(string broadcasterChannelId);

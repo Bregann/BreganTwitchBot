@@ -13,6 +13,7 @@ namespace BreganTwitchBot.Domain.Services.Twitch
     public class TwitchHelperService(ITwitchApiConnection connection, IServiceProvider serviceProvider, ITwitchApiInteractionService twitchApiInteractionService) : ITwitchHelperService
     {
         private readonly Dictionary<string, string> _pointsNames = [];
+        private readonly ConcurrentDictionary<string, ConcurrentDictionary<string, byte>> _streamChatters = new();
         private readonly ConcurrentDictionary<string, int> _chatMessageCounts = new();
 
         /// <summary>
@@ -503,6 +504,23 @@ namespace BreganTwitchBot.Domain.Services.Twitch
 
                 await context.SaveChangesAsync();
             }
+        }
+
+        public void AddUserToStreamChattersList(string broadcasterChannelId, string chatterUserId)
+        {
+            var chatters = _streamChatters.GetOrAdd(broadcasterChannelId, _ => new ConcurrentDictionary<string, byte>());
+            chatters.TryAdd(chatterUserId, 0);
+        }
+
+        public bool HasUserChattedInCurrentStream(string broadcasterChannelId, string chatterUserId)
+        {
+            return _streamChatters.TryGetValue(broadcasterChannelId, out var chatters) && chatters.ContainsKey(chatterUserId);
+        }
+
+        public void ClearStreamChattersList(string broadcasterChannelId)
+        {
+            _streamChatters.TryRemove(broadcasterChannelId, out _);
+            _chatMessageCounts.TryRemove(broadcasterChannelId, out _);
         }
 
         public void IncrementChatMessageCount(string broadcasterChannelId)

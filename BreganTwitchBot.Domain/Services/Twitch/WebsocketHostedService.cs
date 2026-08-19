@@ -111,12 +111,14 @@ namespace BreganTwitchBot.Domain.Services.Twitch
 
             await configHelperService.UpdateStreamLiveStatus(args.Payload.Event.BroadcasterUserId, false);
             await configHelperService.UpdateDailyPointsStatus(args.Payload.Event.BroadcasterUserId, false);
+            twitchHelperService.ClearStreamChattersList(args.Payload.Event.BroadcasterUserId);
         }
 
         private async Task OnStreamOnline(object sender, StreamOnlineArgs args)
         {
             Log.Information($"[Twitch Events] Stream online: {args.Payload.Event.BroadcasterUserName} ({args.Payload.Event.BroadcasterUserId})");
 
+            twitchHelperService.ClearStreamChattersList(args.Payload.Event.BroadcasterUserId);
             await twitchEventHandlerService.HandleStreamOnline(args.Payload.Event.BroadcasterUserId, args.Payload.Event.BroadcasterUserName);
         }
 
@@ -287,6 +289,7 @@ namespace BreganTwitchBot.Domain.Services.Twitch
                 IsBroadcaster = args.Payload.Event.IsBroadcaster
             };
 
+            twitchHelperService.AddUserToStreamChattersList(msgParams.BroadcasterChannelId, msgParams.ChatterChannelId);
             twitchHelperService.IncrementChatMessageCount(msgParams.BroadcasterChannelId);
 
             await twitchHelperService.AddOrUpdateUserToDatabase(msgParams.BroadcasterChannelId, msgParams.ChatterChannelId, msgParams.BroadcasterChannelName, msgParams.ChatterChannelName, msgParams.IsSub, msgParams.IsVip);
