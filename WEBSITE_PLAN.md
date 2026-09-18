@@ -226,6 +226,11 @@ Build before the admin screens, since everything after depends on it.
 
 **Done when:** the broadcaster can grant a mod exactly one permission and that mod sees exactly that area — verified server side, not just hidden.
 
+**Built.** `ChannelPermissionGrant` (a row per grant, recording who granted it and when),
+`PermissionService`, a `RequireChannelPermission` filter for endpoints to declare what they
+need, and the permissions page. 15 tests, including that a mod holding *every* permission
+still cannot grant permissions to anyone.
+
 ---
 
 ### Stage 7 — Admin

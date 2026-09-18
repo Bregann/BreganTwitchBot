@@ -135,6 +135,7 @@ builder.Services.AddHttpClient();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IApiDataService, ApiDataService>();
 builder.Services.AddScoped<IMeDataService, MeDataService>();
+builder.Services.AddScoped<IPermissionService, PermissionService>();
 builder.Services.AddScoped<IDiscordLeaderboardsData, DiscordLeaderboardsData>();
 
 builder.Services.AddSingleton<IConfigHelperService, ConfigHelperService>();
