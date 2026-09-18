@@ -1,0 +1,36 @@
+namespace BreganTwitchBot.Domain.Enums
+{
+    public enum StreamStatType
+    {
+        BitsDonated,
+        CommandsSent,
+        DiscordRanksEarnt,
+        MessagesReceived,
+        NewFollowers,
+        NewSubscribers,
+        NewGiftedSubs,
+        PointsGainedSubscribing,
+        PointsGainedWatching,
+        PointsGambled,
+        PointsLost,
+        PointsWon,
+        GiftedPoints,
+        TotalBans,
+        TotalTimeouts,
+        TotalSpins,
+        KappaWins,
+        ForeheadWins,
+        LulWins,
+        SmorcWins,
+        JackpotWins,
+        TotalUsersClaimed,
+        TotalPointsClaimed,
+        AmountOfUsersReset,
+        AmountOfRewardsRedeemed,
+        RewardRedeemCost,
+        AmountOfDiscordUsersJoined,
+        SongRequestsSent,
+        SongRequestsLiked,
+        SongRequestsBlacklisted
+    }
+}
