@@ -13,18 +13,18 @@ Status: ⬜ not started · 🟡 in progress · ✅ done · ❌ dropped (won't po
 | Feature | Status | PR | Old source | Notes |
 |---|---|---|---|---|
 | Stream stats tracking | ⬜ | — | `Data/TwitchBot/StreamStats.cs` (440 lines) | Biggest item. `TwitchStreamStats` + `StreamViewCount` models already exist, no service. Aggregates per-stream counters (bits, subs, follows, messages, commands, gambling, bans/timeouts, unique viewers) and writes on stream end. Likely worth splitting into 2 PRs: collection, then persistence/reporting. |
-| Subathon | ⬜ | — | `Data/TwitchBot/Subathon.cs` (340), `Commands/Subathon/Subathon.cs` (54) | `Subathon` model exists but is a stub — only `ChannelId`/`ChannelUserId`, no timer/state fields, so needs a schema migration. Bits/subs/gifted subs add time on a sliding scale that tapers as total hours climb. |
-| Channel points redemptions | ⬜ | — | `Data/TwitchBot/Events/ChannelPoints.cs` (36) | `OnCustomRewardRedeemed` in `WebsocketHostedService.cs:254` currently only logs. Old bot granted points/actions per redemption. |
-| `!uptime` | ⬜ | — | `Commands/Uptime/Uptime.cs` (67) | Stream uptime via Helix `GetStreamsAsync`. Old version had a 5s cooldown with a supermod bypass. |
-| `!title` / `!game` | ⬜ | — | `Commands/StreamInfo/Title.cs` (84), `Game.cs` (93) | Read **and** set (set requires mod). Needs broadcaster token for the update. |
-| `!followers` / `!subs` | ⬜ | — | `Commands/StreamInfo/Followers.cs` (32), `Subs.cs` (34) | Counts via Helix. Subs needs the broadcaster token. |
-| `!addmarbleswin` / `!marbles` | ✅ | [#44](https://github.com/Bregann/BreganTwitchBot/pull/44) | `Commands/Marbles/Marbles.cs` (34) | Done. Also added `!marbles` to read wins back, which the old bot had no way to do. |
+| Subathon | ✅ | [#49](https://github.com/Bregann/BreganTwitchBot/pull/49) | `Data/TwitchBot/Subathon.cs` (340), `Commands/Subathon/Subathon.cs` (54) | Done. Taper is now a per-channel `SubathonRates` table. Added start/stop commands. |
+| Channel points redemptions | ✅ | [#48](https://github.com/Bregann/BreganTwitchBot/pull/48) | `Data/TwitchBot/Events/ChannelPoints.cs` (36) | Done. New `ChannelPointRewards` table. Fixed the handler being bound to the wrong EventSub event. |
+| `!uptime` / `!botuptime` | ✅ | [#45](https://github.com/Bregann/BreganTwitchBot/pull/45) | `Commands/Uptime/Uptime.cs` (67) | Done. Cooldown now per channel. Added `DurationFormatHelper`. |
+| `!title` / `!game` | ✅ | [#47](https://github.com/Bregann/BreganTwitchBot/pull/47) | `Commands/StreamInfo/Title.cs` (84), `Game.cs` (93) | Done. Bare reads, args sets (mods only). Fixed a crash on unknown game names. |
+| `!followers` / `!subs` | ✅ | [#46](https://github.com/Bregann/BreganTwitchBot/pull/46) | `Commands/StreamInfo/Followers.cs` (32), `Subs.cs` (34) | Done. Added `CommandCooldownHelper`. |
+| `!addmarbleswin` / `!marbles` | ✅ | [#44](https://github.com/Bregann/BreganTwitchBot/pull/44) | `Commands/Marbles/Marbles.cs` (34) | Done. |
 
 ## Discord features
 
 | Feature | Status | PR | Old source | Notes |
 |---|---|---|---|---|
-| Giveaways | ⬜ | — | `SlashCommands/Data/Giveaway/Giveaway.cs` (151) | `ChannelConfig.DiscordGiveawayChannelId` already exists. Button-based entry, so needs the button interaction path wired up. |
+| Giveaways | ✅ | [#50](https://github.com/Bregann/BreganTwitchBot/pull/50) | `SlashCommands/Data/Giveaway/Giveaway.cs` (151) | Done. Dropped the silent rigging for explicit per-giveaway entry requirements. Weights in a per-channel config table. |
 | `/whois` | ⬜ | — | `SlashCommands/Data/GeneralCommands/Whois/Whois.cs` | Shows linked Twitch/Discord identity + stats. Pairs with existing linking service. |
 | Hours/points lookup | ⬜ | — | `SlashCommands/Data/HoursPoints/HoursPoints.cs` (200) | Check overlap with the existing `Daily`/`Levelling` modules before porting — may be partly covered. |
 | Discord leaderboards | ⬜ | — | `SlashCommands/Data/Leaderboards/DiscordLeaderboards.cs` (54), `Leaderboards.cs` (127) | Twitch-side leaderboards are already ported; this is the Discord surface for them. |
@@ -45,13 +45,15 @@ Points/daily/weekly/monthly/yearly · hours & watchtime · gambling & spins · l
 
 ## Decisions
 
+- **Anything configurable lives in the database, per channel.** The website will eventually edit these, so no tunables as constants or appsettings.
+- **No silently rigged behaviour.** Where the old bot quietly excluded users (giveaway entries that could never win), the new version states the requirement up front instead.
 - **Per-channel, not global.** The old bot was single-channel with static `AppConfig` state; everything ported must be keyed by channel and use DI, not statics.
 - **Broadcaster vs bot token.** Subs, title/game updates and channel point reads need the channel's own broadcaster token (`GetBroadcasterApiClientFromChannelName`). Chat and moderation use the shared bot account (`GetBotApiClient`). See the class comment on `TwitchApiConnection`.
 - **Tests.** Follow the existing `BreganTwitchBot.DomainTests` pattern (Testcontainers + Postgres) for anything with data logic.
 
 ## Open questions
 
-- [ ] Does the subathon still need the tapering time scale, or has the format changed?
-- [ ] Are the API controllers still consumed by a frontend, or can they be dropped?
-- [ ] Is `!addmarbleswin` still wanted, given marbles is a separate bot?
+- [x] Subathon taper kept, moved into a per-channel `SubathonRates` table.
+- [x] A website is planned (designed separately), so the API controllers stay in scope.
+- [x] `!addmarbleswin` ported.
 - [ ] Any of these worth deliberately **not** porting?
