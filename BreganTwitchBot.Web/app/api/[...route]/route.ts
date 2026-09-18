@@ -66,6 +66,21 @@ async function handler(
       redirect: 'manual',
     })
 
+    // the oauth endpoints answer with a redirect (off to Twitch, then back again).
+    // Those have to reach the browser as real redirects rather than being followed
+    // here, or the visitor never leaves the site to sign in.
+    const location = res.headers.get('location')
+
+    if (location !== null && res.status >= 300 && res.status < 400) {
+      const redirect = NextResponse.redirect(location, res.status as 302 | 307)
+
+      res.headers.getSetCookie().forEach(cookie => {
+        redirect.headers.append('set-cookie', cookie)
+      })
+
+      return redirect
+    }
+
     const responseHeaders = new Headers()
 
     res.headers.forEach((value, key) => {

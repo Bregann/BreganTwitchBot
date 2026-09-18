@@ -1,5 +1,6 @@
 using BreganTwitchBot.Domain.Database.Context;
 using BreganTwitchBot.Domain.Enums;
+using BreganTwitchBot.Domain.Interfaces.Api;
 using BreganTwitchBot.Domain.Interfaces.Discord;
 using BreganTwitchBot.Domain.Interfaces.Discord.Commands;
 using BreganTwitchBot.Domain.Interfaces.Helpers;
@@ -128,6 +129,9 @@ builder.Services.AddHangfire(configuration => configuration
 builder.Services.AddSingleton<ITwitchApiConnection, TwitchApiConnection>();
 
 // Helper bits
+builder.Services.AddHttpClient();
+builder.Services.AddScoped<IAuthService, AuthService>();
+
 builder.Services.AddSingleton<IConfigHelperService, ConfigHelperService>();
 
 // Twitch events

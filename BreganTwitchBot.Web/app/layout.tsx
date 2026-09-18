@@ -5,6 +5,7 @@ import { ColorSchemeScript, MantineProvider, mantineHtmlProps } from '@mantine/c
 import { Notifications } from '@mantine/notifications'
 import Providers from './providers'
 import ClientLayout from '@/components/navigation/ClientLayout'
+import { AuthProvider } from '@/context/authContext'
 import { theme } from '@/css/theme'
 import NextTopLoader from 'nextjs-toploader'
 import type { Metadata } from 'next'
@@ -30,12 +31,14 @@ export default function RootLayout({
       <body>
         <NextTopLoader color="#9146FF" showSpinner={false} />
         <Providers>
-          <MantineProvider defaultColorScheme="dark" theme={theme}>
-            <Notifications />
-            <ClientLayout>
-              {children}
-            </ClientLayout>
-          </MantineProvider>
+          <AuthProvider>
+            <MantineProvider defaultColorScheme="dark" theme={theme}>
+              <Notifications />
+              <ClientLayout>
+                {children}
+              </ClientLayout>
+            </MantineProvider>
+          </AuthProvider>
         </Providers>
       </body>
     </html>

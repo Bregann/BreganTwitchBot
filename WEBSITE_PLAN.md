@@ -141,9 +141,13 @@ The piece with the most unknowns, so it comes early.
 - `proxy.ts` for route protection and token refresh, copied from Orbit's approach.
 - `/login` with a single "Continue with Twitch" button.
 
-**Open question for you:** the bot already has email/password auth. Keep it for a superuser account, or is Twitch OAuth the only way in? Leaning towards Twitch-only for simplicity.
+**Decided:** Twitch OAuth is the only way in. The email/password path has been removed
+rather than left as dead code — `User` is now a Twitch identity with no password hash.
 
 **Done when:** you can log in with Twitch, the session survives a refresh, and the API can identify the caller.
+
+**Built.** Backend is done and tested (12 tests). The frontend pieces are written but
+unverified — see the Stage 1 note about `npm install`.
 
 ---
 
@@ -262,7 +266,7 @@ The port built read paths; the website needs writes and auth.
 
 ## Things worth settling before Stage 2
 
-1. **Keep email/password auth**, or Twitch-only? (Leaning Twitch-only.)
+1. ~~Keep email/password auth, or Twitch-only?~~ **Twitch only** — done in stage 2.
 2. **Who can register a channel?** Self-serve via Twitch login, or manual for now?
 3. **Hosting** — same box as the bot, or separate? Affects the proxy's `API_BASE_URL` and CORS.
 4. **Domain** — the old bot referenced `bot.bregan.me`. Same, or new?
