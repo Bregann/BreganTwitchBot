@@ -26,7 +26,7 @@ namespace BreganTwitchBot.Domain.Services.Twitch
         /// <returns></returns>
         public async Task SendTwitchMessageToChannel(string broadcasterChannelId, string broadcasterChannelName, string message, string? originalMessageId = null)
         {
-            var apiClient = connection.GetBotTwitchApiClientFromBroadcasterChannelId(broadcasterChannelId);
+            var apiClient = connection.GetBotApiClient();
 
             if (apiClient == null)
             {
@@ -36,7 +36,7 @@ namespace BreganTwitchBot.Domain.Services.Twitch
 
             try
             {
-                await twitchApiInteractionService.SendChatMessage(apiClient.ApiClient, apiClient.BroadcasterChannelId, apiClient.TwitchChannelClientId, message, originalMessageId);
+                await twitchApiInteractionService.SendChatMessage(apiClient.ApiClient, broadcasterChannelId, apiClient.TwitchChannelClientId, message, originalMessageId);
                 Log.Information($"[Twitch Helper Service] Sent message to {broadcasterChannelName}. Message contents: {message}");
             }
             catch (Exception ex)
@@ -54,7 +54,7 @@ namespace BreganTwitchBot.Domain.Services.Twitch
         /// <returns></returns>
         public async Task SendAnnouncementMessageToChannel(string broadcasterChannelId, string broadcasterChannelName, string message)
         {
-            var apiClient = connection.GetBotTwitchApiClientFromBroadcasterChannelId(broadcasterChannelId);
+            var apiClient = connection.GetBotApiClient();
 
             if (apiClient == null)
             {
@@ -64,7 +64,7 @@ namespace BreganTwitchBot.Domain.Services.Twitch
 
             try
             {
-                await twitchApiInteractionService.SendAnnouncementMessage(apiClient.ApiClient, apiClient.BroadcasterChannelId, apiClient.TwitchChannelClientId, message);
+                await twitchApiInteractionService.SendAnnouncementMessage(apiClient.ApiClient, broadcasterChannelId, apiClient.TwitchChannelClientId, message);
                 Log.Information($"[Twitch Helper Service] Sent announcement to {broadcasterChannelName}. Announcement contents: {message}");
             }
             catch (Exception ex)
@@ -420,7 +420,7 @@ namespace BreganTwitchBot.Domain.Services.Twitch
 
         public async Task WarnUser(string broadcasterChannelId, string userId, string message)
         {
-            var apiClient = connection.GetBotTwitchApiClientFromBroadcasterChannelId(broadcasterChannelId);
+            var apiClient = connection.GetBotApiClient();
 
             if (apiClient == null)
             {
@@ -441,7 +441,7 @@ namespace BreganTwitchBot.Domain.Services.Twitch
 
         public async Task TimeoutUser(string broadcasterChannelId, string userId, int timeoutDurationInSeconds, string reason)
         {
-            var apiClient = connection.GetBotTwitchApiClientFromBroadcasterChannelId(broadcasterChannelId);
+            var apiClient = connection.GetBotApiClient();
             if (apiClient == null)
             {
                 Log.Error($"[Twitch Helper Service] Error timing out user {userId} in {broadcasterChannelId}, apiClient is null");
@@ -460,7 +460,7 @@ namespace BreganTwitchBot.Domain.Services.Twitch
 
         public async Task BanUser(string broadcasterChannelId, string userId, string reason)
         {
-            var apiClient = connection.GetBotTwitchApiClientFromBroadcasterChannelId(broadcasterChannelId);
+            var apiClient = connection.GetBotApiClient();
             if (apiClient == null)
             {
                 Log.Error($"[Twitch Helper Service] Error banning user {userId} in {broadcasterChannelId}, apiClient is null");

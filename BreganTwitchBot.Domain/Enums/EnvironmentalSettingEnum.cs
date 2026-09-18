@@ -8,6 +8,12 @@
         TwitchAPISecret,
         OpenAiApiKey,
         GeminiApiKey,
-        DiscordBotToken
+        DiscordBotToken,
+
+        // The single bot account used across every channel
+        BotTwitchChannelId,
+        BotTwitchChannelName,
+        BotTwitchChannelOAuthToken,
+        BotTwitchChannelRefreshToken
     }
 }

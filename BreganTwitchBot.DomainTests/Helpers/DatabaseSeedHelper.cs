@@ -6,13 +6,14 @@ namespace BreganTwitchBot.DomainTests.Helpers
 {
     public class DatabaseSeedHelper
     {
+        // a single bot account is used across every channel
+        public const string BotTwitchChannelName = "coolbotname";
+
         public const string Channel1BroadcasterTwitchChannelId = "123";
-        public const string Channel1BotTwitchChannelName = "coolbotname";
         public const string Channel1BroadcasterTwitchChannelName = "coolstreamername";
         public const string Channel1ChannelCurrencyName = "CoolCurrencyName";
 
         public const string Channel2BroadcasterTwitchChannelId = "12345";
-        public const string Channel2BotTwitchChannelName = "coolbotname2";
         public const string Channel2BroadcasterTwitchChannelName = "coolstreamername2";
         public const string Channel2ChannelCurrencyName = "CoolCurrencyName2";
 
@@ -41,24 +42,16 @@ namespace BreganTwitchBot.DomainTests.Helpers
         {
             var channel = new Channel
             {
-                BotTwitchChannelOAuthToken = "",
                 BroadcasterTwitchChannelOAuthToken = "",
-                BotTwitchChannelId = "",
-                BotTwitchChannelRefreshToken = "",
                 BroadcasterTwitchChannelRefreshToken = "",
-                BotTwitchChannelName = Channel1BotTwitchChannelName,
                 BroadcasterTwitchChannelId = Channel1BroadcasterTwitchChannelId,
                 BroadcasterTwitchChannelName = Channel1BroadcasterTwitchChannelName,
             };
 
             var channel2 = new Channel
             {
-                BotTwitchChannelOAuthToken = "",
                 BroadcasterTwitchChannelOAuthToken = "",
-                BotTwitchChannelId = "",
-                BotTwitchChannelRefreshToken = "",
                 BroadcasterTwitchChannelRefreshToken = "",
-                BotTwitchChannelName = Channel2BotTwitchChannelName,
                 BroadcasterTwitchChannelId = Channel2BroadcasterTwitchChannelId,
                 BroadcasterTwitchChannelName = Channel2BroadcasterTwitchChannelName,
             };

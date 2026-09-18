@@ -21,18 +21,8 @@ namespace BreganTwitchBot.Domain.Database.Models
         [Required]
         public required string BroadcasterTwitchChannelRefreshToken { get; set; }
 
-        // These sections are for the bot details
-        [Required]
-        public required string BotTwitchChannelName { get; set; }
-
-        [Required]
-        public required string BotTwitchChannelId { get; set; }
-
-        [Required]
-        public required string BotTwitchChannelOAuthToken { get; set; }
-
-        [Required]
-        public required string BotTwitchChannelRefreshToken { get; set; }
+        // The bot account is no longer per channel - a single bot connects to every
+        // channel, and its credentials live in the EnvironmentalSettings table.
 
         public virtual ChannelConfig ChannelConfig { get; set; } = null!;
         public virtual ICollection<ChannelRank> ChannelRanks { get; set; } = null!;

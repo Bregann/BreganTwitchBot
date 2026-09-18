@@ -54,11 +54,11 @@ namespace BreganTwitchBot.DomainTests.Twitch.Commands
             _twitchApiConnection = new Mock<ITwitchApiConnection>();
 
             //Mock channel 1 broadcaster to be correct
-            _twitchApiConnection.Setup(x => x.GetTwitchApiClientFromChannelName(DatabaseSeedHelper.Channel1BroadcasterTwitchChannelName))
-                .Returns(new TwitchApiConnection.TwitchAccount(new TwitchAPI(), 1, "", "", "", "", Domain.Enums.AccountType.Broadcaster, "", ""));
+            _twitchApiConnection.Setup(x => x.GetBroadcasterApiClientFromChannelName(DatabaseSeedHelper.Channel1BroadcasterTwitchChannelName))
+                .Returns(new TwitchApiConnection.TwitchAccount(new TwitchAPI(), "", "", "", "", Domain.Enums.AccountType.Broadcaster, 1));
 
             // Mock channel 2 broadcaster to be null
-            _twitchApiConnection.Setup(x => x.GetTwitchApiClientFromChannelName(DatabaseSeedHelper.Channel2BroadcasterTwitchChannelName))
+            _twitchApiConnection.Setup(x => x.GetBroadcasterApiClientFromChannelName(DatabaseSeedHelper.Channel2BroadcasterTwitchChannelName))
                 .Returns(value: null);
 
             _followAgeDataService = new FollowAgeDataService(_twitchApiConnection.Object, _twitchApiInteractionService.Object);

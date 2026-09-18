@@ -33,15 +33,16 @@ namespace BreganTwitchBot.Domain.Services.Helpers
 
         public async Task BigBenBong()
         {
-            var apiClients = twitchApiConnection.GetAllBotApiClients();
+            // the single bot is in every channel, so bong in each channel it's connected to
+            var channels = twitchApiConnection.GetAllChannels();
 
-            if (apiClients == null)
+            if (channels.Length == 0)
             {
-                Log.Error("[Hangfire Job Service] Error sending message to all channels, apiClients is null");
+                Log.Error("[Hangfire Job Service] Error sending message to all channels, there are no channels");
                 return;
             }
 
-            foreach (var bot in apiClients)
+            foreach (var bot in channels)
             {
                 switch (TimeZoneInfo.ConvertTimeBySystemTimeZoneId(DateTime.UtcNow, "GMT Standard Time").Hour)
                 {
