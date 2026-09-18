@@ -21,7 +21,8 @@ namespace BreganTwitchBot.Domain.Services.Twitch
         ITwitchEventHandlerService twitchEventHandlerService,
         IConfigHelperService configHelperService,
         IWordBlacklistMonitorService wordBlacklistMonitorService,
-        ITwitchApiInteractionService twitchApiInteractionService
+        ITwitchApiInteractionService twitchApiInteractionService,
+        IStreamStatsService streamStatsService
     ) : IHostedService
     {
         /// <summary>
@@ -113,6 +114,8 @@ namespace BreganTwitchBot.Domain.Services.Twitch
         private async Task OnFollowReceived(object sender, ChannelFollowArgs args)
         {
             Log.Information($"[Twitch Events] Channel follow: {args.Payload.Event.UserName} ({args.Payload.Event.UserId}) in {args.Payload.Event.BroadcasterUserName}");
+
+            streamStatsService.UpdateStreamStat(args.Payload.Event.BroadcasterUserId, StreamStatType.NewFollowers);
             await twitchHelperService.AddOrUpdateUserToDatabase(args.Payload.Event.BroadcasterUserId, args.Payload.Event.UserId, args.Payload.Event.BroadcasterUserName, args.Payload.Event.UserName);
         }
 
@@ -123,6 +126,7 @@ namespace BreganTwitchBot.Domain.Services.Twitch
             await configHelperService.UpdateStreamLiveStatus(args.Payload.Event.BroadcasterUserId, false);
             await configHelperService.UpdateDailyPointsStatus(args.Payload.Event.BroadcasterUserId, false);
             twitchHelperService.ClearStreamChattersList(args.Payload.Event.BroadcasterUserId);
+            await streamStatsService.EndStreamAsync(args.Payload.Event.BroadcasterUserId);
         }
 
         private async Task OnStreamOnline(object sender, StreamOnlineArgs args)
@@ -130,12 +134,16 @@ namespace BreganTwitchBot.Domain.Services.Twitch
             Log.Information($"[Twitch Events] Stream online: {args.Payload.Event.BroadcasterUserName} ({args.Payload.Event.BroadcasterUserId})");
 
             twitchHelperService.ClearStreamChattersList(args.Payload.Event.BroadcasterUserId);
+            await streamStatsService.StartNewStreamAsync(args.Payload.Event.BroadcasterUserId);
             await twitchEventHandlerService.HandleStreamOnline(args.Payload.Event.BroadcasterUserId, args.Payload.Event.BroadcasterUserName);
         }
 
         private async Task OnChannelBan(object sender, ChannelBanArgs args)
         {
             Log.Information($"[Twitch Events] Channel ban: {args.Payload.Event.UserName} ({args.Payload.Event.UserId}) in {args.Payload.Event.BroadcasterUserName} ({args.Payload.Event.BroadcasterUserId})");
+
+            // twitch models a timeout as a ban with an end date
+            streamStatsService.UpdateStreamStat(args.Payload.Event.BroadcasterUserId, args.Payload.Event.EndsAt == null ? StreamStatType.TotalBans : StreamStatType.TotalTimeouts);
         }
 
         private async Task OnChannelUnban(object sender, ChannelUnbanArgs args)
@@ -302,6 +310,14 @@ namespace BreganTwitchBot.Domain.Services.Twitch
 
             twitchHelperService.AddUserToStreamChattersList(msgParams.BroadcasterChannelId, msgParams.ChatterChannelId);
             twitchHelperService.IncrementChatMessageCount(msgParams.BroadcasterChannelId);
+
+            streamStatsService.UpdateStreamStat(msgParams.BroadcasterChannelId, StreamStatType.MessagesReceived);
+            streamStatsService.AddUniqueViewer(msgParams.BroadcasterChannelId, msgParams.ChatterChannelName);
+
+            if (msgParams.Message.StartsWith('!'))
+            {
+                streamStatsService.UpdateStreamStat(msgParams.BroadcasterChannelId, StreamStatType.CommandsSent);
+            }
 
             await twitchHelperService.AddOrUpdateUserToDatabase(msgParams.BroadcasterChannelId, msgParams.ChatterChannelId, msgParams.BroadcasterChannelName, msgParams.ChatterChannelName, msgParams.IsSub, msgParams.IsVip);
             await commandHandler.HandleCommandAsync(msgParams.Message.Split(' ')[0], msgParams);
