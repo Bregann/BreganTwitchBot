@@ -135,6 +135,7 @@ builder.Services.AddSingleton<IConfigHelperService, ConfigHelperService>();
 builder.Services.AddTwitchLibEventSubWebsockets();
 builder.Services.AddHostedService<WebsocketHostedService>();
 builder.Services.AddSingleton<ITwitchHelperService, TwitchHelperService>();
+builder.Services.AddSingleton<IStreamStatsService, StreamStatsService>();
 builder.Services.AddSingleton<ITwitchApiInteractionService, TwitchApiInteractionService>();
 builder.Services.AddSingleton<IConfigHelperService, ConfigHelperService>();
 
@@ -199,6 +200,7 @@ builder.Services.AddSingleton<IDiscordHelperService, DiscordHelperService>();
 builder.Services.AddSingleton<IDiscordUserLookupService, DiscordUserLookupService>();
 builder.Services.AddScoped<IDiscordEventHelperService, DiscordEventHelperService>();
 builder.Services.AddScoped<IDiscordRoleManagerService, DiscordRoleManagerService>();
+builder.Services.AddScoped<IDiscordStatusService, DiscordStatusService>();
 
 builder.Services.AddScoped<IDiscordDailyPointsData, DiscordDailyPointsData>();
 builder.Services.AddScoped<IDiscordGamblingData, DiscordGamblingData>();
