@@ -27,6 +27,7 @@ using BreganTwitchBot.Domain.Services.Twitch.Commands.Hours;
 using BreganTwitchBot.Domain.Services.Twitch.Commands.Leaderboards;
 using BreganTwitchBot.Domain.Services.Twitch.Commands.Linking;
 using BreganTwitchBot.Domain.Services.Twitch.Commands.Points;
+using BreganTwitchBot.Domain.Services.Twitch.Commands.Subathon;
 using BreganTwitchBot.Domain.Services.Twitch.Commands.TwitchBosses;
 using BreganTwitchBot.Domain.Services.Twitch.Commands.WordBlacklist;
 using BreganTwitchBot.Domain.Services.Twitch.Events;
@@ -171,6 +172,9 @@ builder.Services.AddScoped<ILeaderboardsDataService, LeaderboardsDataService>();
 
 builder.Services.AddSingleton<TwitchBossesCommandService>();
 builder.Services.AddSingleton<ITwitchBossesDataService, TwitchBossesDataService>();
+
+builder.Services.AddSingleton<SubathonCommandService>();
+builder.Services.AddScoped<ISubathonDataService, SubathonDataService>();
 
 builder.Services.AddSingleton<WordBlacklistCommandService>();
 builder.Services.AddScoped<IWordBlacklistDataService, WordBlacklistDataService>();

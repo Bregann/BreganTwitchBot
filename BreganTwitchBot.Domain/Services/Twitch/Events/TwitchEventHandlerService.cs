@@ -23,6 +23,12 @@ namespace BreganTwitchBot.Domain.Services.Twitch.Events
         public async Task HandleChannelCheerEvent(BitsCheeredParams cheerParams)
         {
             await twitchHelperService.SendTwitchMessageToChannel(cheerParams.BroadcasterChannelId, cheerParams.BroadcasterChannelName, $"Thank you for the {cheerParams.Amount} bits, {cheerParams.ChatterChannelName}! PogChamp");
+
+            // anonymous cheers have no user to credit the contribution to
+            if (!cheerParams.IsAnonymous)
+            {
+                await AddSubathonTime(x => x.AddBitsTimeAsync(cheerParams.BroadcasterChannelId, cheerParams.ChatterChannelId, cheerParams.Amount));
+            }
         }
 
         public async Task HandleChannelResubscribeEvent(ChannelResubscribeParams resubscribeParams)
@@ -52,6 +58,8 @@ namespace BreganTwitchBot.Domain.Services.Twitch.Events
             };
             await twitchHelperService.AddPointsToUser(giftSubParams.BroadcasterChannelId, giftSubParams.ChatterChannelId, pointsToAdd, giftSubParams.BroadcasterChannelName, giftSubParams.ChatterChannelName);
             await twitchHelperService.SendTwitchMessageToChannel(giftSubParams.BroadcasterChannelId, giftSubParams.BroadcasterChannelName, $"Thank you to {giftSubParams.ChatterChannelName} for gifting {(giftSubParams.Total == 1 ? "a sub" : $"{giftSubParams.Total} subs")}! They have gifted {giftSubParams.CumulativeTotal} subs in total!");
+
+            await AddSubathonTime(x => x.AddSubTimeAsync(giftSubParams.BroadcasterChannelId, giftSubParams.ChatterChannelId, giftSubParams.SubTier, giftSubParams.Total));
         }
 
         public async Task HandleChannelSubEvent(ChannelSubscribeParams subParams)
@@ -133,6 +141,24 @@ namespace BreganTwitchBot.Domain.Services.Twitch.Events
                 {
                     await twitchApiInteractionService.ShoutoutChannel(channel.ApiClient, raidParams.BroadcasterChannelId, raidParams.RaidingChannelId, channel.TwitchChannelClientId);
                 }
+            }
+        }
+
+        /// <summary>
+        /// Runs a subathon update in its own scope. Subathon time must never take down the event
+        /// that triggered it, so failures are logged rather than thrown.
+        /// </summary>
+        private async Task AddSubathonTime(Func<ISubathonDataService, Task> action)
+        {
+            try
+            {
+                using var scope = serviceProvider.CreateScope();
+                var subathonDataService = scope.ServiceProvider.GetRequiredService<ISubathonDataService>();
+                await action(subathonDataService);
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "[Subathon] Error adding subathon time");
             }
         }
 
