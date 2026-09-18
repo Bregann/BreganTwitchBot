@@ -173,6 +173,9 @@ builder.Services.AddScoped<ILeaderboardsDataService, LeaderboardsDataService>();
 builder.Services.AddSingleton<TwitchBossesCommandService>();
 builder.Services.AddSingleton<ITwitchBossesDataService, TwitchBossesDataService>();
 
+builder.Services.AddSingleton<ChannelInfoCommandService>();
+builder.Services.AddScoped<IChannelInfoDataService, ChannelInfoDataService>();
+
 builder.Services.AddSingleton<StreamInfoCommandService>();
 builder.Services.AddScoped<IStreamInfoDataService, StreamInfoDataService>();
 

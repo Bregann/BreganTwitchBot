@@ -26,5 +26,20 @@ namespace BreganTwitchBot.Domain.Interfaces.Twitch
         /// Gets the total subscriber count for a channel. Needs the broadcaster's own token.
         /// </summary>
         Task<int> GetChannelSubscriberCountAsync(TwitchAPI apiClient, string broadcasterId);
+
+        /// <summary>
+        /// Gets the channel's current title and game
+        /// </summary>
+        Task<GetChannelInformationResponse?> GetChannelInformationAsync(TwitchAPI apiClient, string broadcasterId);
+
+        /// <summary>
+        /// Updates the channel's title and game. Needs the broadcaster's own token.
+        /// </summary>
+        Task ModifyChannelInformationAsync(TwitchAPI apiClient, string broadcasterId, string title, string gameId);
+
+        /// <summary>
+        /// Looks up a game by its exact name. Returns null if Twitch doesn't recognise it.
+        /// </summary>
+        Task<(string Id, string Name)?> GetGameByNameAsync(TwitchAPI apiClient, string gameName);
     }
 }
