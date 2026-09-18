@@ -81,6 +81,54 @@ namespace BreganTwitchBot.Domain.Services.Api
             };
         }
 
+        public async Task<GetMySettingsResponse> GetMySettingsAsync(string twitchUserId)
+        {
+            var user = await context.ChannelUsers.FirstOrDefaultAsync(x => x.TwitchUserId == twitchUserId);
+
+            if (user == null)
+            {
+                return new GetMySettingsResponse { Channels = [] };
+            }
+
+            var settings = await context.DiscordUserStats
+                .Where(x => x.ChannelUserId == user.Id)
+                .Include(x => x.Channel)
+                .Select(x => new MyChannelSettingResponse
+                {
+                    BroadcasterChannelName = x.Channel.BroadcasterTwitchChannelName,
+                    DiscordLevelUpNotifsEnabled = x.DiscordLevelUpNotifsEnabled
+                })
+                .ToListAsync();
+
+            return new GetMySettingsResponse
+            {
+                Channels = settings.OrderBy(x => x.BroadcasterChannelName).ToList()
+            };
+        }
+
+        public async Task UpdateMySettingAsync(string twitchUserId, UpdateMySettingRequest request)
+        {
+            var user = await context.ChannelUsers.FirstOrDefaultAsync(x => x.TwitchUserId == twitchUserId);
+
+            if (user == null)
+            {
+                throw new KeyNotFoundException("The bot has not seen you in any channels yet");
+            }
+
+            // scoped to the caller's own row, so this cannot change anybody else's settings
+            var stats = await context.DiscordUserStats
+                .FirstOrDefaultAsync(x => x.ChannelUserId == user.Id &&
+                                          x.Channel.BroadcasterTwitchChannelName.ToLower() == request.BroadcasterChannelName.ToLower());
+
+            if (stats == null)
+            {
+                throw new KeyNotFoundException("You do not have any Discord stats in that channel");
+            }
+
+            stats.DiscordLevelUpNotifsEnabled = request.DiscordLevelUpNotifsEnabled;
+            await context.SaveChangesAsync();
+        }
+
         /// <summary>
         /// The rank they're on and how far off the next one is, based on watchtime
         /// </summary>

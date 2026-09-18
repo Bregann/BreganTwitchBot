@@ -33,5 +33,43 @@ namespace BreganTwitchBot.Core.Controllers
                 Channels = []
             });
         }
+
+        /// <summary>
+        /// The caller's own preferences
+        /// </summary>
+        [HttpGet("Settings")]
+        [ProducesResponseType(typeof(GetMySettingsResponse), StatusCodes.Status200OK)]
+        public async Task<IActionResult> GetMySettings()
+        {
+            var twitchUserId = User.FindFirst("twitch_user_id")?.Value;
+
+            if (string.IsNullOrWhiteSpace(twitchUserId))
+            {
+                return Unauthorized();
+            }
+
+            return Ok(await meDataService.GetMySettingsAsync(twitchUserId));
+        }
+
+        [HttpPut("Settings")]
+        public async Task<IActionResult> UpdateMySetting([FromBody] UpdateMySettingRequest request)
+        {
+            var twitchUserId = User.FindFirst("twitch_user_id")?.Value;
+
+            if (string.IsNullOrWhiteSpace(twitchUserId))
+            {
+                return Unauthorized();
+            }
+
+            try
+            {
+                await meDataService.UpdateMySettingAsync(twitchUserId, request);
+                return Ok();
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
+        }
     }
 }

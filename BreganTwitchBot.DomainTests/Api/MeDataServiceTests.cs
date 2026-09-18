@@ -116,5 +116,62 @@ namespace BreganTwitchBot.DomainTests.Api
 
             Assert.That(result!.Channels.Select(x => x.MinutesInStream), Is.Ordered.Descending);
         }
+
+        [Test]
+        public async Task GetMySettings_WithNoDiscordStats_ReturnsEmpty()
+        {
+            var result = await _meDataService.GetMySettingsAsync(DatabaseSeedHelper.Channel1User1TwitchUserId);
+
+            Assert.That(result.Channels, Is.Empty);
+        }
+
+        [Test]
+        public async Task UpdateMySetting_ChangesTheirOwnPreference()
+        {
+            var user = await _dbContext.ChannelUsers.FirstAsync(x => x.TwitchUserId == DatabaseSeedHelper.Channel1User1TwitchUserId);
+            var channel = await _dbContext.Channels.FirstAsync(x => x.BroadcasterTwitchChannelId == DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId);
+
+            _dbContext.DiscordUserStats.Add(new Domain.Database.Models.DiscordUserStats
+            {
+                ChannelUserId = user.Id,
+                ChannelId = channel.Id,
+                DiscordLevel = 1,
+                DiscordXp = 0,
+                DiscordLevelUpNotifsEnabled = true,
+                PrestigeLevel = 0
+            });
+            await _dbContext.SaveChangesAsync();
+
+            await _meDataService.UpdateMySettingAsync(DatabaseSeedHelper.Channel1User1TwitchUserId, new Domain.DTOs.Api.UpdateMySettingRequest
+            {
+                BroadcasterChannelName = DatabaseSeedHelper.Channel1BroadcasterTwitchChannelName,
+                DiscordLevelUpNotifsEnabled = false
+            });
+
+            var stats = await _dbContext.DiscordUserStats.FirstAsync(x => x.ChannelUserId == user.Id && x.ChannelId == channel.Id);
+            Assert.That(stats.DiscordLevelUpNotifsEnabled, Is.False);
+        }
+
+        [Test]
+        public void UpdateMySetting_ForAChannelTheyAreNotIn_IsRejected()
+        {
+            Assert.ThrowsAsync<KeyNotFoundException>(async () =>
+                await _meDataService.UpdateMySettingAsync(DatabaseSeedHelper.Channel1User1TwitchUserId, new Domain.DTOs.Api.UpdateMySettingRequest
+                {
+                    BroadcasterChannelName = DatabaseSeedHelper.Channel2BroadcasterTwitchChannelName,
+                    DiscordLevelUpNotifsEnabled = false
+                }));
+        }
+
+        [Test]
+        public void UpdateMySetting_ForAnUnknownUser_IsRejected()
+        {
+            Assert.ThrowsAsync<KeyNotFoundException>(async () =>
+                await _meDataService.UpdateMySettingAsync("nobody", new Domain.DTOs.Api.UpdateMySettingRequest
+                {
+                    BroadcasterChannelName = DatabaseSeedHelper.Channel1BroadcasterTwitchChannelName,
+                    DiscordLevelUpNotifsEnabled = false
+                }));
+        }
     }
 }

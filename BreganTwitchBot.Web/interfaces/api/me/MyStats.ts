@@ -22,3 +22,12 @@ export interface MyStats {
   twitchUsername: string
   channels: MyChannelStats[]
 }
+
+export interface MyChannelSetting {
+  broadcasterChannelName: string
+  discordLevelUpNotifsEnabled: boolean
+}
+
+export interface MySettings {
+  channels: MyChannelSetting[]
+}

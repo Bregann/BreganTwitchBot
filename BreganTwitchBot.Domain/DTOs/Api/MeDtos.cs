@@ -6,6 +6,23 @@ namespace BreganTwitchBot.Domain.DTOs.Api
         public required List<MyChannelStatsResponse> Channels { get; set; }
     }
 
+    public class GetMySettingsResponse
+    {
+        public required List<MyChannelSettingResponse> Channels { get; set; }
+    }
+
+    public class MyChannelSettingResponse
+    {
+        public required string BroadcasterChannelName { get; set; }
+        public required bool DiscordLevelUpNotifsEnabled { get; set; }
+    }
+
+    public class UpdateMySettingRequest
+    {
+        public required string BroadcasterChannelName { get; set; }
+        public required bool DiscordLevelUpNotifsEnabled { get; set; }
+    }
+
     public class MyChannelStatsResponse
     {
         public required string BroadcasterChannelName { get; set; }
