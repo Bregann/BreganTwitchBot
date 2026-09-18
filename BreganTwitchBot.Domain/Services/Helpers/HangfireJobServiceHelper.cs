@@ -1,4 +1,5 @@
-﻿using BreganTwitchBot.Domain.Interfaces.Discord.Commands;
+﻿using BreganTwitchBot.Domain.Interfaces.Discord;
+using BreganTwitchBot.Domain.Interfaces.Discord.Commands;
 using BreganTwitchBot.Domain.Interfaces.Twitch;
 using BreganTwitchBot.Domain.Interfaces.Twitch.Commands;
 using Hangfire;
@@ -13,7 +14,8 @@ namespace BreganTwitchBot.Domain.Services.Helpers
         IWordBlacklistMonitorService wordBlacklistMonitorService,
         IDailyPointsDataService dailyPointsDataService,
         IGeneralCommandsData generalCommandsData,
-        IDiscordDailyPointsData discordDailyPointsData
+        IDiscordDailyPointsData discordDailyPointsData,
+        IMonthlyLeaderboardRoleService monthlyLeaderboardRoleService
         )
     {
         public void SetupHangfireJobs()
@@ -27,6 +29,7 @@ namespace BreganTwitchBot.Domain.Services.Helpers
             RecurringJob.AddOrUpdate("RefreshApi", () => RefreshApi(), "45 * * * *");
             RecurringJob.AddOrUpdate("CheckBirthdays", () => CheckBirthdays(), "0 6 * * *");
             RecurringJob.AddOrUpdate("ResetDiscordStreaks", () => ResetDiscordStreaks(), "0 0 * * *");
+            RecurringJob.AddOrUpdate("UpdateMonthlyLeaderboardRoles", () => UpdateMonthlyLeaderboardRoles(), "0 1 * * *");
 
             Log.Information("[Job Scheduler] Job Scheduler Setup");
         }
@@ -167,6 +170,14 @@ namespace BreganTwitchBot.Domain.Services.Helpers
         public async Task CheckBirthdays()
         {
             await generalCommandsData.CheckForUserBirthdaysAndSendMessage();
+        }
+
+        /// <summary>
+        /// Moves the monthly bits and gifted subs leaderboard roles onto the current leaders
+        /// </summary>
+        public async Task UpdateMonthlyLeaderboardRoles()
+        {
+            await monthlyLeaderboardRoleService.UpdateMonthlyLeaderboardRolesAsync();
         }
 
         public async Task ResetDiscordStreaks()
