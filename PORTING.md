@@ -14,11 +14,11 @@ Status: ⬜ not started · 🟡 in progress · ✅ done · ❌ dropped (won't po
 |---|---|---|---|---|
 | Stream stats tracking | ⬜ | — | `Data/TwitchBot/StreamStats.cs` (440 lines) | Biggest item. `TwitchStreamStats` + `StreamViewCount` models already exist, no service. Aggregates per-stream counters (bits, subs, follows, messages, commands, gambling, bans/timeouts, unique viewers) and writes on stream end. Likely worth splitting into 2 PRs: collection, then persistence/reporting. |
 | Subathon | ⬜ | — | `Data/TwitchBot/Subathon.cs` (340), `Commands/Subathon/Subathon.cs` (54) | `Subathon` model exists but is a stub — only `ChannelId`/`ChannelUserId`, no timer/state fields, so needs a schema migration. Bits/subs/gifted subs add time on a sliding scale that tapers as total hours climb. |
-| Channel points redemptions | ⬜ | — | `Data/TwitchBot/Events/ChannelPoints.cs` (36) | `OnCustomRewardRedeemed` in `WebsocketHostedService.cs:254` currently only logs. Old bot granted points/actions per redemption. |
-| `!uptime` | ⬜ | — | `Commands/Uptime/Uptime.cs` (67) | Stream uptime via Helix `GetStreamsAsync`. Old version had a 5s cooldown with a supermod bypass. |
-| `!title` / `!game` | ⬜ | — | `Commands/StreamInfo/Title.cs` (84), `Game.cs` (93) | Read **and** set (set requires mod). Needs broadcaster token for the update. |
-| `!followers` / `!subs` | ⬜ | — | `Commands/StreamInfo/Followers.cs` (32), `Subs.cs` (34) | Counts via Helix. Subs needs the broadcaster token. |
-| `!addmarbleswin` / `!marbles` | ✅ | [#44](https://github.com/Bregann/BreganTwitchBot/pull/44) | `Commands/Marbles/Marbles.cs` (34) | Done. Also added `!marbles` to read wins back, which the old bot had no way to do. |
+| Channel points redemptions | ✅ | [#48](https://github.com/Bregann/BreganTwitchBot/pull/48) | `Data/TwitchBot/Events/ChannelPoints.cs` (36) | Done. New `ChannelPointRewards` table replaces the hardcoded goose switch. Fixed the handler being bound to the wrong EventSub event. |
+| `!uptime` / `!botuptime` | ✅ | [#45](https://github.com/Bregann/BreganTwitchBot/pull/45) | `Commands/Uptime/Uptime.cs` (67) | Done. Cooldown now per channel. Added `DurationFormatHelper`. |
+| `!title` / `!game` | ✅ | [#47](https://github.com/Bregann/BreganTwitchBot/pull/47) | `Commands/StreamInfo/Title.cs` (84), `Game.cs` (93) | Done. Bare reads, args sets (mods only). Fixed a crash on unknown game names. |
+| `!followers` / `!subs` | ✅ | [#46](https://github.com/Bregann/BreganTwitchBot/pull/46) | `Commands/StreamInfo/Followers.cs` (32), `Subs.cs` (34) | Done. Added `CommandCooldownHelper`. |
+| `!addmarbleswin` / `!marbles` | ✅ | [#44](https://github.com/Bregann/BreganTwitchBot/pull/44) | `Commands/Marbles/Marbles.cs` (34) | Done. Also added `!marbles` to read wins back. |
 
 ## Discord features
 
