@@ -33,5 +33,6 @@ namespace BreganTwitchBot.Domain.Database.Models
         public virtual ICollection<TwitchStreamStats> TwitchStreamStats { get; set; } = null!;
         public virtual ICollection<UniqueViewers> UniqueViewers { get; set; } = null!;
         public virtual ICollection<Subathon> Subathons { get; set; } = null!;
+        public virtual ICollection<SubathonRate> SubathonRates { get; set; } = null!;
     }
 }
