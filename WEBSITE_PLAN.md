@@ -164,6 +164,9 @@ The marketing surface. No auth, no personalisation.
 
 **Done when:** a logged-out visitor can understand what the bot does and how to get it.
 
+**Built.** `/`, `/features`, `/about` and `/commands`, with the command list read from
+the live registry via `GET /api/Public/Commands`.
+
 ---
 
 ### Stage 4 — Channel pages (public)
