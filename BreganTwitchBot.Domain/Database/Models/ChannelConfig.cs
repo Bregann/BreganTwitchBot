@@ -44,6 +44,11 @@ namespace BreganTwitchBot.Domain.Database.Models
         [Required]
         public required TimeSpan SubathonTime { get; set; }
 
+        /// <summary>
+        /// When the current subathon was started. Null when one has never been run.
+        /// </summary>
+        public DateTime? SubathonStartTime { get; set; } = null;
+
         [Required]
         public required bool BroadcasterLive { get; set; }
 
