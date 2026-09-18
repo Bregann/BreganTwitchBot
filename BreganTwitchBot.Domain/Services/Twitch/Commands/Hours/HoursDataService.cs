@@ -17,7 +17,7 @@ namespace BreganTwitchBot.Domain.Services.Twitch.Commands.Hours
         public async Task UpdateWatchtimeForChannel(string broadcasterId)
         {
             var channel = await context.Channels.FirstAsync(x => x.BroadcasterTwitchChannelId == broadcasterId);
-            var apiClient = twitchApiConnection.GetBotTwitchApiClientFromBroadcasterChannelId(broadcasterId);
+            var apiClient = twitchApiConnection.GetBotApiClient();
 
             if (!channel.ChannelConfig.BroadcasterLive)
             {
@@ -32,7 +32,7 @@ namespace BreganTwitchBot.Domain.Services.Twitch.Commands.Hours
 
             Log.Information($"Updating watchtime for channel {broadcasterId}");
 
-            var chatters = await twitchApiInteractionService.GetChattersAsync(apiClient.ApiClient, apiClient.BroadcasterChannelId, apiClient.TwitchChannelClientId);
+            var chatters = await twitchApiInteractionService.GetChattersAsync(apiClient.ApiClient, broadcasterId, apiClient.TwitchChannelClientId);
             var channelRanks = await context.ChannelRanks.Where(x => x.ChannelId == channel.Id).ToArrayAsync();
 
             var rankups = 0;

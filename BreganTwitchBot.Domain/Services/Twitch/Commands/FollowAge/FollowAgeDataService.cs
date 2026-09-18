@@ -70,7 +70,7 @@ namespace BreganTwitchBot.Domain.Services.Twitch.Commands.FollowAge
         /// <returns></returns>
         private async Task<(DateTime?, string)> GetUserFollowTime(string twitchUsernameToLookup, string broadcasterUserId, string broadcasterUsername, string? twitchUserIdToLookup = null)
         {
-            var apiClient = twitchApiConnection.GetTwitchApiClientFromChannelName(broadcasterUsername);
+            var apiClient = twitchApiConnection.GetBroadcasterApiClientFromChannelName(broadcasterUsername);
 
             if (apiClient == null)
             {

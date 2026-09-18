@@ -127,7 +127,7 @@ namespace BreganTwitchBot.Domain.Services.Twitch.Events
             // if their viewers are greater than 5 we can give them a shoutout as it's probably not a troll raid
             if (raidParams.Viewers > 5)
             {
-                var channel = twitchApiConnection.GetBotTwitchApiClientFromBroadcasterChannelId(raidParams.BroadcasterChannelId);
+                var channel = twitchApiConnection.GetBotApiClient();
 
                 if (channel != null)
                 {

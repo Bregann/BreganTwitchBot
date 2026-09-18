@@ -61,12 +61,12 @@ namespace BreganTwitchBot.DomainTests.Twitch.Commands
             _discordRoleManagerService = new Mock<IDiscordRoleManagerService>();
             _configHelperService = new Mock<IConfigHelperService>();
 
-            //Mock channel 1 broadcaster to be correct
-            _twitchApiConnection.Setup(x => x.GetBotTwitchApiClientFromBroadcasterChannelId(DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId))
-                .Returns(new TwitchApiConnection.TwitchAccount(new TwitchAPI(), 1, "", "", "", "", Domain.Enums.AccountType.Broadcaster, "", ""));
+            // The single bot account is shared across every channel
+            _twitchApiConnection.Setup(x => x.GetBotApiClient())
+                .Returns(new TwitchApiConnection.TwitchAccount(new TwitchAPI(), "", "", "", "", Domain.Enums.AccountType.Bot));
 
             // Mock channel 2 broadcaster to be null
-            _twitchApiConnection.Setup(x => x.GetTwitchApiClientFromChannelName(DatabaseSeedHelper.Channel2BroadcasterTwitchChannelName))
+            _twitchApiConnection.Setup(x => x.GetBroadcasterApiClientFromChannelName(DatabaseSeedHelper.Channel2BroadcasterTwitchChannelName))
                 .Returns(value: null);
 
             _hoursDataService = new HoursDataService(_dbContext, _twitchApiInteractionService.Object, _twitchApiConnection.Object, _twitchHelperService.Object, _discordRoleManagerService.Object, _configHelperService.Object);
@@ -110,6 +110,10 @@ namespace BreganTwitchBot.DomainTests.Twitch.Commands
             var channel = await _dbContext.Channels.FirstAsync(c => c.BroadcasterTwitchChannelId == DatabaseSeedHelper.Channel2BroadcasterTwitchChannelId);
             channel.ChannelConfig.BroadcasterLive = true;
             await _dbContext.SaveChangesAsync();
+
+            // the single bot account is shared by every channel, so if it isn't connected then
+            // no channel can have its watchtime updated
+            _twitchApiConnection.Setup(x => x.GetBotApiClient()).Returns(value: null);
 
             await _hoursDataService.UpdateWatchtimeForChannel(DatabaseSeedHelper.Channel2BroadcasterTwitchChannelId);
 
