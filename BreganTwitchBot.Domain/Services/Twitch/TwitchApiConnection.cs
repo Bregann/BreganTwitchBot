@@ -198,8 +198,15 @@ namespace BreganTwitchBot.Domain.Services.Twitch
                         _botAccount.AccessToken = newAccessToken.AccessToken;
                         _botAccount.RefreshToken = newAccessToken.RefreshToken;
 
-                        await environmentalSettingHelper.UpdateEnviromentalSettingValue(EnvironmentalSettingEnum.BotTwitchChannelOAuthToken, newAccessToken.AccessToken);
-                        await environmentalSettingHelper.UpdateEnviromentalSettingValue(EnvironmentalSettingEnum.BotTwitchChannelRefreshToken, newAccessToken.RefreshToken);
+                        var accessTokenSaved = await environmentalSettingHelper.UpdateEnviromentalSettingValue(EnvironmentalSettingEnum.BotTwitchChannelOAuthToken, newAccessToken.AccessToken);
+                        var refreshTokenSaved = await environmentalSettingHelper.UpdateEnviromentalSettingValue(EnvironmentalSettingEnum.BotTwitchChannelRefreshToken, newAccessToken.RefreshToken);
+
+                        if (!accessTokenSaved || !refreshTokenSaved)
+                        {
+                            // the settings rows are missing, so the new tokens only exist in memory
+                            // and will be lost on restart - the old refresh token is now spent
+                            Log.Fatal("[Twitch API Connection] Refreshed the bot token but could not save it. The BotTwitchChannelOAuthToken/BotTwitchChannelRefreshToken rows are missing from the environmental settings");
+                        }
 
                         Log.Information($"[Twitch API Connection] Refreshed access token for the bot account {_botAccount.TwitchUsername}");
                     }
