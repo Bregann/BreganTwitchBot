@@ -1,5 +1,6 @@
 using BreganTwitchBot.Domain.Database.Context;
 using BreganTwitchBot.Domain.Enums;
+using BreganTwitchBot.Domain.Interfaces.Api;
 using BreganTwitchBot.Domain.Interfaces.Discord;
 using BreganTwitchBot.Domain.Interfaces.Discord.Commands;
 using BreganTwitchBot.Domain.Interfaces.Helpers;
@@ -7,11 +8,13 @@ using BreganTwitchBot.Domain.Interfaces.Twitch;
 using BreganTwitchBot.Domain.Interfaces.Twitch.Commands;
 using BreganTwitchBot.Domain.Interfaces.Twitch.Events;
 using BreganTwitchBot.Domain.Services;
+using BreganTwitchBot.Domain.Services.Api;
 using BreganTwitchBot.Domain.Services.Discord;
 using BreganTwitchBot.Domain.Services.Discord.SlashCommands.BookRecs;
 using BreganTwitchBot.Domain.Services.Discord.SlashCommands.Daily;
 using BreganTwitchBot.Domain.Services.Discord.SlashCommands.Gambling;
 using BreganTwitchBot.Domain.Services.Discord.SlashCommands.GeneralCommands;
+using BreganTwitchBot.Domain.Services.Discord.SlashCommands.Leaderboards;
 using BreganTwitchBot.Domain.Services.Discord.SlashCommands.Levelling;
 using BreganTwitchBot.Domain.Services.Discord.SlashCommands.Linking;
 using BreganTwitchBot.Domain.Services.Helpers;
@@ -128,6 +131,14 @@ builder.Services.AddHangfire(configuration => configuration
 builder.Services.AddSingleton<ITwitchApiConnection, TwitchApiConnection>();
 
 // Helper bits
+builder.Services.AddHttpClient();
+builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IApiDataService, ApiDataService>();
+builder.Services.AddScoped<IMeDataService, MeDataService>();
+builder.Services.AddScoped<IPermissionService, PermissionService>();
+builder.Services.AddScoped<IAdminDataService, AdminDataService>();
+builder.Services.AddScoped<IDiscordLeaderboardsData, DiscordLeaderboardsData>();
+
 builder.Services.AddSingleton<IConfigHelperService, ConfigHelperService>();
 
 // Twitch events
