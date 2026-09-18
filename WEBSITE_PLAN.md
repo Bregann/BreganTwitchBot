@@ -204,6 +204,10 @@ What a logged-in viewer sees about themselves.
 
 **Done when:** logging in shows your real numbers with no linking step.
 
+**Built.** `GET /api/Me/Stats` and the `/me` page, with rank progress bars. Someone signed
+in whom the bot has never seen gets an empty list rather than an error, since that's a real
+state rather than a failure.
+
 ---
 
 ### Stage 6 — Permissions

@@ -134,6 +134,7 @@ builder.Services.AddSingleton<ITwitchApiConnection, TwitchApiConnection>();
 builder.Services.AddHttpClient();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IApiDataService, ApiDataService>();
+builder.Services.AddScoped<IMeDataService, MeDataService>();
 builder.Services.AddScoped<IDiscordLeaderboardsData, DiscordLeaderboardsData>();
 
 builder.Services.AddSingleton<IConfigHelperService, ConfigHelperService>();
