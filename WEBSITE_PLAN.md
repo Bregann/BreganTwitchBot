@@ -252,6 +252,13 @@ The configuration screens. Each maps to config that currently has no editor.
 
 **Done when:** a broadcaster can configure the bot entirely from the web, with no SQL.
 
+**Built.** Settings, commands, ranks, blacklist, Discord and permissions, each gated by
+`RequireChannelPermission`. 23 tests on the write service.
+
+Rewards, subathon rates and giveaway config still need their screens — the data for those
+already exists (#48, #49, #50), so they're page work on top of the same pattern rather than
+new plumbing.
+
 ---
 
 ### Stage 8 — Polish
