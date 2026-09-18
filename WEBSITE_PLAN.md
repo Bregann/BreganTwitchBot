@@ -118,6 +118,11 @@ Get an empty but correct app running.
 
 **Done when:** the app builds, renders a themed empty shell, and a proxied API call reaches the backend.
 
+> ⚠️ **Not verified locally.** `npm install` exits 0 in this environment but doesn't
+> materialise packages, so the Stage 1 scaffold has **not been built or typechecked**.
+> Run `npm install && npm run build` before trusting it — expect small fixes
+> (import paths, Mantine prop names) on the first real build.
+
 ---
 
 ### Stage 2 — Twitch OAuth
