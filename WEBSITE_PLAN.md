@@ -186,6 +186,10 @@ The read-only channel surface. Mostly served by the API controllers from #54.
 
 **Done when:** a viewer can browse a channel's public data without logging in.
 
+**Built.** Overview, leaderboards, subathon (with a client side countdown that resyncs
+every 30s), stats with charts, and commands. Backed by the #54 controllers plus two new
+channel endpoints.
+
 ---
 
 ### Stage 5 — Viewer stats
