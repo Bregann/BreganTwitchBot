@@ -2,6 +2,7 @@
 using BreganTwitchBot.Domain.Interfaces.Twitch;
 using Serilog;
 using TwitchLib.Api;
+using TwitchLib.Api.Helix.Models.Channels.ModifyChannelInformation;
 using TwitchLib.Api.Helix.Models.Chat;
 using TwitchLib.Api.Helix.Models.Moderation.BanUser;
 using TwitchLib.Api.Helix.Models.Moderation.WarnChatUser.Request;
@@ -68,6 +69,48 @@ namespace BreganTwitchBot.Domain.Services.Twitch
         {
             var res = await apiClient.Helix.Subscriptions.GetBroadcasterSubscriptionsAsync(broadcasterId, first: 1);
             return res.Total;
+        }
+
+        public async Task<GetChannelInformationResponse?> GetChannelInformationAsync(TwitchAPI apiClient, string broadcasterId)
+        {
+            var res = await apiClient.Helix.Channels.GetChannelInformationAsync(broadcasterId);
+
+            if (res.Data.Length == 0)
+            {
+                return null;
+            }
+
+            return new GetChannelInformationResponse
+            {
+                Title = res.Data[0].Title,
+                GameId = res.Data[0].GameId,
+                GameName = res.Data[0].GameName
+            };
+        }
+
+        public async Task ModifyChannelInformationAsync(TwitchAPI apiClient, string broadcasterId, string title, string gameId)
+        {
+            var request = new ModifyChannelInformationRequest
+            {
+                Title = title,
+                GameId = gameId
+            };
+
+            await apiClient.Helix.Channels.ModifyChannelInformationAsync(broadcasterId, request);
+        }
+
+        public async Task<(string Id, string Name)?> GetGameByNameAsync(TwitchAPI apiClient, string gameName)
+        {
+            var res = await apiClient.Helix.Games.GetGamesAsync(gameNames: [gameName]);
+
+            // the old bot only null checked the array and then indexed [0], which threw on an
+            // unrecognised game name
+            if (res.Data == null || res.Data.Length == 0)
+            {
+                return null;
+            }
+
+            return (res.Data[0].Id, res.Data[0].Name);
         }
 
         public async Task SendChatMessage(TwitchAPI apiClient, string broadcasterChannelId, string twitchChannelClientId, string message, string? originalMessageId = null)
