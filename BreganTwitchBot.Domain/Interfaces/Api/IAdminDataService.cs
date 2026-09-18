@@ -25,5 +25,16 @@ namespace BreganTwitchBot.Domain.Interfaces.Api
 
         Task<GetDiscordConfigResponse?> GetDiscordConfigAsync(string broadcasterChannelName);
         Task UpdateDiscordConfigAsync(string broadcasterChannelName, UpdateDiscordConfigRequest request);
+
+        Task<List<GetChannelPointRewardResponse>?> GetRewardsAsync(string broadcasterChannelName);
+        Task UpsertRewardAsync(string broadcasterChannelName, UpsertChannelPointRewardRequest request);
+        Task DeleteRewardAsync(string broadcasterChannelName, int rewardId);
+
+        Task<List<GetSubathonRateResponse>?> GetSubathonRatesAsync(string broadcasterChannelName);
+        Task UpsertSubathonRateAsync(string broadcasterChannelName, UpsertSubathonRateRequest request);
+        Task DeleteSubathonRateAsync(string broadcasterChannelName, int rateId);
+
+        Task<GetGiveawayConfigResponse?> GetGiveawayConfigAsync(string broadcasterChannelName);
+        Task UpdateGiveawayConfigAsync(string broadcasterChannelName, UpdateGiveawayConfigRequest request);
     }
 }

@@ -38,3 +38,27 @@ export interface DiscordConfig {
   discordModeratorRoleId: number | null
   discordWelcomeMessageChannelId: number | null
 }
+
+export interface ChannelPointReward {
+  id: number
+  rewardTitle: string
+  responseMessage: string
+  enabled: boolean
+  timesRedeemed: number
+}
+
+export interface SubathonRate {
+  id: number
+  fromHours: number
+  millisecondsPerBit: number
+  tier1SubMinutes: number
+  tier2SubMinutes: number
+  tier3SubMinutes: number
+}
+
+export interface GiveawayConfig {
+  minutesPerEntry: number
+  xpPerEntry: number
+  maxXpEntries: number
+  ranksGrantEntries: boolean
+}

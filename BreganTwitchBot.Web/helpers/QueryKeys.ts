@@ -24,4 +24,5 @@ export enum QueryKeys {
   WordBlacklist = 'wordBlacklist',
   DiscordConfig = 'discordConfig',
   ChannelPermissions = 'channelPermissions',
+  ChannelRewards = 'channelRewards',
 }

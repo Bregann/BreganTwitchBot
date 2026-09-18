@@ -35,5 +35,8 @@ namespace BreganTwitchBot.Domain.Database.Models
         public virtual ICollection<UniqueViewers> UniqueViewers { get; set; } = null!;
         public virtual ICollection<Subathon> Subathons { get; set; } = null!;
         public virtual ICollection<SubathonRate> SubathonRates { get; set; } = null!;
+        public virtual ICollection<ChannelPointReward> ChannelPointRewards { get; set; } = null!;
+        public virtual ICollection<DiscordGiveaway> DiscordGiveaways { get; set; } = null!;
+        public virtual DiscordGiveawayConfig DiscordGiveawayConfig { get; set; } = null!;
     }
 }

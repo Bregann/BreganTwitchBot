@@ -243,7 +243,7 @@ The configuration screens. Each maps to config that currently has no editor.
 | `/admin/commands` | Custom commands — add, edit, delete | `EditCommands` |
 | `/admin/ranks` | Watchtime ranks, minutes, Discord roles | `EditRanks` |
 | `/admin/rewards` | Channel point rewards (from #48) | `EditRanks` |
-| `/admin/subathon` | Rate bands (#49), start/stop, manual time | `EditSubathon` |
+| `/admin/subathon` | Rate bands (#49) | `EditSubathon` |
 | `/admin/giveaways` | Entry weighting (#50), run giveaways | `EditGiveaways` |
 | `/admin/blacklist` | Banned/timeout/warn words | `EditBlacklist` |
 | `/admin/discord` | Channel ids, roles, self-assign roles (#58), monthly leaderboard roles (#56) | `EditDiscord` |
@@ -255,9 +255,8 @@ The configuration screens. Each maps to config that currently has no editor.
 **Built.** Settings, commands, ranks, blacklist, Discord and permissions, each gated by
 `RequireChannelPermission`. 23 tests on the write service.
 
-Rewards, subathon rates and giveaway config still need their screens — the data for those
-already exists (#48, #49, #50), so they're page work on top of the same pattern rather than
-new plumbing.
+All nine screens are built: settings, commands, ranks, rewards, subathon rates, giveaways,
+blacklist, Discord and permissions. 35 tests on the write service.
 
 ---
 

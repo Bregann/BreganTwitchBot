@@ -118,6 +118,77 @@ namespace BreganTwitchBot.Core.Controllers
             return await Run(async () => await adminDataService.UpdateDiscordConfigAsync(broadcasterChannelName, request));
         }
 
+        // Channel point rewards
+
+        [HttpGet("Rewards")]
+        [RequireChannelPermission(ChannelPermission.EditRanks)]
+        [ProducesResponseType(typeof(List<GetChannelPointRewardResponse>), StatusCodes.Status200OK)]
+        public async Task<IActionResult> GetRewards([FromRoute] string broadcasterChannelName)
+        {
+            var rewards = await adminDataService.GetRewardsAsync(broadcasterChannelName);
+
+            return rewards == null ? NotFound() : Ok(rewards);
+        }
+
+        [HttpPut("Rewards")]
+        [RequireChannelPermission(ChannelPermission.EditRanks)]
+        public async Task<IActionResult> UpsertReward([FromRoute] string broadcasterChannelName, [FromBody] UpsertChannelPointRewardRequest request)
+        {
+            return await Run(async () => await adminDataService.UpsertRewardAsync(broadcasterChannelName, request));
+        }
+
+        [HttpDelete("Rewards/{rewardId:int}")]
+        [RequireChannelPermission(ChannelPermission.EditRanks)]
+        public async Task<IActionResult> DeleteReward([FromRoute] string broadcasterChannelName, [FromRoute] int rewardId)
+        {
+            return await Run(async () => await adminDataService.DeleteRewardAsync(broadcasterChannelName, rewardId));
+        }
+
+        // Subathon rate bands
+
+        [HttpGet("SubathonRates")]
+        [RequireChannelPermission(ChannelPermission.EditSubathon)]
+        [ProducesResponseType(typeof(List<GetSubathonRateResponse>), StatusCodes.Status200OK)]
+        public async Task<IActionResult> GetSubathonRates([FromRoute] string broadcasterChannelName)
+        {
+            var rates = await adminDataService.GetSubathonRatesAsync(broadcasterChannelName);
+
+            return rates == null ? NotFound() : Ok(rates);
+        }
+
+        [HttpPut("SubathonRates")]
+        [RequireChannelPermission(ChannelPermission.EditSubathon)]
+        public async Task<IActionResult> UpsertSubathonRate([FromRoute] string broadcasterChannelName, [FromBody] UpsertSubathonRateRequest request)
+        {
+            return await Run(async () => await adminDataService.UpsertSubathonRateAsync(broadcasterChannelName, request));
+        }
+
+        [HttpDelete("SubathonRates/{rateId:int}")]
+        [RequireChannelPermission(ChannelPermission.EditSubathon)]
+        public async Task<IActionResult> DeleteSubathonRate([FromRoute] string broadcasterChannelName, [FromRoute] int rateId)
+        {
+            return await Run(async () => await adminDataService.DeleteSubathonRateAsync(broadcasterChannelName, rateId));
+        }
+
+        // Giveaway weighting
+
+        [HttpGet("Giveaways")]
+        [RequireChannelPermission(ChannelPermission.EditGiveaways)]
+        [ProducesResponseType(typeof(GetGiveawayConfigResponse), StatusCodes.Status200OK)]
+        public async Task<IActionResult> GetGiveawayConfig([FromRoute] string broadcasterChannelName)
+        {
+            var config = await adminDataService.GetGiveawayConfigAsync(broadcasterChannelName);
+
+            return config == null ? NotFound() : Ok(config);
+        }
+
+        [HttpPut("Giveaways")]
+        [RequireChannelPermission(ChannelPermission.EditGiveaways)]
+        public async Task<IActionResult> UpdateGiveawayConfig([FromRoute] string broadcasterChannelName, [FromBody] UpdateGiveawayConfigRequest request)
+        {
+            return await Run(async () => await adminDataService.UpdateGiveawayConfigAsync(broadcasterChannelName, request));
+        }
+
         /// <summary>
         /// Turns the service's exceptions into the matching status codes, so every
         /// write endpoint answers the same way

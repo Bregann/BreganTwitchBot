@@ -366,5 +366,231 @@ namespace BreganTwitchBot.DomainTests.Api
                     DiscordGuildId = null
                 }));
         }
+
+        // Channel point rewards
+
+        [Test]
+        public async Task UpsertReward_AddsANewReward()
+        {
+            await _adminDataService.UpsertRewardAsync(Channel, new UpsertChannelPointRewardRequest
+            {
+                RewardTitle = "Goose",
+                ResponseMessage = "{user} has redeemed Goose!",
+                Enabled = true
+            });
+
+            Assert.That(await _dbContext.ChannelPointRewards.AnyAsync(x => x.RewardTitle == "Goose"), Is.True);
+        }
+
+        [Test]
+        public async Task UpsertReward_DuplicateTitle_IsRejected()
+        {
+            // the title is how a redemption is matched, so duplicates make it arbitrary
+            await _adminDataService.UpsertRewardAsync(Channel, new UpsertChannelPointRewardRequest
+            {
+                RewardTitle = "Goose",
+                ResponseMessage = "first",
+                Enabled = true
+            });
+
+            Assert.ThrowsAsync<ArgumentException>(async () =>
+                await _adminDataService.UpsertRewardAsync(Channel, new UpsertChannelPointRewardRequest
+                {
+                    RewardTitle = "goose",
+                    ResponseMessage = "second",
+                    Enabled = true
+                }));
+        }
+
+        [Test]
+        public async Task UpsertReward_UpdatesAnExistingReward()
+        {
+            await _adminDataService.UpsertRewardAsync(Channel, new UpsertChannelPointRewardRequest
+            {
+                RewardTitle = "Goose",
+                ResponseMessage = "old",
+                Enabled = true
+            });
+
+            var reward = await _dbContext.ChannelPointRewards.FirstAsync(x => x.RewardTitle == "Goose");
+
+            await _adminDataService.UpsertRewardAsync(Channel, new UpsertChannelPointRewardRequest
+            {
+                Id = reward.Id,
+                RewardTitle = "Goose",
+                ResponseMessage = "new",
+                Enabled = false
+            });
+
+            var reloaded = await _dbContext.ChannelPointRewards.FirstAsync(x => x.Id == reward.Id);
+
+            Assert.Multiple(() =>
+            {
+                Assert.That(reloaded.ResponseMessage, Is.EqualTo("new"));
+                Assert.That(reloaded.Enabled, Is.False);
+            });
+        }
+
+        [Test]
+        public void UpsertReward_WithNoMessage_IsRejected()
+        {
+            Assert.ThrowsAsync<ArgumentException>(async () =>
+                await _adminDataService.UpsertRewardAsync(Channel, new UpsertChannelPointRewardRequest
+                {
+                    RewardTitle = "Empty",
+                    ResponseMessage = "   ",
+                    Enabled = true
+                }));
+        }
+
+        // Subathon rate bands
+
+        [Test]
+        public async Task UpsertSubathonRate_AddsABand()
+        {
+            await _adminDataService.UpsertSubathonRateAsync(Channel, new UpsertSubathonRateRequest
+            {
+                FromHours = 0,
+                MillisecondsPerBit = 900,
+                Tier1SubMinutes = 6,
+                Tier2SubMinutes = 12,
+                Tier3SubMinutes = 30
+            });
+
+            Assert.That(await _dbContext.SubathonRates.AnyAsync(x => x.FromHours == 0), Is.True);
+        }
+
+        [Test]
+        public async Task UpsertSubathonRate_DuplicateStartingHour_IsRejected()
+        {
+            // two bands starting at the same hour would make the rate ambiguous
+            await _adminDataService.UpsertSubathonRateAsync(Channel, new UpsertSubathonRateRequest
+            {
+                FromHours = 12,
+                MillisecondsPerBit = 750,
+                Tier1SubMinutes = 5,
+                Tier2SubMinutes = 10,
+                Tier3SubMinutes = 25
+            });
+
+            Assert.ThrowsAsync<ArgumentException>(async () =>
+                await _adminDataService.UpsertSubathonRateAsync(Channel, new UpsertSubathonRateRequest
+                {
+                    FromHours = 12,
+                    MillisecondsPerBit = 500,
+                    Tier1SubMinutes = 1,
+                    Tier2SubMinutes = 2,
+                    Tier3SubMinutes = 3
+                }));
+        }
+
+        [Test]
+        public void UpsertSubathonRate_WithNegativeRates_IsRejected()
+        {
+            Assert.ThrowsAsync<ArgumentException>(async () =>
+                await _adminDataService.UpsertSubathonRateAsync(Channel, new UpsertSubathonRateRequest
+                {
+                    FromHours = 5,
+                    MillisecondsPerBit = -1,
+                    Tier1SubMinutes = 1,
+                    Tier2SubMinutes = 2,
+                    Tier3SubMinutes = 3
+                }));
+        }
+
+        [Test]
+        public async Task DeleteSubathonRate_TheZeroHourBand_IsRejected()
+        {
+            // without it a subathon would earn nothing below the next band
+            await _adminDataService.UpsertSubathonRateAsync(Channel, new UpsertSubathonRateRequest
+            {
+                FromHours = 0,
+                MillisecondsPerBit = 900,
+                Tier1SubMinutes = 6,
+                Tier2SubMinutes = 12,
+                Tier3SubMinutes = 30
+            });
+
+            var band = await _dbContext.SubathonRates.FirstAsync(x => x.FromHours == 0);
+
+            Assert.ThrowsAsync<ArgumentException>(async () =>
+                await _adminDataService.DeleteSubathonRateAsync(Channel, band.Id));
+        }
+
+        [Test]
+        public async Task DeleteSubathonRate_AHigherBand_IsAllowed()
+        {
+            await _adminDataService.UpsertSubathonRateAsync(Channel, new UpsertSubathonRateRequest
+            {
+                FromHours = 24,
+                MillisecondsPerBit = 150,
+                Tier1SubMinutes = 1,
+                Tier2SubMinutes = 2,
+                Tier3SubMinutes = 5
+            });
+
+            var band = await _dbContext.SubathonRates.FirstAsync(x => x.FromHours == 24);
+
+            await _adminDataService.DeleteSubathonRateAsync(Channel, band.Id);
+
+            Assert.That(await _dbContext.SubathonRates.AnyAsync(x => x.Id == band.Id), Is.False);
+        }
+
+        // Giveaway weighting
+
+        [Test]
+        public async Task GetGiveawayConfig_WithNoneSaved_ReturnsTheDefaults()
+        {
+            var config = await _adminDataService.GetGiveawayConfigAsync(Channel);
+
+            Assert.Multiple(() =>
+            {
+                Assert.That(config!.MinutesPerEntry, Is.EqualTo(3600));
+                Assert.That(config.XpPerEntry, Is.EqualTo(1000));
+                Assert.That(config.MaxXpEntries, Is.EqualTo(30));
+                Assert.That(config.RanksGrantEntries, Is.True);
+            });
+        }
+
+        [Test]
+        public async Task UpdateGiveawayConfig_CreatesThenUpdates()
+        {
+            await _adminDataService.UpdateGiveawayConfigAsync(Channel, new UpdateGiveawayConfigRequest
+            {
+                MinutesPerEntry = 1800,
+                XpPerEntry = 500,
+                MaxXpEntries = 10,
+                RanksGrantEntries = false
+            });
+
+            await _adminDataService.UpdateGiveawayConfigAsync(Channel, new UpdateGiveawayConfigRequest
+            {
+                MinutesPerEntry = 600,
+                XpPerEntry = 500,
+                MaxXpEntries = 10,
+                RanksGrantEntries = false
+            });
+
+            var configs = await _dbContext.DiscordGiveawayConfigs.Where(x => x.Channel.BroadcasterTwitchChannelName == Channel).ToListAsync();
+
+            Assert.Multiple(() =>
+            {
+                Assert.That(configs, Has.Count.EqualTo(1), "it should update rather than add a second row");
+                Assert.That(configs[0].MinutesPerEntry, Is.EqualTo(600));
+            });
+        }
+
+        [Test]
+        public void UpdateGiveawayConfig_WithZeroMinutesPerEntry_IsRejected()
+        {
+            Assert.ThrowsAsync<ArgumentException>(async () =>
+                await _adminDataService.UpdateGiveawayConfigAsync(Channel, new UpdateGiveawayConfigRequest
+                {
+                    MinutesPerEntry = 0,
+                    XpPerEntry = 1000,
+                    MaxXpEntries = 30,
+                    RanksGrantEntries = true
+                }));
+        }
     }
 }

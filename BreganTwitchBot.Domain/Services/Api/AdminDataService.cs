@@ -332,6 +332,270 @@ namespace BreganTwitchBot.Domain.Services.Api
             Log.Information($"[Admin] Discord config updated for {broadcasterChannelName}");
         }
 
+        // Channel point rewards
+
+        public async Task<List<GetChannelPointRewardResponse>?> GetRewardsAsync(string broadcasterChannelName)
+        {
+            var channel = await GetChannel(broadcasterChannelName);
+
+            if (channel == null)
+            {
+                return null;
+            }
+
+            return await context.ChannelPointRewards
+                .Where(x => x.ChannelId == channel.Id)
+                .OrderBy(x => x.RewardTitle)
+                .Select(x => new GetChannelPointRewardResponse
+                {
+                    Id = x.Id,
+                    RewardTitle = x.RewardTitle,
+                    ResponseMessage = x.ResponseMessage,
+                    Enabled = x.Enabled,
+                    TimesRedeemed = x.TimesRedeemed
+                })
+                .ToListAsync();
+        }
+
+        public async Task UpsertRewardAsync(string broadcasterChannelName, UpsertChannelPointRewardRequest request)
+        {
+            var channel = await GetChannelOrThrow(broadcasterChannelName);
+
+            if (string.IsNullOrWhiteSpace(request.RewardTitle))
+            {
+                throw new ArgumentException("The reward title cannot be empty");
+            }
+
+            if (string.IsNullOrWhiteSpace(request.ResponseMessage))
+            {
+                throw new ArgumentException("The response message cannot be empty");
+            }
+
+            var title = request.RewardTitle.Trim();
+
+            if (request.Id == null)
+            {
+                // the title is how a redemption is matched, so two rewards sharing one
+                // would make which fires arbitrary
+                if (await context.ChannelPointRewards.AnyAsync(x => x.ChannelId == channel.Id && x.RewardTitle.ToLower() == title.ToLower()))
+                {
+                    throw new ArgumentException($"There is already a reward called {title}");
+                }
+
+                context.ChannelPointRewards.Add(new ChannelPointReward
+                {
+                    ChannelId = channel.Id,
+                    RewardTitle = title,
+                    ResponseMessage = request.ResponseMessage.Trim(),
+                    Enabled = request.Enabled,
+                    TimesRedeemed = 0
+                });
+            }
+            else
+            {
+                var reward = await context.ChannelPointRewards
+                    .FirstOrDefaultAsync(x => x.Id == request.Id && x.ChannelId == channel.Id);
+
+                if (reward == null)
+                {
+                    throw new KeyNotFoundException("That reward does not exist in this channel");
+                }
+
+                reward.RewardTitle = title;
+                reward.ResponseMessage = request.ResponseMessage.Trim();
+                reward.Enabled = request.Enabled;
+            }
+
+            await context.SaveChangesAsync();
+            Log.Information($"[Admin] Channel point reward {title} saved for {broadcasterChannelName}");
+        }
+
+        public async Task DeleteRewardAsync(string broadcasterChannelName, int rewardId)
+        {
+            var channel = await GetChannelOrThrow(broadcasterChannelName);
+
+            var reward = await context.ChannelPointRewards.FirstOrDefaultAsync(x => x.Id == rewardId && x.ChannelId == channel.Id);
+
+            if (reward == null)
+            {
+                throw new KeyNotFoundException("That reward does not exist in this channel");
+            }
+
+            context.ChannelPointRewards.Remove(reward);
+            await context.SaveChangesAsync();
+        }
+
+        // Subathon rate bands
+
+        public async Task<List<GetSubathonRateResponse>?> GetSubathonRatesAsync(string broadcasterChannelName)
+        {
+            var channel = await GetChannel(broadcasterChannelName);
+
+            if (channel == null)
+            {
+                return null;
+            }
+
+            return await context.SubathonRates
+                .Where(x => x.ChannelId == channel.Id)
+                .OrderBy(x => x.FromHours)
+                .Select(x => new GetSubathonRateResponse
+                {
+                    Id = x.Id,
+                    FromHours = x.FromHours,
+                    MillisecondsPerBit = x.MillisecondsPerBit,
+                    Tier1SubMinutes = x.Tier1SubMinutes,
+                    Tier2SubMinutes = x.Tier2SubMinutes,
+                    Tier3SubMinutes = x.Tier3SubMinutes
+                })
+                .ToListAsync();
+        }
+
+        public async Task UpsertSubathonRateAsync(string broadcasterChannelName, UpsertSubathonRateRequest request)
+        {
+            var channel = await GetChannelOrThrow(broadcasterChannelName);
+
+            if (request.FromHours < 0)
+            {
+                throw new ArgumentException("The hours cannot be negative");
+            }
+
+            if (request.MillisecondsPerBit < 0 || request.Tier1SubMinutes < 0 || request.Tier2SubMinutes < 0 || request.Tier3SubMinutes < 0)
+            {
+                throw new ArgumentException("The rates cannot be negative");
+            }
+
+            var duplicate = await context.SubathonRates
+                .FirstOrDefaultAsync(x => x.ChannelId == channel.Id && x.FromHours == request.FromHours && x.Id != request.Id);
+
+            // two bands starting at the same hour would make the rate ambiguous
+            if (duplicate != null)
+            {
+                throw new ArgumentException($"There is already a band starting at {request.FromHours} hours");
+            }
+
+            if (request.Id == null)
+            {
+                context.SubathonRates.Add(new SubathonRate
+                {
+                    ChannelId = channel.Id,
+                    FromHours = request.FromHours,
+                    MillisecondsPerBit = request.MillisecondsPerBit,
+                    Tier1SubMinutes = request.Tier1SubMinutes,
+                    Tier2SubMinutes = request.Tier2SubMinutes,
+                    Tier3SubMinutes = request.Tier3SubMinutes
+                });
+            }
+            else
+            {
+                var rate = await context.SubathonRates.FirstOrDefaultAsync(x => x.Id == request.Id && x.ChannelId == channel.Id);
+
+                if (rate == null)
+                {
+                    throw new KeyNotFoundException("That rate band does not exist in this channel");
+                }
+
+                rate.FromHours = request.FromHours;
+                rate.MillisecondsPerBit = request.MillisecondsPerBit;
+                rate.Tier1SubMinutes = request.Tier1SubMinutes;
+                rate.Tier2SubMinutes = request.Tier2SubMinutes;
+                rate.Tier3SubMinutes = request.Tier3SubMinutes;
+            }
+
+            await context.SaveChangesAsync();
+            Log.Information($"[Admin] Subathon rate band from {request.FromHours}h saved for {broadcasterChannelName}");
+        }
+
+        public async Task DeleteSubathonRateAsync(string broadcasterChannelName, int rateId)
+        {
+            var channel = await GetChannelOrThrow(broadcasterChannelName);
+
+            var rate = await context.SubathonRates.FirstOrDefaultAsync(x => x.Id == rateId && x.ChannelId == channel.Id);
+
+            if (rate == null)
+            {
+                throw new KeyNotFoundException("That rate band does not exist in this channel");
+            }
+
+            // with no band covering zero hours a subathon would earn nothing at all
+            if (rate.FromHours == 0)
+            {
+                throw new ArgumentException("The band starting at 0 hours cannot be removed, as nothing would be earned below the next band");
+            }
+
+            context.SubathonRates.Remove(rate);
+            await context.SaveChangesAsync();
+        }
+
+        // Giveaway weighting
+
+        public async Task<GetGiveawayConfigResponse?> GetGiveawayConfigAsync(string broadcasterChannelName)
+        {
+            var channel = await GetChannel(broadcasterChannelName);
+
+            if (channel == null)
+            {
+                return null;
+            }
+
+            var config = await context.DiscordGiveawayConfigs.FirstOrDefaultAsync(x => x.ChannelId == channel.Id);
+
+            // the defaults the bot falls back to until a channel saves its own
+            return new GetGiveawayConfigResponse
+            {
+                MinutesPerEntry = config?.MinutesPerEntry ?? 3600,
+                XpPerEntry = config?.XpPerEntry ?? 1000,
+                MaxXpEntries = config?.MaxXpEntries ?? 30,
+                RanksGrantEntries = config?.RanksGrantEntries ?? true
+            };
+        }
+
+        public async Task UpdateGiveawayConfigAsync(string broadcasterChannelName, UpdateGiveawayConfigRequest request)
+        {
+            var channel = await GetChannelOrThrow(broadcasterChannelName);
+
+            if (request.MinutesPerEntry <= 0)
+            {
+                throw new ArgumentException("The minutes per entry must be greater than zero");
+            }
+
+            if (request.XpPerEntry <= 0)
+            {
+                throw new ArgumentException("The xp per entry must be greater than zero");
+            }
+
+            if (request.MaxXpEntries < 0)
+            {
+                throw new ArgumentException("The xp entry cap cannot be negative");
+            }
+
+            var config = await context.DiscordGiveawayConfigs.FirstOrDefaultAsync(x => x.ChannelId == channel.Id);
+
+            if (config == null)
+            {
+                config = new DiscordGiveawayConfig
+                {
+                    ChannelId = channel.Id,
+                    MinutesPerEntry = request.MinutesPerEntry,
+                    XpPerEntry = request.XpPerEntry,
+                    MaxXpEntries = request.MaxXpEntries,
+                    RanksGrantEntries = request.RanksGrantEntries
+                };
+
+                context.DiscordGiveawayConfigs.Add(config);
+            }
+            else
+            {
+                config.MinutesPerEntry = request.MinutesPerEntry;
+                config.XpPerEntry = request.XpPerEntry;
+                config.MaxXpEntries = request.MaxXpEntries;
+                config.RanksGrantEntries = request.RanksGrantEntries;
+            }
+
+            await context.SaveChangesAsync();
+            Log.Information($"[Admin] Giveaway config updated for {broadcasterChannelName}");
+        }
+
         private async Task<Channel?> GetChannel(string broadcasterChannelName)
         {
             return await context.Channels

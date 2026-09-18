@@ -67,4 +67,51 @@ namespace BreganTwitchBot.Domain.DTOs.Api
     }
 
     public class UpdateDiscordConfigRequest : GetDiscordConfigResponse;
+
+    public class GetChannelPointRewardResponse
+    {
+        public required int Id { get; set; }
+        public required string RewardTitle { get; set; }
+        public required string ResponseMessage { get; set; }
+        public required bool Enabled { get; set; }
+        public required int TimesRedeemed { get; set; }
+    }
+
+    public class UpsertChannelPointRewardRequest
+    {
+        public int? Id { get; set; }
+        public required string RewardTitle { get; set; }
+        public required string ResponseMessage { get; set; }
+        public required bool Enabled { get; set; }
+    }
+
+    public class GetSubathonRateResponse
+    {
+        public required int Id { get; set; }
+        public required int FromHours { get; set; }
+        public required int MillisecondsPerBit { get; set; }
+        public required int Tier1SubMinutes { get; set; }
+        public required int Tier2SubMinutes { get; set; }
+        public required int Tier3SubMinutes { get; set; }
+    }
+
+    public class UpsertSubathonRateRequest
+    {
+        public int? Id { get; set; }
+        public required int FromHours { get; set; }
+        public required int MillisecondsPerBit { get; set; }
+        public required int Tier1SubMinutes { get; set; }
+        public required int Tier2SubMinutes { get; set; }
+        public required int Tier3SubMinutes { get; set; }
+    }
+
+    public class GetGiveawayConfigResponse
+    {
+        public required int MinutesPerEntry { get; set; }
+        public required int XpPerEntry { get; set; }
+        public required int MaxXpEntries { get; set; }
+        public required bool RanksGrantEntries { get; set; }
+    }
+
+    public class UpdateGiveawayConfigRequest : GetGiveawayConfigResponse;
 }
