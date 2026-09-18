@@ -270,6 +270,17 @@ new plumbing.
 - SEO metadata, Open Graph images for channel pages.
 - Accessibility pass: keyboard navigation, contrast, screen reader labels.
 
+**Built.** Error boundaries (root and per channel), a not found page, loading states,
+Open Graph metadata including per channel titles, and a nav with a channel switcher that
+surfaces admin for channels you broadcast.
+
+Still outstanding, and best done against a running app rather than blind:
+
+- Loading **skeletons** rather than spinners — needs to be seen to be judged.
+- A real mobile pass on every page.
+- The accessibility pass.
+- Open Graph **images** for channel pages.
+
 ---
 
 ## Backend work summary

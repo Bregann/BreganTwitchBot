@@ -6,7 +6,12 @@ export async function generateMetadata({ params }: { params: Promise<{ channel: 
   const { channel } = await params
 
   return {
-    title: channel
+    title: channel,
+    description: `Points, watchtime, ranks and subathon stats for ${channel}`,
+    openGraph: {
+      title: `${channel} | BreganTwitchBot`,
+      description: `Points, watchtime, ranks and subathon stats for ${channel}`
+    }
   }
 }
 

@@ -8,14 +8,28 @@ import ClientLayout from '@/components/navigation/ClientLayout'
 import { AuthProvider } from '@/context/authContext'
 import { theme } from '@/css/theme'
 import NextTopLoader from 'nextjs-toploader'
-import type { Metadata } from 'next'
+import type { Metadata, Viewport } from 'next'
 
 export const metadata: Metadata = {
   title: {
     default: 'BreganTwitchBot',
     template: '%s | BreganTwitchBot'
   },
-  description: 'Points, watchtime, subathons and more for your Twitch channel'
+  description: 'Points, watchtime, ranks, subathons and giveaways for your Twitch channel and Discord server',
+  openGraph: {
+    title: 'BreganTwitchBot',
+    description: 'Points, watchtime, ranks, subathons and giveaways for your Twitch channel and Discord server',
+    type: 'website'
+  },
+  robots: {
+    index: true,
+    follow: true
+  }
+}
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1
 }
 
 export default function RootLayout({
