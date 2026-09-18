@@ -1,4 +1,5 @@
 ﻿using BreganTwitchBot.Domain.Database.Context;
+using BreganTwitchBot.Domain.Interfaces.Discord.Commands;
 using BreganTwitchBot.Domain.DTOs.Discord.Events;
 using BreganTwitchBot.Domain.Interfaces.Discord;
 using BreganTwitchBot.Domain.Interfaces.Helpers;
@@ -14,7 +15,8 @@ namespace BreganTwitchBot.Domain.Services.Discord
         IConfigHelperService configHelper,
         IDiscordHelperService discordHelper,
         IDiscordRoleManagerService discordRoleManagerService,
-        IDiscordUserLookupService discordUserLookupService
+        IDiscordUserLookupService discordUserLookupService,
+        IDiscordSelfAssignRoleData discordSelfAssignRoleData
         ) : IDiscordEventHelperService
     {
         public async Task HandleUserJoinedEvent(EventBase userJoined)
@@ -165,6 +167,14 @@ namespace BreganTwitchBot.Domain.Services.Discord
 
         public async Task<(string MessageToSend, bool Ephemeral)> HandleButtonPressEvent(ButtonPressedEvent buttonPressedEvent, DiscordSocketClient client)
         {
+            // self assign role buttons carry the configured role's id
+            if (buttonPressedEvent.CustomId.StartsWith("selfrole-"))
+            {
+                return int.TryParse(buttonPressedEvent.CustomId.Split('-')[1], out var roleConfigId)
+                    ? await discordSelfAssignRoleData.ToggleRoleAsync(buttonPressedEvent.GuildId, buttonPressedEvent.UserId, roleConfigId)
+                    : ("invalid button", true);
+            }
+
             var emojiToAdd = "";
 
             switch (buttonPressedEvent.CustomId)
