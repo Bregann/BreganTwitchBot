@@ -13,6 +13,7 @@ using BreganTwitchBot.Domain.Services.Discord.SlashCommands.Daily;
 using BreganTwitchBot.Domain.Services.Discord.SlashCommands.Gambling;
 using BreganTwitchBot.Domain.Services.Discord.SlashCommands.GeneralCommands;
 using BreganTwitchBot.Domain.Services.Discord.SlashCommands.Levelling;
+using BreganTwitchBot.Domain.Services.Discord.SlashCommands.SelfAssignRoles;
 using BreganTwitchBot.Domain.Services.Discord.SlashCommands.Linking;
 using BreganTwitchBot.Domain.Services.Helpers;
 using BreganTwitchBot.Domain.Services.Twitch;
@@ -201,6 +202,7 @@ builder.Services.AddScoped<IDiscordEventHelperService, DiscordEventHelperService
 builder.Services.AddScoped<IDiscordRoleManagerService, DiscordRoleManagerService>();
 
 builder.Services.AddScoped<IDiscordDailyPointsData, DiscordDailyPointsData>();
+builder.Services.AddScoped<IDiscordSelfAssignRoleData, DiscordSelfAssignRoleData>();
 builder.Services.AddScoped<IDiscordGamblingData, DiscordGamblingData>();
 builder.Services.AddScoped<IGeneralCommandsData, GeneralCommandsData>();
 builder.Services.AddScoped<IDiscordLevellingData, DiscordLevellingData>();
