@@ -99,6 +99,25 @@ Rules:
 
 ---
 
+## Status
+
+**All eight stages are built.** Every route in the map above exists — 22 pages.
+
+The **backend is tested and passing at 301/301**, and the solution builds clean. That covers
+Twitch OAuth, viewer stats and settings, permissions, and every admin write endpoint.
+
+The **frontend has never been compiled.** `npm install` doesn't work in the environment this
+was written in, so ~55 TypeScript files are written to Orbit's conventions but unproven.
+Expect import paths, Mantine prop names and Next 16 API details to need fixing on the first
+real `npm run build`.
+
+Still outstanding, and best judged against a running app:
+
+- Loading **skeletons** rather than spinners
+- A real mobile pass
+- The accessibility pass
+- Open Graph **images** for channel pages
+
 ## Stages
 
 Each stage is independently reviewable. This is one PR overall, so they're commits within it rather than separate PRs.
