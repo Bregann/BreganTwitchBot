@@ -9,7 +9,7 @@ namespace BreganTwitchBot.Domain.Services.Twitch.Commands.Marbles
 {
     public class MarblesDataService(AppDbContext dbContext, ITwitchHelperService twitchHelperService) : IMarblesDataService
     {
-        public async Task<string> AddMarblesWinAsync(ChannelChatMessageReceivedParams msgParams)
+        public async Task<string> AddMarblesWin(ChannelChatMessageReceivedParams msgParams)
         {
             await twitchHelperService.EnsureUserHasModeratorPermissions(msgParams.IsMod, msgParams.IsBroadcaster, msgParams.ChatterChannelName, msgParams.ChatterChannelId, msgParams.BroadcasterChannelId, msgParams.BroadcasterChannelName);
 
@@ -39,7 +39,7 @@ namespace BreganTwitchBot.Domain.Services.Twitch.Commands.Marbles
             return $"@{msgParams.ChatterChannelName} => The marbol win has been added! {username} now has {userStats.MarblesWins:N0} wins";
         }
 
-        public async Task<string> GetMarblesWinsAsync(ChannelChatMessageReceivedParams msgParams)
+        public async Task<string> GetMarblesWins(ChannelChatMessageReceivedParams msgParams)
         {
             var twitchIdToCheck = msgParams.ChatterChannelId;
             var twitchUsernameToCheck = msgParams.ChatterChannelName;

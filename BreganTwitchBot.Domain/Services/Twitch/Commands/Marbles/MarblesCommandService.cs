@@ -19,7 +19,7 @@ namespace BreganTwitchBot.Domain.Services.Twitch.Commands.Marbles
 
                 try
                 {
-                    var response = await marblesDataService.AddMarblesWinAsync(msgParams);
+                    var response = await marblesDataService.AddMarblesWin(msgParams);
                     await twitchHelperService.SendTwitchMessageToChannel(msgParams.BroadcasterChannelId, msgParams.BroadcasterChannelName, response, msgParams.MessageId);
                 }
                 catch (Exception ex)
@@ -44,7 +44,7 @@ namespace BreganTwitchBot.Domain.Services.Twitch.Commands.Marbles
 
                 try
                 {
-                    var response = await marblesDataService.GetMarblesWinsAsync(msgParams);
+                    var response = await marblesDataService.GetMarblesWins(msgParams);
                     await twitchHelperService.SendTwitchMessageToChannel(msgParams.BroadcasterChannelId, msgParams.BroadcasterChannelName, response, msgParams.MessageId);
                 }
                 catch (TwitchUserNotFoundException ex)

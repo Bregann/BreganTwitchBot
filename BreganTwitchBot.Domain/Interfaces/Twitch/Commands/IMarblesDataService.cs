@@ -8,12 +8,12 @@ namespace BreganTwitchBot.Domain.Interfaces.Twitch.Commands
         /// Adds a marbles win to the user named in the command. Moderator only.
         /// </summary>
         /// <returns>The message to send back to chat</returns>
-        Task<string> AddMarblesWinAsync(ChannelChatMessageReceivedParams msgParams);
+        Task<string> AddMarblesWin(ChannelChatMessageReceivedParams msgParams);
 
         /// <summary>
         /// Gets the marbles wins for the user named in the command, or the caller if no user is named
         /// </summary>
         /// <returns>The message to send back to chat</returns>
-        Task<string> GetMarblesWinsAsync(ChannelChatMessageReceivedParams msgParams);
+        Task<string> GetMarblesWins(ChannelChatMessageReceivedParams msgParams);
     }
 }
