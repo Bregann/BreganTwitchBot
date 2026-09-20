@@ -178,6 +178,9 @@ builder.Services.AddSingleton<ITwitchBossesDataService, TwitchBossesDataService>
 builder.Services.AddScoped<MarblesCommandService>();
 builder.Services.AddScoped<IMarblesDataService, MarblesDataService>();
 
+builder.Services.AddScoped<ChannelInfoCommandService>();
+builder.Services.AddScoped<IChannelInfoDataService, ChannelInfoDataService>();
+
 builder.Services.AddScoped<StreamInfoCommandService>();
 builder.Services.AddScoped<IStreamInfoDataService, StreamInfoDataService>();
 
