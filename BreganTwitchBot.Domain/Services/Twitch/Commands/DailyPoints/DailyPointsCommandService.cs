@@ -1,15 +1,14 @@
-﻿using BreganTwitchBot.Domain.Attributes;
+using BreganTwitchBot.Domain.Attributes;
 using BreganTwitchBot.Domain.DTOs.Twitch.EventSubEvents;
 using BreganTwitchBot.Domain.Enums;
 using BreganTwitchBot.Domain.Exceptions;
 using BreganTwitchBot.Domain.Interfaces.Twitch;
 using BreganTwitchBot.Domain.Interfaces.Twitch.Commands;
-using Microsoft.Extensions.DependencyInjection;
 using Serilog;
 
 namespace BreganTwitchBot.Domain.Services.Twitch.Commands.DailyPoints
 {
-    public class DailyPointsCommandService(IServiceProvider serviceProvider)
+    public class DailyPointsCommandService(IDailyPointsDataService dailyPointsDataService, ITwitchHelperService twitchHelperService)
     {
         [TwitchCommand("daily", ["dailypoints", "collect", "daylee", "dayly"])]
         public async Task HandleDailyPointsCommand(ChannelChatMessageReceivedParams msgParams)
@@ -61,49 +60,37 @@ namespace BreganTwitchBot.Domain.Services.Twitch.Commands.DailyPoints
 
         private async Task HandleClaimCommand(ChannelChatMessageReceivedParams msgParams, PointsClaimType pointsClaimType)
         {
-            using (var scope = serviceProvider.CreateScope())
+            try
             {
-                var dailyPointsDataService = scope.ServiceProvider.GetRequiredService<IDailyPointsDataService>();
-                var twitchHelperService = scope.ServiceProvider.GetRequiredService<ITwitchHelperService>();
-
-                try
-                {
-                    var dailyPointsResponse = await dailyPointsDataService.HandlePointsClaimed(msgParams, pointsClaimType);
-                    await twitchHelperService.SendTwitchMessageToChannel(msgParams.BroadcasterChannelId, msgParams.BroadcasterChannelName, dailyPointsResponse, msgParams.MessageId);
-                }
-                catch (TwitchUserNotFoundException ex)
-                {
-                    await twitchHelperService.SendTwitchMessageToChannel(msgParams.BroadcasterChannelId, msgParams.BroadcasterChannelName, ex.Message, msgParams.MessageId);
-                }
-                catch (Exception ex)
-                {
-                    await twitchHelperService.SendTwitchMessageToChannel(msgParams.BroadcasterChannelId, msgParams.BroadcasterChannelName, "uh oh error", msgParams.MessageId);
-                    Log.Fatal(ex, "Error handling daily points command");
-                }
+                var dailyPointsResponse = await dailyPointsDataService.HandlePointsClaimed(msgParams, pointsClaimType);
+                await twitchHelperService.SendTwitchMessageToChannel(msgParams.BroadcasterChannelId, msgParams.BroadcasterChannelName, dailyPointsResponse, msgParams.MessageId);
+            }
+            catch (TwitchUserNotFoundException ex)
+            {
+                await twitchHelperService.SendTwitchMessageToChannel(msgParams.BroadcasterChannelId, msgParams.BroadcasterChannelName, ex.Message, msgParams.MessageId);
+            }
+            catch (Exception ex)
+            {
+                await twitchHelperService.SendTwitchMessageToChannel(msgParams.BroadcasterChannelId, msgParams.BroadcasterChannelName, "uh oh error", msgParams.MessageId);
+                Log.Fatal(ex, "Error handling daily points command");
             }
         }
 
         private async Task HandleStreakCommand(ChannelChatMessageReceivedParams msgParams, PointsClaimType pointsClaimType)
         {
-            using (var scope = serviceProvider.CreateScope())
+            try
             {
-                var dailyPointsDataService = scope.ServiceProvider.GetRequiredService<IDailyPointsDataService>();
-                var twitchHelperService = scope.ServiceProvider.GetRequiredService<ITwitchHelperService>();
-
-                try
-                {
-                    var dailyPointsResponse = await dailyPointsDataService.HandleStreakCheckCommand(msgParams, pointsClaimType);
-                    await twitchHelperService.SendTwitchMessageToChannel(msgParams.BroadcasterChannelId, msgParams.BroadcasterChannelName, dailyPointsResponse, msgParams.MessageId);
-                }
-                catch (TwitchUserNotFoundException ex)
-                {
-                    await twitchHelperService.SendTwitchMessageToChannel(msgParams.BroadcasterChannelId, msgParams.BroadcasterChannelName, ex.Message, msgParams.MessageId);
-                }
-                catch (Exception ex)
-                {
-                    await twitchHelperService.SendTwitchMessageToChannel(msgParams.BroadcasterChannelId, msgParams.BroadcasterChannelName, "uh oh error", msgParams.MessageId);
-                    Log.Fatal(ex, "Error handling daily streak command");
-                }
+                var dailyPointsResponse = await dailyPointsDataService.HandleStreakCheckCommand(msgParams, pointsClaimType);
+                await twitchHelperService.SendTwitchMessageToChannel(msgParams.BroadcasterChannelId, msgParams.BroadcasterChannelName, dailyPointsResponse, msgParams.MessageId);
+            }
+            catch (TwitchUserNotFoundException ex)
+            {
+                await twitchHelperService.SendTwitchMessageToChannel(msgParams.BroadcasterChannelId, msgParams.BroadcasterChannelName, ex.Message, msgParams.MessageId);
+            }
+            catch (Exception ex)
+            {
+                await twitchHelperService.SendTwitchMessageToChannel(msgParams.BroadcasterChannelId, msgParams.BroadcasterChannelName, "uh oh error", msgParams.MessageId);
+                Log.Fatal(ex, "Error handling daily streak command");
             }
         }
     }

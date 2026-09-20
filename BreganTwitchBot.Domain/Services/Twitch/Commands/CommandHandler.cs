@@ -74,10 +74,13 @@ namespace BreganTwitchBot.Domain.Services.Twitch.Commands
             // For the predefined commands
             if (_commands.TryGetValue(command.ToLower(), out var method))
             {
-                var instance = _serviceProvider.GetRequiredService(method.DeclaringType!);
-                if (instance != null)
+                // A scope is created per command so the command services can take their scoped
+                // dependencies (data services and the db context) through normal constructor injection
+                using (var scope = _serviceProvider.CreateScope())
                 {
-                    var task = (Task?)method.Invoke(instance, new object[] { msgParams }.ToArray());
+                    var instance = scope.ServiceProvider.GetRequiredService(method.DeclaringType!);
+                    var task = (Task?)method.Invoke(instance, [msgParams]);
+
                     if (task != null)
                     {
                         await task;
