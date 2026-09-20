@@ -380,7 +380,6 @@ namespace BreganTwitchBot.Domain.Services.Twitch
             Log.Fatal($"[Twitch Events] Failed to reconnect websocket for {twitchChannelName} after {maxRetries} attempts 💀");
         }
 
-
         /// <summary>
         /// The bot has connected. Subscribe to the bot level events for every channel the bot is
         /// active in - one websocket carries the chat and moderation events for all of them.
