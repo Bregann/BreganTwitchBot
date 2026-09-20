@@ -50,7 +50,7 @@ namespace BreganTwitchBot.DomainTests.Twitch.Commands
         [Test]
         public async Task GetFollowerCount_ReturnsFormattedCount()
         {
-            _twitchApiInteractionService.Setup(x => x.GetChannelFollowerCountAsync(It.IsAny<TwitchAPI>(), DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId, It.IsAny<string>()))
+            _twitchApiInteractionService.Setup(x => x.GetChannelFollowerCount(It.IsAny<TwitchAPI>(), DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId, It.IsAny<string>()))
                 .ReturnsAsync(12345);
 
             var response = await _streamInfoDataService.GetFollowerCount(CreateMsgParams("!followers"));
@@ -63,7 +63,7 @@ namespace BreganTwitchBot.DomainTests.Twitch.Commands
         {
             // the pre existing GetChannelFollowersAsync returns null on an empty result, which
             // would have lost the total - the count method must report 0 rather than error
-            _twitchApiInteractionService.Setup(x => x.GetChannelFollowerCountAsync(It.IsAny<TwitchAPI>(), It.IsAny<string>(), It.IsAny<string>()))
+            _twitchApiInteractionService.Setup(x => x.GetChannelFollowerCount(It.IsAny<TwitchAPI>(), It.IsAny<string>(), It.IsAny<string>()))
                 .ReturnsAsync(0);
 
             var response = await _streamInfoDataService.GetFollowerCount(CreateMsgParams("!followers"));
@@ -74,7 +74,7 @@ namespace BreganTwitchBot.DomainTests.Twitch.Commands
         [Test]
         public async Task GetFollowerCount_ApiThrows_ReturnsErrorMessage()
         {
-            _twitchApiInteractionService.Setup(x => x.GetChannelFollowerCountAsync(It.IsAny<TwitchAPI>(), It.IsAny<string>(), It.IsAny<string>()))
+            _twitchApiInteractionService.Setup(x => x.GetChannelFollowerCount(It.IsAny<TwitchAPI>(), It.IsAny<string>(), It.IsAny<string>()))
                 .ThrowsAsync(new Exception("twitch is having a moment"));
 
             var response = await _streamInfoDataService.GetFollowerCount(CreateMsgParams("!followers"));
@@ -96,7 +96,7 @@ namespace BreganTwitchBot.DomainTests.Twitch.Commands
         [Test]
         public async Task GetSubscriberCount_ReturnsFormattedCount()
         {
-            _twitchApiInteractionService.Setup(x => x.GetChannelSubscriberCountAsync(It.IsAny<TwitchAPI>(), DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId))
+            _twitchApiInteractionService.Setup(x => x.GetChannelSubscriberCount(It.IsAny<TwitchAPI>(), DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId))
                 .ReturnsAsync(4200);
 
             var response = await _streamInfoDataService.GetSubscriberCount(CreateMsgParams("!subs"));
@@ -107,7 +107,7 @@ namespace BreganTwitchBot.DomainTests.Twitch.Commands
         [Test]
         public async Task GetSubscriberCount_ApiThrows_ReturnsErrorMessage()
         {
-            _twitchApiInteractionService.Setup(x => x.GetChannelSubscriberCountAsync(It.IsAny<TwitchAPI>(), It.IsAny<string>()))
+            _twitchApiInteractionService.Setup(x => x.GetChannelSubscriberCount(It.IsAny<TwitchAPI>(), It.IsAny<string>()))
                 .ThrowsAsync(new Exception("no permission"));
 
             var response = await _streamInfoDataService.GetSubscriberCount(CreateMsgParams("!subs"));
@@ -130,7 +130,7 @@ namespace BreganTwitchBot.DomainTests.Twitch.Commands
         [Test]
         public async Task GetSubscriberCount_UsesBroadcasterTokenNotBotToken()
         {
-            _twitchApiInteractionService.Setup(x => x.GetChannelSubscriberCountAsync(It.IsAny<TwitchAPI>(), It.IsAny<string>()))
+            _twitchApiInteractionService.Setup(x => x.GetChannelSubscriberCount(It.IsAny<TwitchAPI>(), It.IsAny<string>()))
                 .ReturnsAsync(1);
 
             await _streamInfoDataService.GetSubscriberCount(CreateMsgParams("!subs"));
