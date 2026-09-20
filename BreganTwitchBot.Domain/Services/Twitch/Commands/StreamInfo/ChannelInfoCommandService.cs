@@ -16,7 +16,7 @@ namespace BreganTwitchBot.Domain.Services.Twitch.Commands.StreamInfo
         [TwitchCommand("title")]
         public async Task TitleCommand(ChannelChatMessageReceivedParams msgParams)
         {
-            var newTitle = GetArgument(msgParams);
+            var newTitle = msgParams.GetArgument();
 
             // "!title" on its own shows the title, "!title <something>" sets it
             if (newTitle == null)
@@ -49,7 +49,7 @@ namespace BreganTwitchBot.Domain.Services.Twitch.Commands.StreamInfo
         [TwitchCommand("game", ["category"])]
         public async Task GameCommand(ChannelChatMessageReceivedParams msgParams)
         {
-            var newGame = GetArgument(msgParams);
+            var newGame = msgParams.GetArgument();
 
             // "!game" on its own shows the game, "!game <something>" sets it
             if (newGame == null)
@@ -77,17 +77,6 @@ namespace BreganTwitchBot.Domain.Services.Twitch.Commands.StreamInfo
             {
                 await twitchHelperService.SendTwitchMessageToChannel(msgParams.BroadcasterChannelId, msgParams.BroadcasterChannelName, ex.Message, msgParams.MessageId);
             }
-        }
-
-        /// <summary>
-        /// Everything after the command itself, or null when the command was used on its own.
-        /// Whitespace only arguments count as no argument so "!title    " still reads the title
-        /// rather than blanking it.
-        /// </summary>
-        private static string? GetArgument(ChannelChatMessageReceivedParams msgParams)
-        {
-            var argument = string.Join(' ', msgParams.MessageParts.Skip(1)).Trim();
-            return string.IsNullOrWhiteSpace(argument) ? null : argument;
         }
     }
 }
