@@ -30,6 +30,7 @@ using BreganTwitchBot.Domain.Services.Twitch.Commands.Marbles;
 using BreganTwitchBot.Domain.Services.Twitch.Commands.Points;
 using BreganTwitchBot.Domain.Services.Twitch.Commands.StreamInfo;
 using BreganTwitchBot.Domain.Services.Twitch.Commands.TwitchBosses;
+using BreganTwitchBot.Domain.Services.Twitch.Commands.Uptime;
 using BreganTwitchBot.Domain.Services.Twitch.Commands.WordBlacklist;
 using BreganTwitchBot.Domain.Services.Twitch.Events;
 using Discord.Interactions;
@@ -179,6 +180,9 @@ builder.Services.AddScoped<IMarblesDataService, MarblesDataService>();
 
 builder.Services.AddScoped<StreamInfoCommandService>();
 builder.Services.AddScoped<IStreamInfoDataService, StreamInfoDataService>();
+
+builder.Services.AddScoped<UptimeCommandService>();
+builder.Services.AddScoped<IUptimeDataService, UptimeDataService>();
 
 builder.Services.AddScoped<WordBlacklistCommandService>();
 builder.Services.AddScoped<IWordBlacklistDataService, WordBlacklistDataService>();
