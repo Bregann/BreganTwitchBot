@@ -15,5 +15,7 @@ namespace BreganTwitchBot.Domain.Interfaces.Twitch
         Task TimeoutUser(TwitchAPI apiClient, string broadcasterChannelId, string moderatorId, string userId, int durationInSeconds, string reason);
         Task BanUser(TwitchAPI apiClient, string broadcasterChannelId, string moderatorId, string userId, string reason);
         Task<GetStreamsResponse?> GetStreams(TwitchAPI apiClient, string broadcasterId);
+        Task<int> GetChannelFollowerCount(TwitchAPI apiClient, string broadcasterId, string moderatorId);
+        Task<int> GetChannelSubscriberCount(TwitchAPI apiClient, string broadcasterId);
     }
 }
