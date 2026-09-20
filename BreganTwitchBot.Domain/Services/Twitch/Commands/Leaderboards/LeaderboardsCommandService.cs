@@ -1,14 +1,13 @@
-﻿using BreganTwitchBot.Domain.Attributes;
+using BreganTwitchBot.Domain.Attributes;
 using BreganTwitchBot.Domain.DTOs.Twitch.EventSubEvents;
 using BreganTwitchBot.Domain.Enums;
 using BreganTwitchBot.Domain.Interfaces.Twitch;
 using BreganTwitchBot.Domain.Interfaces.Twitch.Commands;
-using Microsoft.Extensions.DependencyInjection;
 using Serilog;
 
 namespace BreganTwitchBot.Domain.Services.Twitch.Commands.Leaderboards
 {
-    public class LeaderboardsCommandService(IServiceProvider serviceProvider)
+    public class LeaderboardsCommandService(ILeaderboardsDataService leaderboardsDataService, ITwitchHelperService twitchHelperService)
     {
         [TwitchCommand("pointslb", ["pointsleaderboard", "lbpoints"])]
         public async Task HandlePointsLbCommand(ChannelChatMessageReceivedParams msgParams)
@@ -88,21 +87,15 @@ namespace BreganTwitchBot.Domain.Services.Twitch.Commands.Leaderboards
 
         private async Task HandleLeaderboardCommand(ChannelChatMessageReceivedParams msgParams, LeaderboardType type)
         {
-            using (var scope = serviceProvider.CreateScope())
+            try
             {
-                var leaderboardsDataService = scope.ServiceProvider.GetRequiredService<ILeaderboardsDataService>();
-                var twitchHelperService = scope.ServiceProvider.GetRequiredService<ITwitchHelperService>();
-
-                try
-                {
-                    var response = await leaderboardsDataService.HandleLeaderboardCommand(msgParams, type);
-                    await twitchHelperService.SendTwitchMessageToChannel(msgParams.BroadcasterChannelId, msgParams.BroadcasterChannelName, response, msgParams.MessageId);
-                }
-                catch (Exception ex)
-                {
-                    Log.Fatal(ex, $"Error while handling leaderboard command for type {type} in channel {msgParams.BroadcasterChannelId}");
-                    await twitchHelperService.SendTwitchMessageToChannel(msgParams.BroadcasterChannelId, msgParams.BroadcasterChannelName, "uh oh there has been an errory werrory trying to get the leaderboard data :( try again pwease :3", msgParams.MessageId);
-                }
+                var response = await leaderboardsDataService.HandleLeaderboardCommand(msgParams, type);
+                await twitchHelperService.SendTwitchMessageToChannel(msgParams.BroadcasterChannelId, msgParams.BroadcasterChannelName, response, msgParams.MessageId);
+            }
+            catch (Exception ex)
+            {
+                Log.Fatal(ex, $"Error while handling leaderboard command for type {type} in channel {msgParams.BroadcasterChannelId}");
+                await twitchHelperService.SendTwitchMessageToChannel(msgParams.BroadcasterChannelId, msgParams.BroadcasterChannelName, "uh oh there has been an errory werrory trying to get the leaderboard data :( try again pwease :3", msgParams.MessageId);
             }
         }
     }

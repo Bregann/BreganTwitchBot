@@ -26,6 +26,7 @@ using BreganTwitchBot.Domain.Services.Twitch.Commands.Gambling;
 using BreganTwitchBot.Domain.Services.Twitch.Commands.Hours;
 using BreganTwitchBot.Domain.Services.Twitch.Commands.Leaderboards;
 using BreganTwitchBot.Domain.Services.Twitch.Commands.Linking;
+using BreganTwitchBot.Domain.Services.Twitch.Commands.Marbles;
 using BreganTwitchBot.Domain.Services.Twitch.Commands.Points;
 using BreganTwitchBot.Domain.Services.Twitch.Commands.TwitchBosses;
 using BreganTwitchBot.Domain.Services.Twitch.Commands.WordBlacklist;
@@ -142,37 +143,40 @@ builder.Services.AddSingleton<ITwitchEventHandlerService, TwitchEventHandlerServ
 // Twitch commands
 builder.Services.AddSingleton<ICommandHandler, CommandHandler>();
 
-builder.Services.AddSingleton<PointsCommandService>();
+builder.Services.AddScoped<PointsCommandService>();
 builder.Services.AddScoped<IPointsDataService, PointsDataService>();
 
-builder.Services.AddSingleton<FollowAgeCommandService>();
+builder.Services.AddScoped<FollowAgeCommandService>();
 builder.Services.AddScoped<IFollowAgeDataService, FollowAgeDataService>();
 
-builder.Services.AddSingleton<EightBallCommandService>();
-builder.Services.AddSingleton<DadJokesCommandService>();
+builder.Services.AddScoped<EightBallCommandService>();
+builder.Services.AddScoped<DadJokesCommandService>();
 
-builder.Services.AddSingleton<CustomCommandsCommandService>();
+builder.Services.AddScoped<CustomCommandsCommandService>();
 builder.Services.AddScoped<ICustomCommandDataService, CustomCommandsDataService>();
 
-builder.Services.AddSingleton<DailyPointsCommandService>();
+builder.Services.AddScoped<DailyPointsCommandService>();
 builder.Services.AddScoped<IDailyPointsDataService, DailyPointsDataService>();
 
-builder.Services.AddSingleton<GamblingCommandService>();
+builder.Services.AddScoped<GamblingCommandService>();
 builder.Services.AddScoped<IGamblingDataService, GamblingDataService>();
 
-builder.Services.AddSingleton<HoursCommandService>();
+builder.Services.AddScoped<HoursCommandService>();
 builder.Services.AddScoped<IHoursDataService, HoursDataService>();
 
-builder.Services.AddSingleton<LinkingCommandService>();
+builder.Services.AddScoped<LinkingCommandService>();
 builder.Services.AddScoped<ILinkingDataService, LinkingDataService>();
 
-builder.Services.AddSingleton<LeaderboardsCommandService>();
+builder.Services.AddScoped<LeaderboardsCommandService>();
 builder.Services.AddScoped<ILeaderboardsDataService, LeaderboardsDataService>();
 
-builder.Services.AddSingleton<TwitchBossesCommandService>();
+builder.Services.AddScoped<TwitchBossesCommandService>();
 builder.Services.AddSingleton<ITwitchBossesDataService, TwitchBossesDataService>();
 
-builder.Services.AddSingleton<WordBlacklistCommandService>();
+builder.Services.AddScoped<MarblesCommandService>();
+builder.Services.AddScoped<IMarblesDataService, MarblesDataService>();
+
+builder.Services.AddScoped<WordBlacklistCommandService>();
 builder.Services.AddScoped<IWordBlacklistDataService, WordBlacklistDataService>();
 builder.Services.AddSingleton<IWordBlacklistMonitorService, WordBlacklistMonitorService>();
 
