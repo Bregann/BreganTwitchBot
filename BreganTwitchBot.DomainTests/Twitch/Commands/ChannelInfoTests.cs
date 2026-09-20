@@ -33,7 +33,7 @@ namespace BreganTwitchBot.DomainTests.Twitch.Commands
             _twitchApiConnection.Setup(x => x.GetBroadcasterApiClientFromChannelName(DatabaseSeedHelper.Channel1BroadcasterTwitchChannelName))
                 .Returns(new TwitchApiConnection.TwitchAccount(new TwitchAPI(), "", "", "", "", AccountType.Broadcaster, 1));
 
-            _twitchApiInteractionService.Setup(x => x.GetChannelInformationAsync(It.IsAny<TwitchAPI>(), DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId))
+            _twitchApiInteractionService.Setup(x => x.GetChannelInformation(It.IsAny<TwitchAPI>(), DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId))
                 .ReturnsAsync(new GetChannelInformationResponse
                 {
                     Title = CurrentTitle,
@@ -100,7 +100,7 @@ namespace BreganTwitchBot.DomainTests.Twitch.Commands
         [Test]
         public async Task GetGame_ApiThrows_ReturnsErrorMessage()
         {
-            _twitchApiInteractionService.Setup(x => x.GetChannelInformationAsync(It.IsAny<TwitchAPI>(), It.IsAny<string>()))
+            _twitchApiInteractionService.Setup(x => x.GetChannelInformation(It.IsAny<TwitchAPI>(), It.IsAny<string>()))
                 .ThrowsAsync(new Exception("twitch is having a moment"));
 
             var response = await _channelInfoDataService.GetGame(CreateMsgParams("!game"));
@@ -116,7 +116,7 @@ namespace BreganTwitchBot.DomainTests.Twitch.Commands
             var response = await _channelInfoDataService.SetTitle(CreateMsgParams("!title a brand new title"), "a brand new title");
 
             // the existing game id must be sent back or twitch clears the category
-            _twitchApiInteractionService.Verify(x => x.ModifyChannelInformationAsync(It.IsAny<TwitchAPI>(), DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId, "a brand new title", CurrentGameId), Times.Once);
+            _twitchApiInteractionService.Verify(x => x.ModifyChannelInformation(It.IsAny<TwitchAPI>(), DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId, "a brand new title", CurrentGameId), Times.Once);
             Assert.That(response, Does.Contain("The stream title has been updated to a brand new title"));
         }
 
@@ -137,19 +137,19 @@ namespace BreganTwitchBot.DomainTests.Twitch.Commands
             Assert.ThrowsAsync<UnauthorizedAccessException>(async () =>
                 await _channelInfoDataService.SetTitle(CreateMsgParams("!title nope", isMod: false), "nope"));
 
-            _twitchApiInteractionService.Verify(x => x.ModifyChannelInformationAsync(It.IsAny<TwitchAPI>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()), Times.Never);
+            _twitchApiInteractionService.Verify(x => x.ModifyChannelInformation(It.IsAny<TwitchAPI>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()), Times.Never);
         }
 
         [Test]
         public async Task SetGame_AsMod_UpdatesGameAndKeepsTitle()
         {
-            _twitchApiInteractionService.Setup(x => x.GetGameByNameAsync(It.IsAny<TwitchAPI>(), "Minecraft"))
+            _twitchApiInteractionService.Setup(x => x.GetGameByName(It.IsAny<TwitchAPI>(), "Minecraft"))
                 .ReturnsAsync(("27471", "Minecraft"));
 
             var response = await _channelInfoDataService.SetGame(CreateMsgParams("!game Minecraft"), "Minecraft");
 
             // the existing title must be sent back or twitch clears it
-            _twitchApiInteractionService.Verify(x => x.ModifyChannelInformationAsync(It.IsAny<TwitchAPI>(), DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId, CurrentTitle, "27471"), Times.Once);
+            _twitchApiInteractionService.Verify(x => x.ModifyChannelInformation(It.IsAny<TwitchAPI>(), DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId, CurrentTitle, "27471"), Times.Once);
             Assert.That(response, Does.Contain("The game has been updated to Minecraft"));
         }
 
@@ -157,7 +157,7 @@ namespace BreganTwitchBot.DomainTests.Twitch.Commands
         public async Task SetGame_UnknownGame_ReturnsNotFoundAndDoesNotUpdate()
         {
             // the old bot indexed [0] after only a null check, so this case threw
-            _twitchApiInteractionService.Setup(x => x.GetGameByNameAsync(It.IsAny<TwitchAPI>(), It.IsAny<string>()))
+            _twitchApiInteractionService.Setup(x => x.GetGameByName(It.IsAny<TwitchAPI>(), It.IsAny<string>()))
                 .ReturnsAsync(((string, string)?)null);
 
             var response = await _channelInfoDataService.SetGame(CreateMsgParams("!game notarealgame"), "notarealgame");
@@ -167,7 +167,7 @@ namespace BreganTwitchBot.DomainTests.Twitch.Commands
                 Assert.That(response, Does.Contain("could not find a game called notarealgame"));
             });
 
-            _twitchApiInteractionService.Verify(x => x.ModifyChannelInformationAsync(It.IsAny<TwitchAPI>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()), Times.Never);
+            _twitchApiInteractionService.Verify(x => x.ModifyChannelInformation(It.IsAny<TwitchAPI>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()), Times.Never);
         }
 
         [Test]
@@ -190,7 +190,7 @@ namespace BreganTwitchBot.DomainTests.Twitch.Commands
         [Test]
         public async Task SetTitle_ModifyThrows_ReturnsErrorMessage()
         {
-            _twitchApiInteractionService.Setup(x => x.ModifyChannelInformationAsync(It.IsAny<TwitchAPI>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()))
+            _twitchApiInteractionService.Setup(x => x.ModifyChannelInformation(It.IsAny<TwitchAPI>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()))
                 .ThrowsAsync(new Exception("no permission"));
 
             var response = await _channelInfoDataService.SetTitle(CreateMsgParams("!title new title"), "new title");

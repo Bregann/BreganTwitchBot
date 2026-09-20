@@ -33,7 +33,7 @@ namespace BreganTwitchBot.Domain.Services.Twitch.Commands.StreamInfo
             try
             {
                 // the game has to be sent back unchanged or twitch clears it
-                await twitchApiInteractionService.ModifyChannelInformationAsync(channelInfo.Value.ApiClient, msgParams.BroadcasterChannelId, newTitle, channelInfo.Value.Info.GameId);
+                await twitchApiInteractionService.ModifyChannelInformation(channelInfo.Value.ApiClient, msgParams.BroadcasterChannelId, newTitle, channelInfo.Value.Info.GameId);
                 return $"@{msgParams.ChatterChannelName} => The stream title has been updated to {newTitle} and the current game is {channelInfo.Value.Info.GameName} :)";
             }
             catch (Exception ex)
@@ -68,7 +68,7 @@ namespace BreganTwitchBot.Domain.Services.Twitch.Commands.StreamInfo
 
             try
             {
-                var game = await twitchApiInteractionService.GetGameByNameAsync(channelInfo.Value.ApiClient, newGame);
+                var game = await twitchApiInteractionService.GetGameByName(channelInfo.Value.ApiClient, newGame);
 
                 if (game == null)
                 {
@@ -76,7 +76,7 @@ namespace BreganTwitchBot.Domain.Services.Twitch.Commands.StreamInfo
                 }
 
                 // the title has to be sent back unchanged or twitch clears it
-                await twitchApiInteractionService.ModifyChannelInformationAsync(channelInfo.Value.ApiClient, msgParams.BroadcasterChannelId, channelInfo.Value.Info.Title, game.Value.Id);
+                await twitchApiInteractionService.ModifyChannelInformation(channelInfo.Value.ApiClient, msgParams.BroadcasterChannelId, channelInfo.Value.Info.Title, game.Value.Id);
                 return $"@{msgParams.ChatterChannelName} => The game has been updated to {game.Value.Name} and the current title is {channelInfo.Value.Info.Title} :)";
             }
             catch (Exception ex)
@@ -102,7 +102,7 @@ namespace BreganTwitchBot.Domain.Services.Twitch.Commands.StreamInfo
 
             try
             {
-                var info = await twitchApiInteractionService.GetChannelInformationAsync(apiClient.ApiClient, msgParams.BroadcasterChannelId);
+                var info = await twitchApiInteractionService.GetChannelInformation(apiClient.ApiClient, msgParams.BroadcasterChannelId);
 
                 if (info == null)
                 {

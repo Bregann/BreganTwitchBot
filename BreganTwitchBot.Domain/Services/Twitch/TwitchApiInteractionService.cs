@@ -15,7 +15,7 @@ namespace BreganTwitchBot.Domain.Services.Twitch
     /// </summary>
     public class TwitchApiInteractionService : ITwitchApiInteractionService
     {
-        public async Task<GetUsersAsyncResponse?> GetUsersAsync(TwitchAPI apiClient, string twitchUsername)
+        public async Task<GetUsersAsyncResponse?> GetUsers(TwitchAPI apiClient, string twitchUsername)
         {
             var res = await apiClient.Helix.Users.GetUsersAsync(logins: new List<string> { twitchUsername });
 
@@ -36,7 +36,7 @@ namespace BreganTwitchBot.Domain.Services.Twitch
             };
         }
 
-        public async Task<GetChannelFollowersAsyncResponse?> GetChannelFollowersAsync(TwitchAPI apiClient, string broadcasterId, string userId)
+        public async Task<GetChannelFollowersAsyncResponse?> GetChannelFollowers(TwitchAPI apiClient, string broadcasterId, string userId)
         {
             var res = await apiClient.Helix.Channels.GetChannelFollowersAsync(broadcasterId: broadcasterId, userId: userId);
 
@@ -58,20 +58,20 @@ namespace BreganTwitchBot.Domain.Services.Twitch
             };
         }
 
-        public async Task<int> GetChannelFollowerCountAsync(TwitchAPI apiClient, string broadcasterId, string moderatorId)
+        public async Task<int> GetChannelFollowerCount(TwitchAPI apiClient, string broadcasterId, string moderatorId)
         {
             // first=1 as only the total is wanted, not the follower list itself
             var res = await apiClient.Helix.Channels.GetChannelFollowersAsync(broadcasterId: broadcasterId, first: 1);
             return res.Total;
         }
 
-        public async Task<int> GetChannelSubscriberCountAsync(TwitchAPI apiClient, string broadcasterId)
+        public async Task<int> GetChannelSubscriberCount(TwitchAPI apiClient, string broadcasterId)
         {
             var res = await apiClient.Helix.Subscriptions.GetBroadcasterSubscriptionsAsync(broadcasterId, first: 1);
             return res.Total;
         }
 
-        public async Task<GetChannelInformationResponse?> GetChannelInformationAsync(TwitchAPI apiClient, string broadcasterId)
+        public async Task<GetChannelInformationResponse?> GetChannelInformation(TwitchAPI apiClient, string broadcasterId)
         {
             var res = await apiClient.Helix.Channels.GetChannelInformationAsync(broadcasterId);
 
@@ -88,7 +88,7 @@ namespace BreganTwitchBot.Domain.Services.Twitch
             };
         }
 
-        public async Task ModifyChannelInformationAsync(TwitchAPI apiClient, string broadcasterId, string title, string gameId)
+        public async Task ModifyChannelInformation(TwitchAPI apiClient, string broadcasterId, string title, string gameId)
         {
             var request = new ModifyChannelInformationRequest
             {
@@ -99,7 +99,7 @@ namespace BreganTwitchBot.Domain.Services.Twitch
             await apiClient.Helix.Channels.ModifyChannelInformationAsync(broadcasterId, request);
         }
 
-        public async Task<(string Id, string Name)?> GetGameByNameAsync(TwitchAPI apiClient, string gameName)
+        public async Task<(string Id, string Name)?> GetGameByName(TwitchAPI apiClient, string gameName)
         {
             var res = await apiClient.Helix.Games.GetGamesAsync(gameNames: [gameName]);
 
@@ -118,7 +118,7 @@ namespace BreganTwitchBot.Domain.Services.Twitch
             await apiClient.Helix.Chat.SendChatMessage(broadcasterChannelId, twitchChannelClientId, message, originalMessageId);
         }
 
-        public async Task<GetChattersResponse> GetChattersAsync(TwitchAPI apiClient, string broadcasterChannelId, string moderatorId)
+        public async Task<GetChattersResponse> GetChatters(TwitchAPI apiClient, string broadcasterChannelId, string moderatorId)
         {
             var res = await apiClient.Helix.Chat.GetChattersAsync(broadcasterChannelId, moderatorId, 1000);
 

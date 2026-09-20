@@ -19,7 +19,7 @@ namespace BreganTwitchBot.Domain.Services.Twitch.Commands.StreamInfo
 
             try
             {
-                var followerCount = await twitchApiInteractionService.GetChannelFollowerCountAsync(apiClient.ApiClient, msgParams.BroadcasterChannelId, apiClient.TwitchChannelClientId);
+                var followerCount = await twitchApiInteractionService.GetChannelFollowerCount(apiClient.ApiClient, msgParams.BroadcasterChannelId, apiClient.TwitchChannelClientId);
                 return $"@{msgParams.ChatterChannelName} => {msgParams.BroadcasterChannelName} has {followerCount:N0} followers";
             }
             catch (Exception ex)
@@ -42,7 +42,7 @@ namespace BreganTwitchBot.Domain.Services.Twitch.Commands.StreamInfo
 
             try
             {
-                var subCount = await twitchApiInteractionService.GetChannelSubscriberCountAsync(apiClient.ApiClient, msgParams.BroadcasterChannelId);
+                var subCount = await twitchApiInteractionService.GetChannelSubscriberCount(apiClient.ApiClient, msgParams.BroadcasterChannelId);
                 return $"@{msgParams.ChatterChannelName} => {msgParams.BroadcasterChannelName} has {subCount:N0} subs";
             }
             catch (Exception ex)
