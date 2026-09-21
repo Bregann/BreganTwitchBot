@@ -2,6 +2,7 @@
 using BreganTwitchBot.Domain.Database.Models;
 using BreganTwitchBot.Domain.Interfaces.Discord;
 using BreganTwitchBot.Domain.Interfaces.Helpers;
+using BreganTwitchBot.Domain.Services.Helpers;
 using Discord;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -64,7 +65,7 @@ namespace BreganTwitchBot.Domain.Services.Discord
                 Log.Information($"[Discord XP Manager Service] Adding {baseXpToAdd} xp to {userId} in {guildId}");
 
                 var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-                var channel = await context.Channels.FirstAsync(x => x.ChannelConfig.DiscordGuildId == guildId);
+                var channel = await context.GetRequiredChannelForGuild(guildId);
                 var user = await context.DiscordUserStats.FirstOrDefaultAsync(x => x.User.DiscordUserId == userId && x.ChannelId == channel.Id);
 
                 if (user != null)
@@ -129,7 +130,7 @@ namespace BreganTwitchBot.Domain.Services.Discord
             using (var scope = serviceProvider.CreateScope())
             {
                 var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-                var channel = await context.Channels.FirstAsync(x => x.ChannelConfig.DiscordGuildId == serverId);
+                var channel = await context.GetRequiredChannelForGuild(serverId);
 
                 var userPoints = await context.ChannelUserData.FirstOrDefaultAsync(x => x.ChannelId == channel.Id && x.ChannelUser.DiscordUserId == userId);
 
@@ -162,7 +163,7 @@ namespace BreganTwitchBot.Domain.Services.Discord
             using (var scope = serviceProvider.CreateScope())
             {
                 var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-                var channel = await context.Channels.FirstAsync(x => x.ChannelConfig.DiscordGuildId == serverId);
+                var channel = await context.GetRequiredChannelForGuild(serverId);
                 var userPoints = await context.ChannelUserData.FirstAsync(x => x.ChannelId == channel.Id && x.ChannelUser.DiscordUserId == userId);
 
                 // check if the new amount of points will make the user below 0
@@ -205,7 +206,7 @@ namespace BreganTwitchBot.Domain.Services.Discord
             using (var scope = serviceProvider.CreateScope())
             {
                 var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-                var channel = await context.Channels.FirstAsync(x => x.ChannelConfig.DiscordGuildId == guildId);
+                var channel = await context.GetRequiredChannelForGuild(guildId);
                 var user = await context.ChannelUsers.FirstOrDefaultAsync(x => x.DiscordUserId == userId);
 
                 if (user == null)

@@ -1,6 +1,7 @@
-using BreganTwitchBot.Domain.Database.Context;
+﻿using BreganTwitchBot.Domain.Database.Context;
 using BreganTwitchBot.Domain.Database.Models;
 using BreganTwitchBot.Domain.Interfaces.Discord.Commands;
+using BreganTwitchBot.Domain.Services.Helpers;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
 
@@ -10,7 +11,7 @@ namespace BreganTwitchBot.Domain.Services.Discord.SlashCommands.Giveaway
     {
         public async Task<(string? GiveawayId, string Response)> StartGiveaway(ulong guildId, ulong channelId, ulong startedByUserId, int minimumWatchtimeHours, string? requiredRankName)
         {
-            var channel = await GetChannelForGuild(guildId);
+            var channel = await context.GetChannelForGuild(guildId);
 
             if (channel == null)
             {
@@ -205,11 +206,6 @@ namespace BreganTwitchBot.Domain.Services.Discord.SlashCommands.Giveaway
             Log.Information($"[Discord Giveaways] Giveaway {giveawayId} won by {winnerId} out of {totalEntries} entries");
 
             return ($"The winner of the giveaway is... <@{winnerId}>", false);
-        }
-
-        private async Task<Channel?> GetChannelForGuild(ulong guildId)
-        {
-            return await context.Channels.FirstOrDefaultAsync(x => x.ChannelConfig.DiscordGuildId == guildId);
         }
 
         private async Task<DiscordGiveaway?> GetGiveaway(string giveawayId)
