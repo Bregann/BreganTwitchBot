@@ -1,9 +1,10 @@
-using BreganTwitchBot.Domain.Database.Context;
+﻿using BreganTwitchBot.Domain.Database.Context;
 using BreganTwitchBot.Domain.Database.Models;
 using BreganTwitchBot.Domain.DTOs.Discord;
 using BreganTwitchBot.Domain.DTOs.Discord.Commands;
 using BreganTwitchBot.Domain.Interfaces.Discord;
 using BreganTwitchBot.Domain.Interfaces.Discord.Commands;
+using BreganTwitchBot.Domain.Services.Helpers;
 using Discord;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
@@ -12,7 +13,7 @@ namespace BreganTwitchBot.Domain.Services.Discord.SlashCommands.HoursPoints
 {
     public class DiscordHoursPointsData(AppDbContext context, IDiscordHelperService discordHelperService) : IDiscordHoursPointsData
     {
-        public async Task<DiscordEmbedData> HandleHoursCommandAsync(HoursPointsCommand command)
+        public async Task<DiscordEmbedData> HandleHoursCommand(HoursPointsCommand command)
         {
             var (channel, user, error) = await ResolveUser(command);
 
@@ -30,7 +31,7 @@ namespace BreganTwitchBot.Domain.Services.Discord.SlashCommands.HoursPoints
             });
         }
 
-        public async Task<DiscordEmbedData> HandlePointsCommandAsync(HoursPointsCommand command)
+        public async Task<DiscordEmbedData> HandlePointsCommand(HoursPointsCommand command)
         {
             var (channel, user, error) = await ResolveUser(command);
 
@@ -49,9 +50,9 @@ namespace BreganTwitchBot.Domain.Services.Discord.SlashCommands.HoursPoints
             });
         }
 
-        public async Task<string> HandlePrestigeCommandAsync(HoursPointsCommand command)
+        public async Task<string> HandlePrestigeCommand(HoursPointsCommand command)
         {
-            var channel = await GetChannelForGuild(command.GuildId);
+            var channel = await context.GetChannelForGuild(command.GuildId);
 
             if (channel == null)
             {
@@ -98,7 +99,7 @@ namespace BreganTwitchBot.Domain.Services.Discord.SlashCommands.HoursPoints
         /// </summary>
         private async Task<(Channel? Channel, ChannelUser? User, string? Error)> ResolveUser(HoursPointsCommand command)
         {
-            var channel = await GetChannelForGuild(command.GuildId);
+            var channel = await context.GetChannelForGuild(command.GuildId);
 
             if (channel == null)
             {
@@ -130,11 +131,6 @@ namespace BreganTwitchBot.Domain.Services.Discord.SlashCommands.HoursPoints
             }
 
             return (channel, user, null);
-        }
-
-        private async Task<Channel?> GetChannelForGuild(ulong guildId)
-        {
-            return await context.Channels.FirstOrDefaultAsync(x => x.ChannelConfig.DiscordGuildId == guildId);
         }
 
         private static DiscordEmbedData BuildEmbed(string title, string description, Dictionary<string, string> fields)

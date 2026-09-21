@@ -76,7 +76,7 @@ namespace BreganTwitchBot.DomainTests.Discord
         [Test]
         public async Task Hours_ByTwitchUsername_ReturnsWatchtime()
         {
-            var result = await _hoursPointsData.HandleHoursCommandAsync(CreateCommand(twitchUsername: DatabaseSeedHelper.Channel1User1TwitchUsername));
+            var result = await _hoursPointsData.HandleHoursCommand(CreateCommand(twitchUsername: DatabaseSeedHelper.Channel1User1TwitchUsername));
 
             Assert.Multiple(() =>
             {
@@ -88,7 +88,7 @@ namespace BreganTwitchBot.DomainTests.Discord
         [Test]
         public async Task Hours_ForTheCaller_ReturnsTheirWatchtime()
         {
-            var result = await _hoursPointsData.HandleHoursCommandAsync(CreateCommand());
+            var result = await _hoursPointsData.HandleHoursCommand(CreateCommand());
 
             Assert.That(result.Fields, Does.ContainKey("Time watched"));
         }
@@ -107,7 +107,7 @@ namespace BreganTwitchBot.DomainTests.Discord
                 await _dbContext.SaveChangesAsync();
             }
 
-            var result = await _hoursPointsData.HandleHoursCommandAsync(CreateCommand(twitchUsername: DatabaseSeedHelper.Channel1User1TwitchUsername));
+            var result = await _hoursPointsData.HandleHoursCommand(CreateCommand(twitchUsername: DatabaseSeedHelper.Channel1User1TwitchUsername));
 
             Assert.Multiple(() =>
             {
@@ -119,7 +119,7 @@ namespace BreganTwitchBot.DomainTests.Discord
         [Test]
         public async Task Hours_UnknownTwitchUsername_SaysSo()
         {
-            var result = await _hoursPointsData.HandleHoursCommandAsync(CreateCommand(twitchUsername: "someonewhodoesnotexist"));
+            var result = await _hoursPointsData.HandleHoursCommand(CreateCommand(twitchUsername: "someonewhodoesnotexist"));
 
             Assert.That(result.Description, Does.Contain("don't know anybody"));
         }
@@ -127,7 +127,7 @@ namespace BreganTwitchBot.DomainTests.Discord
         [Test]
         public async Task Points_ByTwitchUsername_ReturnsPointsUnderCurrencyName()
         {
-            var result = await _hoursPointsData.HandlePointsCommandAsync(CreateCommand(twitchUsername: DatabaseSeedHelper.Channel1User1TwitchUsername));
+            var result = await _hoursPointsData.HandlePointsCommand(CreateCommand(twitchUsername: DatabaseSeedHelper.Channel1User1TwitchUsername));
 
             Assert.Multiple(() =>
             {
@@ -146,7 +146,7 @@ namespace BreganTwitchBot.DomainTests.Discord
             userData.Points = 0;
             await _dbContext.SaveChangesAsync();
 
-            var result = await _hoursPointsData.HandlePointsCommandAsync(CreateCommand(twitchUsername: DatabaseSeedHelper.Channel1User1TwitchUsername));
+            var result = await _hoursPointsData.HandlePointsCommand(CreateCommand(twitchUsername: DatabaseSeedHelper.Channel1User1TwitchUsername));
 
             Assert.Multiple(() =>
             {
@@ -186,7 +186,7 @@ namespace BreganTwitchBot.DomainTests.Discord
         [Test]
         public async Task Prestige_WithoutEnoughPoints_IsRefused()
         {
-            var result = await _hoursPointsData.HandlePrestigeCommandAsync(CreateCommand());
+            var result = await _hoursPointsData.HandlePrestigeCommand(CreateCommand());
 
             Assert.That(result, Does.Contain("don't have enough"));
         }
@@ -200,7 +200,7 @@ namespace BreganTwitchBot.DomainTests.Discord
             var (user, channel) = await GiveCallerPointsAndDiscordStats(cap + 500);
             var userData = await _dbContext.ChannelUserData.FirstAsync(x => x.ChannelUserId == user.Id && x.ChannelId == channel.Id);
 
-            var result = await _hoursPointsData.HandlePrestigeCommandAsync(CreateCommand());
+            var result = await _hoursPointsData.HandlePrestigeCommand(CreateCommand());
 
             var discordStats = await _dbContext.DiscordUserStats.FirstAsync(x => x.ChannelUserId == user.Id && x.ChannelId == channel.Id);
 
@@ -218,7 +218,7 @@ namespace BreganTwitchBot.DomainTests.Discord
             var channelForCap = await _dbContext.Channels.FirstAsync(x => x.BroadcasterTwitchChannelId == DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId);
             await GiveCallerPointsAndDiscordStats(channelForCap.ChannelConfig.CurrencyPointCap);
 
-            await _hoursPointsData.HandlePrestigeCommandAsync(CreateCommand());
+            await _hoursPointsData.HandlePrestigeCommand(CreateCommand());
 
             _discordHelperService.Verify(x => x.AddDiscordXpToUser(DatabaseSeedHelper.DiscordGuildId, It.IsAny<ulong>(), DatabaseSeedHelper.DiscordUserId1, 7500), Times.Once);
         }
@@ -226,7 +226,7 @@ namespace BreganTwitchBot.DomainTests.Discord
         [Test]
         public async Task Prestige_UnlinkedUser_IsToldToLink()
         {
-            var result = await _hoursPointsData.HandlePrestigeCommandAsync(CreateCommand(caller: DatabaseSeedHelper.DiscordUserNonExistentId));
+            var result = await _hoursPointsData.HandlePrestigeCommand(CreateCommand(caller: DatabaseSeedHelper.DiscordUserNonExistentId));
 
             Assert.That(result, Does.Contain("link your Twitch account"));
         }
@@ -237,7 +237,7 @@ namespace BreganTwitchBot.DomainTests.Discord
             var command = CreateCommand(twitchUsername: DatabaseSeedHelper.Channel1User1TwitchUsername);
             command.GuildId = 9999999;
 
-            var result = await _hoursPointsData.HandleHoursCommandAsync(command);
+            var result = await _hoursPointsData.HandleHoursCommand(command);
 
             Assert.That(result.Description, Does.Contain("isn't linked to a channel"));
         }

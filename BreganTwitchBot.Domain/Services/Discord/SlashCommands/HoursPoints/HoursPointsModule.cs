@@ -15,7 +15,7 @@ namespace BreganTwitchBot.Domain.Services.Discord.SlashCommands.HoursPoints
         {
             await DeferAsync();
 
-            var embedData = await discordHoursPointsData.HandleHoursCommandAsync(BuildCommand(twitchUsername, discordUser));
+            var embedData = await discordHoursPointsData.HandleHoursCommand(BuildCommand(twitchUsername, discordUser));
             await FollowupAsync(embed: BuildEmbed(embedData).Build());
         }
 
@@ -26,7 +26,7 @@ namespace BreganTwitchBot.Domain.Services.Discord.SlashCommands.HoursPoints
         {
             await DeferAsync();
 
-            var embedData = await discordHoursPointsData.HandlePointsCommandAsync(BuildCommand(twitchUsername, discordUser));
+            var embedData = await discordHoursPointsData.HandlePointsCommand(BuildCommand(twitchUsername, discordUser));
             await FollowupAsync(embed: BuildEmbed(embedData).Build());
         }
 
@@ -35,7 +35,7 @@ namespace BreganTwitchBot.Domain.Services.Discord.SlashCommands.HoursPoints
         {
             await DeferAsync();
 
-            var response = await discordHoursPointsData.HandlePrestigeCommandAsync(BuildCommand(null, null));
+            var response = await discordHoursPointsData.HandlePrestigeCommand(BuildCommand(null, null));
             await FollowupAsync($"{Context.User.Mention} => {response}");
         }
 
