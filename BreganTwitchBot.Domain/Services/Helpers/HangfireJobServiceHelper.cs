@@ -13,7 +13,8 @@ namespace BreganTwitchBot.Domain.Services.Helpers
         IWordBlacklistMonitorService wordBlacklistMonitorService,
         IDailyPointsDataService dailyPointsDataService,
         IGeneralCommandsData generalCommandsData,
-        IDiscordDailyPointsData discordDailyPointsData
+        IDiscordDailyPointsData discordDailyPointsData,
+        IStreamStatsService streamStatsService
         )
     {
         public void SetupHangfireJobs()
@@ -26,6 +27,7 @@ namespace BreganTwitchBot.Domain.Services.Helpers
             RecurringJob.AddOrUpdate("ResetTwitchStreaks", () => ResetTwitchStreaks(), "0 2 * * *");
             RecurringJob.AddOrUpdate("RefreshApi", () => RefreshApi(), "45 * * * *");
             RecurringJob.AddOrUpdate("CheckBirthdays", () => CheckBirthdays(), "0 6 * * *");
+            RecurringJob.AddOrUpdate("FlushStreamStats", () => FlushStreamStats(), "* * * * *");
             RecurringJob.AddOrUpdate("ResetDiscordStreaks", () => ResetDiscordStreaks(), "0 0 * * *");
 
             Log.Information("[Job Scheduler] Job Scheduler Setup");
@@ -162,6 +164,14 @@ namespace BreganTwitchBot.Domain.Services.Helpers
         public async Task RefreshApi()
         {
             await twitchApiConnection.RefreshAllApiKeys();
+        }
+
+        /// <summary>
+        /// Writes the in memory stream stat counters to the database
+        /// </summary>
+        public async Task FlushStreamStats()
+        {
+            await streamStatsService.FlushStats();
         }
 
         public async Task CheckBirthdays()

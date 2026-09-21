@@ -19,11 +19,14 @@ namespace BreganTwitchBot.Domain.Services.Twitch.Events
         ITwitchApiConnection twitchApiConnection,
         IConfigHelperService configHelperService,
         IDiscordHelperService discordHelperService,
-        IServiceProvider serviceProvider
+        IServiceProvider serviceProvider,
+        IStreamStatsService streamStatsService
         ) : ITwitchEventHandlerService
     {
         public async Task HandleChannelCheerEvent(BitsCheeredParams cheerParams)
         {
+            streamStatsService.UpdateStreamStat(cheerParams.BroadcasterChannelId, StreamStatType.BitsDonated, cheerParams.Amount);
+
             await twitchHelperService.SendTwitchMessageToChannel(cheerParams.BroadcasterChannelId, cheerParams.BroadcasterChannelName, $"Thank you for the {cheerParams.Amount} bits, {cheerParams.ChatterChannelName}! PogChamp");
 
             // anonymous cheers have no user to credit the contribution to
@@ -51,6 +54,8 @@ namespace BreganTwitchBot.Domain.Services.Twitch.Events
 
         public async Task HandleChannelGiftSubEvent(ChannelGiftSubParams giftSubParams)
         {
+            streamStatsService.UpdateStreamStat(giftSubParams.BroadcasterChannelId, StreamStatType.NewGiftedSubs, giftSubParams.Total);
+
             var pointsToAdd = giftSubParams.SubTier switch
             {
                 SubTierEnum.Tier1 => 20000,
@@ -66,6 +71,8 @@ namespace BreganTwitchBot.Domain.Services.Twitch.Events
 
         public async Task HandleChannelSubEvent(ChannelSubscribeParams subParams)
         {
+            streamStatsService.UpdateStreamStat(subParams.BroadcasterChannelId, StreamStatType.NewSubscribers);
+
             if (subParams.IsGift)
             {
                 Log.Information("Subscription is a gift, skipping points addition.");

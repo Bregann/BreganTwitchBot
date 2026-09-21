@@ -1,5 +1,7 @@
 # Porting progress
 
+**All features are ported.** Every item below is done and in a PR; nothing is left outstanding from `bot old/`.
+
 Tracks what still needs bringing over from `bot old/` into the current bot.
 
 **One feature per PR.** Each PR branches off `main` once [#42](https://github.com/Bregann/BreganTwitchBot/pull/42) (single bot connection) is merged — until then, branch off `refactor/single-twitch-bot-connection`.
@@ -12,7 +14,7 @@ Status: ⬜ not started · 🟡 in progress · ✅ done · ❌ dropped (won't po
 
 | Feature | Status | PR | Old source | Notes |
 |---|---|---|---|---|
-| Stream stats tracking | ⬜ | — | `Data/TwitchBot/StreamStats.cs` (440 lines) | Biggest item. `TwitchStreamStats` + `StreamViewCount` models already exist, no service. Aggregates per-stream counters (bits, subs, follows, messages, commands, gambling, bans/timeouts, unique viewers) and writes on stream end. Likely worth splitting into 2 PRs: collection, then persistence/reporting. |
+| Stream stats tracking | ✅ | [#55](https://github.com/Bregann/BreganTwitchBot/pull/55) | `Data/TwitchBot/StreamStats.cs` (440 lines) | Done. Per channel, buffered in memory and flushed each minute. |
 | Subathon | ✅ | [#49](https://github.com/Bregann/BreganTwitchBot/pull/49) | `Data/TwitchBot/Subathon.cs` (340), `Commands/Subathon/Subathon.cs` (54) | Done. Taper now a per-channel `SubathonRates` table. |
 | Channel points redemptions | ✅ | [#48](https://github.com/Bregann/BreganTwitchBot/pull/48) | `Data/TwitchBot/Events/ChannelPoints.cs` (36) | Done. New `ChannelPointRewards` table. |
 | `!uptime` | ✅ | [#45](https://github.com/Bregann/BreganTwitchBot/pull/45) | `Commands/Uptime/Uptime.cs` (67) | Done. Added `DurationFormatHelper`. |
@@ -33,7 +35,7 @@ Status: ⬜ not started · 🟡 in progress · ✅ done · ❌ dropped (won't po
 
 | Feature | Status | PR | Old source | Notes |
 |---|---|---|---|---|
-| Leaderboards endpoints | ✅ | [#54](https://github.com/Bregann/BreganTwitchBot/pull/54) | `Controllers/LeaderboardsController.cs`, `Data/Api/LeaderboardsData.cs` (133) | Done. Channel scoped, shares the Discord leaderboard queries. |
+| Leaderboards endpoints | ✅ | [#54](https://github.com/Bregann/BreganTwitchBot/pull/54) | `Controllers/LeaderboardsController.cs`, `Data/Api/LeaderboardsData.cs` (133) | Done. Channel scoped. |
 | Subathon endpoints | ✅ | [#49](https://github.com/Bregann/BreganTwitchBot/pull/49) | `Controllers/SubathonController.cs`, `Data/Api/SubathonData.cs` (83) | Done. Taper now a per-channel `SubathonRates` table. |
 | Commands endpoint | ✅ | [#54](https://github.com/Bregann/BreganTwitchBot/pull/54) | `Controllers/CommandsController.cs` | Done. Custom commands per channel. |
 
@@ -56,4 +58,4 @@ Points/daily/weekly/monthly/yearly · hours & watchtime · gambling & spins · l
 - [x] Subathon taper kept, in a per-channel `SubathonRates` table.
 - [x] A website is planned (designed separately), so the API controllers stay in scope.
 - [x] `!addmarbleswin` ported.
-- [ ] Any of these worth deliberately **not** porting?
+- [x] Only one thing deliberately dropped: the old `AddSubathonTime` POST endpoint, which took a shared secret in the URL path. See #54.
