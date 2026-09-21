@@ -9,6 +9,7 @@
         public ulong? DiscordUserRankUpAnnouncementChannelId { get; set; } = null;
         public ulong? DiscordGiveawayChannelId { get; set; } = null;
         public ulong? DiscordModeratorRoleId { get; set; } = null;
+        public ulong? DiscordMuteRoleId { get; set; } = null;
         public ulong? DiscordWelcomeMessageChannelId { get; set; } = null;
         public ulong? DiscordGeneralChannelId { get; set; } = null;
         public ulong? DiscordGuildId { get; set; } = null;

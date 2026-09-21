@@ -1,4 +1,5 @@
 ﻿using BreganTwitchBot.Domain.Database.Context;
+using BreganTwitchBot.Domain.Services.Helpers;
 using BreganTwitchBot.Domain.Database.Models;
 using BreganTwitchBot.Domain.Interfaces.Discord;
 using BreganTwitchBot.Domain.Interfaces.Helpers;
@@ -72,26 +73,14 @@ namespace BreganTwitchBot.Domain.Services.Discord
                     user.DiscordXp += baseXpToAdd;
                     await context.SaveChangesAsync();
 
-                    long xpNeededForLevelUp;
-                    var baseXp = 10;
                     var userLevelledUp = false;
 
                     //Check if they have levelled up - could be mutliple to slap it in a while loop
                     while (true)
                     {
-                        switch (user.DiscordLevel)
-                        {
-                            case 0:
-                                xpNeededForLevelUp = 5;
-                                break;
-                            case 1:
-                                xpNeededForLevelUp = 10;
-                                break;
-                            default:
-                                var lastLevelXp = baseXp * (user.DiscordLevel - 1);
-                                xpNeededForLevelUp = (long)Math.Round(lastLevelXp * 1.08 * user.DiscordLevel);
-                                break;
-                        }
+                        // the curve lives in DiscordLevelHelper so /level reports the same
+                        // numbers that actually level somebody up
+                        var xpNeededForLevelUp = DiscordLevelHelper.GetXpNeededForNextLevel(user.DiscordLevel);
 
                         if (user.DiscordXp >= xpNeededForLevelUp)
                         {
