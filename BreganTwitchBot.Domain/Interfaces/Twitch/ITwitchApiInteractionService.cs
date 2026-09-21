@@ -5,15 +5,20 @@ namespace BreganTwitchBot.Domain.Interfaces.Twitch
 {
     public interface ITwitchApiInteractionService
     {
-        Task<GetUsersAsyncResponse?> GetUsersAsync(TwitchAPI apiClient, string twitchUsername);
-        Task<GetChannelFollowersAsyncResponse?> GetChannelFollowersAsync(TwitchAPI apiClient, string broadcasterId, string userId);
+        Task<GetUsersAsyncResponse?> GetUsers(TwitchAPI apiClient, string twitchUsername);
+        Task<GetChannelFollowersAsyncResponse?> GetChannelFollowers(TwitchAPI apiClient, string broadcasterId, string userId);
         Task SendChatMessage(TwitchAPI apiClient, string broadcasterChannelId, string twitchChannelClientId, string message, string? originalMessageId = null);
-        Task<GetChattersResponse> GetChattersAsync(TwitchAPI apiClient, string broadcasterChannelId, string moderatorId);
+        Task<GetChattersResponse> GetChatters(TwitchAPI apiClient, string broadcasterChannelId, string moderatorId);
         Task SendAnnouncementMessage(TwitchAPI apiClient, string broadcasterChannelId, string twitchChannelClientId, string message);
         Task ShoutoutChannel(TwitchAPI apiClient, string broadcasterChannelId, string shoutoutChannelId, string moderatorId);
         Task WarnUser(TwitchAPI apiClient, string broadcasterChannelId, string moderatorId, string userId, string message);
         Task TimeoutUser(TwitchAPI apiClient, string broadcasterChannelId, string moderatorId, string userId, int durationInSeconds, string reason);
         Task BanUser(TwitchAPI apiClient, string broadcasterChannelId, string moderatorId, string userId, string reason);
         Task<GetStreamsResponse?> GetStreams(TwitchAPI apiClient, string broadcasterId);
+        Task<int> GetChannelFollowerCount(TwitchAPI apiClient, string broadcasterId, string moderatorId);
+        Task<int> GetChannelSubscriberCount(TwitchAPI apiClient, string broadcasterId);
+        Task<GetChannelInformationResponse?> GetChannelInformation(TwitchAPI apiClient, string broadcasterId);
+        Task ModifyChannelInformation(TwitchAPI apiClient, string broadcasterId, string title, string gameId);
+        Task<(string Id, string Name)?> GetGameByName(TwitchAPI apiClient, string gameName);
     }
 }

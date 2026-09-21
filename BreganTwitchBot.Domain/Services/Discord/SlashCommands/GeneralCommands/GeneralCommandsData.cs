@@ -4,6 +4,7 @@ using BreganTwitchBot.Domain.DTOs.Discord.Commands;
 using BreganTwitchBot.Domain.Interfaces.Discord;
 using BreganTwitchBot.Domain.Interfaces.Discord.Commands;
 using BreganTwitchBot.Domain.Interfaces.Helpers;
+using BreganTwitchBot.Domain.Services.Helpers;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
 
@@ -15,7 +16,7 @@ namespace BreganTwitchBot.Domain.Services.Discord.SlashCommands.GeneralCommands
         public async Task<string> AddUserBirthday(AddBirthdayCommand command)
         {
             // Check if the user has already added their birthday
-            var channel = await context.Channels.FirstAsync(x => x.ChannelConfig.DiscordGuildId == command.GuildId);
+            var channel = await context.GetRequiredChannelForGuild(command.GuildId);
             var existingBirthday = await context.Birthdays
                 .FirstOrDefaultAsync(x => x.User.DiscordUserId == command.UserId && x.ChannelId == channel.Id);
 

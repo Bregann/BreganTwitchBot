@@ -1,5 +1,6 @@
 ﻿using BreganTwitchBot.Domain.Database.Context;
 using BreganTwitchBot.Domain.Database.Models;
+using BreganTwitchBot.Domain.DTOs.Twitch.EventSubEvents;
 using BreganTwitchBot.Domain.Enums;
 using BreganTwitchBot.Domain.Exceptions;
 using BreganTwitchBot.Domain.Interfaces.Twitch;
@@ -136,7 +137,35 @@ namespace BreganTwitchBot.Domain.Services.Twitch
 
             if (!isSuperMod && !isMod && !isBroadcaster)
             {
-                Log.Warning($"User {viewerUsername} attempted to add a command without permission in channel {broadcasterChannelName}");
+                Log.Warning($"User {viewerUsername} attempted to use a moderator command without permission in channel {broadcasterChannelName}");
+                throw new UnauthorizedAccessException("You are not authorised to use this command! Straight to jail Kappa");
+            }
+        }
+
+        /// <summary>
+        /// Checks if the user has moderator permissions, taking the details off the message.
+        /// Prefer this over the longer overload - every caller was passing the same six fields
+        /// off msgParams
+        /// </summary>
+        /// <exception cref="UnauthorizedAccessException"></exception>
+        public async Task EnsureUserHasModeratorPermissions(ChannelChatMessageReceivedParams msgParams)
+        {
+            await EnsureUserHasModeratorPermissions(msgParams);
+        }
+
+        /// <summary>
+        /// Checks if the user has super mod permissions. Unlike the moderator check this does not
+        /// accept channel mods - only super mods and the broadcaster, for the commands that change
+        /// how the channel itself runs
+        /// </summary>
+        /// <exception cref="UnauthorizedAccessException"></exception>
+        public async Task EnsureUserHasSuperModPermissions(ChannelChatMessageReceivedParams msgParams)
+        {
+            var isSuperMod = await IsUserSuperModInChannel(msgParams.BroadcasterChannelId, msgParams.ChatterChannelId);
+
+            if (!isSuperMod && !msgParams.IsBroadcaster)
+            {
+                Log.Warning($"User {msgParams.ChatterChannelName} attempted to use a super mod command without permission in channel {msgParams.BroadcasterChannelName}");
                 throw new UnauthorizedAccessException("You are not authorised to use this command! Straight to jail Kappa");
             }
         }

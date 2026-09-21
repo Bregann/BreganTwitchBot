@@ -11,7 +11,7 @@ namespace BreganTwitchBot.Domain.Services.Twitch.Commands.Marbles
     {
         public async Task<string> AddMarblesWin(ChannelChatMessageReceivedParams msgParams)
         {
-            await twitchHelperService.EnsureUserHasModeratorPermissions(msgParams.IsMod, msgParams.IsBroadcaster, msgParams.ChatterChannelName, msgParams.ChatterChannelId, msgParams.BroadcasterChannelId, msgParams.BroadcasterChannelName);
+            await twitchHelperService.EnsureUserHasModeratorPermissions(msgParams);
 
             if (msgParams.MessageParts.Length < 2)
             {
