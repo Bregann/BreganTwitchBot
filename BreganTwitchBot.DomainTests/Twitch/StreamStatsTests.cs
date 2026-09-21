@@ -60,9 +60,9 @@ namespace BreganTwitchBot.DomainTests.Twitch
             _twitchApiConnection.Setup(x => x.GetBroadcasterApiClientFromChannelName(It.IsAny<string>()))
                 .Returns(new TwitchApiConnection.TwitchAccount(new TwitchAPI(), "", "", "", "", AccountType.Broadcaster, 1));
 
-            _twitchApiInteractionService.Setup(x => x.GetChannelFollowerCountAsync(It.IsAny<TwitchAPI>(), It.IsAny<string>(), It.IsAny<string>()))
+            _twitchApiInteractionService.Setup(x => x.GetChannelFollowerCount(It.IsAny<TwitchAPI>(), It.IsAny<string>(), It.IsAny<string>()))
                 .ReturnsAsync(1000);
-            _twitchApiInteractionService.Setup(x => x.GetChannelSubscriberCountAsync(It.IsAny<TwitchAPI>(), It.IsAny<string>()))
+            _twitchApiInteractionService.Setup(x => x.GetChannelSubscriberCount(It.IsAny<TwitchAPI>(), It.IsAny<string>()))
                 .ReturnsAsync(50);
 
             _streamStatsService = new StreamStatsService(_serviceProvider, _twitchApiConnection.Object, _twitchApiInteractionService.Object);
@@ -95,7 +95,7 @@ namespace BreganTwitchBot.DomainTests.Twitch
         [Test]
         public async Task StartNewStream_CreatesAStreamWithOpeningCounts()
         {
-            await _streamStatsService.StartNewStreamAsync(ChannelId);
+            await _streamStatsService.StartNewStream(ChannelId);
 
             var stream = await GetCurrentStream();
 
@@ -110,8 +110,8 @@ namespace BreganTwitchBot.DomainTests.Twitch
         [Test]
         public async Task StartNewStream_IncrementsTheStreamId()
         {
-            await _streamStatsService.StartNewStreamAsync(ChannelId);
-            await _streamStatsService.StartNewStreamAsync(ChannelId);
+            await _streamStatsService.StartNewStream(ChannelId);
+            await _streamStatsService.StartNewStream(ChannelId);
 
             var stream = await GetCurrentStream();
 
@@ -121,13 +121,13 @@ namespace BreganTwitchBot.DomainTests.Twitch
         [Test]
         public async Task UpdateStreamStat_AccumulatesAndFlushes()
         {
-            await _streamStatsService.StartNewStreamAsync(ChannelId);
+            await _streamStatsService.StartNewStream(ChannelId);
 
             _streamStatsService.UpdateStreamStat(ChannelId, StreamStatType.MessagesReceived);
             _streamStatsService.UpdateStreamStat(ChannelId, StreamStatType.MessagesReceived);
             _streamStatsService.UpdateStreamStat(ChannelId, StreamStatType.BitsDonated, 500);
 
-            await _streamStatsService.FlushStatsAsync();
+            await _streamStatsService.FlushStats();
 
             var stream = await GetCurrentStream();
 
@@ -141,13 +141,13 @@ namespace BreganTwitchBot.DomainTests.Twitch
         [Test]
         public async Task FlushStats_IsCumulativeAcrossFlushes()
         {
-            await _streamStatsService.StartNewStreamAsync(ChannelId);
+            await _streamStatsService.StartNewStream(ChannelId);
 
             _streamStatsService.UpdateStreamStat(ChannelId, StreamStatType.MessagesReceived, 5);
-            await _streamStatsService.FlushStatsAsync();
+            await _streamStatsService.FlushStats();
 
             _streamStatsService.UpdateStreamStat(ChannelId, StreamStatType.MessagesReceived, 3);
-            await _streamStatsService.FlushStatsAsync();
+            await _streamStatsService.FlushStats();
 
             var stream = await GetCurrentStream();
 
@@ -157,11 +157,11 @@ namespace BreganTwitchBot.DomainTests.Twitch
         [Test]
         public async Task FlushStats_ClearsPendingSoCountsAreNotDoubleApplied()
         {
-            await _streamStatsService.StartNewStreamAsync(ChannelId);
+            await _streamStatsService.StartNewStream(ChannelId);
 
             _streamStatsService.UpdateStreamStat(ChannelId, StreamStatType.MessagesReceived, 5);
-            await _streamStatsService.FlushStatsAsync();
-            await _streamStatsService.FlushStatsAsync();
+            await _streamStatsService.FlushStats();
+            await _streamStatsService.FlushStats();
 
             var stream = await GetCurrentStream();
 
@@ -171,13 +171,13 @@ namespace BreganTwitchBot.DomainTests.Twitch
         [Test]
         public async Task StatsAreKeptPerChannel()
         {
-            await _streamStatsService.StartNewStreamAsync(ChannelId);
-            await _streamStatsService.StartNewStreamAsync(DatabaseSeedHelper.Channel2BroadcasterTwitchChannelId);
+            await _streamStatsService.StartNewStream(ChannelId);
+            await _streamStatsService.StartNewStream(DatabaseSeedHelper.Channel2BroadcasterTwitchChannelId);
 
             _streamStatsService.UpdateStreamStat(ChannelId, StreamStatType.MessagesReceived, 10);
             _streamStatsService.UpdateStreamStat(DatabaseSeedHelper.Channel2BroadcasterTwitchChannelId, StreamStatType.MessagesReceived, 3);
 
-            await _streamStatsService.FlushStatsAsync();
+            await _streamStatsService.FlushStats();
 
             using var scope = _serviceProvider.CreateScope();
             var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
@@ -195,13 +195,13 @@ namespace BreganTwitchBot.DomainTests.Twitch
         [Test]
         public async Task UniqueViewers_AreDeduplicated()
         {
-            await _streamStatsService.StartNewStreamAsync(ChannelId);
+            await _streamStatsService.StartNewStream(ChannelId);
 
             _streamStatsService.AddUniqueViewer(ChannelId, "someviewer");
             _streamStatsService.AddUniqueViewer(ChannelId, "SomeViewer");
             _streamStatsService.AddUniqueViewer(ChannelId, "anotherviewer");
 
-            await _streamStatsService.FlushStatsAsync();
+            await _streamStatsService.FlushStats();
 
             using var scope = _serviceProvider.CreateScope();
             var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
@@ -215,11 +215,11 @@ namespace BreganTwitchBot.DomainTests.Twitch
         [Test]
         public async Task UniqueViewers_AreNotDuplicatedAcrossFlushes()
         {
-            await _streamStatsService.StartNewStreamAsync(ChannelId);
+            await _streamStatsService.StartNewStream(ChannelId);
 
             _streamStatsService.AddUniqueViewer(ChannelId, "someviewer");
-            await _streamStatsService.FlushStatsAsync();
-            await _streamStatsService.FlushStatsAsync();
+            await _streamStatsService.FlushStats();
+            await _streamStatsService.FlushStats();
 
             using var scope = _serviceProvider.CreateScope();
             var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
@@ -231,13 +231,13 @@ namespace BreganTwitchBot.DomainTests.Twitch
         [Test]
         public async Task RecordViewerCount_FeedsAverageAndPeak()
         {
-            await _streamStatsService.StartNewStreamAsync(ChannelId);
+            await _streamStatsService.StartNewStream(ChannelId);
 
-            await _streamStatsService.RecordViewerCountAsync(ChannelId, 10);
-            await _streamStatsService.RecordViewerCountAsync(ChannelId, 30);
-            await _streamStatsService.RecordViewerCountAsync(ChannelId, 20);
+            await _streamStatsService.RecordViewerCount(ChannelId, 10);
+            await _streamStatsService.RecordViewerCount(ChannelId, 30);
+            await _streamStatsService.RecordViewerCount(ChannelId, 20);
 
-            await _streamStatsService.EndStreamAsync(ChannelId);
+            await _streamStatsService.EndStream(ChannelId);
 
             var stream = await GetCurrentStream();
 
@@ -251,12 +251,12 @@ namespace BreganTwitchBot.DomainTests.Twitch
         [Test]
         public async Task EndStream_CapturesClosingCountsAndUptime()
         {
-            await _streamStatsService.StartNewStreamAsync(ChannelId);
+            await _streamStatsService.StartNewStream(ChannelId);
 
-            _twitchApiInteractionService.Setup(x => x.GetChannelFollowerCountAsync(It.IsAny<TwitchAPI>(), It.IsAny<string>(), It.IsAny<string>()))
+            _twitchApiInteractionService.Setup(x => x.GetChannelFollowerCount(It.IsAny<TwitchAPI>(), It.IsAny<string>(), It.IsAny<string>()))
                 .ReturnsAsync(1050);
 
-            await _streamStatsService.EndStreamAsync(ChannelId);
+            await _streamStatsService.EndStream(ChannelId);
 
             var stream = await GetCurrentStream();
 
@@ -272,10 +272,10 @@ namespace BreganTwitchBot.DomainTests.Twitch
         [Test]
         public async Task EndStream_FlushesPendingStatsFirst()
         {
-            await _streamStatsService.StartNewStreamAsync(ChannelId);
+            await _streamStatsService.StartNewStream(ChannelId);
 
             _streamStatsService.UpdateStreamStat(ChannelId, StreamStatType.PointsWon, 999);
-            await _streamStatsService.EndStreamAsync(ChannelId);
+            await _streamStatsService.EndStream(ChannelId);
 
             var stream = await GetCurrentStream();
 
@@ -285,12 +285,12 @@ namespace BreganTwitchBot.DomainTests.Twitch
         [Test]
         public async Task StartNewStream_ClearsThePreviousStreamsViewerData()
         {
-            await _streamStatsService.StartNewStreamAsync(ChannelId);
-            await _streamStatsService.RecordViewerCountAsync(ChannelId, 42);
+            await _streamStatsService.StartNewStream(ChannelId);
+            await _streamStatsService.RecordViewerCount(ChannelId, 42);
             _streamStatsService.AddUniqueViewer(ChannelId, "someviewer");
-            await _streamStatsService.FlushStatsAsync();
+            await _streamStatsService.FlushStats();
 
-            await _streamStatsService.StartNewStreamAsync(ChannelId);
+            await _streamStatsService.StartNewStream(ChannelId);
 
             using var scope = _serviceProvider.CreateScope();
             var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
@@ -308,7 +308,7 @@ namespace BreganTwitchBot.DomainTests.Twitch
         {
             _streamStatsService.UpdateStreamStat(ChannelId, StreamStatType.MessagesReceived);
 
-            Assert.DoesNotThrowAsync(async () => await _streamStatsService.FlushStatsAsync());
+            Assert.DoesNotThrowAsync(async () => await _streamStatsService.FlushStats());
         }
     }
 }

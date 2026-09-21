@@ -57,14 +57,14 @@ namespace BreganTwitchBot.Domain.Services.Twitch
             };
         }
 
-        public async Task<int> GetChannelFollowerCountAsync(TwitchAPI apiClient, string broadcasterId, string moderatorId)
+        public async Task<int> GetChannelFollowerCount(TwitchAPI apiClient, string broadcasterId, string moderatorId)
         {
             // first=1 as only the total is wanted, not the follower list itself
             var res = await apiClient.Helix.Channels.GetChannelFollowersAsync(broadcasterId: broadcasterId, first: 1);
             return res.Total;
         }
 
-        public async Task<int> GetChannelSubscriberCountAsync(TwitchAPI apiClient, string broadcasterId)
+        public async Task<int> GetChannelSubscriberCount(TwitchAPI apiClient, string broadcasterId)
         {
             var res = await apiClient.Helix.Subscriptions.GetBroadcasterSubscriptionsAsync(broadcasterId, first: 1);
             return res.Total;

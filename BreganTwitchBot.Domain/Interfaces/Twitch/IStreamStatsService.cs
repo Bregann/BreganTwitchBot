@@ -19,21 +19,21 @@ namespace BreganTwitchBot.Domain.Interfaces.Twitch
         /// <summary>
         /// Writes the in memory counters to the database and clears them
         /// </summary>
-        Task FlushStatsAsync();
+        Task FlushStats();
 
         /// <summary>
         /// Starts a new stream row for a channel, capturing the opening follower and sub counts
         /// </summary>
-        Task StartNewStreamAsync(string broadcasterChannelId);
+        Task StartNewStream(string broadcasterChannelId);
 
         /// <summary>
         /// Closes off the channel's current stream, capturing the closing counts and uptime
         /// </summary>
-        Task EndStreamAsync(string broadcasterChannelId);
+        Task EndStream(string broadcasterChannelId);
 
         /// <summary>
         /// Records the current viewer count for the channel, for the average and peak
         /// </summary>
-        Task RecordViewerCountAsync(string broadcasterChannelId, int viewerCount);
+        Task RecordViewerCount(string broadcasterChannelId, int viewerCount);
     }
 }

@@ -171,7 +171,7 @@ namespace BreganTwitchBot.Domain.Services.Helpers
         /// </summary>
         public async Task FlushStreamStats()
         {
-            await streamStatsService.FlushStatsAsync();
+            await streamStatsService.FlushStats();
         }
 
         public async Task CheckBirthdays()

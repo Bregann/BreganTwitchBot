@@ -34,7 +34,7 @@ namespace BreganTwitchBot.Domain.Services.Twitch
             viewers.TryAdd(username.ToLower(), 0);
         }
 
-        public async Task FlushStatsAsync()
+        public async Task FlushStats()
         {
             using var scope = serviceProvider.CreateScope();
             var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
@@ -73,7 +73,7 @@ namespace BreganTwitchBot.Domain.Services.Twitch
             await FlushUniqueViewers(context);
         }
 
-        public async Task StartNewStreamAsync(string broadcasterChannelId)
+        public async Task StartNewStream(string broadcasterChannelId)
         {
             using var scope = serviceProvider.CreateScope();
             var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
@@ -153,9 +153,9 @@ namespace BreganTwitchBot.Domain.Services.Twitch
             Log.Information($"[Stream Stats] Started stream {lastStreamId + 1} for {channel.BroadcasterTwitchChannelName}");
         }
 
-        public async Task EndStreamAsync(string broadcasterChannelId)
+        public async Task EndStream(string broadcasterChannelId)
         {
-            await FlushStatsAsync();
+            await FlushStats();
 
             using var scope = serviceProvider.CreateScope();
             var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
@@ -196,7 +196,7 @@ namespace BreganTwitchBot.Domain.Services.Twitch
             Log.Information($"[Stream Stats] Ended stream {stream.StreamId} for {channel.BroadcasterTwitchChannelName}");
         }
 
-        public async Task RecordViewerCountAsync(string broadcasterChannelId, int viewerCount)
+        public async Task RecordViewerCount(string broadcasterChannelId, int viewerCount)
         {
             using var scope = serviceProvider.CreateScope();
             var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
@@ -290,7 +290,7 @@ namespace BreganTwitchBot.Domain.Services.Twitch
 
             try
             {
-                followerCount = await twitchApiInteractionService.GetChannelFollowerCountAsync(apiClient.ApiClient, broadcasterChannelId, apiClient.TwitchChannelClientId);
+                followerCount = await twitchApiInteractionService.GetChannelFollowerCount(apiClient.ApiClient, broadcasterChannelId, apiClient.TwitchChannelClientId);
             }
             catch (Exception ex)
             {
@@ -299,7 +299,7 @@ namespace BreganTwitchBot.Domain.Services.Twitch
 
             try
             {
-                subCount = await twitchApiInteractionService.GetChannelSubscriberCountAsync(apiClient.ApiClient, broadcasterChannelId);
+                subCount = await twitchApiInteractionService.GetChannelSubscriberCount(apiClient.ApiClient, broadcasterChannelId);
             }
             catch (Exception ex)
             {

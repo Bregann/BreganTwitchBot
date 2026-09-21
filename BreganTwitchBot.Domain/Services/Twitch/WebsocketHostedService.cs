@@ -126,7 +126,7 @@ namespace BreganTwitchBot.Domain.Services.Twitch
             await configHelperService.UpdateStreamLiveStatus(args.Payload.Event.BroadcasterUserId, false);
             await configHelperService.UpdateDailyPointsStatus(args.Payload.Event.BroadcasterUserId, false);
             twitchHelperService.ClearStreamChattersList(args.Payload.Event.BroadcasterUserId);
-            await streamStatsService.EndStreamAsync(args.Payload.Event.BroadcasterUserId);
+            await streamStatsService.EndStream(args.Payload.Event.BroadcasterUserId);
         }
 
         private async Task OnStreamOnline(object sender, StreamOnlineArgs args)
@@ -134,7 +134,7 @@ namespace BreganTwitchBot.Domain.Services.Twitch
             Log.Information($"[Twitch Events] Stream online: {args.Payload.Event.BroadcasterUserName} ({args.Payload.Event.BroadcasterUserId})");
 
             twitchHelperService.ClearStreamChattersList(args.Payload.Event.BroadcasterUserId);
-            await streamStatsService.StartNewStreamAsync(args.Payload.Event.BroadcasterUserId);
+            await streamStatsService.StartNewStream(args.Payload.Event.BroadcasterUserId);
             await twitchEventHandlerService.HandleStreamOnline(args.Payload.Event.BroadcasterUserId, args.Payload.Event.BroadcasterUserName);
         }
 
