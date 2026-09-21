@@ -3,6 +3,7 @@ using BreganTwitchBot.Domain.DTOs.Discord;
 using BreganTwitchBot.Domain.DTOs.Discord.Commands;
 using BreganTwitchBot.Domain.Interfaces.Discord;
 using BreganTwitchBot.Domain.Interfaces.Discord.Commands;
+using BreganTwitchBot.Domain.Services.Helpers;
 using Discord;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
@@ -14,7 +15,7 @@ namespace BreganTwitchBot.Domain.Services.Discord.SlashCommands.Daily
         //TODO: WRITE TESTS FOR METHOD
         public async Task<DiscordEmbedData> HandleDiscordDailyPointsCommand(DiscordCommand command)
         {
-            var channel = await context.Channels.FirstAsync(x => x.ChannelConfig.DiscordGuildId == command.GuildId);
+            var channel = await context.GetRequiredChannelForGuild(command.GuildId);
             var user = await context.DiscordDailyPoints
                 .FirstAsync(x => x.ChannelId == channel.Id && x.User.DiscordUserId == command.UserId);
 

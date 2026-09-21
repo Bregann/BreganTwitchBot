@@ -1,7 +1,8 @@
 ﻿using BreganTwitchBot.Domain.Database.Context;
+using BreganTwitchBot.Domain.DTOs.Discord;
 using BreganTwitchBot.Domain.DTOs.Discord.Commands;
 using BreganTwitchBot.Domain.Interfaces.Discord.Commands;
-using BreganTwitchBot.Domain.DTOs.Discord;
+using BreganTwitchBot.Domain.Services.Helpers;
 using BreganTwitchBot.Domain.Services.Helpers;
 using Discord;
 using Microsoft.EntityFrameworkCore;
@@ -13,7 +14,7 @@ namespace BreganTwitchBot.Domain.Services.Discord.SlashCommands.Levelling
     {
         public async Task<string> HandleToggleLevelUpCommand(DiscordCommand command)
         {
-            var channel = await context.Channels.FirstAsync(x => x.ChannelConfig.DiscordGuildId == command.GuildId);
+            var channel = await context.GetRequiredChannelForGuild(command.GuildId);
             var user = await context.DiscordUserStats.FirstAsync(x => x.User.DiscordUserId == command.UserId && x.ChannelId == channel.Id);
 
             // change level ups toggle and return the enabled or disabled message

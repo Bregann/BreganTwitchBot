@@ -22,7 +22,7 @@ namespace BreganTwitchBot.Domain.Services.Discord.SlashCommands.GeneralCommands
 
             await DeferAsync(ephemeral: true);
 
-            var embedData = await discordWhoisData.HandleWhoisCommandAsync(new WhoisCommand
+            var embedData = await discordWhoisData.HandleWhoisCommand(new WhoisCommand
             {
                 GuildId = Context.Guild.Id,
                 DiscordUserId = discordUser?.Id,

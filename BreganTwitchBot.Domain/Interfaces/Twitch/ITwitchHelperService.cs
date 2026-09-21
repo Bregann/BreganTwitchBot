@@ -1,4 +1,6 @@
-﻿namespace BreganTwitchBot.Domain.Interfaces.Twitch
+﻿using BreganTwitchBot.Domain.DTOs.Twitch.EventSubEvents;
+
+namespace BreganTwitchBot.Domain.Interfaces.Twitch
 {
     public interface ITwitchHelperService
     {
@@ -7,6 +9,8 @@
         Task<string> GetPointsName(string broadcasterChannelId, string broadcasterChannelName = "");
         Task<bool> IsUserSuperModInChannel(string broadcasterChannelId, string viewerChannelId);
         Task EnsureUserHasModeratorPermissions(bool isMod, bool isBroadcaster, string viewerUsername, string viewerChannelId, string broadcasterChannelId, string broadcasterChannelName);
+        Task EnsureUserHasModeratorPermissions(ChannelChatMessageReceivedParams msgParams);
+        Task EnsureUserHasSuperModPermissions(ChannelChatMessageReceivedParams msgParams);
         Task AddPointsToUser(string broadcasterChannelId, string viewerChannelId, long pointsToAdd, string broadcasterChannelName, string viewerUsername);
         Task<bool> IsBroadcasterLive(string broadcasterChannelId);
         Task<long> GetPointsForUser(string broadcasterChannelId, string userChannelId, string broadcasterUsername, string userChannelName);

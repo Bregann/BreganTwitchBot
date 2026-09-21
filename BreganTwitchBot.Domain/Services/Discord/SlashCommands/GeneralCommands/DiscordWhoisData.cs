@@ -10,7 +10,7 @@ namespace BreganTwitchBot.Domain.Services.Discord.SlashCommands.GeneralCommands
 {
     public class DiscordWhoisData(AppDbContext context) : IDiscordWhoisData
     {
-        public async Task<DiscordEmbedData> HandleWhoisCommandAsync(WhoisCommand command)
+        public async Task<DiscordEmbedData> HandleWhoisCommand(WhoisCommand command)
         {
             var fields = new Dictionary<string, string>();
 
