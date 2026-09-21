@@ -1,5 +1,6 @@
 using BreganTwitchBot.Domain.Database.Context;
 using BreganTwitchBot.Domain.Enums;
+using BreganTwitchBot.Domain.Interfaces.Api;
 using BreganTwitchBot.Domain.Interfaces.Discord;
 using BreganTwitchBot.Domain.Interfaces.Discord.Commands;
 using BreganTwitchBot.Domain.Interfaces.Helpers;
@@ -7,11 +8,16 @@ using BreganTwitchBot.Domain.Interfaces.Twitch;
 using BreganTwitchBot.Domain.Interfaces.Twitch.Commands;
 using BreganTwitchBot.Domain.Interfaces.Twitch.Events;
 using BreganTwitchBot.Domain.Services;
+using BreganTwitchBot.Domain.Services.Api;
 using BreganTwitchBot.Domain.Services.Discord;
 using BreganTwitchBot.Domain.Services.Discord.SlashCommands.BookRecs;
 using BreganTwitchBot.Domain.Services.Discord.SlashCommands.Daily;
 using BreganTwitchBot.Domain.Services.Discord.SlashCommands.Gambling;
 using BreganTwitchBot.Domain.Services.Discord.SlashCommands.GeneralCommands;
+using BreganTwitchBot.Domain.Services.Discord.SlashCommands.Giveaway;
+using BreganTwitchBot.Domain.Services.Discord.SlashCommands.HoursPoints;
+using BreganTwitchBot.Domain.Services.Discord.SlashCommands.Leaderboards;
+using BreganTwitchBot.Domain.Services.Discord.SlashCommands.Leaderboards;
 using BreganTwitchBot.Domain.Services.Discord.SlashCommands.Levelling;
 using BreganTwitchBot.Domain.Services.Discord.SlashCommands.Linking;
 using BreganTwitchBot.Domain.Services.Helpers;
@@ -28,7 +34,10 @@ using BreganTwitchBot.Domain.Services.Twitch.Commands.Leaderboards;
 using BreganTwitchBot.Domain.Services.Twitch.Commands.Linking;
 using BreganTwitchBot.Domain.Services.Twitch.Commands.Marbles;
 using BreganTwitchBot.Domain.Services.Twitch.Commands.Points;
+using BreganTwitchBot.Domain.Services.Twitch.Commands.StreamInfo;
+using BreganTwitchBot.Domain.Services.Twitch.Commands.Subathon;
 using BreganTwitchBot.Domain.Services.Twitch.Commands.TwitchBosses;
+using BreganTwitchBot.Domain.Services.Twitch.Commands.Uptime;
 using BreganTwitchBot.Domain.Services.Twitch.Commands.WordBlacklist;
 using BreganTwitchBot.Domain.Services.Twitch.Events;
 using Discord.Interactions;
@@ -176,6 +185,18 @@ builder.Services.AddSingleton<ITwitchBossesDataService, TwitchBossesDataService>
 
 builder.Services.AddScoped<MarblesCommandService>();
 builder.Services.AddScoped<IMarblesDataService, MarblesDataService>();
+
+builder.Services.AddScoped<ChannelInfoCommandService>();
+builder.Services.AddScoped<IChannelInfoDataService, ChannelInfoDataService>();
+
+builder.Services.AddScoped<StreamInfoCommandService>();
+builder.Services.AddScoped<IStreamInfoDataService, StreamInfoDataService>();
+
+builder.Services.AddScoped<UptimeCommandService>();
+builder.Services.AddScoped<IUptimeDataService, UptimeDataService>();
+
+builder.Services.AddScoped<SubathonCommandService>();
+builder.Services.AddScoped<ISubathonDataService, SubathonDataService>();
 
 builder.Services.AddScoped<WordBlacklistCommandService>();
 builder.Services.AddScoped<IWordBlacklistDataService, WordBlacklistDataService>();
