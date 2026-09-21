@@ -12,6 +12,7 @@ using BreganTwitchBot.Domain.Services.Discord.SlashCommands.BookRecs;
 using BreganTwitchBot.Domain.Services.Discord.SlashCommands.Daily;
 using BreganTwitchBot.Domain.Services.Discord.SlashCommands.Gambling;
 using BreganTwitchBot.Domain.Services.Discord.SlashCommands.GeneralCommands;
+using BreganTwitchBot.Domain.Services.Discord.SlashCommands.Giveaway;
 using BreganTwitchBot.Domain.Services.Discord.SlashCommands.Levelling;
 using BreganTwitchBot.Domain.Services.Discord.SlashCommands.Linking;
 using BreganTwitchBot.Domain.Services.Helpers;
@@ -28,6 +29,8 @@ using BreganTwitchBot.Domain.Services.Twitch.Commands.Leaderboards;
 using BreganTwitchBot.Domain.Services.Twitch.Commands.Linking;
 using BreganTwitchBot.Domain.Services.Twitch.Commands.Marbles;
 using BreganTwitchBot.Domain.Services.Twitch.Commands.Points;
+using BreganTwitchBot.Domain.Services.Twitch.Commands.StreamInfo;
+using BreganTwitchBot.Domain.Services.Twitch.Commands.Subathon;
 using BreganTwitchBot.Domain.Services.Twitch.Commands.TwitchBosses;
 using BreganTwitchBot.Domain.Services.Twitch.Commands.Uptime;
 using BreganTwitchBot.Domain.Services.Twitch.Commands.WordBlacklist;
@@ -214,6 +217,7 @@ builder.Services.AddScoped<IDiscordEventHelperService, DiscordEventHelperService
 builder.Services.AddScoped<IDiscordRoleManagerService, DiscordRoleManagerService>();
 
 builder.Services.AddScoped<IDiscordDailyPointsData, DiscordDailyPointsData>();
+builder.Services.AddScoped<IDiscordGiveawayData, DiscordGiveawayData>();
 builder.Services.AddScoped<IDiscordWhoisData, DiscordWhoisData>();
 builder.Services.AddScoped<IDiscordGamblingData, DiscordGamblingData>();
 builder.Services.AddScoped<IGeneralCommandsData, GeneralCommandsData>();

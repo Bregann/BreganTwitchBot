@@ -21,6 +21,9 @@ namespace BreganTwitchBot.Domain.Database.Context
         public DbSet<CustomCommand> CustomCommands { get; set; }
         public DbSet<SubathonRate> SubathonRates { get; set; }
         public DbSet<ChannelPointReward> ChannelPointRewards { get; set; }
+        public DbSet<DiscordGiveaway> DiscordGiveaways { get; set; }
+        public DbSet<DiscordGiveawayEntry> DiscordGiveawayEntries { get; set; }
+        public DbSet<DiscordGiveawayConfig> DiscordGiveawayConfigs { get; set; }
         public DbSet<DiscordDailyPoints> DiscordDailyPoints { get; set; }
         public DbSet<DiscordLinkRequests> DiscordLinkRequests { get; set; }
         public DbSet<DiscordSpinStats> DiscordSpinStats { get; set; }
