@@ -1,8 +1,8 @@
 ﻿using BreganTwitchBot.Domain.Database.Context;
-using BreganTwitchBot.Domain.Services.Helpers;
 using BreganTwitchBot.Domain.Database.Models;
 using BreganTwitchBot.Domain.Interfaces.Discord;
 using BreganTwitchBot.Domain.Interfaces.Helpers;
+using BreganTwitchBot.Domain.Services.Helpers;
 using BreganTwitchBot.Domain.Services.Helpers;
 using Discord;
 using Microsoft.EntityFrameworkCore;

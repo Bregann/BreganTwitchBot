@@ -1,10 +1,10 @@
 ﻿using BreganTwitchBot.Domain.Database.Context;
+using BreganTwitchBot.Domain.DTOs.Discord;
 using BreganTwitchBot.Domain.DTOs.Discord.Commands;
 using BreganTwitchBot.Domain.Interfaces.Discord.Commands;
-using BreganTwitchBot.Domain.DTOs.Discord;
+using BreganTwitchBot.Domain.Services.Helpers;
 using BreganTwitchBot.Domain.Services.Helpers;
 using Discord;
-using BreganTwitchBot.Domain.Services.Helpers;
 using Microsoft.EntityFrameworkCore;
 
 namespace BreganTwitchBot.Domain.Services.Discord.SlashCommands.Levelling
