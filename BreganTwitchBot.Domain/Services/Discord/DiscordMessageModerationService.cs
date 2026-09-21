@@ -32,7 +32,7 @@ namespace BreganTwitchBot.Domain.Services.Discord
 
         private static readonly string[] AllowedDomains = ["discord.com", "discord.gg"];
 
-        public async Task<bool> CheckMessageAsync(ulong guildId, ulong channelId, ulong userId, string messageContent, bool authorIsBot)
+        public async Task<bool> CheckMessage(ulong guildId, ulong channelId, ulong userId, string messageContent, bool authorIsBot)
         {
             if (authorIsBot || string.IsNullOrWhiteSpace(messageContent))
             {

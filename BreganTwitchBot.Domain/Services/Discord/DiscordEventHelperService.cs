@@ -154,7 +154,7 @@ namespace BreganTwitchBot.Domain.Services.Discord
         {
             // moderation runs first - a message that gets somebody muted should not also
             // earn them xp
-            var wasModerated = await discordMessageModerationService.CheckMessageAsync(
+            var wasModerated = await discordMessageModerationService.CheckMessage(
                 messageReceivedEvent.GuildId,
                 messageReceivedEvent.ChannelId,
                 messageReceivedEvent.UserId,

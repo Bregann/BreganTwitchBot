@@ -76,7 +76,7 @@ namespace BreganTwitchBot.DomainTests.Discord
 
         private Task<bool> Check(string message, bool isBot = false)
         {
-            return _moderationService.CheckMessageAsync(GuildId, ChannelId, UserId, message, isBot);
+            return _moderationService.CheckMessage(GuildId, ChannelId, UserId, message, isBot);
         }
 
         [Test]
@@ -141,7 +141,7 @@ namespace BreganTwitchBot.DomainTests.Discord
         [Test]
         public async Task UnknownGuild_IsIgnored()
         {
-            var result = await _moderationService.CheckMessageAsync(
+            var result = await _moderationService.CheckMessage(
                 99999999, ChannelId, UserId, DatabaseSeedHelper.SeededChannel1BannedWord, false);
 
             Assert.That(result, Is.False);
