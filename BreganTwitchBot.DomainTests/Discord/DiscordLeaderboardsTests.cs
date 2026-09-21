@@ -60,7 +60,7 @@ namespace BreganTwitchBot.DomainTests.Discord
         [Test]
         public async Task PointsLeaderboard_IsOrderedDescending()
         {
-            var result = await _leaderboardsData.GetLeaderboardAsync(DatabaseSeedHelper.DiscordGuildId, DiscordLeaderboardType.Points);
+            var result = await _leaderboardsData.GetLeaderboard(DatabaseSeedHelper.DiscordGuildId, DiscordLeaderboardType.Points);
 
             Assert.That(result, Is.Not.Empty);
             Assert.That(result.Select(x => x.Value), Is.Ordered.Descending);
@@ -69,7 +69,7 @@ namespace BreganTwitchBot.DomainTests.Discord
         [Test]
         public async Task Leaderboard_PositionsStartAtOneAndIncrement()
         {
-            var result = await _leaderboardsData.GetLeaderboardAsync(DatabaseSeedHelper.DiscordGuildId, DiscordLeaderboardType.Points);
+            var result = await _leaderboardsData.GetLeaderboard(DatabaseSeedHelper.DiscordGuildId, DiscordLeaderboardType.Points);
 
             Assert.That(result.Select(x => x.Position), Is.EqualTo(Enumerable.Range(1, result.Count)));
         }
@@ -77,7 +77,7 @@ namespace BreganTwitchBot.DomainTests.Discord
         [Test]
         public async Task Leaderboard_RespectsTheTakeLimit()
         {
-            var result = await _leaderboardsData.GetLeaderboardAsync(DatabaseSeedHelper.DiscordGuildId, DiscordLeaderboardType.Points, take: 1);
+            var result = await _leaderboardsData.GetLeaderboard(DatabaseSeedHelper.DiscordGuildId, DiscordLeaderboardType.Points, take: 1);
 
             Assert.That(result, Has.Count.EqualTo(1));
         }
@@ -94,7 +94,7 @@ namespace BreganTwitchBot.DomainTests.Discord
             watchtime.MinutesWatchedThisMonth = 99999;
             await _dbContext.SaveChangesAsync();
 
-            var result = await _leaderboardsData.GetLeaderboardAsync(DatabaseSeedHelper.DiscordGuildId, DiscordLeaderboardType.MonthlyHours);
+            var result = await _leaderboardsData.GetLeaderboard(DatabaseSeedHelper.DiscordGuildId, DiscordLeaderboardType.MonthlyHours);
 
             Assert.Multiple(() =>
             {
@@ -112,7 +112,7 @@ namespace BreganTwitchBot.DomainTests.Discord
             stats.MarblesWins = 12;
             await _dbContext.SaveChangesAsync();
 
-            var result = await _leaderboardsData.GetLeaderboardAsync(DatabaseSeedHelper.DiscordGuildId, DiscordLeaderboardType.Marbles);
+            var result = await _leaderboardsData.GetLeaderboard(DatabaseSeedHelper.DiscordGuildId, DiscordLeaderboardType.Marbles);
 
             Assert.That(result[0].Value, Is.EqualTo(12));
         }
@@ -120,7 +120,7 @@ namespace BreganTwitchBot.DomainTests.Discord
         [Test]
         public async Task AllTimeHoursLeaderboard_IsOrderedDescending()
         {
-            var result = await _leaderboardsData.GetLeaderboardAsync(DatabaseSeedHelper.DiscordGuildId, DiscordLeaderboardType.AllTimeHours);
+            var result = await _leaderboardsData.GetLeaderboard(DatabaseSeedHelper.DiscordGuildId, DiscordLeaderboardType.AllTimeHours);
 
             Assert.That(result.Select(x => x.Value), Is.Ordered.Descending);
         }
@@ -128,7 +128,7 @@ namespace BreganTwitchBot.DomainTests.Discord
         [Test]
         public async Task UnknownGuild_ReturnsEmpty()
         {
-            var result = await _leaderboardsData.GetLeaderboardAsync(99999999, DiscordLeaderboardType.Points);
+            var result = await _leaderboardsData.GetLeaderboard(99999999, DiscordLeaderboardType.Points);
 
             Assert.That(result, Is.Empty);
         }
@@ -136,7 +136,7 @@ namespace BreganTwitchBot.DomainTests.Discord
         [Test]
         public async Task Leaderboard_OnlyIncludesTheGuildsOwnChannel()
         {
-            var result = await _leaderboardsData.GetLeaderboardAsync(DatabaseSeedHelper.DiscordGuildId, DiscordLeaderboardType.Points);
+            var result = await _leaderboardsData.GetLeaderboard(DatabaseSeedHelper.DiscordGuildId, DiscordLeaderboardType.Points);
 
             // channel 2's user must not appear in channel 1's leaderboard
             Assert.That(result.Select(x => x.Username), Does.Not.Contain(DatabaseSeedHelper.Channel2User1TwitchUsername));
@@ -146,7 +146,7 @@ namespace BreganTwitchBot.DomainTests.Discord
         public async Task DiscordXpLeaderboard_WithNoStats_ReturnsEmpty()
         {
             // no DiscordUserStats rows are seeded, so this should be empty rather than throwing
-            var result = await _leaderboardsData.GetLeaderboardAsync(DatabaseSeedHelper.DiscordGuildId, DiscordLeaderboardType.DiscordXp);
+            var result = await _leaderboardsData.GetLeaderboard(DatabaseSeedHelper.DiscordGuildId, DiscordLeaderboardType.DiscordXp);
 
             Assert.That(result, Is.Empty);
         }
@@ -154,7 +154,7 @@ namespace BreganTwitchBot.DomainTests.Discord
         [Test]
         public async Task DailyStreakLeaderboard_ReturnsDailyStreaks()
         {
-            var result = await _leaderboardsData.GetLeaderboardAsync(DatabaseSeedHelper.DiscordGuildId, DiscordLeaderboardType.DailyStreak);
+            var result = await _leaderboardsData.GetLeaderboard(DatabaseSeedHelper.DiscordGuildId, DiscordLeaderboardType.DailyStreak);
 
             Assert.That(result.Select(x => x.Value), Is.Ordered.Descending);
         }

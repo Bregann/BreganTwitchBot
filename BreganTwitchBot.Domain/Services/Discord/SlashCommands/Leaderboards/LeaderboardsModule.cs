@@ -66,7 +66,7 @@ namespace BreganTwitchBot.Domain.Services.Discord.SlashCommands.Leaderboards
         {
             await DeferAsync();
 
-            var entries = await discordLeaderboardsData.GetLeaderboardAsync(Context.Guild.Id, type);
+            var entries = await discordLeaderboardsData.GetLeaderboard(Context.Guild.Id, type);
 
             if (entries.Count == 0)
             {
