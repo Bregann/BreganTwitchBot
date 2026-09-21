@@ -14,7 +14,8 @@ namespace BreganTwitchBot.Domain.Services.Discord
         IConfigHelperService configHelper,
         IDiscordHelperService discordHelper,
         IDiscordRoleManagerService discordRoleManagerService,
-        IDiscordUserLookupService discordUserLookupService
+        IDiscordUserLookupService discordUserLookupService,
+        IDiscordMessageModerationService discordMessageModerationService
         ) : IDiscordEventHelperService
     {
         public async Task HandleUserJoinedEvent(EventBase userJoined)
@@ -147,6 +148,20 @@ namespace BreganTwitchBot.Domain.Services.Discord
 
         public async Task HandleMessageReceivedEvent(MessageReceivedEvent messageReceivedEvent)
         {
+            // moderation runs first - a message that gets somebody muted should not also
+            // earn them xp
+            var wasModerated = await discordMessageModerationService.CheckMessageAsync(
+                messageReceivedEvent.GuildId,
+                messageReceivedEvent.ChannelId,
+                messageReceivedEvent.UserId,
+                messageReceivedEvent.MessageContent,
+                authorIsBot: false);
+
+            if (wasModerated)
+            {
+                return;
+            }
+
             // george food hardcoded memes, only for blocksssssss
             if (messageReceivedEvent.UserId == 153974235809710081 && messageReceivedEvent.ChannelId == 1153032190234464347 && messageReceivedEvent.MessageContent.ToLower().Contains("#ping"))
             {
