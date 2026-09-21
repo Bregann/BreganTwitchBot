@@ -36,7 +36,7 @@ namespace BreganTwitchBot.Domain.Services.Api
                 };
             }
 
-            var entries = await discordLeaderboardsData.GetLeaderboardAsync(guildId.Value, type, take);
+            var entries = await discordLeaderboardsData.GetLeaderboard(guildId.Value, type, take);
 
             return new GetLeaderboardResponse
             {
