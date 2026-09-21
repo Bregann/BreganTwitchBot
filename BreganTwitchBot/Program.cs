@@ -219,6 +219,7 @@ builder.Services.AddScoped<IDiscordRoleManagerService, DiscordRoleManagerService
 
 builder.Services.AddScoped<IDiscordDailyPointsData, DiscordDailyPointsData>();
 builder.Services.AddScoped<IDiscordGiveawayData, DiscordGiveawayData>();
+builder.Services.AddScoped<IDiscordWhoisData, DiscordWhoisData>();
 builder.Services.AddScoped<IDiscordHoursPointsData, DiscordHoursPointsData>();
 builder.Services.AddScoped<IDiscordGamblingData, DiscordGamblingData>();
 builder.Services.AddScoped<IGeneralCommandsData, GeneralCommandsData>();
