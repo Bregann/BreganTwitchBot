@@ -2,6 +2,7 @@
 using BreganTwitchBot.Domain.Database.Models;
 using BreganTwitchBot.Domain.DTOs.Discord.Commands;
 using BreganTwitchBot.Domain.Interfaces.Discord.Commands;
+using BreganTwitchBot.Domain.Services.Helpers;
 using Microsoft.EntityFrameworkCore;
 
 namespace BreganTwitchBot.Domain.Services.Discord.SlashCommands.Linking
@@ -34,8 +35,7 @@ namespace BreganTwitchBot.Domain.Services.Discord.SlashCommands.Linking
             var existingRequest = await context.DiscordLinkRequests
                 .FirstOrDefaultAsync(x => x.TwitchUsername == twitchUsername);
 
-            var channel = await context.Channels
-                .FirstAsync(x => x.ChannelConfig.DiscordGuildId == command.GuildId);
+            var channel = await context.GetRequiredChannelForGuild(command.GuildId);
 
             if (existingRequest != null)
             {

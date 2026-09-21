@@ -1,4 +1,5 @@
 ﻿using BreganTwitchBot.Domain.Database.Context;
+using BreganTwitchBot.Domain.DTOs.Twitch.EventSubEvents;
 using BreganTwitchBot.Domain.Exceptions;
 using BreganTwitchBot.Domain.Interfaces.Twitch;
 using BreganTwitchBot.Domain.Services.Twitch.Commands.CustomCommands;
@@ -147,13 +148,7 @@ namespace BreganTwitchBot.DomainTests.Twitch.Commands
             _twitchHelperServiceMock.Setup(x => x.IsUserSuperModInChannel(It.IsAny<string>(), It.IsAny<string>())).ReturnsAsync(false);
 
             _twitchHelperServiceMock
-                .Setup(x => x.EnsureUserHasModeratorPermissions(
-                    It.IsAny<bool>(),
-                    It.IsAny<bool>(),
-                    It.IsAny<string>(),
-                    It.IsAny<string>(),
-                    It.IsAny<string>(),
-                    It.IsAny<string>()))
+                .Setup(x => x.EnsureUserHasModeratorPermissions(It.IsAny<ChannelChatMessageReceivedParams>()))
                 .ThrowsAsync(new UnauthorizedAccessException("You are not authorised to use this command! Straight to jail Kappa"));
 
             var msgParams = MessageParamsHelper.CreateChatMessageParams("!addcmd !newcommand", "123", new string[] { "!addcmd", "!newcommand" });
@@ -260,13 +255,7 @@ namespace BreganTwitchBot.DomainTests.Twitch.Commands
         {
             _twitchHelperServiceMock.Setup(x => x.IsUserSuperModInChannel(It.IsAny<string>(), It.IsAny<string>())).ReturnsAsync(false);
             _twitchHelperServiceMock
-                .Setup(x => x.EnsureUserHasModeratorPermissions(
-                    It.IsAny<bool>(),
-                    It.IsAny<bool>(),
-                    It.IsAny<string>(),
-                    It.IsAny<string>(),
-                    It.IsAny<string>(),
-                    It.IsAny<string>()))
+                .Setup(x => x.EnsureUserHasModeratorPermissions(It.IsAny<ChannelChatMessageReceivedParams>()))
                 .ThrowsAsync(new UnauthorizedAccessException("You are not authorised to use this command! Straight to jail Kappa"));
 
             var msgParams = MessageParamsHelper.CreateChatMessageParams("!editcmd !readytouse commandText", "123", new string[] { "!editcmd", "!readytouse", "commandText" });
@@ -305,13 +294,7 @@ namespace BreganTwitchBot.DomainTests.Twitch.Commands
         {
             _twitchHelperServiceMock.Setup(x => x.IsUserSuperModInChannel(It.IsAny<string>(), It.IsAny<string>())).ReturnsAsync(false);
             _twitchHelperServiceMock
-                .Setup(x => x.EnsureUserHasModeratorPermissions(
-                    It.IsAny<bool>(),
-                    It.IsAny<bool>(),
-                    It.IsAny<string>(),
-                    It.IsAny<string>(),
-                    It.IsAny<string>(),
-                    It.IsAny<string>()))
+                .Setup(x => x.EnsureUserHasModeratorPermissions(It.IsAny<ChannelChatMessageReceivedParams>()))
                 .ThrowsAsync(new UnauthorizedAccessException("You are not authorised to use this command! Straight to jail Kappa"));
 
             var msgParams = MessageParamsHelper.CreateChatMessageParams("!delcmd !readytouse", "123", new string[] { "!delcmd", "!readytouse" });

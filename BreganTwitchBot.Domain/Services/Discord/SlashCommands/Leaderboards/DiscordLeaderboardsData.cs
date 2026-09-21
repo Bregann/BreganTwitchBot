@@ -8,7 +8,7 @@ namespace BreganTwitchBot.Domain.Services.Discord.SlashCommands.Leaderboards
 {
     public class DiscordLeaderboardsData(AppDbContext context) : IDiscordLeaderboardsData
     {
-        public async Task<List<LeaderboardEntry>> GetLeaderboardAsync(ulong guildId, DiscordLeaderboardType type, int take = 24)
+        public async Task<List<LeaderboardEntry>> GetLeaderboard(ulong guildId, DiscordLeaderboardType type, int take = 24)
         {
             var channel = await context.Channels.FirstOrDefaultAsync(x => x.ChannelConfig.DiscordGuildId == guildId);
 
