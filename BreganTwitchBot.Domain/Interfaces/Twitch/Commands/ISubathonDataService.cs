@@ -31,7 +31,7 @@ namespace BreganTwitchBot.Domain.Interfaces.Twitch.Commands
         Task<string> StartSubathon(ChannelChatMessageReceivedParams msgParams);
 
         /// <summary>
-        /// Stops the running subathon. Moderator only.
+        /// Stops the running subathon. Super mods and the broadcaster only.
         /// </summary>
         Task<string> StopSubathon(ChannelChatMessageReceivedParams msgParams);
     }

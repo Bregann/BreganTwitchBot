@@ -1,4 +1,4 @@
-using BreganTwitchBot.Domain.Database.Context;
+﻿using BreganTwitchBot.Domain.Database.Context;
 using BreganTwitchBot.Domain.Database.Models;
 using BreganTwitchBot.Domain.DTOs.Twitch.EventSubEvents;
 using BreganTwitchBot.Domain.Enums;
@@ -108,7 +108,7 @@ namespace BreganTwitchBot.Domain.Services.Twitch.Commands.Subathon
 
         public async Task<string> AddTimeManually(ChannelChatMessageReceivedParams msgParams)
         {
-            await twitchHelperService.EnsureUserHasModeratorPermissions(msgParams.IsMod, msgParams.IsBroadcaster, msgParams.ChatterChannelName, msgParams.ChatterChannelId, msgParams.BroadcasterChannelId, msgParams.BroadcasterChannelName);
+            await twitchHelperService.EnsureUserHasModeratorPermissions(msgParams);
 
             if (msgParams.MessageParts.Length < 2 || !int.TryParse(msgParams.MessageParts[1], out var seconds))
             {
@@ -157,7 +157,7 @@ namespace BreganTwitchBot.Domain.Services.Twitch.Commands.Subathon
 
         public async Task<string> StartSubathon(ChannelChatMessageReceivedParams msgParams)
         {
-            await twitchHelperService.EnsureUserHasModeratorPermissions(msgParams.IsMod, msgParams.IsBroadcaster, msgParams.ChatterChannelName, msgParams.ChatterChannelId, msgParams.BroadcasterChannelId, msgParams.BroadcasterChannelName);
+            await twitchHelperService.EnsureUserHasModeratorPermissions(msgParams);
 
             var config = await dbContext.ChannelConfig.FirstOrDefaultAsync(x => x.Channel.BroadcasterTwitchChannelId == msgParams.BroadcasterChannelId);
 
@@ -194,7 +194,9 @@ namespace BreganTwitchBot.Domain.Services.Twitch.Commands.Subathon
 
         public async Task<string> StopSubathon(ChannelChatMessageReceivedParams msgParams)
         {
-            await twitchHelperService.EnsureUserHasModeratorPermissions(msgParams.IsMod, msgParams.IsBroadcaster, msgParams.ChatterChannelName, msgParams.ChatterChannelId, msgParams.BroadcasterChannelId, msgParams.BroadcasterChannelName);
+            // super mods only - ending a subathon early throws away time people have paid into,
+            // so it is deliberately a higher bar than starting one
+            await twitchHelperService.EnsureUserHasSuperModPermissions(msgParams);
 
             var config = await dbContext.ChannelConfig.FirstOrDefaultAsync(x => x.Channel.BroadcasterTwitchChannelId == msgParams.BroadcasterChannelId);
 

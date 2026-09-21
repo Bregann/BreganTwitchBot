@@ -1,4 +1,4 @@
-using BreganTwitchBot.Domain.Database.Context;
+﻿using BreganTwitchBot.Domain.Database.Context;
 using BreganTwitchBot.Domain.DTOs.Twitch.EventSubEvents;
 using BreganTwitchBot.Domain.Enums;
 using BreganTwitchBot.Domain.Exceptions;
@@ -49,6 +49,10 @@ namespace BreganTwitchBot.DomainTests.Twitch.Commands
 
             _twitchHelperService = new Mock<ITwitchHelperService>();
             _subathonDataService = new SubathonDataService(_dbContext, _twitchHelperService.Object);
+
+            // most tests care about the subathon maths rather than permissions, so default to a
+            // user who is allowed to run everything
+            SetupPermissions(isSuperMod: true);
         }
 
         [TearDown]
@@ -63,7 +67,7 @@ namespace BreganTwitchBot.DomainTests.Twitch.Commands
             await _postgresContainer.DisposeAsync();
         }
 
-        private static ChannelChatMessageReceivedParams CreateMsgParams(string message, bool isMod = true)
+        private static ChannelChatMessageReceivedParams CreateMsgParams(string message, bool isMod = true, bool isBroadcaster = false)
         {
             return new ChannelChatMessageReceivedParams
             {
@@ -77,8 +81,44 @@ namespace BreganTwitchBot.DomainTests.Twitch.Commands
                 IsMod = isMod,
                 IsSub = false,
                 IsVip = false,
-                IsBroadcaster = false
+                IsBroadcaster = isBroadcaster
             };
+        }
+
+        /// <summary>
+        /// Makes the mocked permission checks behave like the real ones so the tests exercise who
+        /// is actually allowed to run a command rather than a stubbed no-op. Super mod status is
+        /// not carried on the message, so it is passed in here
+        /// </summary>
+        private void SetupPermissions(bool isSuperMod)
+        {
+            _twitchHelperService
+                .Setup(x => x.IsUserSuperModInChannel(It.IsAny<string>(), It.IsAny<string>()))
+                .ReturnsAsync(isSuperMod);
+
+            _twitchHelperService
+                .Setup(x => x.EnsureUserHasModeratorPermissions(It.IsAny<ChannelChatMessageReceivedParams>()))
+                .Returns((ChannelChatMessageReceivedParams p) =>
+                {
+                    if (!isSuperMod && !p.IsMod && !p.IsBroadcaster)
+                    {
+                        throw new UnauthorizedAccessException("You are not authorised to use this command! Straight to jail Kappa");
+                    }
+
+                    return Task.CompletedTask;
+                });
+
+            _twitchHelperService
+                .Setup(x => x.EnsureUserHasSuperModPermissions(It.IsAny<ChannelChatMessageReceivedParams>()))
+                .Returns((ChannelChatMessageReceivedParams p) =>
+                {
+                    if (!isSuperMod && !p.IsBroadcaster)
+                    {
+                        throw new UnauthorizedAccessException("You are not authorised to use this command! Straight to jail Kappa");
+                    }
+
+                    return Task.CompletedTask;
+                });
         }
 
         private async Task StartSubathon(TimeSpan startingTime)
@@ -280,12 +320,53 @@ namespace BreganTwitchBot.DomainTests.Twitch.Commands
         [Test]
         public void StartSubathon_AsNonMod_ThrowsUnauthorised()
         {
-            _twitchHelperService
-                .Setup(x => x.EnsureUserHasModeratorPermissions(false, false, It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()))
-                .ThrowsAsync(new UnauthorizedAccessException("You don't have permission to do that"));
+            SetupPermissions(isSuperMod: false);
 
             Assert.ThrowsAsync<UnauthorizedAccessException>(async () =>
                 await _subathonDataService.StartSubathon(CreateMsgParams("!startsubathon", isMod: false)));
+        }
+
+        [Test]
+        public async Task StartSubathon_AsMod_IsAllowed()
+        {
+            SetupPermissions(isSuperMod: false);
+
+            var response = await _subathonDataService.StartSubathon(CreateMsgParams("!startsubathon", isMod: true));
+
+            Assert.That(response, Does.Contain("subathon has started"));
+        }
+
+        [Test]
+        public void StopSubathon_AsModButNotSuperMod_ThrowsUnauthorised()
+        {
+            SetupPermissions(isSuperMod: false);
+
+            Assert.ThrowsAsync<UnauthorizedAccessException>(async () =>
+                await _subathonDataService.StopSubathon(CreateMsgParams("!stopsubathon", isMod: true)));
+        }
+
+        [Test]
+        public async Task StopSubathon_AsBroadcaster_IsAllowed()
+        {
+            SetupPermissions(isSuperMod: false);
+            await StartSubathon(TimeSpan.FromHours(2));
+
+            var response = await _subathonDataService.StopSubathon(CreateMsgParams("!stopsubathon", isMod: false, isBroadcaster: true));
+
+            Assert.That(response, Does.Contain("subathon has ended"));
+        }
+
+        [Test]
+        public async Task StopSubathon_WhenUnauthorised_LeavesTheSubathonRunning()
+        {
+            SetupPermissions(isSuperMod: false);
+            await StartSubathon(TimeSpan.FromHours(2));
+
+            Assert.ThrowsAsync<UnauthorizedAccessException>(async () =>
+                await _subathonDataService.StopSubathon(CreateMsgParams("!stopsubathon", isMod: true)));
+
+            var config = await _dbContext.ChannelConfig.FirstAsync(x => x.Channel.BroadcasterTwitchChannelId == DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId);
+            Assert.That(config.SubathonActive, Is.True);
         }
 
         [Test]
