@@ -9,6 +9,6 @@ namespace BreganTwitchBot.Domain.Interfaces.Discord.Commands
         /// Looks a user up by either their Discord account or their Twitch username and returns
         /// what the bot knows about them
         /// </summary>
-        Task<DiscordEmbedData> HandleWhoisCommandAsync(WhoisCommand command);
+        Task<DiscordEmbedData> HandleWhoisCommand(WhoisCommand command);
     }
 }
