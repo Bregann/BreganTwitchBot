@@ -29,6 +29,9 @@ namespace BreganTwitchBot.DomainTests.Helpers
         public const string Channel1SuperModUserTwitchUserId = "1111";
         public const string Channel1SuperModUserTwitchUsername = "supermoduser";
 
+        public const string SeededChannel1RewardTitle = "goose";
+        public const string SeededChannel1DisabledRewardTitle = "disabledreward";
+
         public const string SeededChannel1BannedWord = "seededbannedword";
         public const string SeededChannel1TempBanWord = "seededtempbanword";
         public const string SeededChannel2BannedWord = "seededbannedword";
@@ -219,6 +222,24 @@ namespace BreganTwitchBot.DomainTests.Helpers
                 TotalMessages = 0,
                 ChannelId = channel.Id,
                 ChannelUserId = channelUser2.Id
+            });
+
+            await context.ChannelPointRewards.AddAsync(new ChannelPointReward
+            {
+                ChannelId = channel.Id,
+                RewardTitle = SeededChannel1RewardTitle,
+                ResponseMessage = "{user} has redeemed Goose! Goose Goose Goose",
+                Enabled = true,
+                TimesRedeemed = 0
+            });
+
+            await context.ChannelPointRewards.AddAsync(new ChannelPointReward
+            {
+                ChannelId = channel.Id,
+                RewardTitle = SeededChannel1DisabledRewardTitle,
+                ResponseMessage = "{user} redeemed a disabled reward",
+                Enabled = false,
+                TimesRedeemed = 0
             });
 
             // the rate bands the old bot hardcoded, seeded for channel 1 only

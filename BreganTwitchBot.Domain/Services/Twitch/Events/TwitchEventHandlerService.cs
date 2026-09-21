@@ -1,4 +1,5 @@
-﻿using BreganTwitchBot.Domain.DTOs.Twitch.EventSubEvents;
+﻿using BreganTwitchBot.Domain.Database.Context;
+using BreganTwitchBot.Domain.DTOs.Twitch.EventSubEvents;
 using BreganTwitchBot.Domain.Enums;
 using BreganTwitchBot.Domain.Interfaces.Discord;
 using BreganTwitchBot.Domain.Interfaces.Helpers;
@@ -6,6 +7,7 @@ using BreganTwitchBot.Domain.Interfaces.Twitch;
 using BreganTwitchBot.Domain.Interfaces.Twitch.Commands;
 using BreganTwitchBot.Domain.Interfaces.Twitch.Events;
 using Hangfire;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Serilog;
 
@@ -141,6 +143,38 @@ namespace BreganTwitchBot.Domain.Services.Twitch.Events
                 {
                     await twitchApiInteractionService.ShoutoutChannel(channel.ApiClient, raidParams.BroadcasterChannelId, raidParams.RaidingChannelId, channel.TwitchChannelClientId);
                 }
+            }
+        }
+
+        public async Task HandleChannelPointsRedeemedEvent(ChannelPointsRedeemedParams redeemedParams)
+        {
+            Log.Information($"[Channel Points] {redeemedParams.ChatterChannelName} redeemed {redeemedParams.RewardTitle} ({redeemedParams.RewardCost}) in {redeemedParams.BroadcasterChannelName}");
+
+            // the broadcaster or a mod has already dealt with this one manually
+            if (string.Equals(redeemedParams.RedemptionStatus, "ACTION_TAKEN", StringComparison.OrdinalIgnoreCase))
+            {
+                return;
+            }
+
+            using (var scope = serviceProvider.CreateScope())
+            {
+                var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+                var reward = await context.ChannelPointRewards
+                    .FirstOrDefaultAsync(x =>
+                        x.Channel.BroadcasterTwitchChannelId == redeemedParams.BroadcasterChannelId &&
+                        x.RewardTitle.ToLower() == redeemedParams.RewardTitle.ToLower());
+
+                if (reward == null || !reward.Enabled)
+                {
+                    return;
+                }
+
+                reward.TimesRedeemed++;
+                await context.SaveChangesAsync();
+
+                var message = reward.ResponseMessage.Replace("{user}", redeemedParams.ChatterChannelName);
+                await twitchHelperService.SendTwitchMessageToChannel(redeemedParams.BroadcasterChannelId, redeemedParams.BroadcasterChannelName, message);
             }
         }
 
