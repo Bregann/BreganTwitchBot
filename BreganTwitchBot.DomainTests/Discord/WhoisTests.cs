@@ -60,7 +60,7 @@ namespace BreganTwitchBot.DomainTests.Discord
         [Test]
         public async Task Whois_ByTwitchUsername_ReturnsTheUser()
         {
-            var result = await _whoisData.HandleWhoisCommandAsync(new WhoisCommand
+            var result = await _whoisData.HandleWhoisCommand(new WhoisCommand
             {
                 GuildId = DatabaseSeedHelper.DiscordGuildId,
                 TwitchUsername = DatabaseSeedHelper.Channel1User1TwitchUsername
@@ -77,7 +77,7 @@ namespace BreganTwitchBot.DomainTests.Discord
         [Test]
         public async Task Whois_ByDiscordUser_ReturnsTheUser()
         {
-            var result = await _whoisData.HandleWhoisCommandAsync(new WhoisCommand
+            var result = await _whoisData.HandleWhoisCommand(new WhoisCommand
             {
                 GuildId = DatabaseSeedHelper.DiscordGuildId,
                 DiscordUserId = DatabaseSeedHelper.DiscordUserId1
@@ -89,7 +89,7 @@ namespace BreganTwitchBot.DomainTests.Discord
         [Test]
         public async Task Whois_TwitchUsernameIsCaseInsensitive()
         {
-            var result = await _whoisData.HandleWhoisCommandAsync(new WhoisCommand
+            var result = await _whoisData.HandleWhoisCommand(new WhoisCommand
             {
                 GuildId = DatabaseSeedHelper.DiscordGuildId,
                 TwitchUsername = DatabaseSeedHelper.Channel1User1TwitchUsername.ToUpper()
@@ -103,7 +103,7 @@ namespace BreganTwitchBot.DomainTests.Discord
         {
             // the old bot answered this with a random joke name from a hardcoded list, which
             // looked like a real answer
-            var result = await _whoisData.HandleWhoisCommandAsync(new WhoisCommand
+            var result = await _whoisData.HandleWhoisCommand(new WhoisCommand
             {
                 GuildId = DatabaseSeedHelper.DiscordGuildId,
                 TwitchUsername = "someonewhodoesnotexist"
@@ -119,7 +119,7 @@ namespace BreganTwitchBot.DomainTests.Discord
         [Test]
         public async Task Whois_UnknownDiscordUser_SaysNoAccountFound()
         {
-            var result = await _whoisData.HandleWhoisCommandAsync(new WhoisCommand
+            var result = await _whoisData.HandleWhoisCommand(new WhoisCommand
             {
                 GuildId = DatabaseSeedHelper.DiscordGuildId,
                 DiscordUserId = DatabaseSeedHelper.DiscordUserNonExistentId
@@ -132,7 +132,7 @@ namespace BreganTwitchBot.DomainTests.Discord
         public async Task Whois_NothingSupplied_AsksForSomething()
         {
             // the old bot returned null here, which the module would have dereferenced
-            var result = await _whoisData.HandleWhoisCommandAsync(new WhoisCommand
+            var result = await _whoisData.HandleWhoisCommand(new WhoisCommand
             {
                 GuildId = DatabaseSeedHelper.DiscordGuildId
             });
@@ -143,7 +143,7 @@ namespace BreganTwitchBot.DomainTests.Discord
         [Test]
         public async Task Whois_UnknownGuild_SaysNotLinked()
         {
-            var result = await _whoisData.HandleWhoisCommandAsync(new WhoisCommand
+            var result = await _whoisData.HandleWhoisCommand(new WhoisCommand
             {
                 GuildId = 99999999,
                 TwitchUsername = DatabaseSeedHelper.Channel1User1TwitchUsername
@@ -159,7 +159,7 @@ namespace BreganTwitchBot.DomainTests.Discord
             user.DiscordUserId = 0;
             await _dbContext.SaveChangesAsync();
 
-            var result = await _whoisData.HandleWhoisCommandAsync(new WhoisCommand
+            var result = await _whoisData.HandleWhoisCommand(new WhoisCommand
             {
                 GuildId = DatabaseSeedHelper.DiscordGuildId,
                 TwitchUsername = DatabaseSeedHelper.Channel1User2TwitchUsername
@@ -171,7 +171,7 @@ namespace BreganTwitchBot.DomainTests.Discord
         [Test]
         public async Task Whois_IncludesPointsUnderTheChannelCurrencyName()
         {
-            var result = await _whoisData.HandleWhoisCommandAsync(new WhoisCommand
+            var result = await _whoisData.HandleWhoisCommand(new WhoisCommand
             {
                 GuildId = DatabaseSeedHelper.DiscordGuildId,
                 TwitchUsername = DatabaseSeedHelper.Channel1User1TwitchUsername
