@@ -242,6 +242,28 @@ namespace BreganTwitchBot.DomainTests.Helpers
                 TimesRedeemed = 0
             });
 
+            // the rate bands the old bot hardcoded, seeded for channel 1 only
+            foreach (var (fromHours, msPerBit, t1, t2, t3) in new[]
+            {
+                (0, 900, 6, 12, 30),
+                (12, 750, 5, 10, 25),
+                (13, 600, 4, 8, 20),
+                (16, 450, 3, 6, 12),
+                (23, 300, 2, 4, 8),
+                (24, 150, 1, 2, 5)
+            })
+            {
+                await context.SubathonRates.AddAsync(new SubathonRate
+                {
+                    ChannelId = channel.Id,
+                    FromHours = fromHours,
+                    MillisecondsPerBit = msPerBit,
+                    Tier1SubMinutes = t1,
+                    Tier2SubMinutes = t2,
+                    Tier3SubMinutes = t3
+                });
+            }
+
             await context.CustomCommands.AddAsync(new CustomCommand
             {
                 CommandName = "!oncooldown",
