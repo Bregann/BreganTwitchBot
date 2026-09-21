@@ -11,7 +11,7 @@ namespace BreganTwitchBot.Domain.Services.Discord.SlashCommands.Giveaway
             [Summary("minimumhours", "Hours of watchtime needed to enter. Leave out for no minimum")] int minimumWatchtimeHours = 0,
             [Summary("requiredrank", "The rank needed to enter. Leave out for no rank requirement")] string? requiredRank = null)
         {
-            var (giveawayId, response) = await discordGiveawayData.StartGiveawayAsync(Context.Guild.Id, Context.Channel.Id, Context.User.Id, minimumWatchtimeHours, requiredRank);
+            var (giveawayId, response) = await discordGiveawayData.StartGiveaway(Context.Guild.Id, Context.Channel.Id, Context.User.Id, minimumWatchtimeHours, requiredRank);
 
             if (giveawayId == null)
             {

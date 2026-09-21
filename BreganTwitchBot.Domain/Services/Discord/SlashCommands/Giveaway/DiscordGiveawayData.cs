@@ -8,7 +8,7 @@ namespace BreganTwitchBot.Domain.Services.Discord.SlashCommands.Giveaway
 {
     public class DiscordGiveawayData(AppDbContext context) : IDiscordGiveawayData
     {
-        public async Task<(string? GiveawayId, string Response)> StartGiveawayAsync(ulong guildId, ulong channelId, ulong startedByUserId, int minimumWatchtimeHours, string? requiredRankName)
+        public async Task<(string? GiveawayId, string Response)> StartGiveaway(ulong guildId, ulong channelId, ulong startedByUserId, int minimumWatchtimeHours, string? requiredRankName)
         {
             var channel = await GetChannelForGuild(guildId);
 
@@ -58,7 +58,7 @@ namespace BreganTwitchBot.Domain.Services.Discord.SlashCommands.Giveaway
             return (giveawayId, $"A new giveaway has started! Click the button to enter.{requirements}");
         }
 
-        public async Task<(string Response, bool Ephemeral)> EnterGiveawayAsync(ulong guildId, ulong userId, string giveawayId)
+        public async Task<(string Response, bool Ephemeral)> EnterGiveaway(ulong guildId, ulong userId, string giveawayId)
         {
             var giveaway = await GetGiveaway(giveawayId);
 
@@ -133,7 +133,7 @@ namespace BreganTwitchBot.Domain.Services.Discord.SlashCommands.Giveaway
                     "You can earn more by watching the stream and levelling up in the Discord", true);
         }
 
-        public async Task<(string Response, bool Ephemeral)> CheckEntriesAsync(ulong guildId, ulong userId, string giveawayId)
+        public async Task<(string Response, bool Ephemeral)> CheckEntries(ulong guildId, ulong userId, string giveawayId)
         {
             var giveaway = await GetGiveaway(giveawayId);
 
@@ -158,7 +158,7 @@ namespace BreganTwitchBot.Domain.Services.Discord.SlashCommands.Giveaway
                 : ($"You have entered the giveaway! You have **{entry.Entries}** entries in the giveaway", true);
         }
 
-        public async Task<(string Response, bool Ephemeral)> DrawWinnerAsync(ulong guildId, ulong userId, string giveawayId)
+        public async Task<(string Response, bool Ephemeral)> DrawWinner(ulong guildId, ulong userId, string giveawayId)
         {
             var giveaway = await GetGiveaway(giveawayId);
 

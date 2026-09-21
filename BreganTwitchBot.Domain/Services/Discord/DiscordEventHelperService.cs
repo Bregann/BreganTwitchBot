@@ -254,9 +254,9 @@ namespace BreganTwitchBot.Domain.Services.Discord
 
             return parts[2] switch
             {
-                "enter" => await discordGiveawayData.EnterGiveawayAsync(buttonPressedEvent.GuildId, buttonPressedEvent.UserId, giveawayId),
-                "check" => await discordGiveawayData.CheckEntriesAsync(buttonPressedEvent.GuildId, buttonPressedEvent.UserId, giveawayId),
-                "draw" => await discordGiveawayData.DrawWinnerAsync(buttonPressedEvent.GuildId, buttonPressedEvent.UserId, giveawayId),
+                "enter" => await discordGiveawayData.EnterGiveaway(buttonPressedEvent.GuildId, buttonPressedEvent.UserId, giveawayId),
+                "check" => await discordGiveawayData.CheckEntries(buttonPressedEvent.GuildId, buttonPressedEvent.UserId, giveawayId),
+                "draw" => await discordGiveawayData.DrawWinner(buttonPressedEvent.GuildId, buttonPressedEvent.UserId, giveawayId),
                 _ => ("invalid button", true)
             };
         }

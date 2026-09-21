@@ -69,7 +69,7 @@ namespace BreganTwitchBot.DomainTests.Discord
 
         private async Task<string> StartGiveaway(int minimumHours = 0, string? requiredRank = null)
         {
-            var (giveawayId, _) = await _giveawayData.StartGiveawayAsync(DatabaseSeedHelper.DiscordGuildId, GiveawayChannelId, StarterUserId, minimumHours, requiredRank);
+            var (giveawayId, _) = await _giveawayData.StartGiveaway(DatabaseSeedHelper.DiscordGuildId, GiveawayChannelId, StarterUserId, minimumHours, requiredRank);
             return giveawayId!;
         }
 
@@ -103,7 +103,7 @@ namespace BreganTwitchBot.DomainTests.Discord
         [Test]
         public async Task StartGiveaway_InTheGiveawayChannel_Starts()
         {
-            var (giveawayId, response) = await _giveawayData.StartGiveawayAsync(DatabaseSeedHelper.DiscordGuildId, GiveawayChannelId, StarterUserId, 0, null);
+            var (giveawayId, response) = await _giveawayData.StartGiveaway(DatabaseSeedHelper.DiscordGuildId, GiveawayChannelId, StarterUserId, 0, null);
 
             Assert.Multiple(() =>
             {
@@ -115,7 +115,7 @@ namespace BreganTwitchBot.DomainTests.Discord
         [Test]
         public async Task StartGiveaway_InTheWrongChannel_DoesNotStart()
         {
-            var (giveawayId, response) = await _giveawayData.StartGiveawayAsync(DatabaseSeedHelper.DiscordGuildId, 999999, StarterUserId, 0, null);
+            var (giveawayId, response) = await _giveawayData.StartGiveaway(DatabaseSeedHelper.DiscordGuildId, 999999, StarterUserId, 0, null);
 
             Assert.Multiple(() =>
             {
@@ -127,7 +127,7 @@ namespace BreganTwitchBot.DomainTests.Discord
         [Test]
         public async Task StartGiveaway_WithRequirements_StatesThemUpFront()
         {
-            var (_, response) = await _giveawayData.StartGiveawayAsync(DatabaseSeedHelper.DiscordGuildId, GiveawayChannelId, StarterUserId, 10, null);
+            var (_, response) = await _giveawayData.StartGiveaway(DatabaseSeedHelper.DiscordGuildId, GiveawayChannelId, StarterUserId, 10, null);
 
             Assert.That(response, Does.Contain("10 hours"));
         }
@@ -135,7 +135,7 @@ namespace BreganTwitchBot.DomainTests.Discord
         [Test]
         public async Task StartGiveaway_UnknownRank_DoesNotStart()
         {
-            var (giveawayId, response) = await _giveawayData.StartGiveawayAsync(DatabaseSeedHelper.DiscordGuildId, GiveawayChannelId, StarterUserId, 0, "notarank");
+            var (giveawayId, response) = await _giveawayData.StartGiveaway(DatabaseSeedHelper.DiscordGuildId, GiveawayChannelId, StarterUserId, 0, "notarank");
 
             Assert.Multiple(() =>
             {
@@ -149,7 +149,7 @@ namespace BreganTwitchBot.DomainTests.Discord
         {
             var giveawayId = await StartGiveaway();
 
-            var (response, _) = await _giveawayData.EnterGiveawayAsync(DatabaseSeedHelper.DiscordGuildId, EntrantUserId, giveawayId);
+            var (response, _) = await _giveawayData.EnterGiveaway(DatabaseSeedHelper.DiscordGuildId, EntrantUserId, giveawayId);
 
             Assert.That(response, Does.Contain("You have entered the giveaway"));
         }
@@ -159,8 +159,8 @@ namespace BreganTwitchBot.DomainTests.Discord
         {
             var giveawayId = await StartGiveaway();
 
-            await _giveawayData.EnterGiveawayAsync(DatabaseSeedHelper.DiscordGuildId, EntrantUserId, giveawayId);
-            var (response, _) = await _giveawayData.EnterGiveawayAsync(DatabaseSeedHelper.DiscordGuildId, EntrantUserId, giveawayId);
+            await _giveawayData.EnterGiveaway(DatabaseSeedHelper.DiscordGuildId, EntrantUserId, giveawayId);
+            var (response, _) = await _giveawayData.EnterGiveaway(DatabaseSeedHelper.DiscordGuildId, EntrantUserId, giveawayId);
 
             Assert.That(response, Does.Contain("already entered"));
         }
@@ -172,7 +172,7 @@ namespace BreganTwitchBot.DomainTests.Discord
             await SetWatchtime(EntrantUserId, 60);
             var giveawayId = await StartGiveaway(minimumHours: 10);
 
-            var (response, _) = await _giveawayData.EnterGiveawayAsync(DatabaseSeedHelper.DiscordGuildId, EntrantUserId, giveawayId);
+            var (response, _) = await _giveawayData.EnterGiveaway(DatabaseSeedHelper.DiscordGuildId, EntrantUserId, giveawayId);
 
             Assert.Multiple(() =>
             {
@@ -188,7 +188,7 @@ namespace BreganTwitchBot.DomainTests.Discord
             await SetWatchtime(EntrantUserId, 60);
             var giveawayId = await StartGiveaway(minimumHours: 10);
 
-            await _giveawayData.EnterGiveawayAsync(DatabaseSeedHelper.DiscordGuildId, EntrantUserId, giveawayId);
+            await _giveawayData.EnterGiveaway(DatabaseSeedHelper.DiscordGuildId, EntrantUserId, giveawayId);
 
             var giveaway = await _dbContext.DiscordGiveaways.FirstAsync(x => x.GiveawayId == giveawayId);
             var entryCount = await _dbContext.DiscordGiveawayEntries.CountAsync(x => x.DiscordGiveawayId == giveaway.Id);
@@ -202,7 +202,7 @@ namespace BreganTwitchBot.DomainTests.Discord
             await SetWatchtime(EntrantUserId, 1200);
             var giveawayId = await StartGiveaway(minimumHours: 10);
 
-            var (response, _) = await _giveawayData.EnterGiveawayAsync(DatabaseSeedHelper.DiscordGuildId, EntrantUserId, giveawayId);
+            var (response, _) = await _giveawayData.EnterGiveaway(DatabaseSeedHelper.DiscordGuildId, EntrantUserId, giveawayId);
 
             Assert.That(response, Does.Contain("You have entered the giveaway"));
         }
@@ -213,7 +213,7 @@ namespace BreganTwitchBot.DomainTests.Discord
             await SetWatchtime(EntrantUserId, 3600 * 5);
             var giveawayId = await StartGiveaway();
 
-            await _giveawayData.EnterGiveawayAsync(DatabaseSeedHelper.DiscordGuildId, EntrantUserId, giveawayId);
+            await _giveawayData.EnterGiveaway(DatabaseSeedHelper.DiscordGuildId, EntrantUserId, giveawayId);
 
             var giveaway = await _dbContext.DiscordGiveaways.FirstAsync(x => x.GiveawayId == giveawayId);
             var entry = await _dbContext.DiscordGiveawayEntries.FirstAsync(x => x.DiscordGiveawayId == giveaway.Id && x.DiscordUserId == EntrantUserId);
@@ -227,7 +227,7 @@ namespace BreganTwitchBot.DomainTests.Discord
         {
             var giveawayId = await StartGiveaway();
 
-            await _giveawayData.EnterGiveawayAsync(DatabaseSeedHelper.DiscordGuildId, EntrantUserId, giveawayId);
+            await _giveawayData.EnterGiveaway(DatabaseSeedHelper.DiscordGuildId, EntrantUserId, giveawayId);
 
             var giveaway = await _dbContext.DiscordGiveaways.FirstAsync(x => x.GiveawayId == giveawayId);
             var entry = await _dbContext.DiscordGiveawayEntries.FirstAsync(x => x.DiscordGiveawayId == giveaway.Id);
@@ -239,10 +239,10 @@ namespace BreganTwitchBot.DomainTests.Discord
         public async Task EnterGiveaway_AfterItIsDrawn_IsRejected()
         {
             var giveawayId = await StartGiveaway();
-            await _giveawayData.EnterGiveawayAsync(DatabaseSeedHelper.DiscordGuildId, EntrantUserId, giveawayId);
-            await _giveawayData.DrawWinnerAsync(DatabaseSeedHelper.DiscordGuildId, StarterUserId, giveawayId);
+            await _giveawayData.EnterGiveaway(DatabaseSeedHelper.DiscordGuildId, EntrantUserId, giveawayId);
+            await _giveawayData.DrawWinner(DatabaseSeedHelper.DiscordGuildId, StarterUserId, giveawayId);
 
-            var (response, _) = await _giveawayData.EnterGiveawayAsync(DatabaseSeedHelper.DiscordGuildId, StarterUserId, giveawayId);
+            var (response, _) = await _giveawayData.EnterGiveaway(DatabaseSeedHelper.DiscordGuildId, StarterUserId, giveawayId);
 
             Assert.That(response, Does.Contain("finished"));
         }
@@ -251,9 +251,9 @@ namespace BreganTwitchBot.DomainTests.Discord
         public async Task CheckEntries_AsEntrant_ShowsTheirEntries()
         {
             var giveawayId = await StartGiveaway();
-            await _giveawayData.EnterGiveawayAsync(DatabaseSeedHelper.DiscordGuildId, EntrantUserId, giveawayId);
+            await _giveawayData.EnterGiveaway(DatabaseSeedHelper.DiscordGuildId, EntrantUserId, giveawayId);
 
-            var (response, _) = await _giveawayData.CheckEntriesAsync(DatabaseSeedHelper.DiscordGuildId, EntrantUserId, giveawayId);
+            var (response, _) = await _giveawayData.CheckEntries(DatabaseSeedHelper.DiscordGuildId, EntrantUserId, giveawayId);
 
             Assert.That(response, Does.Contain("You have entered the giveaway"));
         }
@@ -263,7 +263,7 @@ namespace BreganTwitchBot.DomainTests.Discord
         {
             var giveawayId = await StartGiveaway();
 
-            var (response, _) = await _giveawayData.CheckEntriesAsync(DatabaseSeedHelper.DiscordGuildId, EntrantUserId, giveawayId);
+            var (response, _) = await _giveawayData.CheckEntries(DatabaseSeedHelper.DiscordGuildId, EntrantUserId, giveawayId);
 
             Assert.That(response, Does.Contain("haven't entered"));
         }
@@ -272,9 +272,9 @@ namespace BreganTwitchBot.DomainTests.Discord
         public async Task CheckEntries_AsStarter_ShowsTotals()
         {
             var giveawayId = await StartGiveaway();
-            await _giveawayData.EnterGiveawayAsync(DatabaseSeedHelper.DiscordGuildId, EntrantUserId, giveawayId);
+            await _giveawayData.EnterGiveaway(DatabaseSeedHelper.DiscordGuildId, EntrantUserId, giveawayId);
 
-            var (response, _) = await _giveawayData.CheckEntriesAsync(DatabaseSeedHelper.DiscordGuildId, StarterUserId, giveawayId);
+            var (response, _) = await _giveawayData.CheckEntries(DatabaseSeedHelper.DiscordGuildId, StarterUserId, giveawayId);
 
             Assert.That(response, Does.Contain("people in the giveaway"));
         }
@@ -283,9 +283,9 @@ namespace BreganTwitchBot.DomainTests.Discord
         public async Task DrawWinner_AsStarter_PicksSomeone()
         {
             var giveawayId = await StartGiveaway();
-            await _giveawayData.EnterGiveawayAsync(DatabaseSeedHelper.DiscordGuildId, EntrantUserId, giveawayId);
+            await _giveawayData.EnterGiveaway(DatabaseSeedHelper.DiscordGuildId, EntrantUserId, giveawayId);
 
-            var (response, ephemeral) = await _giveawayData.DrawWinnerAsync(DatabaseSeedHelper.DiscordGuildId, StarterUserId, giveawayId);
+            var (response, ephemeral) = await _giveawayData.DrawWinner(DatabaseSeedHelper.DiscordGuildId, StarterUserId, giveawayId);
 
             Assert.Multiple(() =>
             {
@@ -298,9 +298,9 @@ namespace BreganTwitchBot.DomainTests.Discord
         public async Task DrawWinner_AsSomeoneElse_IsRejected()
         {
             var giveawayId = await StartGiveaway();
-            await _giveawayData.EnterGiveawayAsync(DatabaseSeedHelper.DiscordGuildId, EntrantUserId, giveawayId);
+            await _giveawayData.EnterGiveaway(DatabaseSeedHelper.DiscordGuildId, EntrantUserId, giveawayId);
 
-            var (response, _) = await _giveawayData.DrawWinnerAsync(DatabaseSeedHelper.DiscordGuildId, EntrantUserId, giveawayId);
+            var (response, _) = await _giveawayData.DrawWinner(DatabaseSeedHelper.DiscordGuildId, EntrantUserId, giveawayId);
 
             Assert.That(response, Does.Contain("Only whoever started"));
         }
@@ -310,7 +310,7 @@ namespace BreganTwitchBot.DomainTests.Discord
         {
             var giveawayId = await StartGiveaway();
 
-            var (response, _) = await _giveawayData.DrawWinnerAsync(DatabaseSeedHelper.DiscordGuildId, StarterUserId, giveawayId);
+            var (response, _) = await _giveawayData.DrawWinner(DatabaseSeedHelper.DiscordGuildId, StarterUserId, giveawayId);
 
             Assert.That(response, Does.Contain("Nobody entered"));
         }
@@ -319,9 +319,9 @@ namespace BreganTwitchBot.DomainTests.Discord
         public async Task DrawWinner_ClosesTheGiveaway()
         {
             var giveawayId = await StartGiveaway();
-            await _giveawayData.EnterGiveawayAsync(DatabaseSeedHelper.DiscordGuildId, EntrantUserId, giveawayId);
+            await _giveawayData.EnterGiveaway(DatabaseSeedHelper.DiscordGuildId, EntrantUserId, giveawayId);
 
-            await _giveawayData.DrawWinnerAsync(DatabaseSeedHelper.DiscordGuildId, StarterUserId, giveawayId);
+            await _giveawayData.DrawWinner(DatabaseSeedHelper.DiscordGuildId, StarterUserId, giveawayId);
 
             var giveaway = await _dbContext.DiscordGiveaways.FirstAsync(x => x.GiveawayId == giveawayId);
 
