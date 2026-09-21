@@ -27,15 +27,15 @@ Status: ⬜ not started · 🟡 in progress · ✅ done · ❌ dropped (won't po
 | Giveaways | ✅ | [#50](https://github.com/Bregann/BreganTwitchBot/pull/50) | `SlashCommands/Data/Giveaway/Giveaway.cs` (151) | Done. Explicit entry requirements replace silent rigging. |
 | `/whois` | ✅ | [#51](https://github.com/Bregann/BreganTwitchBot/pull/51) | `SlashCommands/Data/GeneralCommands/Whois/Whois.cs` | Done. Fixed an index crash and a guaranteed NRE. |
 | Hours/points lookup | ✅ | [#52](https://github.com/Bregann/BreganTwitchBot/pull/52) | `SlashCommands/Data/HoursPoints/HoursPoints.cs` (200) | Done: `/hours`, `/points`, `/prestige`. |
-| Discord leaderboards | ✅ | [#53](https://github.com/Bregann/BreganTwitchBot/pull/53) | `SlashCommands/Data/Leaderboards/DiscordLeaderboards.cs` (54), `Leaderboards.cs` (127) | Done. 9 leaderboard commands. Fixed monthly hours ordering by bits. |
+| Discord leaderboards | ✅ | [#53](https://github.com/Bregann/BreganTwitchBot/pull/53) | `SlashCommands/Data/Leaderboards/DiscordLeaderboards.cs` (54), `Leaderboards.cs` (127) | Done. 9 commands. Fixed monthly hours ordering by bits. |
 
 ## API / controllers
 
 | Feature | Status | PR | Old source | Notes |
 |---|---|---|---|---|
-| Leaderboards endpoints | ⬜ | — | `Controllers/LeaderboardsController.cs`, `Data/Api/LeaderboardsData.cs` (133) | Only `ExampleController` exists in the new bot. Confirm the frontend contract before porting. |
+| Leaderboards endpoints | ✅ | [#54](https://github.com/Bregann/BreganTwitchBot/pull/54) | `Controllers/LeaderboardsController.cs`, `Data/Api/LeaderboardsData.cs` (133) | Done. Channel scoped, shares the Discord leaderboard queries. |
 | Subathon endpoints | ✅ | [#49](https://github.com/Bregann/BreganTwitchBot/pull/49) | `Controllers/SubathonController.cs`, `Data/Api/SubathonData.cs` (83) | Done. Taper now a per-channel `SubathonRates` table. |
-| Commands endpoint | ⬜ | — | `Controllers/CommandsController.cs` | Lists available commands. Should read from the `TwitchCommand` attribute registry rather than a hardcoded list. |
+| Commands endpoint | ✅ | [#54](https://github.com/Bregann/BreganTwitchBot/pull/54) | `Controllers/CommandsController.cs` | Done. Custom commands per channel. |
 
 ---
 

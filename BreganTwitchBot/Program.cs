@@ -1,5 +1,6 @@
 using BreganTwitchBot.Domain.Database.Context;
 using BreganTwitchBot.Domain.Enums;
+using BreganTwitchBot.Domain.Interfaces.Api;
 using BreganTwitchBot.Domain.Interfaces.Discord;
 using BreganTwitchBot.Domain.Interfaces.Discord.Commands;
 using BreganTwitchBot.Domain.Interfaces.Helpers;
@@ -7,6 +8,7 @@ using BreganTwitchBot.Domain.Interfaces.Twitch;
 using BreganTwitchBot.Domain.Interfaces.Twitch.Commands;
 using BreganTwitchBot.Domain.Interfaces.Twitch.Events;
 using BreganTwitchBot.Domain.Services;
+using BreganTwitchBot.Domain.Services.Api;
 using BreganTwitchBot.Domain.Services.Discord;
 using BreganTwitchBot.Domain.Services.Discord.SlashCommands.BookRecs;
 using BreganTwitchBot.Domain.Services.Discord.SlashCommands.Daily;
@@ -14,6 +16,7 @@ using BreganTwitchBot.Domain.Services.Discord.SlashCommands.Gambling;
 using BreganTwitchBot.Domain.Services.Discord.SlashCommands.GeneralCommands;
 using BreganTwitchBot.Domain.Services.Discord.SlashCommands.Giveaway;
 using BreganTwitchBot.Domain.Services.Discord.SlashCommands.HoursPoints;
+using BreganTwitchBot.Domain.Services.Discord.SlashCommands.Leaderboards;
 using BreganTwitchBot.Domain.Services.Discord.SlashCommands.Leaderboards;
 using BreganTwitchBot.Domain.Services.Discord.SlashCommands.Levelling;
 using BreganTwitchBot.Domain.Services.Discord.SlashCommands.Linking;
@@ -219,10 +222,6 @@ builder.Services.AddScoped<IDiscordEventHelperService, DiscordEventHelperService
 builder.Services.AddScoped<IDiscordRoleManagerService, DiscordRoleManagerService>();
 
 builder.Services.AddScoped<IDiscordDailyPointsData, DiscordDailyPointsData>();
-builder.Services.AddScoped<IDiscordGiveawayData, DiscordGiveawayData>();
-builder.Services.AddScoped<IDiscordWhoisData, DiscordWhoisData>();
-builder.Services.AddScoped<IDiscordHoursPointsData, DiscordHoursPointsData>();
-builder.Services.AddScoped<IDiscordLeaderboardsData, DiscordLeaderboardsData>();
 builder.Services.AddScoped<IDiscordGamblingData, DiscordGamblingData>();
 builder.Services.AddScoped<IGeneralCommandsData, GeneralCommandsData>();
 builder.Services.AddScoped<IDiscordLevellingData, DiscordLevellingData>();
