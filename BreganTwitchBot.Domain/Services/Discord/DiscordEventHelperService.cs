@@ -15,7 +15,8 @@ namespace BreganTwitchBot.Domain.Services.Discord
         IDiscordHelperService discordHelper,
         IDiscordRoleManagerService discordRoleManagerService,
         IDiscordUserLookupService discordUserLookupService,
-        IDiscordMessageModerationService discordMessageModerationService
+        IDiscordMessageModerationService discordMessageModerationService,
+        IDiscordCustomCommandService discordCustomCommandService
         ) : IDiscordEventHelperService
     {
         public async Task HandleUserJoinedEvent(EventBase userJoined)
@@ -160,6 +161,18 @@ namespace BreganTwitchBot.Domain.Services.Discord
             if (wasModerated)
             {
                 return;
+            }
+
+            var customCommandReply = await discordCustomCommandService.TryHandleCustomCommandAsync(
+                messageReceivedEvent.GuildId,
+                messageReceivedEvent.ChannelId,
+                messageReceivedEvent.Username,
+                messageReceivedEvent.MessageContent,
+                messageReceivedEvent.AuthorIsMod);
+
+            if (customCommandReply != null)
+            {
+                await discordHelper.SendMessage(messageReceivedEvent.ChannelId, customCommandReply);
             }
 
             // george food hardcoded memes, only for blocksssssss
