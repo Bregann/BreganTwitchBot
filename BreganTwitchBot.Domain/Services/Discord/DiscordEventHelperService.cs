@@ -1,7 +1,7 @@
 ﻿using BreganTwitchBot.Domain.Database.Context;
-using BreganTwitchBot.Domain.Interfaces.Discord.Commands;
 using BreganTwitchBot.Domain.DTOs.Discord.Events;
 using BreganTwitchBot.Domain.Interfaces.Discord;
+using BreganTwitchBot.Domain.Interfaces.Discord.Commands;
 using BreganTwitchBot.Domain.Interfaces.Helpers;
 using Discord;
 using Discord.WebSocket;
