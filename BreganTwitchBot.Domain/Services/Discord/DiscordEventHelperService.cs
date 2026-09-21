@@ -1,6 +1,7 @@
 ﻿using BreganTwitchBot.Domain.Database.Context;
 using BreganTwitchBot.Domain.DTOs.Discord.Events;
 using BreganTwitchBot.Domain.Interfaces.Discord;
+using BreganTwitchBot.Domain.Interfaces.Discord.Commands;
 using BreganTwitchBot.Domain.Interfaces.Helpers;
 using Discord;
 using Discord.WebSocket;
@@ -14,7 +15,8 @@ namespace BreganTwitchBot.Domain.Services.Discord
         IConfigHelperService configHelper,
         IDiscordHelperService discordHelper,
         IDiscordRoleManagerService discordRoleManagerService,
-        IDiscordUserLookupService discordUserLookupService
+        IDiscordUserLookupService discordUserLookupService,
+        IDiscordGiveawayData discordGiveawayData
         ) : IDiscordEventHelperService
     {
         public async Task HandleUserJoinedEvent(EventBase userJoined)
@@ -165,6 +167,12 @@ namespace BreganTwitchBot.Domain.Services.Discord
 
         public async Task<(string MessageToSend, bool Ephemeral)> HandleButtonPressEvent(ButtonPressedEvent buttonPressedEvent, DiscordSocketClient client)
         {
+            // giveaway buttons carry the giveaway id, so they're matched by prefix
+            if (buttonPressedEvent.CustomId.StartsWith("giveaway-"))
+            {
+                return await HandleGiveawayButton(buttonPressedEvent);
+            }
+
             var emojiToAdd = "";
 
             switch (buttonPressedEvent.CustomId)
@@ -228,6 +236,29 @@ namespace BreganTwitchBot.Domain.Services.Discord
                 await user.ModifyAsync(user => user.Nickname = nickNameToSet);
                 return ("Your nickname has been set! Woooo", true);
             }
+        }
+
+        /// <summary>
+        /// Giveaway buttons are named giveaway-{giveawayId}-{action}
+        /// </summary>
+        private async Task<(string MessageToSend, bool Ephemeral)> HandleGiveawayButton(ButtonPressedEvent buttonPressedEvent)
+        {
+            var parts = buttonPressedEvent.CustomId.Split('-');
+
+            if (parts.Length != 3)
+            {
+                return ("invalid button", true);
+            }
+
+            var giveawayId = parts[1];
+
+            return parts[2] switch
+            {
+                "enter" => await discordGiveawayData.EnterGiveaway(buttonPressedEvent.GuildId, buttonPressedEvent.UserId, giveawayId),
+                "check" => await discordGiveawayData.CheckEntries(buttonPressedEvent.GuildId, buttonPressedEvent.UserId, giveawayId),
+                "draw" => await discordGiveawayData.DrawWinner(buttonPressedEvent.GuildId, buttonPressedEvent.UserId, giveawayId),
+                _ => ("invalid button", true)
+            };
         }
     }
 }
