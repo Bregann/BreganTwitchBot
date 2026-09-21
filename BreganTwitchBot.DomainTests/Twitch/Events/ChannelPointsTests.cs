@@ -61,7 +61,8 @@ namespace BreganTwitchBot.DomainTests.Twitch.Events
                 new Mock<ITwitchApiConnection>().Object,
                 new Mock<IConfigHelperService>().Object,
                 new Mock<IDiscordHelperService>().Object,
-                _serviceProvider
+                _serviceProvider,
+                new Mock<IStreamStatsService>().Object
             );
         }
 
