@@ -166,7 +166,7 @@ namespace BreganTwitchBot.Domain.Services.Discord
                 return;
             }
 
-            var customCommandReply = await discordCustomCommandService.TryHandleCustomCommandAsync(
+            var customCommandReply = await discordCustomCommandService.TryHandleCustomCommand(
                 messageReceivedEvent.GuildId,
                 messageReceivedEvent.ChannelId,
                 messageReceivedEvent.Username,

@@ -13,7 +13,7 @@ namespace BreganTwitchBot.Domain.Services.Discord
     /// </summary>
     public class DiscordCustomCommandService(AppDbContext context) : IDiscordCustomCommandService
     {
-        public async Task<string?> TryHandleCustomCommandAsync(ulong guildId, ulong channelId, string username, string messageContent, bool isMod)
+        public async Task<string?> TryHandleCustomCommand(ulong guildId, ulong channelId, string username, string messageContent, bool isMod)
         {
             if (string.IsNullOrWhiteSpace(messageContent))
             {

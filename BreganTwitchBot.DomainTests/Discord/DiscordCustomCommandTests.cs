@@ -66,7 +66,7 @@ namespace BreganTwitchBot.DomainTests.Discord
 
         private Task<string?> Handle(string message, ulong channelId = CommandsChannelId, bool isMod = false)
         {
-            return _customCommandService.TryHandleCustomCommandAsync(GuildId, channelId, Username, message, isMod);
+            return _customCommandService.TryHandleCustomCommand(GuildId, channelId, Username, message, isMod);
         }
 
         [Test]
@@ -123,7 +123,7 @@ namespace BreganTwitchBot.DomainTests.Discord
         [Test]
         public async Task UnknownGuild_IsIgnored()
         {
-            var reply = await _customCommandService.TryHandleCustomCommandAsync(99999999, CommandsChannelId, Username, "!readytouse", false);
+            var reply = await _customCommandService.TryHandleCustomCommand(99999999, CommandsChannelId, Username, "!readytouse", false);
 
             Assert.That(reply, Is.Null);
         }
