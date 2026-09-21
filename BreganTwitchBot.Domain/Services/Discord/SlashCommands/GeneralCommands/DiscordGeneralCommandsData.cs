@@ -38,7 +38,7 @@ namespace BreganTwitchBot.Domain.Services.Discord.SlashCommands.GeneralCommands
 
             try
             {
-                var followerCount = await twitchApiInteractionService.GetChannelFollowerCountAsync(apiClient.ApiClient, channel.BroadcasterTwitchChannelId, apiClient.TwitchChannelClientId);
+                var followerCount = await twitchApiInteractionService.GetChannelFollowerCount(apiClient.ApiClient, channel.BroadcasterTwitchChannelId, apiClient.TwitchChannelClientId);
                 return $"{channel.BroadcasterTwitchChannelName} has {followerCount:N0} followers";
             }
             catch (Exception ex)
@@ -67,7 +67,7 @@ namespace BreganTwitchBot.Domain.Services.Discord.SlashCommands.GeneralCommands
 
             try
             {
-                var subCount = await twitchApiInteractionService.GetChannelSubscriberCountAsync(apiClient.ApiClient, channel.BroadcasterTwitchChannelId);
+                var subCount = await twitchApiInteractionService.GetChannelSubscriberCount(apiClient.ApiClient, channel.BroadcasterTwitchChannelId);
                 return $"{channel.BroadcasterTwitchChannelName} has {subCount:N0} subs!";
             }
             catch (Exception ex)
