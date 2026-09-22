@@ -4,6 +4,7 @@ using BreganTwitchBot.Domain.DTOs.Discord.Commands;
 using BreganTwitchBot.Domain.Enums;
 using BreganTwitchBot.Domain.Interfaces.Discord;
 using BreganTwitchBot.Domain.Interfaces.Discord.Commands;
+using BreganTwitchBot.Domain.Services.Helpers;
 using Discord;
 using Microsoft.EntityFrameworkCore;
 
@@ -25,7 +26,7 @@ namespace BreganTwitchBot.Domain.Services.Discord.SlashCommands.Gambling
                 };
             }
 
-            var channel = await context.Channels.FirstAsync(x => x.ChannelConfig.DiscordGuildId == command.GuildId);
+            var channel = await context.GetRequiredChannelForGuild(command.GuildId);
             var user = await context.ChannelUserData
                 .Where(x => x.ChannelId == channel.Id && x.ChannelUser.DiscordUserId == command.UserId)
                 .FirstAsync();
@@ -304,7 +305,7 @@ namespace BreganTwitchBot.Domain.Services.Discord.SlashCommands.Gambling
 
         private async Task AddWin(ulong guildId, DiscordGambleWinType winType)
         {
-            var channel = await context.Channels.FirstAsync(x => x.ChannelConfig.DiscordGuildId == guildId);
+            var channel = await context.GetRequiredChannelForGuild(guildId);
             var stats = await context.DiscordSpinStats.FirstAsync(x => x.ChannelId == channel.Id);
 
             stats.GrapesWins += winType == DiscordGambleWinType.GrapesWins ? 1 : 0;

@@ -191,7 +191,8 @@ namespace BreganTwitchBot.Domain.Services.Discord
                     ChannelName = arg.Channel.Name,
                     MessageContent = arg.Content,
                     HasAttachments = arg.Attachments.Count > 0,
-                    MessageId = arg.Id
+                    MessageId = arg.Id,
+                    AuthorIsMod = _discordUserLookupService.IsUserMod(guildChannel.Guild.Id, arg.Author as SocketGuildUser)
                 };
 
                 await discordEventHelperService.HandleMessageReceivedEvent(messageReceived);

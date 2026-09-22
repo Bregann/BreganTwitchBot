@@ -1,4 +1,5 @@
-﻿using BreganTwitchBot.Domain.Interfaces.Discord.Commands;
+﻿using BreganTwitchBot.Domain.Interfaces.Discord;
+using BreganTwitchBot.Domain.Interfaces.Discord.Commands;
 using BreganTwitchBot.Domain.Interfaces.Twitch;
 using BreganTwitchBot.Domain.Interfaces.Twitch.Commands;
 using Hangfire;
@@ -13,7 +14,10 @@ namespace BreganTwitchBot.Domain.Services.Helpers
         IWordBlacklistMonitorService wordBlacklistMonitorService,
         IDailyPointsDataService dailyPointsDataService,
         IGeneralCommandsData generalCommandsData,
-        IDiscordDailyPointsData discordDailyPointsData
+        IDiscordDailyPointsData discordDailyPointsData,
+        IStreamStatsService streamStatsService,
+        IDiscordStatusService discordStatusService,
+        IMonthlyLeaderboardRoleService monthlyLeaderboardRoleService
         )
     {
         public void SetupHangfireJobs()
@@ -26,7 +30,12 @@ namespace BreganTwitchBot.Domain.Services.Helpers
             RecurringJob.AddOrUpdate("ResetTwitchStreaks", () => ResetTwitchStreaks(), "0 2 * * *");
             RecurringJob.AddOrUpdate("RefreshApi", () => RefreshApi(), "45 * * * *");
             RecurringJob.AddOrUpdate("CheckBirthdays", () => CheckBirthdays(), "0 6 * * *");
+            RecurringJob.AddOrUpdate("FlushStreamStats", () => FlushStreamStats(), "* * * * *");
+            RecurringJob.AddOrUpdate("SampleViewerCounts", () => SampleViewerCounts(), "* * * * *");
+            RecurringJob.AddOrUpdate("FollowerCheck", () => FollowerCheck(), "0 * * * *");
+            RecurringJob.AddOrUpdate("UpdateDiscordMemberCount", () => UpdateDiscordMemberCount(), "*/10 * * * *");
             RecurringJob.AddOrUpdate("ResetDiscordStreaks", () => ResetDiscordStreaks(), "0 0 * * *");
+            RecurringJob.AddOrUpdate("UpdateMonthlyLeaderboardRoles", () => UpdateMonthlyLeaderboardRoles(), "0 1 * * *");
 
             Log.Information("[Job Scheduler] Job Scheduler Setup");
         }
@@ -164,9 +173,49 @@ namespace BreganTwitchBot.Domain.Services.Helpers
             await twitchApiConnection.RefreshAllApiKeys();
         }
 
+        /// <summary>
+        /// Writes the in memory stream stat counters to the database
+        /// </summary>
+        public async Task FlushStreamStats()
+        {
+            await streamStatsService.FlushStats();
+        }
+
+        /// <summary>
+        /// Samples each live channel's viewer count for the average and peak
+        /// </summary>
+        public async Task SampleViewerCounts()
+        {
+            await streamStatsService.SampleViewerCounts();
+        }
+
+        /// <summary>
+        /// Reports follower count changes to discord each hour
+        /// </summary>
+        public async Task FollowerCheck()
+        {
+            await streamStatsService.ReportFollowerChanges();
+        }
+
+        /// <summary>
+        /// Keeps the bot's discord presence showing the member count
+        /// </summary>
+        public async Task UpdateDiscordMemberCount()
+        {
+            await discordStatusService.UpdateMemberCountStatusAsync();
+        }
+
         public async Task CheckBirthdays()
         {
             await generalCommandsData.CheckForUserBirthdaysAndSendMessage();
+        }
+
+        /// <summary>
+        /// Moves the monthly bits and gifted subs leaderboard roles onto the current leaders
+        /// </summary>
+        public async Task UpdateMonthlyLeaderboardRoles()
+        {
+            await monthlyLeaderboardRoleService.UpdateMonthlyLeaderboardRolesAsync();
         }
 
         public async Task ResetDiscordStreaks()

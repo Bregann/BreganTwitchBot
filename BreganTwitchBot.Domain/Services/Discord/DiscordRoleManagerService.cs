@@ -1,5 +1,6 @@
 ﻿using BreganTwitchBot.Domain.Database.Context;
 using BreganTwitchBot.Domain.Interfaces.Discord;
+using BreganTwitchBot.Domain.Services.Helpers;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
 
@@ -54,7 +55,7 @@ namespace BreganTwitchBot.Domain.Services.Discord
 
         public async Task AddRolesToUserOnGuildJoin(ulong discordUserId, ulong guildId)
         {
-            var channel = await context.Channels.FirstOrDefaultAsync(x => x.ChannelConfig.DiscordGuildId == guildId);
+            var channel = await context.GetChannelForGuild(guildId);
 
             if (channel == null)
             {

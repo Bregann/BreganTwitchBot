@@ -46,7 +46,7 @@ namespace BreganTwitchBot.Domain.Services.Twitch.Commands.CustomCommands
 
         public async Task<string> AddNewCustomCommandAsync(ChannelChatMessageReceivedParams msgParams)
         {
-            await twitchHelperService.EnsureUserHasModeratorPermissions(msgParams.IsMod, msgParams.IsBroadcaster, msgParams.ChatterChannelName, msgParams.ChatterChannelId, msgParams.BroadcasterChannelId, msgParams.BroadcasterChannelName);
+            await twitchHelperService.EnsureUserHasModeratorPermissions(msgParams);
 
             if (msgParams.MessageParts.Length < 3)
             {
@@ -81,7 +81,7 @@ namespace BreganTwitchBot.Domain.Services.Twitch.Commands.CustomCommands
 
         public async Task<string> EditCustomCommandAsync(ChannelChatMessageReceivedParams msgParams)
         {
-            await twitchHelperService.EnsureUserHasModeratorPermissions(msgParams.IsMod, msgParams.IsBroadcaster, msgParams.ChatterChannelName, msgParams.ChatterChannelId, msgParams.BroadcasterChannelId, msgParams.BroadcasterChannelName);
+            await twitchHelperService.EnsureUserHasModeratorPermissions(msgParams);
 
             if (msgParams.MessageParts.Length < 3)
             {
@@ -110,7 +110,7 @@ namespace BreganTwitchBot.Domain.Services.Twitch.Commands.CustomCommands
 
         public async Task<string> DeleteCustomCommandAsync(ChannelChatMessageReceivedParams msgParams)
         {
-            await twitchHelperService.EnsureUserHasModeratorPermissions(msgParams.IsMod, msgParams.IsBroadcaster, msgParams.ChatterChannelName, msgParams.ChatterChannelId, msgParams.BroadcasterChannelId, msgParams.BroadcasterChannelName);
+            await twitchHelperService.EnsureUserHasModeratorPermissions(msgParams);
 
             if (msgParams.MessageParts.Length < 2)
             {
