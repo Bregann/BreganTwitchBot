@@ -7,7 +7,7 @@ import { cookies } from 'next/headers'
 let API_BASE_URL = process.env.API_BASE_URL
 
 if (process.env.NODE_ENV === 'development') {
-  API_BASE_URL = 'https://localhost:7248/api'
+  API_BASE_URL = 'http://localhost:5053/api'
 }
 
 const ACCESS_TOKEN_COOKIE = 'accessToken'

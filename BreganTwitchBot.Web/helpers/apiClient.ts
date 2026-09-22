@@ -5,8 +5,48 @@ if (process.env.NODE_ENV === 'development') {
   API_BASE_URL = 'http://localhost:3000'
 }
 
-// Helper to check if we're in a browser environment
-const isBrowser = typeof window !== 'undefined'
+// A page usually fires several requests at once, so a stale access token means
+// several 401s at once. Without this they would each kick off their own refresh,
+// and because every refresh rotates the token the later ones present one that has
+// already been spent - which fails, and looks exactly like an expired session.
+let inFlightRefresh: Promise<boolean> | null = null
+
+async function refreshSession(): Promise<boolean> {
+  // Only the browser holds the cookies this needs. On the server the module
+  // scope is shared by every request in flight, so a shared promise there would
+  // hand one visitor's refresh result to another.
+  if (typeof window === 'undefined') {
+    return false
+  }
+
+  inFlightRefresh ??= (async () => {
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/auth/RefreshToken`, {
+        method: 'POST',
+        credentials: 'include',
+      })
+
+      return res.ok
+    } catch {
+      return false
+    } finally {
+      // cleared on the next tick so everyone waiting on this attempt shares its
+      // result rather than racing ahead and starting another one
+      setTimeout(() => {
+        inFlightRefresh = null
+      }, 0)
+    }
+  })()
+
+  return inFlightRefresh
+}
+
+const sessionExpired = <T>(): FetchResponse<T> => ({
+  data: undefined,
+  status: 401,
+  ok: false,
+  statusMessage: 'Session expired. Please log in again.',
+})
 
 type HttpMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE'
 //TODO: comment it properly
@@ -65,38 +105,20 @@ async function doRequest<T>(
 
       // 🛑 Unauthorized? Time to refresh & retry ONCE
       if (res.status === 401 && retry) {
-        console.warn('401 detected. Attempting refresh...')
-
-        const refreshRes = await fetch(`${API_BASE_URL}/api/auth/RefreshToken`, {
-          method: 'POST',
-          credentials: 'include',
-        })
-
-        if (refreshRes.ok) {
-          console.log('Refresh successful! Retrying request...')
+        if (await refreshSession()) {
           return doRequest<T>(method, endpoint, {
             body,
             headers,
+            cookieHeader,
             retry: false,
           })
-        } else {
-          console.error('Refresh failed. Logging out...')
-          // Only clear cookies and redirect in browser environment
-          if (isBrowser) {
-            document.cookie = 'accessToken=; Max-Age=0; path=/'
-            document.cookie = 'refreshToken=; Max-Age=0; path=/'
-            // Use setTimeout to avoid blocking the request
-            setTimeout(() => {
-              window.location.href = '/login'
-            }, 100)
-          }
-          return {
-            data: undefined,
-            status: 401,
-            ok: false,
-            statusMessage: 'Session expired. Please log in again.'
-          }
         }
+
+        // Nothing to refresh with, so the caller is simply not signed in. This
+        // deliberately does not redirect: a signed out visitor reading a public
+        // page is a normal state, and navigating from here sends anyone whose
+        // session has lapsed round a reload loop.
+        return sessionExpired<T>()
       }
 
       let data: T | undefined = undefined
@@ -203,30 +225,15 @@ export async function doGetBlob(endpoint: string, options?: RequestOptions): Pro
 
       // Handle 401 with refresh
       if (res.status === 401 && retry) {
-        console.warn('401 detected. Attempting refresh...')
-
-        const refreshRes = await fetch(`${API_BASE_URL}/api/auth/RefreshToken`, {
-          method: 'POST',
-          credentials: 'include',
-        })
-
-        if (refreshRes.ok) {
-          console.log('Refresh successful! Retrying request...')
+        if (await refreshSession()) {
           return doGetBlob(endpoint, {
             headers,
+            cookieHeader,
             retry: false,
           })
-        } else {
-          // Clear cookies and redirect to login
-          if (isBrowser) {
-            document.cookie = 'accessToken=; Max-Age=0; path=/'
-            document.cookie = 'refreshToken=; Max-Age=0; path=/'
-            setTimeout(() => {
-              window.location.href = '/login'
-            }, 100)
-          }
-          throw new Error('Session expired. Please log in again.')
         }
+
+        throw new Error('Session expired. Please log in again.')
       }
 
       if (!res.ok) {
@@ -288,35 +295,15 @@ export async function doPostFormData<T>(
 
       // Handle 401 with refresh
       if (res.status === 401 && retry) {
-        console.warn('401 detected. Attempting refresh...')
-
-        const refreshRes = await fetch(`${API_BASE_URL}/api/auth/RefreshToken`, {
-          method: 'POST',
-          credentials: 'include',
-        })
-
-        if (refreshRes.ok) {
-          console.log('Refresh successful! Retrying request...')
+        if (await refreshSession()) {
           return doPostFormData<T>(endpoint, formData, {
             headers,
+            cookieHeader,
             retry: false,
           })
-        } else {
-          console.error('Refresh failed.')
-          if (isBrowser) {
-            document.cookie = 'accessToken=; Max-Age=0; path=/'
-            document.cookie = 'refreshToken=; Max-Age=0; path=/'
-            setTimeout(() => {
-              window.location.href = '/login'
-            }, 100)
-          }
-          return {
-            data: undefined,
-            status: 401,
-            ok: false,
-            statusMessage: 'Session expired. Please log in again.'
-          }
         }
+
+        return sessionExpired<T>()
       }
 
       let data: T | undefined = undefined

@@ -374,29 +374,23 @@ namespace BreganTwitchBot.DomainTests.Api
         {
             await _adminDataService.UpsertRewardAsync(Channel, new UpsertChannelPointRewardRequest
             {
-                RewardTitle = "Goose",
-                ResponseMessage = "{user} has redeemed Goose!",
+                RewardTitle = "Duck",
+                ResponseMessage = "{user} has redeemed Duck!",
                 Enabled = true
             });
 
-            Assert.That(await _dbContext.ChannelPointRewards.AnyAsync(x => x.RewardTitle == "Goose"), Is.True);
+            Assert.That(await _dbContext.ChannelPointRewards.AnyAsync(x => x.RewardTitle == "Duck"), Is.True);
         }
 
         [Test]
-        public async Task UpsertReward_DuplicateTitle_IsRejected()
+        public void UpsertReward_DuplicateTitle_IsRejected()
         {
-            // the title is how a redemption is matched, so duplicates make it arbitrary
-            await _adminDataService.UpsertRewardAsync(Channel, new UpsertChannelPointRewardRequest
-            {
-                RewardTitle = "Goose",
-                ResponseMessage = "first",
-                Enabled = true
-            });
-
+            // the title is how a redemption is matched, so duplicates make it arbitrary.
+            // the seeded reward is "goose", so a differently cased one must still be rejected
             Assert.ThrowsAsync<ArgumentException>(async () =>
                 await _adminDataService.UpsertRewardAsync(Channel, new UpsertChannelPointRewardRequest
                 {
-                    RewardTitle = "goose",
+                    RewardTitle = "Goose",
                     ResponseMessage = "second",
                     Enabled = true
                 }));
@@ -405,19 +399,12 @@ namespace BreganTwitchBot.DomainTests.Api
         [Test]
         public async Task UpsertReward_UpdatesAnExistingReward()
         {
-            await _adminDataService.UpsertRewardAsync(Channel, new UpsertChannelPointRewardRequest
-            {
-                RewardTitle = "Goose",
-                ResponseMessage = "old",
-                Enabled = true
-            });
-
-            var reward = await _dbContext.ChannelPointRewards.FirstAsync(x => x.RewardTitle == "Goose");
+            var reward = await _dbContext.ChannelPointRewards.FirstAsync(x => x.RewardTitle == DatabaseSeedHelper.SeededChannel1RewardTitle);
 
             await _adminDataService.UpsertRewardAsync(Channel, new UpsertChannelPointRewardRequest
             {
                 Id = reward.Id,
-                RewardTitle = "Goose",
+                RewardTitle = DatabaseSeedHelper.SeededChannel1RewardTitle,
                 ResponseMessage = "new",
                 Enabled = false
             });
@@ -450,29 +437,21 @@ namespace BreganTwitchBot.DomainTests.Api
         {
             await _adminDataService.UpsertSubathonRateAsync(Channel, new UpsertSubathonRateRequest
             {
-                FromHours = 0,
+                FromHours = 48,
                 MillisecondsPerBit = 900,
                 Tier1SubMinutes = 6,
                 Tier2SubMinutes = 12,
                 Tier3SubMinutes = 30
             });
 
-            Assert.That(await _dbContext.SubathonRates.AnyAsync(x => x.FromHours == 0), Is.True);
+            Assert.That(await _dbContext.SubathonRates.AnyAsync(x => x.FromHours == 48), Is.True);
         }
 
         [Test]
-        public async Task UpsertSubathonRate_DuplicateStartingHour_IsRejected()
+        public void UpsertSubathonRate_DuplicateStartingHour_IsRejected()
         {
-            // two bands starting at the same hour would make the rate ambiguous
-            await _adminDataService.UpsertSubathonRateAsync(Channel, new UpsertSubathonRateRequest
-            {
-                FromHours = 12,
-                MillisecondsPerBit = 750,
-                Tier1SubMinutes = 5,
-                Tier2SubMinutes = 10,
-                Tier3SubMinutes = 25
-            });
-
+            // two bands starting at the same hour would make the rate ambiguous, and
+            // hour 12 is already seeded
             Assert.ThrowsAsync<ArgumentException>(async () =>
                 await _adminDataService.UpsertSubathonRateAsync(Channel, new UpsertSubathonRateRequest
                 {
@@ -502,15 +481,6 @@ namespace BreganTwitchBot.DomainTests.Api
         public async Task DeleteSubathonRate_TheZeroHourBand_IsRejected()
         {
             // without it a subathon would earn nothing below the next band
-            await _adminDataService.UpsertSubathonRateAsync(Channel, new UpsertSubathonRateRequest
-            {
-                FromHours = 0,
-                MillisecondsPerBit = 900,
-                Tier1SubMinutes = 6,
-                Tier2SubMinutes = 12,
-                Tier3SubMinutes = 30
-            });
-
             var band = await _dbContext.SubathonRates.FirstAsync(x => x.FromHours == 0);
 
             Assert.ThrowsAsync<ArgumentException>(async () =>
@@ -520,15 +490,6 @@ namespace BreganTwitchBot.DomainTests.Api
         [Test]
         public async Task DeleteSubathonRate_AHigherBand_IsAllowed()
         {
-            await _adminDataService.UpsertSubathonRateAsync(Channel, new UpsertSubathonRateRequest
-            {
-                FromHours = 24,
-                MillisecondsPerBit = 150,
-                Tier1SubMinutes = 1,
-                Tier2SubMinutes = 2,
-                Tier3SubMinutes = 5
-            });
-
             var band = await _dbContext.SubathonRates.FirstAsync(x => x.FromHours == 24);
 
             await _adminDataService.DeleteSubathonRateAsync(Channel, band.Id);

@@ -1,4 +1,4 @@
-using BreganTwitchBot.Domain.DTOs.Auth.Responses;
+﻿using BreganTwitchBot.Domain.DTOs.Auth.Responses;
 using BreganTwitchBot.Domain.Interfaces.Api;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -9,7 +9,7 @@ namespace BreganTwitchBot.Core.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class AuthController(IAuthService authService, IConfiguration configuration) : ControllerBase
+    public class AuthController(IAuthService authService, IConfiguration configuration, IWebHostEnvironment environment) : ControllerBase
     {
         private const string AccessTokenCookie = "accessToken";
         private const string RefreshTokenCookie = "refreshToken";
@@ -28,7 +28,7 @@ namespace BreganTwitchBot.Core.Controllers
             Response.Cookies.Append(StateCookie, state, new CookieOptions
             {
                 HttpOnly = true,
-                Secure = true,
+                Secure = UseSecureCookies,
                 SameSite = SameSiteMode.Lax,
                 Expires = DateTimeOffset.UtcNow.AddMinutes(10)
             });
@@ -137,7 +137,7 @@ namespace BreganTwitchBot.Core.Controllers
             Response.Cookies.Append(AccessTokenCookie, accessToken, new CookieOptions
             {
                 HttpOnly = true,
-                Secure = true,
+                Secure = UseSecureCookies,
                 SameSite = SameSiteMode.Lax,
                 Expires = DateTimeOffset.UtcNow.AddHours(1)
             });
@@ -145,7 +145,7 @@ namespace BreganTwitchBot.Core.Controllers
             Response.Cookies.Append(RefreshTokenCookie, refreshToken, new CookieOptions
             {
                 HttpOnly = true,
-                Secure = true,
+                Secure = UseSecureCookies,
                 SameSite = SameSiteMode.Lax,
                 Expires = DateTimeOffset.UtcNow.AddDays(7)
             });
@@ -153,8 +153,22 @@ namespace BreganTwitchBot.Core.Controllers
 
         private void ClearAuthCookies()
         {
-            Response.Cookies.Delete(AccessTokenCookie);
-            Response.Cookies.Delete(RefreshTokenCookie);
+            // the options have to line up with the ones used when the cookie was
+            // written or the browser keeps the old one and every request that
+            // follows still carries a token this api has already rejected
+            var options = new CookieOptions
+            {
+                HttpOnly = true,
+                Secure = UseSecureCookies,
+                SameSite = SameSiteMode.Lax
+            };
+
+            Response.Cookies.Delete(AccessTokenCookie, options);
+            Response.Cookies.Delete(RefreshTokenCookie, options);
         }
+
+        // the dev site is served over plain http on localhost, and a secure cookie
+        // would simply be dropped there - leaving nothing to refresh with
+        private bool UseSecureCookies => !environment.IsDevelopment();
     }
 }
