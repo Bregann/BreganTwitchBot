@@ -149,14 +149,27 @@ namespace BreganTwitchBot.Domain.Services.Twitch.Events
         {
             await twitchHelperService.SendTwitchMessageToChannel(raidParams.BroadcasterChannelId, raidParams.BroadcasterChannelName, $"Welcome {raidParams.RaidingChannelName} and their {raidParams.Viewers} viewers! Thank you for the raid! <3 Make sure to check out their channel at https://twitch.tv/{raidParams.RaidingChannelName.ToLower()}");
 
-            // if their viewers are greater than 5 we can give them a shoutout as it's probably not a troll raid
-            if (raidParams.Viewers > 5)
+            // the minimum is per channel so a channel can decide what counts as a real raid
+            // rather than a troll one, or shout out every raid by setting it to zero
+            var minimumViewers = configHelperService.GetAutoShoutoutMinimumViewers(raidParams.BroadcasterChannelId);
+
+            if (raidParams.Viewers >= minimumViewers)
             {
                 var channel = twitchApiConnection.GetBotApiClient();
 
                 if (channel != null)
                 {
-                    await twitchApiInteractionService.ShoutoutChannel(channel.ApiClient, raidParams.BroadcasterChannelId, raidParams.RaidingChannelId, channel.TwitchChannelClientId);
+                    try
+                    {
+                        await twitchApiInteractionService.ShoutoutChannel(channel.ApiClient, raidParams.BroadcasterChannelId, raidParams.RaidingChannelId, channel.TwitchChannelClientId);
+                        Log.Information($"[Raid] Shouted out {raidParams.RaidingChannelName} after a {raidParams.Viewers} viewer raid");
+                    }
+                    catch (Exception ex)
+                    {
+                        // twitch rate limits shoutouts, so a failure here must not take down
+                        // the rest of the raid handling
+                        Log.Warning(ex, $"[Raid] Could not shout out {raidParams.RaidingChannelName}");
+                    }
                 }
             }
         }

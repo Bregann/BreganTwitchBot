@@ -52,6 +52,12 @@ namespace BreganTwitchBot.Domain.Database.Models
         [Required]
         public required bool BroadcasterLive { get; set; }
 
+        /// <summary>
+        /// The least viewers a raid must bring before the raider is automatically shouted out,
+        /// so a troll raid of two people does not earn one. Zero shouts out every raid.
+        /// </summary>
+        public int AutoShoutoutMinimumViewers { get; set; } = 5;
+
         public required bool DiscordEnabled { get; set; } = false;
 
         // Discord related properties
