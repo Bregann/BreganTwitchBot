@@ -1,7 +1,10 @@
 ﻿using BreganTwitchBot.Domain.Database.Context;
 using BreganTwitchBot.Domain.DTOs.Discord.Events;
 using BreganTwitchBot.Domain.Interfaces.Discord;
+using BreganTwitchBot.Domain.Interfaces.Discord.Commands;
+using BreganTwitchBot.Domain.Interfaces.Discord.Commands;
 using BreganTwitchBot.Domain.Interfaces.Helpers;
+using BreganTwitchBot.Domain.Services.Helpers;
 using Discord;
 using Discord.WebSocket;
 using Microsoft.EntityFrameworkCore;
@@ -14,7 +17,11 @@ namespace BreganTwitchBot.Domain.Services.Discord
         IConfigHelperService configHelper,
         IDiscordHelperService discordHelper,
         IDiscordRoleManagerService discordRoleManagerService,
-        IDiscordUserLookupService discordUserLookupService
+        IDiscordUserLookupService discordUserLookupService,
+        IDiscordSelfAssignRoleData discordSelfAssignRoleData,
+        IDiscordGiveawayData discordGiveawayData,
+        IDiscordMessageModerationService discordMessageModerationService,
+        IDiscordCustomCommandService discordCustomCommandService
         ) : IDiscordEventHelperService
     {
         public async Task HandleUserJoinedEvent(EventBase userJoined)
@@ -95,7 +102,7 @@ namespace BreganTwitchBot.Domain.Services.Discord
 
                 // check if they are linked, if so then add the twitch username and watch time stats for the channel
                 var twitchUser = await context.ChannelUsers.FirstOrDefaultAsync(x => x.DiscordUserId == userLeft.UserId);
-                var broadcaster = await context.Channels.FirstAsync(x => x.ChannelConfig.DiscordGuildId == userLeft.GuildId);
+                var broadcaster = await context.GetRequiredChannelForGuild(userLeft.GuildId);
 
                 if (twitchUser != null)
                 {
@@ -147,6 +154,32 @@ namespace BreganTwitchBot.Domain.Services.Discord
 
         public async Task HandleMessageReceivedEvent(MessageReceivedEvent messageReceivedEvent)
         {
+            // moderation runs first - a message that gets somebody muted should not also
+            // earn them xp
+            var wasModerated = await discordMessageModerationService.CheckMessage(
+                messageReceivedEvent.GuildId,
+                messageReceivedEvent.ChannelId,
+                messageReceivedEvent.UserId,
+                messageReceivedEvent.MessageContent,
+                authorIsBot: false);
+
+            if (wasModerated)
+            {
+                return;
+            }
+
+            var customCommandReply = await discordCustomCommandService.TryHandleCustomCommand(
+                messageReceivedEvent.GuildId,
+                messageReceivedEvent.ChannelId,
+                messageReceivedEvent.Username,
+                messageReceivedEvent.MessageContent,
+                messageReceivedEvent.AuthorIsMod);
+
+            if (customCommandReply != null)
+            {
+                await discordHelper.SendMessage(messageReceivedEvent.ChannelId, customCommandReply);
+            }
+
             // george food hardcoded memes, only for blocksssssss
             if (messageReceivedEvent.UserId == 153974235809710081 && messageReceivedEvent.ChannelId == 1153032190234464347 && messageReceivedEvent.MessageContent.ToLower().Contains("#ping"))
             {
@@ -228,6 +261,29 @@ namespace BreganTwitchBot.Domain.Services.Discord
                 await user.ModifyAsync(user => user.Nickname = nickNameToSet);
                 return ("Your nickname has been set! Woooo", true);
             }
+        }
+
+        /// <summary>
+        /// Giveaway buttons are named giveaway-{giveawayId}-{action}
+        /// </summary>
+        private async Task<(string MessageToSend, bool Ephemeral)> HandleGiveawayButton(ButtonPressedEvent buttonPressedEvent)
+        {
+            var parts = buttonPressedEvent.CustomId.Split('-');
+
+            if (parts.Length != 3)
+            {
+                return ("invalid button", true);
+            }
+
+            var giveawayId = parts[1];
+
+            return parts[2] switch
+            {
+                "enter" => await discordGiveawayData.EnterGiveaway(buttonPressedEvent.GuildId, buttonPressedEvent.UserId, giveawayId),
+                "check" => await discordGiveawayData.CheckEntries(buttonPressedEvent.GuildId, buttonPressedEvent.UserId, giveawayId),
+                "draw" => await discordGiveawayData.DrawWinner(buttonPressedEvent.GuildId, buttonPressedEvent.UserId, giveawayId),
+                _ => ("invalid button", true)
+            };
         }
     }
 }

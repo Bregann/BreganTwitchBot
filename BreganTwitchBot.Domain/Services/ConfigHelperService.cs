@@ -157,6 +157,7 @@ namespace BreganTwitchBot.Domain.Services
                     DiscordUserRankUpAnnouncementChannelId = config.DiscordUserRankUpAnnouncementChannelId,
                     DiscordGiveawayChannelId = config.DiscordGiveawayChannelId,
                     DiscordModeratorRoleId = config.DiscordModeratorRoleId,
+                    DiscordMuteRoleId = config.DiscordMuteRoleId,
                     DiscordWelcomeMessageChannelId = config.DiscordWelcomeMessageChannelId,
                     DiscordGeneralChannelId = config.DiscordGeneralChannelId,
                     DiscordGuildId = config.DiscordGuildId
@@ -185,6 +186,7 @@ namespace BreganTwitchBot.Domain.Services
                     DiscordUserRankUpAnnouncementChannelId = config.DiscordUserRankUpAnnouncementChannelId,
                     DiscordGiveawayChannelId = config.DiscordGiveawayChannelId,
                     DiscordModeratorRoleId = config.DiscordModeratorRoleId,
+                    DiscordMuteRoleId = config.DiscordMuteRoleId,
                     DiscordWelcomeMessageChannelId = config.DiscordWelcomeMessageChannelId,
                     DiscordGeneralChannelId = config.DiscordGeneralChannelId,
                     DiscordGuildId = config.DiscordGuildId

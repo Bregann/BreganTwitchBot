@@ -1,4 +1,4 @@
-using BreganTwitchBot.Domain.Database.Context;
+﻿using BreganTwitchBot.Domain.Database.Context;
 using BreganTwitchBot.Domain.DTOs.Twitch.EventSubEvents;
 using BreganTwitchBot.Domain.Exceptions;
 using BreganTwitchBot.Domain.Interfaces.Twitch;
@@ -140,7 +140,7 @@ namespace BreganTwitchBot.DomainTests.Twitch.Commands
         public void AddMarblesWin_NotAMod_ThrowsUnauthorised()
         {
             _twitchHelperService
-                .Setup(x => x.EnsureUserHasModeratorPermissions(false, false, It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()))
+                .Setup(x => x.EnsureUserHasModeratorPermissions(It.IsAny<ChannelChatMessageReceivedParams>()))
                 .ThrowsAsync(new UnauthorizedAccessException("You don't have permission to do that"));
 
             var msgParams = CreateMsgParams($"!addmarbleswin {DatabaseSeedHelper.Channel1User1TwitchUsername}", isMod: false);

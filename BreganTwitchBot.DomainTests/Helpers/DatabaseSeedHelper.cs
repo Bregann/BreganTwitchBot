@@ -29,6 +29,9 @@ namespace BreganTwitchBot.DomainTests.Helpers
         public const string Channel1SuperModUserTwitchUserId = "1111";
         public const string Channel1SuperModUserTwitchUsername = "supermoduser";
 
+        public const string SeededChannel1RewardTitle = "goose";
+        public const string SeededChannel1DisabledRewardTitle = "disabledreward";
+
         public const string SeededChannel1BannedWord = "seededbannedword";
         public const string SeededChannel1TempBanWord = "seededtempbanword";
         public const string SeededChannel2BannedWord = "seededbannedword";
@@ -220,6 +223,46 @@ namespace BreganTwitchBot.DomainTests.Helpers
                 ChannelId = channel.Id,
                 ChannelUserId = channelUser2.Id
             });
+
+            await context.ChannelPointRewards.AddAsync(new ChannelPointReward
+            {
+                ChannelId = channel.Id,
+                RewardTitle = SeededChannel1RewardTitle,
+                ResponseMessage = "{user} has redeemed Goose! Goose Goose Goose",
+                Enabled = true,
+                TimesRedeemed = 0
+            });
+
+            await context.ChannelPointRewards.AddAsync(new ChannelPointReward
+            {
+                ChannelId = channel.Id,
+                RewardTitle = SeededChannel1DisabledRewardTitle,
+                ResponseMessage = "{user} redeemed a disabled reward",
+                Enabled = false,
+                TimesRedeemed = 0
+            });
+
+            // the rate bands the old bot hardcoded, seeded for channel 1 only
+            foreach (var (fromHours, msPerBit, t1, t2, t3) in new[]
+            {
+                (0, 900, 6, 12, 30),
+                (12, 750, 5, 10, 25),
+                (13, 600, 4, 8, 20),
+                (16, 450, 3, 6, 12),
+                (23, 300, 2, 4, 8),
+                (24, 150, 1, 2, 5)
+            })
+            {
+                await context.SubathonRates.AddAsync(new SubathonRate
+                {
+                    ChannelId = channel.Id,
+                    FromHours = fromHours,
+                    MillisecondsPerBit = msPerBit,
+                    Tier1SubMinutes = t1,
+                    Tier2SubMinutes = t2,
+                    Tier3SubMinutes = t3
+                });
+            }
 
             await context.CustomCommands.AddAsync(new CustomCommand
             {

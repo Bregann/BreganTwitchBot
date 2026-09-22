@@ -92,7 +92,7 @@ namespace BreganTwitchBot.DomainTests.Twitch.Commands
         [Test]
         public async Task HandleFollowCommandAsync_ProvideInvalidOtherTwitchUsername_CorrectResultReturned()
         {
-            _twitchApiInteractionService.Setup(x => x.GetUsersAsync(It.IsAny<TwitchAPI>(), "CoolUser1"))
+            _twitchApiInteractionService.Setup(x => x.GetUsers(It.IsAny<TwitchAPI>(), "CoolUser1"))
                 .ReturnsAsync(value: null);
 
             var msgParams = MessageParamsHelper.CreateChatMessageParams("!followage CoolUser1", "123", new[] { "!followage", "CoolUser1" });
@@ -107,7 +107,7 @@ namespace BreganTwitchBot.DomainTests.Twitch.Commands
         [TestCase(FollowCommandTypeEnum.FollowMinutes)]
         public async Task HandleFollowCommandAsync_MockCommandUserNotFollowingChannel_CorrectResultReturned(FollowCommandTypeEnum followTypeEnum)
         {
-            _twitchApiInteractionService.Setup(x => x.GetUsersAsync(It.IsAny<TwitchAPI>(), DatabaseSeedHelper.Channel1User1TwitchUsername))
+            _twitchApiInteractionService.Setup(x => x.GetUsers(It.IsAny<TwitchAPI>(), DatabaseSeedHelper.Channel1User1TwitchUsername))
                 .ReturnsAsync(new GetUsersAsyncResponse
                 {
                     Users =
@@ -121,7 +121,7 @@ namespace BreganTwitchBot.DomainTests.Twitch.Commands
                     ]
                 });
 
-            _twitchApiInteractionService.Setup(x => x.GetChannelFollowersAsync(It.IsAny<TwitchAPI>(), DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId, DatabaseSeedHelper.Channel1User1TwitchUserId))
+            _twitchApiInteractionService.Setup(x => x.GetChannelFollowers(It.IsAny<TwitchAPI>(), DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId, DatabaseSeedHelper.Channel1User1TwitchUserId))
                 .ReturnsAsync(new GetChannelFollowersAsyncResponse
                 {
                     Followers = [],
@@ -141,7 +141,7 @@ namespace BreganTwitchBot.DomainTests.Twitch.Commands
         [TestCase(FollowCommandTypeEnum.FollowMinutes)]
         public async Task HandleFollowAgeCommandAsync_MockCommandUSerIsFollowingChannel_CorrectResultReturned(FollowCommandTypeEnum followCommandTypeEnum)
         {
-            _twitchApiInteractionService.Setup(x => x.GetUsersAsync(It.IsAny<TwitchAPI>(), DatabaseSeedHelper.Channel1User1TwitchUsername))
+            _twitchApiInteractionService.Setup(x => x.GetUsers(It.IsAny<TwitchAPI>(), DatabaseSeedHelper.Channel1User1TwitchUsername))
                 .ReturnsAsync(new GetUsersAsyncResponse
                 {
                     Users =
@@ -155,7 +155,7 @@ namespace BreganTwitchBot.DomainTests.Twitch.Commands
                     ]
                 });
 
-            _twitchApiInteractionService.Setup(x => x.GetChannelFollowersAsync(It.IsAny<TwitchAPI>(), DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId, DatabaseSeedHelper.Channel1User1TwitchUserId))
+            _twitchApiInteractionService.Setup(x => x.GetChannelFollowers(It.IsAny<TwitchAPI>(), DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId, DatabaseSeedHelper.Channel1User1TwitchUserId))
                 .ReturnsAsync(new GetChannelFollowersAsyncResponse
                 {
                     Followers = [new ChannelFollower
@@ -193,7 +193,7 @@ namespace BreganTwitchBot.DomainTests.Twitch.Commands
         [TestCase(FollowCommandTypeEnum.FollowMinutes)]
         public async Task HandleFollowCommandAsync_MockOtherUserNotFollowingChannel_CorrectResultReturned(FollowCommandTypeEnum followCommandTypeEnum)
         {
-            _twitchApiInteractionService.Setup(x => x.GetUsersAsync(It.IsAny<TwitchAPI>(), "CoolUser1"))
+            _twitchApiInteractionService.Setup(x => x.GetUsers(It.IsAny<TwitchAPI>(), "CoolUser1"))
                 .ReturnsAsync(new GetUsersAsyncResponse
                 {
                     Users =
@@ -207,7 +207,7 @@ namespace BreganTwitchBot.DomainTests.Twitch.Commands
                     ]
                 });
 
-            _twitchApiInteractionService.Setup(x => x.GetChannelFollowersAsync(It.IsAny<TwitchAPI>(), DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId, DatabaseSeedHelper.Channel1User1TwitchUserId))
+            _twitchApiInteractionService.Setup(x => x.GetChannelFollowers(It.IsAny<TwitchAPI>(), DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId, DatabaseSeedHelper.Channel1User1TwitchUserId))
                 .ReturnsAsync(new GetChannelFollowersAsyncResponse
                 {
                     Followers = [],
@@ -226,7 +226,7 @@ namespace BreganTwitchBot.DomainTests.Twitch.Commands
         [TestCase(FollowCommandTypeEnum.FollowMinutes)]
         public async Task HandleFollowCommandAsync_MockOtherUserIsFollowingChannel_CorrectResultReturned(FollowCommandTypeEnum followCommandTypeEnum)
         {
-            _twitchApiInteractionService.Setup(x => x.GetUsersAsync(It.IsAny<TwitchAPI>(), DatabaseSeedHelper.Channel1User1TwitchUsername))
+            _twitchApiInteractionService.Setup(x => x.GetUsers(It.IsAny<TwitchAPI>(), DatabaseSeedHelper.Channel1User1TwitchUsername))
                 .ReturnsAsync(new GetUsersAsyncResponse
                 {
                     Users =
@@ -240,7 +240,7 @@ namespace BreganTwitchBot.DomainTests.Twitch.Commands
                     ]
                 });
 
-            _twitchApiInteractionService.Setup(x => x.GetUsersAsync(It.IsAny<TwitchAPI>(), "CoolUser1"))
+            _twitchApiInteractionService.Setup(x => x.GetUsers(It.IsAny<TwitchAPI>(), "CoolUser1"))
                 .ReturnsAsync(new GetUsersAsyncResponse
                 {
                     Users =
@@ -254,7 +254,7 @@ namespace BreganTwitchBot.DomainTests.Twitch.Commands
                     ]
                 });
 
-            _twitchApiInteractionService.Setup(x => x.GetChannelFollowersAsync(It.IsAny<TwitchAPI>(), DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId, DatabaseSeedHelper.Channel1User1TwitchUserId))
+            _twitchApiInteractionService.Setup(x => x.GetChannelFollowers(It.IsAny<TwitchAPI>(), DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId, DatabaseSeedHelper.Channel1User1TwitchUserId))
                 .ReturnsAsync(new GetChannelFollowersAsyncResponse
                 {
                     Followers = [new ChannelFollower
