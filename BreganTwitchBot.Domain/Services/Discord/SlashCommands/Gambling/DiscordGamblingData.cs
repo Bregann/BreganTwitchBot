@@ -1,10 +1,10 @@
 ﻿using BreganTwitchBot.Domain.Database.Context;
-using BreganTwitchBot.Domain.Interfaces.Helpers;
 using BreganTwitchBot.Domain.DTOs.Discord;
 using BreganTwitchBot.Domain.DTOs.Discord.Commands;
 using BreganTwitchBot.Domain.Enums;
 using BreganTwitchBot.Domain.Interfaces.Discord;
 using BreganTwitchBot.Domain.Interfaces.Discord.Commands;
+using BreganTwitchBot.Domain.Interfaces.Helpers;
 using BreganTwitchBot.Domain.Services.Helpers;
 using Discord;
 using Microsoft.EntityFrameworkCore;
