@@ -31,6 +31,7 @@ namespace BreganTwitchBot.Domain.Database.Models
         public virtual ICollection<DiscordGiveaway> DiscordGiveaways { get; set; } = null!;
         public virtual DiscordGiveawayConfig DiscordGiveawayConfig { get; set; } = null!;
         public virtual ICollection<MonthlyLeaderboardRole> MonthlyLeaderboardRoles { get; set; } = null!;
+        public virtual ICollection<DiscordSelfAssignRole> DiscordSelfAssignRoles { get; set; } = null!;
         public virtual DiscordSpinStats DiscordSpinStats { get; set; } = null!;
         public virtual ICollection<StreamViewCount> StreamViewCounts { get; set; } = null!;
         public virtual TwitchSlotMachineStats TwitchSlotMachineStats { get; set; } = null!;

@@ -2,6 +2,7 @@
 using BreganTwitchBot.Domain.DTOs.Discord.Events;
 using BreganTwitchBot.Domain.Interfaces.Discord;
 using BreganTwitchBot.Domain.Interfaces.Discord.Commands;
+using BreganTwitchBot.Domain.Interfaces.Discord.Commands;
 using BreganTwitchBot.Domain.Interfaces.Helpers;
 using BreganTwitchBot.Domain.Services.Helpers;
 using Discord;
@@ -17,6 +18,7 @@ namespace BreganTwitchBot.Domain.Services.Discord
         IDiscordHelperService discordHelper,
         IDiscordRoleManagerService discordRoleManagerService,
         IDiscordUserLookupService discordUserLookupService,
+        IDiscordSelfAssignRoleData discordSelfAssignRoleData,
         IDiscordGiveawayData discordGiveawayData,
         IDiscordMessageModerationService discordMessageModerationService,
         IDiscordCustomCommandService discordCustomCommandService
@@ -196,12 +198,6 @@ namespace BreganTwitchBot.Domain.Services.Discord
 
         public async Task<(string MessageToSend, bool Ephemeral)> HandleButtonPressEvent(ButtonPressedEvent buttonPressedEvent, DiscordSocketClient client)
         {
-            // giveaway buttons carry the giveaway id, so they're matched by prefix
-            if (buttonPressedEvent.CustomId.StartsWith("giveaway-"))
-            {
-                return await HandleGiveawayButton(buttonPressedEvent);
-            }
-
             var emojiToAdd = "";
 
             switch (buttonPressedEvent.CustomId)
