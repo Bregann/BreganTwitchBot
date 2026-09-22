@@ -220,7 +220,7 @@ builder.Services.AddSingleton<IDiscordHelperService, DiscordHelperService>();
 builder.Services.AddSingleton<IDiscordUserLookupService, DiscordUserLookupService>();
 builder.Services.AddScoped<IDiscordEventHelperService, DiscordEventHelperService>();
 builder.Services.AddScoped<IDiscordRoleManagerService, DiscordRoleManagerService>();
-builder.Services.AddScoped<IDiscordGeneralCommandsData, DiscordGeneralCommandsData>();
+
 builder.Services.AddScoped<IDiscordDailyPointsData, DiscordDailyPointsData>();
 builder.Services.AddScoped<IDiscordWhoisData, DiscordWhoisData>();
 builder.Services.AddScoped<IDiscordMessageModerationService, DiscordMessageModerationService>();
