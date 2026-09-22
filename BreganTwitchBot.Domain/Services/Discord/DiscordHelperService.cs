@@ -71,7 +71,9 @@ namespace BreganTwitchBot.Domain.Services.Discord
 
                 if (user != null)
                 {
-                    user.DiscordXp += baseXpToAdd;
+                    // higher levels need a lot more xp per level, so a message is worth a
+                    // little more the further up somebody is
+                    user.DiscordXp += DiscordLevelHelper.ScaleXpForLevel(baseXpToAdd, user.DiscordLevel);
                     await context.SaveChangesAsync();
 
                     var userLevelledUp = false;
