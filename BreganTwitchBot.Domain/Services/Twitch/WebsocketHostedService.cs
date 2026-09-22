@@ -126,7 +126,7 @@ namespace BreganTwitchBot.Domain.Services.Twitch
             await configHelperService.UpdateStreamLiveStatus(args.Payload.Event.BroadcasterUserId, false);
             await configHelperService.UpdateDailyPointsStatus(args.Payload.Event.BroadcasterUserId, false);
             twitchHelperService.ClearStreamChattersList(args.Payload.Event.BroadcasterUserId);
-            await streamStatsService.EndStreamAsync(args.Payload.Event.BroadcasterUserId);
+            await streamStatsService.EndStream(args.Payload.Event.BroadcasterUserId);
         }
 
         private async Task OnStreamOnline(object sender, StreamOnlineArgs args)
@@ -134,7 +134,7 @@ namespace BreganTwitchBot.Domain.Services.Twitch
             Log.Information($"[Twitch Events] Stream online: {args.Payload.Event.BroadcasterUserName} ({args.Payload.Event.BroadcasterUserId})");
 
             twitchHelperService.ClearStreamChattersList(args.Payload.Event.BroadcasterUserId);
-            await streamStatsService.StartNewStreamAsync(args.Payload.Event.BroadcasterUserId);
+            await streamStatsService.StartNewStream(args.Payload.Event.BroadcasterUserId);
             await twitchEventHandlerService.HandleStreamOnline(args.Payload.Event.BroadcasterUserId, args.Payload.Event.BroadcasterUserName);
         }
 
@@ -259,9 +259,22 @@ namespace BreganTwitchBot.Domain.Services.Twitch
             await twitchEventHandlerService.HandlePollBeginEvent(pollBeginParams);
         }
 
-        private async Task OnCustomRewardRedeemed(object sender, ChannelPointsCustomRewardArgs args)
+        private async Task OnCustomRewardRedeemed(object sender, ChannelPointsCustomRewardRedemptionArgs args)
         {
-            Log.Information($"[Twitch Events] Channel custom reward redeemed: {args.Payload.Event.BroadcasterUserName} ({args.Payload.Event.BroadcasterUserId}) - {args.Payload.Event.Title}");
+            var redeemedParams = new ChannelPointsRedeemedParams
+            {
+                BroadcasterChannelId = args.Payload.Event.BroadcasterUserId,
+                BroadcasterChannelName = args.Payload.Event.BroadcasterUserName,
+                ChatterChannelId = args.Payload.Event.UserId,
+                ChatterChannelName = args.Payload.Event.UserName,
+                RewardId = args.Payload.Event.Reward.Id,
+                RewardTitle = args.Payload.Event.Reward.Title,
+                RewardCost = args.Payload.Event.Reward.Cost,
+                RedemptionStatus = args.Payload.Event.Status,
+                UserInput = args.Payload.Event.UserInput
+            };
+
+            await twitchEventHandlerService.HandleChannelPointsRedeemedEvent(redeemedParams);
         }
 
         private async Task OnAutomaticRewardRedeemed(object sender, ChannelPointsAutomaticRewardRedemptionArgs args)
@@ -551,7 +564,7 @@ namespace BreganTwitchBot.Domain.Services.Twitch
                     broadcasterWebSocket.ChannelBan += OnChannelBan;
                     broadcasterWebSocket.ChannelUnban += OnChannelUnban;
                     broadcasterWebSocket.ChannelPointsAutomaticRewardRedemptionAdd += OnAutomaticRewardRedeemed;
-                    broadcasterWebSocket.ChannelPointsCustomRewardAdd += OnCustomRewardRedeemed;
+                    broadcasterWebSocket.ChannelPointsCustomRewardRedemptionAdd += OnCustomRewardRedeemed;
                     broadcasterWebSocket.ChannelPollBegin += OnPollBegin;
                     broadcasterWebSocket.ChannelPollEnd += OnPollEnd;
                     broadcasterWebSocket.ChannelPredictionBegin += OnChannelPredictionBegin;

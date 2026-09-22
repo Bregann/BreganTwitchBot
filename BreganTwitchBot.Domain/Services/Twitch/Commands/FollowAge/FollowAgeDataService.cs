@@ -81,7 +81,7 @@ namespace BreganTwitchBot.Domain.Services.Twitch.Commands.FollowAge
             {
                 try
                 {
-                    var getUserIdResponse = await twitchApiInteractionService.GetUsersAsync(apiClient.ApiClient, twitchUsernameToLookup);
+                    var getUserIdResponse = await twitchApiInteractionService.GetUsers(apiClient.ApiClient, twitchUsernameToLookup);
 
                     if (getUserIdResponse == null || getUserIdResponse.Users.Count == 0)
                     {
@@ -99,7 +99,7 @@ namespace BreganTwitchBot.Domain.Services.Twitch.Commands.FollowAge
 
             try
             {
-                var checkFollowResponse = await twitchApiInteractionService.GetChannelFollowersAsync(apiClient.ApiClient, broadcasterUserId, twitchUserIdToLookup);
+                var checkFollowResponse = await twitchApiInteractionService.GetChannelFollowers(apiClient.ApiClient, broadcasterUserId, twitchUserIdToLookup);
 
                 if (checkFollowResponse == null || checkFollowResponse.Followers.Count == 0)
                 {

@@ -16,7 +16,8 @@ namespace BreganTwitchBot.Domain.Services.Helpers
         IGeneralCommandsData generalCommandsData,
         IDiscordDailyPointsData discordDailyPointsData,
         IStreamStatsService streamStatsService,
-        IDiscordStatusService discordStatusService
+        IDiscordStatusService discordStatusService,
+        IMonthlyLeaderboardRoleService monthlyLeaderboardRoleService
         )
     {
         public void SetupHangfireJobs()
@@ -34,6 +35,7 @@ namespace BreganTwitchBot.Domain.Services.Helpers
             RecurringJob.AddOrUpdate("FollowerCheck", () => FollowerCheck(), "0 * * * *");
             RecurringJob.AddOrUpdate("UpdateDiscordMemberCount", () => UpdateDiscordMemberCount(), "*/10 * * * *");
             RecurringJob.AddOrUpdate("ResetDiscordStreaks", () => ResetDiscordStreaks(), "0 0 * * *");
+            RecurringJob.AddOrUpdate("UpdateMonthlyLeaderboardRoles", () => UpdateMonthlyLeaderboardRoles(), "0 1 * * *");
 
             Log.Information("[Job Scheduler] Job Scheduler Setup");
         }
@@ -176,7 +178,7 @@ namespace BreganTwitchBot.Domain.Services.Helpers
         /// </summary>
         public async Task FlushStreamStats()
         {
-            await streamStatsService.FlushStatsAsync();
+            await streamStatsService.FlushStats();
         }
 
         /// <summary>
@@ -184,7 +186,7 @@ namespace BreganTwitchBot.Domain.Services.Helpers
         /// </summary>
         public async Task SampleViewerCounts()
         {
-            await streamStatsService.SampleViewerCountsAsync();
+            await streamStatsService.SampleViewerCounts();
         }
 
         /// <summary>
@@ -192,7 +194,7 @@ namespace BreganTwitchBot.Domain.Services.Helpers
         /// </summary>
         public async Task FollowerCheck()
         {
-            await streamStatsService.ReportFollowerChangesAsync();
+            await streamStatsService.ReportFollowerChanges();
         }
 
         /// <summary>
@@ -206,6 +208,14 @@ namespace BreganTwitchBot.Domain.Services.Helpers
         public async Task CheckBirthdays()
         {
             await generalCommandsData.CheckForUserBirthdaysAndSendMessage();
+        }
+
+        /// <summary>
+        /// Moves the monthly bits and gifted subs leaderboard roles onto the current leaders
+        /// </summary>
+        public async Task UpdateMonthlyLeaderboardRoles()
+        {
+            await monthlyLeaderboardRoleService.UpdateMonthlyLeaderboardRolesAsync();
         }
 
         public async Task ResetDiscordStreaks()

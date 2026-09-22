@@ -32,7 +32,7 @@ namespace BreganTwitchBot.Domain.Services.Twitch.Commands.Hours
 
             Log.Information($"Updating watchtime for channel {broadcasterId}");
 
-            var chatters = await twitchApiInteractionService.GetChattersAsync(apiClient.ApiClient, broadcasterId, apiClient.TwitchChannelClientId);
+            var chatters = await twitchApiInteractionService.GetChatters(apiClient.ApiClient, broadcasterId, apiClient.TwitchChannelClientId);
             var channelRanks = await context.ChannelRanks.Where(x => x.ChannelId == channel.Id).ToArrayAsync();
 
             var rankups = 0;
