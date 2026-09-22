@@ -38,6 +38,7 @@ using BreganTwitchBot.Domain.Services.Twitch.Commands.StreamInfo;
 using BreganTwitchBot.Domain.Services.Twitch.Commands.Subathon;
 using BreganTwitchBot.Domain.Services.Twitch.Commands.TwitchBosses;
 using BreganTwitchBot.Domain.Services.Twitch.Commands.Uptime;
+using BreganTwitchBot.Domain.Services.Twitch.Commands.Clip;
 using BreganTwitchBot.Domain.Services.Twitch.Commands.WordBlacklist;
 using BreganTwitchBot.Domain.Services.Twitch.Events;
 using Discord.Interactions;
@@ -195,6 +196,9 @@ builder.Services.AddScoped<IStreamInfoDataService, StreamInfoDataService>();
 
 builder.Services.AddScoped<UptimeCommandService>();
 builder.Services.AddScoped<IUptimeDataService, UptimeDataService>();
+
+builder.Services.AddScoped<ClipCommandService>();
+builder.Services.AddScoped<IClipDataService, ClipDataService>();
 
 builder.Services.AddScoped<SubathonCommandService>();
 builder.Services.AddScoped<ISubathonDataService, SubathonDataService>();
