@@ -63,16 +63,7 @@ namespace BreganTwitchBot.Domain.Services.Discord
             // check if the are linked, change the welcome message based on it
             if (discordConfig.DiscordWelcomeMessageChannelId != null)
             {
-                var message = string.Empty;
-
-                if (twitchUsername != null)
-                {
-                    message = $"Welcome <@{userJoined.UserId}> to the server! You are already linked to Twitch as {twitchUsername}! {(discordConfig.DiscordUserCommandsChannelId != null ? $"You can use commands in <#{discordConfig.DiscordUserCommandsChannelId.Value}> ! :D" : "")}";
-                }
-                else
-                {
-                    message = $"Welcome <@{userJoined.UserId}> to the server! {(discordConfig.DiscordUserCommandsChannelId != null ? $"To access awesome features head over to <#{discordConfig.DiscordUserCommandsChannelId.Value}> and use the command /link to link your Twitch account to the bot!! :D" : "")}";
-                }
+                var message = BuildWelcomeMessage(discordConfig, userJoined.UserId, twitchUsername);
 
                 await discordHelper.SendMessage(discordConfig.DiscordWelcomeMessageChannelId.Value, message);
             }
@@ -150,6 +141,39 @@ namespace BreganTwitchBot.Domain.Services.Discord
                 messageEmbed.AddField("Message Content", string.IsNullOrWhiteSpace(messageDeletedEvent.MessageContent) ? "*No content (probably an embed or attachment)*" : messageDeletedEvent.MessageContent);
                 await discordHelper.SendEmbedMessage(discordConfig.DiscordEventChannelId.Value, messageEmbed);
             }
+        }
+
+        /// <summary>
+        /// The welcome message for a new member.
+        ///
+        /// A server can set its own wording in config, with {user}, {twitchusername} and
+        /// {commandschannel} filled in. Without one the built in wording is used, so a server
+        /// that has not configured anything still gets a sensible welcome.
+        /// </summary>
+        private static string BuildWelcomeMessage(DTOs.Helpers.DiscordConfig discordConfig, ulong userId, string? twitchUsername)
+        {
+            var commandsChannel = discordConfig.DiscordUserCommandsChannelId != null
+                ? $"<#{discordConfig.DiscordUserCommandsChannelId.Value}>"
+                : "";
+
+            var template = twitchUsername != null
+                ? discordConfig.DiscordWelcomeMessageLinked
+                : discordConfig.DiscordWelcomeMessageUnlinked;
+
+            if (!string.IsNullOrWhiteSpace(template))
+            {
+                return template
+                    .Replace("{user}", $"<@{userId}>")
+                    .Replace("{twitchusername}", twitchUsername ?? "")
+                    .Replace("{commandschannel}", commandsChannel);
+            }
+
+            if (twitchUsername != null)
+            {
+                return $"Welcome <@{userId}> to the server! You are already linked to Twitch as {twitchUsername}! {(discordConfig.DiscordUserCommandsChannelId != null ? $"You can use commands in {commandsChannel} ! :D" : "")}";
+            }
+
+            return $"Welcome <@{userId}> to the server! {(discordConfig.DiscordUserCommandsChannelId != null ? $"To access awesome features head over to {commandsChannel} and use the command /link to link your Twitch account to the bot!! :D" : "")}";
         }
 
         public async Task HandleMessageReceivedEvent(MessageReceivedEvent messageReceivedEvent)

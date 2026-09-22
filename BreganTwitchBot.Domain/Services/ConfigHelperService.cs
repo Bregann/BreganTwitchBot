@@ -159,6 +159,8 @@ namespace BreganTwitchBot.Domain.Services
                     DiscordModeratorRoleId = config.DiscordModeratorRoleId,
                     DiscordMuteRoleId = config.DiscordMuteRoleId,
                     DiscordWelcomeMessageChannelId = config.DiscordWelcomeMessageChannelId,
+                    DiscordWelcomeMessageLinked = config.DiscordWelcomeMessageLinked,
+                    DiscordWelcomeMessageUnlinked = config.DiscordWelcomeMessageUnlinked,
                     DiscordGeneralChannelId = config.DiscordGeneralChannelId,
                     DiscordGuildId = config.DiscordGuildId
                 };
@@ -188,6 +190,8 @@ namespace BreganTwitchBot.Domain.Services
                     DiscordModeratorRoleId = config.DiscordModeratorRoleId,
                     DiscordMuteRoleId = config.DiscordMuteRoleId,
                     DiscordWelcomeMessageChannelId = config.DiscordWelcomeMessageChannelId,
+                    DiscordWelcomeMessageLinked = config.DiscordWelcomeMessageLinked,
+                    DiscordWelcomeMessageUnlinked = config.DiscordWelcomeMessageUnlinked,
                     DiscordGeneralChannelId = config.DiscordGeneralChannelId,
                     DiscordGuildId = config.DiscordGuildId
                 };
