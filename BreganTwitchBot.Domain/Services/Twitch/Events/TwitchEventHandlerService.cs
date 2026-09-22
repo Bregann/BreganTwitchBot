@@ -161,6 +161,85 @@ namespace BreganTwitchBot.Domain.Services.Twitch.Events
             }
         }
 
+        public async Task HandleChannelPointsRedeemedEvent(ChannelPointsRedeemedParams redeemedParams)
+        {
+            Log.Information($"[Channel Points] {redeemedParams.ChatterChannelName} redeemed {redeemedParams.RewardTitle} ({redeemedParams.RewardCost}) in {redeemedParams.BroadcasterChannelName}");
+
+            // the broadcaster or a mod has already dealt with this one manually
+            if (string.Equals(redeemedParams.RedemptionStatus, "ACTION_TAKEN", StringComparison.OrdinalIgnoreCase))
+            {
+                return;
+            }
+
+            using (var scope = serviceProvider.CreateScope())
+            {
+                var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+                var reward = await context.ChannelPointRewards
+                    .FirstOrDefaultAsync(x =>
+                        x.Channel.BroadcasterTwitchChannelId == redeemedParams.BroadcasterChannelId &&
+                        x.RewardTitle.ToLower() == redeemedParams.RewardTitle.ToLower());
+
+                if (reward == null || !reward.Enabled)
+                {
+                    return;
+                }
+
+                reward.TimesRedeemed++;
+                await context.SaveChangesAsync();
+
+                var message = reward.ResponseMessage.Replace("{user}", redeemedParams.ChatterChannelName);
+                await twitchHelperService.SendTwitchMessageToChannel(redeemedParams.BroadcasterChannelId, redeemedParams.BroadcasterChannelName, message);
+            }
+        }
+
+        /// <summary>
+        /// Runs a subathon update in its own scope. Subathon time must never take down the event
+        /// that triggered it, so failures are logged rather than thrown.
+        /// </summary>
+        private async Task AddSubathonTime(Func<ISubathonDataService, Task> action)
+        {
+            try
+            {
+                using var scope = serviceProvider.CreateScope();
+                var subathonDataService = scope.ServiceProvider.GetRequiredService<ISubathonDataService>();
+                await action(subathonDataService);
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "[Subathon] Error adding subathon time");
+            }
+        }
+
+        /// <summary>
+        /// Keeps the monthly bits and gifted sub totals that drive the monthly leaderboard roles.
+        /// These columns existed but nothing was writing to them.
+        /// </summary>
+        private async Task UpdateMonthlyTotals(string broadcasterChannelId, string chatterChannelId, long bitsDonated, int subsGifted)
+        {
+            try
+            {
+                using var scope = serviceProvider.CreateScope();
+                var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+                var stats = await context.ChannelUserStats
+                    .FirstOrDefaultAsync(x => x.User.TwitchUserId == chatterChannelId && x.Channel.BroadcasterTwitchChannelId == broadcasterChannelId);
+
+                if (stats == null)
+                {
+                    return;
+                }
+
+                stats.BitsDonatedThisMonth += (int)bitsDonated;
+                stats.GiftedSubsThisMonth += subsGifted;
+                await context.SaveChangesAsync();
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "[Monthly Leaderboards] Error updating the monthly totals");
+            }
+        }
+
         public async Task HandleStreamOnline(string broadcasterId, string broadcasterName, bool allowCollectionInstantly = false)
         {
             await configHelperService.UpdateStreamLiveStatus(broadcasterId, true);
