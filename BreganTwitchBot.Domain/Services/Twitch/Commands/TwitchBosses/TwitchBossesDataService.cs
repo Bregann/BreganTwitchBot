@@ -1,12 +1,12 @@
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.EntityFrameworkCore;
-using BreganTwitchBot.Domain.Enums;
 using BreganTwitchBot.Domain.Database.Context;
-﻿using BreganTwitchBot.Domain.DTOs.Twitch.Commands.TwitchBosses;
+using BreganTwitchBot.Domain.DTOs.Twitch.Commands.TwitchBosses;
 using BreganTwitchBot.Domain.DTOs.Twitch.EventSubEvents;
+using BreganTwitchBot.Domain.Enums;
 using BreganTwitchBot.Domain.Interfaces.Twitch;
 using BreganTwitchBot.Domain.Interfaces.Twitch.Commands;
 using Hangfire;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using Serilog;
 
 namespace BreganTwitchBot.Domain.Services.Twitch.Commands.TwitchBosses
