@@ -1,36 +1,24 @@
-﻿using BreganTwitchBot.Domain.Attributes;
+using BreganTwitchBot.Domain.Attributes;
 using BreganTwitchBot.Domain.DTOs.Twitch.EventSubEvents;
 using BreganTwitchBot.Domain.Interfaces.Twitch;
 using BreganTwitchBot.Domain.Interfaces.Twitch.Commands;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace BreganTwitchBot.Domain.Services.Twitch.Commands.TwitchBosses
 {
-    public class TwitchBossesCommandService(IServiceProvider serviceProvider)
+    public class TwitchBossesCommandService(ITwitchBossesDataService twitchBossesDataService, ITwitchHelperService twitchHelperService)
     {
         [TwitchCommand("boss")]
-        public void HandleBossCommand(ChannelChatMessageReceivedParams msgParams)
+        public async Task HandleBossCommand(ChannelChatMessageReceivedParams msgParams)
         {
-            using (var scope = serviceProvider.CreateScope())
-            {
-                var twitchBossesDataService = scope.ServiceProvider.GetRequiredService<ITwitchBossesDataService>();
-                var twitchHelperService = scope.ServiceProvider.GetRequiredService<ITwitchHelperService>();
-                var bossResponse = twitchBossesDataService.HandleBossCommand(msgParams);
+            var bossResponse = twitchBossesDataService.HandleBossCommand(msgParams);
 
-                twitchHelperService.SendTwitchMessageToChannel(msgParams.BroadcasterChannelId, msgParams.BroadcasterChannelName, bossResponse, msgParams.MessageId);
-            }
+            await twitchHelperService.SendTwitchMessageToChannel(msgParams.BroadcasterChannelId, msgParams.BroadcasterChannelName, bossResponse, msgParams.MessageId);
         }
 
         [TwitchCommand("startboss")]
         public async Task HandleStartBossCommand(ChannelChatMessageReceivedParams msgParams)
         {
-            using (var scope = serviceProvider.CreateScope())
-            {
-                var twitchBossesDataService = scope.ServiceProvider.GetRequiredService<ITwitchBossesDataService>();
-                var twitchHelperService = scope.ServiceProvider.GetRequiredService<ITwitchHelperService>();
-
-                await twitchBossesDataService.StartBossFightCountdown(msgParams.BroadcasterChannelId, msgParams.BroadcasterChannelName, msgParams);
-            }
+            await twitchBossesDataService.StartBossFightCountdown(msgParams.BroadcasterChannelId, msgParams.BroadcasterChannelName, msgParams);
         }
     }
 }

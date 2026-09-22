@@ -1,4 +1,4 @@
-using BreganTwitchBot.Domain.Database.Context;
+﻿using BreganTwitchBot.Domain.Database.Context;
 using BreganTwitchBot.Domain.DTOs.Api;
 using BreganTwitchBot.Domain.Enums;
 using BreganTwitchBot.Domain.Interfaces.Api;
@@ -36,7 +36,7 @@ namespace BreganTwitchBot.Domain.Services.Api
                 };
             }
 
-            var entries = await discordLeaderboardsData.GetLeaderboardAsync(guildId.Value, type, take);
+            var entries = await discordLeaderboardsData.GetLeaderboard(guildId.Value, type, take);
 
             return new GetLeaderboardResponse
             {

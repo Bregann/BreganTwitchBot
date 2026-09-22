@@ -1,4 +1,4 @@
-namespace BreganTwitchBot.Domain.DTOs.Api
+﻿namespace BreganTwitchBot.Domain.DTOs.Api
 {
     public class GetLeaderboardResponse
     {

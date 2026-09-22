@@ -132,7 +132,7 @@ namespace BreganTwitchBot.DomainTests.Twitch.Commands
                 });
             }
 
-            _twitchApiInteractionService.Verify(x => x.GetChattersAsync(It.IsAny<TwitchAPI>(), It.IsAny<string>(), It.IsAny<string>()), Times.Never);
+            _twitchApiInteractionService.Verify(x => x.GetChatters(It.IsAny<TwitchAPI>(), It.IsAny<string>(), It.IsAny<string>()), Times.Never);
         }
 
         [Test]
@@ -145,7 +145,7 @@ namespace BreganTwitchBot.DomainTests.Twitch.Commands
             var newUser = new Chatters { UserId = "newuser123", UserName = "NewUser" };
             var chattersResult = new GetChattersResponse { Chatters = new List<Chatters> { newUser } };
 
-            _twitchApiInteractionService.Setup(x => x.GetChattersAsync(It.IsAny<TwitchAPI>(), It.IsAny<string>(), It.IsAny<string>()))
+            _twitchApiInteractionService.Setup(x => x.GetChatters(It.IsAny<TwitchAPI>(), It.IsAny<string>(), It.IsAny<string>()))
                 .ReturnsAsync(chattersResult);
 
             _twitchHelperService.Setup(x => x.AddOrUpdateUserToDatabase(channel.BroadcasterTwitchChannelId, newUser.UserId, channel.BroadcasterTwitchChannelName, newUser.UserName, false, false))
@@ -172,7 +172,7 @@ namespace BreganTwitchBot.DomainTests.Twitch.Commands
             var newUser = new Chatters { UserId = DatabaseSeedHelper.Channel1User1TwitchUserId, UserName = DatabaseSeedHelper.Channel1User1TwitchUsername };
             var chattersResult = new GetChattersResponse { Chatters = new List<Chatters> { newUser } };
 
-            _twitchApiInteractionService.Setup(x => x.GetChattersAsync(It.IsAny<TwitchAPI>(), It.IsAny<string>(), It.IsAny<string>()))
+            _twitchApiInteractionService.Setup(x => x.GetChatters(It.IsAny<TwitchAPI>(), It.IsAny<string>(), It.IsAny<string>()))
                 .ReturnsAsync(chattersResult);
 
             await _hoursDataService.UpdateWatchtimeForChannel(DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId);
@@ -199,7 +199,7 @@ namespace BreganTwitchBot.DomainTests.Twitch.Commands
             var newUser = new Chatters { UserId = DatabaseSeedHelper.Channel1User2TwitchUserId, UserName = DatabaseSeedHelper.Channel1User2TwitchUsername };
             var chattersResult = new GetChattersResponse { Chatters = new List<Chatters> { newUser } };
 
-            _twitchApiInteractionService.Setup(x => x.GetChattersAsync(It.IsAny<TwitchAPI>(), It.IsAny<string>(), It.IsAny<string>()))
+            _twitchApiInteractionService.Setup(x => x.GetChatters(It.IsAny<TwitchAPI>(), It.IsAny<string>(), It.IsAny<string>()))
                 .ReturnsAsync(chattersResult);
 
             await _hoursDataService.UpdateWatchtimeForChannel(DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId);

@@ -1,14 +1,13 @@
-﻿using BreganTwitchBot.Domain.Attributes;
+using BreganTwitchBot.Domain.Attributes;
 using BreganTwitchBot.Domain.DTOs.Twitch.EventSubEvents;
 using BreganTwitchBot.Domain.Enums;
 using BreganTwitchBot.Domain.Exceptions;
 using BreganTwitchBot.Domain.Interfaces.Twitch;
 using BreganTwitchBot.Domain.Interfaces.Twitch.Commands;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace BreganTwitchBot.Domain.Services.Twitch.Commands.Hours
 {
-    public class HoursCommandService(IServiceProvider serviceProvider)
+    public class HoursCommandService(IHoursDataService hoursDataService, ITwitchHelperService twitchHelperService)
     {
         [TwitchCommand("hours", ["hrs", "watchtime"])]
         public async Task HandleHoursCommand(ChannelChatMessageReceivedParams msgParams) => await HandleHoursCommand(msgParams, HoursWatchTypes.AllTime);
@@ -24,21 +23,15 @@ namespace BreganTwitchBot.Domain.Services.Twitch.Commands.Hours
 
         private async Task HandleHoursCommand(ChannelChatMessageReceivedParams msgParams, HoursWatchTypes watchTypes)
         {
-            using (var scope = serviceProvider.CreateScope())
+            try
             {
-                var hoursCommandService = scope.ServiceProvider.GetRequiredService<IHoursDataService>();
-                var twitchHelperService = scope.ServiceProvider.GetRequiredService<ITwitchHelperService>();
+                var response = await hoursDataService.GetHoursCommand(msgParams, watchTypes);
 
-                try
-                {
-                    var response = await hoursCommandService.GetHoursCommand(msgParams, watchTypes);
-
-                    await twitchHelperService.SendTwitchMessageToChannel(msgParams.BroadcasterChannelId, msgParams.BroadcasterChannelName, response, msgParams.MessageId);
-                }
-                catch (TwitchUserNotFoundException ex)
-                {
-                    await twitchHelperService.SendTwitchMessageToChannel(msgParams.BroadcasterChannelId, msgParams.BroadcasterChannelName, ex.Message, msgParams.MessageId);
-                }
+                await twitchHelperService.SendTwitchMessageToChannel(msgParams.BroadcasterChannelId, msgParams.BroadcasterChannelName, response, msgParams.MessageId);
+            }
+            catch (TwitchUserNotFoundException ex)
+            {
+                await twitchHelperService.SendTwitchMessageToChannel(msgParams.BroadcasterChannelId, msgParams.BroadcasterChannelName, ex.Message, msgParams.MessageId);
             }
         }
     }

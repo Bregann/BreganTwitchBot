@@ -1,4 +1,4 @@
-using BreganTwitchBot.Domain.DTOs.Api;
+﻿using BreganTwitchBot.Domain.DTOs.Api;
 using BreganTwitchBot.Domain.Enums;
 
 namespace BreganTwitchBot.Domain.Interfaces.Api

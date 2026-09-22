@@ -1,14 +1,13 @@
-﻿using BreganTwitchBot.Domain.Attributes;
+using BreganTwitchBot.Domain.Attributes;
 using BreganTwitchBot.Domain.DTOs.Twitch.EventSubEvents;
 using BreganTwitchBot.Domain.Enums;
 using BreganTwitchBot.Domain.Exceptions;
 using BreganTwitchBot.Domain.Interfaces.Twitch;
 using BreganTwitchBot.Domain.Interfaces.Twitch.Commands;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace BreganTwitchBot.Domain.Services.Twitch.Commands.WordBlacklist
 {
-    public class WordBlacklistCommandService(IServiceProvider serviceProvider)
+    public class WordBlacklistCommandService(IWordBlacklistDataService wordBlacklistDataService, ITwitchHelperService twitchHelperService)
     {
         [TwitchCommand("addstrikeword")]
         public async Task HandleAddStrikeWordCommand(ChannelChatMessageReceivedParams msgParams)
@@ -48,37 +47,27 @@ namespace BreganTwitchBot.Domain.Services.Twitch.Commands.WordBlacklist
 
         private async Task HandleAddWordCommand(ChannelChatMessageReceivedParams msgParams, WordType wordType)
         {
-            using (var scope = serviceProvider.CreateScope())
+            try
             {
-                var wordBlacklistDataService = scope.ServiceProvider.GetRequiredService<IWordBlacklistDataService>();
-                var twitchHelperService = scope.ServiceProvider.GetRequiredService<ITwitchHelperService>();
-                try
-                {
-                    var response = await wordBlacklistDataService.HandleAddWordCommand(msgParams, wordType);
-                    await twitchHelperService.SendTwitchMessageToChannel(msgParams.BroadcasterChannelId, msgParams.BroadcasterChannelName, response, msgParams.MessageId);
-                }
-                catch (InvalidCommandException ex)
-                {
-                    await twitchHelperService.SendTwitchMessageToChannel(msgParams.BroadcasterChannelId, msgParams.BroadcasterChannelName, ex.Message, msgParams.MessageId);
-                }
+                var response = await wordBlacklistDataService.HandleAddWordCommand(msgParams, wordType);
+                await twitchHelperService.SendTwitchMessageToChannel(msgParams.BroadcasterChannelId, msgParams.BroadcasterChannelName, response, msgParams.MessageId);
+            }
+            catch (InvalidCommandException ex)
+            {
+                await twitchHelperService.SendTwitchMessageToChannel(msgParams.BroadcasterChannelId, msgParams.BroadcasterChannelName, ex.Message, msgParams.MessageId);
             }
         }
 
         private async Task HandleRemoveWordCommand(ChannelChatMessageReceivedParams msgParams, WordType wordType)
         {
-            using (var scope = serviceProvider.CreateScope())
+            try
             {
-                var wordBlacklistDataService = scope.ServiceProvider.GetRequiredService<IWordBlacklistDataService>();
-                var twitchHelperService = scope.ServiceProvider.GetRequiredService<ITwitchHelperService>();
-                try
-                {
-                    var response = await wordBlacklistDataService.HandleRemoveWordCommand(msgParams, wordType);
-                    await twitchHelperService.SendTwitchMessageToChannel(msgParams.BroadcasterChannelId, msgParams.BroadcasterChannelName, response, msgParams.MessageId);
-                }
-                catch (InvalidCommandException ex)
-                {
-                    await twitchHelperService.SendTwitchMessageToChannel(msgParams.BroadcasterChannelId, msgParams.BroadcasterChannelName, ex.Message, msgParams.MessageId);
-                }
+                var response = await wordBlacklistDataService.HandleRemoveWordCommand(msgParams, wordType);
+                await twitchHelperService.SendTwitchMessageToChannel(msgParams.BroadcasterChannelId, msgParams.BroadcasterChannelName, response, msgParams.MessageId);
+            }
+            catch (InvalidCommandException ex)
+            {
+                await twitchHelperService.SendTwitchMessageToChannel(msgParams.BroadcasterChannelId, msgParams.BroadcasterChannelName, ex.Message, msgParams.MessageId);
             }
         }
     }

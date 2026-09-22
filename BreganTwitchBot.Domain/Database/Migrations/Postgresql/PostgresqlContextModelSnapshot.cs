@@ -17,7 +17,7 @@ namespace BreganTwitchBot.Domain.Database.Migrations.Postgresql
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "10.0.0")
+                .HasAnnotation("ProductVersion", "10.0.12")
                 .HasAnnotation("Proxies:ChangeTracking", false)
                 .HasAnnotation("Proxies:CheckEquality", false)
                 .HasAnnotation("Proxies:LazyLoading", true)
@@ -176,6 +176,9 @@ namespace BreganTwitchBot.Domain.Database.Migrations.Postgresql
                         .HasColumnType("numeric(20,0)");
 
                     b.Property<decimal?>("DiscordModeratorRoleId")
+                        .HasColumnType("numeric(20,0)");
+
+                    b.Property<decimal?>("DiscordMuteRoleId")
                         .HasColumnType("numeric(20,0)");
 
                     b.Property<decimal?>("DiscordStreamAnnouncementChannelId")
@@ -771,6 +774,37 @@ namespace BreganTwitchBot.Domain.Database.Migrations.Postgresql
                     b.ToTable("DiscordLinkRequests");
                 });
 
+            modelBuilder.Entity("BreganTwitchBot.Domain.Database.Models.DiscordSelfAssignRole", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("ChannelId")
+                        .HasColumnType("integer");
+
+                    b.Property<decimal>("DiscordRoleId")
+                        .HasColumnType("numeric(20,0)");
+
+                    b.Property<string>("DisplayName")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Emoji")
+                        .HasColumnType("text");
+
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ChannelId");
+
+                    b.ToTable("DiscordSelfAssignRoles");
+                });
+
             modelBuilder.Entity("BreganTwitchBot.Domain.Database.Models.DiscordSpinStats", b =>
                 {
                     b.Property<int>("Id")
@@ -865,6 +899,33 @@ namespace BreganTwitchBot.Domain.Database.Migrations.Postgresql
                     b.HasKey("Id");
 
                     b.ToTable("EnvironmentalSettings");
+                });
+
+            modelBuilder.Entity("BreganTwitchBot.Domain.Database.Models.MonthlyLeaderboardRole", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("ChannelId")
+                        .HasColumnType("integer");
+
+                    b.Property<decimal>("DiscordRoleId")
+                        .HasColumnType("numeric(20,0)");
+
+                    b.Property<int>("LeaderboardType")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("Position")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ChannelId");
+
+                    b.ToTable("MonthlyLeaderboardRoles");
                 });
 
             modelBuilder.Entity("BreganTwitchBot.Domain.Database.Models.StreamViewCount", b =>
@@ -1503,6 +1564,17 @@ namespace BreganTwitchBot.Domain.Database.Migrations.Postgresql
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("BreganTwitchBot.Domain.Database.Models.DiscordSelfAssignRole", b =>
+                {
+                    b.HasOne("BreganTwitchBot.Domain.Database.Models.Channel", "Channel")
+                        .WithMany("DiscordSelfAssignRoles")
+                        .HasForeignKey("ChannelId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Channel");
+                });
+
             modelBuilder.Entity("BreganTwitchBot.Domain.Database.Models.DiscordGiveaway", b =>
                 {
                     b.HasOne("BreganTwitchBot.Domain.Database.Models.Channel", "Channel")
@@ -1570,6 +1642,17 @@ namespace BreganTwitchBot.Domain.Database.Migrations.Postgresql
                     b.Navigation("Channel");
 
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("BreganTwitchBot.Domain.Database.Models.MonthlyLeaderboardRole", b =>
+                {
+                    b.HasOne("BreganTwitchBot.Domain.Database.Models.Channel", "Channel")
+                        .WithMany("MonthlyLeaderboardRoles")
+                        .HasForeignKey("ChannelId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Channel");
                 });
 
             modelBuilder.Entity("BreganTwitchBot.Domain.Database.Models.StreamViewCount", b =>
@@ -1694,8 +1777,12 @@ namespace BreganTwitchBot.Domain.Database.Migrations.Postgresql
 
                     b.Navigation("DiscordGiveaways");
 
+                    b.Navigation("DiscordSelfAssignRoles");
+
                     b.Navigation("DiscordSpinStats")
                         .IsRequired();
+
+                    b.Navigation("MonthlyLeaderboardRoles");
 
                     b.Navigation("StreamViewCounts");
 
