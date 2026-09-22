@@ -27,6 +27,7 @@ namespace BreganTwitchBot.Domain.Database.Models
         public virtual ChannelConfig ChannelConfig { get; set; } = null!;
         public virtual ICollection<ChannelRank> ChannelRanks { get; set; } = null!;
         public virtual ICollection<CustomCommand> CustomCommands { get; set; } = null!;
+        public virtual ICollection<ChannelBossText> ChannelBossTexts { get; set; } = null!;
         public virtual ICollection<ChannelPointReward> ChannelPointRewards { get; set; } = null!;
         public virtual ICollection<DiscordGiveaway> DiscordGiveaways { get; set; } = null!;
         public virtual DiscordGiveawayConfig DiscordGiveawayConfig { get; set; } = null!;

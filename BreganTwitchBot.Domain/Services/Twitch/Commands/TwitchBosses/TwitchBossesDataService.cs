@@ -1,3 +1,7 @@
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.EntityFrameworkCore;
+using BreganTwitchBot.Domain.Enums;
+using BreganTwitchBot.Domain.Database.Context;
 ﻿using BreganTwitchBot.Domain.DTOs.Twitch.Commands.TwitchBosses;
 using BreganTwitchBot.Domain.DTOs.Twitch.EventSubEvents;
 using BreganTwitchBot.Domain.Interfaces.Twitch;
@@ -7,7 +11,7 @@ using Serilog;
 
 namespace BreganTwitchBot.Domain.Services.Twitch.Commands.TwitchBosses
 {
-    public class TwitchBossesDataService(ITwitchHelperService twitchHelperService, IBackgroundJobClient backgroundJobClient) : ITwitchBossesDataService
+    public class TwitchBossesDataService(ITwitchHelperService twitchHelperService, IBackgroundJobClient backgroundJobClient, IServiceProvider serviceProvider) : ITwitchBossesDataService
     {
         internal Dictionary<string, BossState> _bossState = [];
 
@@ -191,5 +195,41 @@ namespace BreganTwitchBot.Domain.Services.Twitch.Commands.TwitchBosses
             await twitchHelperService.SendAnnouncementMessageToChannel(broadcasterId, broadcasterName, "The boss countdown has started! You can join the fight by doing !boss");
             return true;
         }
+
+        /// <summary>
+        /// A channel's boss texts, falling back to the original hardcoded lists when the
+        /// channel has not configured its own, so the feature still works out of the box
+        /// </summary>
+        private async Task<List<string>> GetBossTexts(string broadcasterId, BossTextType textType)
+        {
+            using var scope = serviceProvider.CreateScope();
+            var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+            var texts = await context.ChannelBossTexts
+                .Where(x => x.Channel.BroadcasterTwitchChannelId == broadcasterId && x.TextType == textType)
+                .Select(x => x.Text)
+                .ToListAsync();
+
+            if (texts.Count > 0)
+            {
+                return texts;
+            }
+
+            return textType == BossTextType.BossSuffix ? DefaultBossSuffixes : DefaultEliminationReasons;
+        }
+
+        private static readonly List<string> DefaultBossSuffixes =
+        [
+            "The Terrible", "The Melvin", "The KEKW", "The Smelly", "The Gnoblin",
+            "The Gnome", "The Troll", "The Handsome", "The Tree", "The Duck"
+        ];
+
+        private static readonly List<string> DefaultEliminationReasons =
+        [
+            "got AGS'd for a 73", "got snowballed into the void", "missed their MLG",
+            "missplaced a block", "got stamped on", "had a tree fall onto their head",
+            "got destroyed by lasers"
+        ];
+
     }
 }
