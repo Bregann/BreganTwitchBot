@@ -222,6 +222,20 @@ namespace BreganTwitchBot.Domain.Services.Discord
 
         public async Task<(string MessageToSend, bool Ephemeral)> HandleButtonPressEvent(ButtonPressedEvent buttonPressedEvent, DiscordSocketClient client)
         {
+            // giveaway buttons carry the giveaway id, so they're matched by prefix
+            if (buttonPressedEvent.CustomId.StartsWith("giveaway-"))
+            {
+                return await HandleGiveawayButton(buttonPressedEvent);
+            }
+
+            // self assign role buttons carry the configured role's id
+            if (buttonPressedEvent.CustomId.StartsWith("selfrole-"))
+            {
+                return int.TryParse(buttonPressedEvent.CustomId.Split('-')[1], out var roleConfigId)
+                    ? await discordSelfAssignRoleData.ToggleRole(buttonPressedEvent.GuildId, buttonPressedEvent.UserId, roleConfigId)
+                    : ("invalid button", true);
+            }
+
             var emojiToAdd = "";
 
             switch (buttonPressedEvent.CustomId)
