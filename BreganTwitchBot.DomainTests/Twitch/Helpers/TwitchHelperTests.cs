@@ -1,5 +1,6 @@
 ﻿using BreganTwitchBot.Domain.Database.Context;
 using BreganTwitchBot.Domain.Exceptions;
+using BreganTwitchBot.Domain.Interfaces.Helpers;
 using BreganTwitchBot.Domain.Interfaces.Twitch;
 using BreganTwitchBot.Domain.Services.Twitch;
 using BreganTwitchBot.DomainTests.Helpers;
@@ -56,11 +57,17 @@ namespace BreganTwitchBot.DomainTests.Twitch.Helpers
             // Initialize TwitchHelperService with real IServiceProvider
             var mockApiConnection = new Mock<ITwitchApiConnection>();
             var mockApiInteractionService = new Mock<ITwitchApiInteractionService>();
+            var mockConfigHelperService = new Mock<IConfigHelperService>();
+
+            mockConfigHelperService
+                .Setup(x => x.GetPointsName(It.IsAny<string>()))
+                .Returns(DatabaseSeedHelper.Channel1ChannelCurrencyName);
 
             _twitchHelperService = new TwitchHelperService(
                 mockApiConnection.Object,
                 _serviceProvider,  // Use real DI container
-                mockApiInteractionService.Object
+                mockApiInteractionService.Object,
+                mockConfigHelperService.Object
             );
         }
 

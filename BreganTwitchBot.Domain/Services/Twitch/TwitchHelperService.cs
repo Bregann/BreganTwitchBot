@@ -3,6 +3,7 @@ using BreganTwitchBot.Domain.Database.Models;
 using BreganTwitchBot.Domain.DTOs.Twitch.EventSubEvents;
 using BreganTwitchBot.Domain.Enums;
 using BreganTwitchBot.Domain.Exceptions;
+using BreganTwitchBot.Domain.Interfaces.Helpers;
 using BreganTwitchBot.Domain.Interfaces.Twitch;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -11,9 +12,8 @@ using System.Collections.Concurrent;
 
 namespace BreganTwitchBot.Domain.Services.Twitch
 {
-    public class TwitchHelperService(ITwitchApiConnection connection, IServiceProvider serviceProvider, ITwitchApiInteractionService twitchApiInteractionService) : ITwitchHelperService
+    public class TwitchHelperService(ITwitchApiConnection connection, IServiceProvider serviceProvider, ITwitchApiInteractionService twitchApiInteractionService, IConfigHelperService configHelperService) : ITwitchHelperService
     {
-        private readonly Dictionary<string, string> _pointsNames = [];
         private readonly ConcurrentDictionary<string, ConcurrentDictionary<string, byte>> _streamChatters = new();
         private readonly ConcurrentDictionary<string, int> _chatMessageCounts = new();
 
@@ -85,23 +85,16 @@ namespace BreganTwitchBot.Domain.Services.Twitch
             }
         }
 
-        public async Task<string> GetPointsName(string broadcasterChannelId, string broadcasterChannelName = "")
+        /// <summary>
+        /// The channel's currency name.
+        ///
+        /// This now reads from the config helper, which already holds every channel config in
+        /// memory, rather than keeping a second cache here. Kept on this interface so the
+        /// existing Twitch callers do not all have to change.
+        /// </summary>
+        public Task<string> GetPointsName(string broadcasterChannelId, string broadcasterChannelName = "")
         {
-            var sanitisedBroadcasterChannelId = broadcasterChannelId.ToLower().Trim();
-
-            if (_pointsNames.TryGetValue(sanitisedBroadcasterChannelId, out var pointsName))
-            {
-                return pointsName;
-            }
-
-            using (var scope = serviceProvider.CreateScope())
-            {
-                var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-                var channel = await context.Channels.FirstAsync(x => x.BroadcasterTwitchChannelId == sanitisedBroadcasterChannelId);
-
-                _pointsNames[sanitisedBroadcasterChannelId] = channel.ChannelConfig.ChannelCurrencyName;
-                return channel.ChannelConfig.ChannelCurrencyName;
-            }
+            return Task.FromResult(configHelperService.GetPointsName(broadcasterChannelId));
         }
 
         public async Task<bool> IsUserSuperModInChannel(string broadcasterChannelId, string viewerChannelId)

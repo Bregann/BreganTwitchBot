@@ -107,7 +107,7 @@ namespace BreganTwitchBot.Domain.Services.Discord
                         }
 
                         var config = configHelperService.GetDiscordConfig(guildId);
-                        await SendMessage(channelId, $"**GG** <@{user.User.DiscordUserId}> you have levelled up to level **{user.DiscordLevel}**! You have gained **{user.DiscordLevel * 2000:N0}** pooants! (you can disable level up messages by doing /togglelevelups in <#{config.DiscordUserCommandsChannelId}>");
+                        await SendMessage(channelId, $"**GG** <@{user.User.DiscordUserId}> you have levelled up to level **{user.DiscordLevel}**! You have gained **{user.DiscordLevel * 2000:N0}** {configHelperService.GetPointsNameForGuild(guildId) ?? "points"}! (you can disable level up messages by doing /togglelevelups in <#{config.DiscordUserCommandsChannelId}>");
                     }
                 }
             }
