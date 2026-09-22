@@ -30,6 +30,7 @@ namespace BreganTwitchBot.Domain.Database.Context
         public DbSet<DiscordLinkRequests> DiscordLinkRequests { get; set; }
         public DbSet<DiscordSpinStats> DiscordSpinStats { get; set; }
         public DbSet<DiscordUserStats> DiscordUserStats { get; set; }
+        public DbSet<DiscordWordleGame> DiscordWordleGames { get; set; }
         public DbSet<StreamViewCount> StreamViewCounts { get; set; }
         public DbSet<Subathon> Subathons { get; set; }
         public DbSet<TwitchDailyPoints> TwitchDailyPoints { get; set; }
