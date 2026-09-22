@@ -134,5 +134,14 @@ namespace BreganTwitchBot.Domain.Services.Discord.SlashCommands.GeneralCommands
             var response = await generalCommandsData.AddUserBirthday(command);
             await RespondAsync(response);
         }
+        [SlashCommand("unbirthday", "[SERVER SPECIFIC!!] Remove your birthday from THE CURRENT SERVER")]
+        public async Task UnBirthday()
+        {
+            await DeferAsync(ephemeral: true);
+
+            var response = await generalCommandsData.RemoveUserBirthday(Context.Guild.Id, Context.User.Id);
+            await FollowupAsync(response, ephemeral: true);
+        }
+
     }
 }
