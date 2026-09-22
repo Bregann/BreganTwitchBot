@@ -237,7 +237,7 @@ builder.Services.AddScoped<IDiscordBookRecsData, DiscordBookRecsData>();
 builder.Services.AddScoped<IDiscordGiveawayData, DiscordGiveawayData>();
 builder.Services.AddScoped<IDiscordHoursPointsData, DiscordHoursPointsData>();
 builder.Services.AddScoped<IDiscordLeaderboardsData, DiscordLeaderboardsData>();
-
+builder.Services.AddScoped<IDiscordGeneralCommandsData, DiscordGeneralCommandsData>();
 // api
 builder.Services.AddScoped<IApiDataService, ApiDataService>();
 
