@@ -1,5 +1,7 @@
-using BreganTwitchBot.Domain.Database.Context;
+﻿using BreganTwitchBot.Domain.Database.Context;
 using BreganTwitchBot.Domain.Enums;
+using BreganTwitchBot.Domain.Interfaces.Discord;
+using BreganTwitchBot.Domain.Interfaces.Helpers;
 using BreganTwitchBot.Domain.Interfaces.Twitch;
 using BreganTwitchBot.Domain.Services.Twitch;
 using BreganTwitchBot.DomainTests.Helpers;
@@ -19,6 +21,8 @@ namespace BreganTwitchBot.DomainTests.Twitch
         private AppDbContext _dbContext;
         private Mock<ITwitchApiConnection> _twitchApiConnection;
         private Mock<ITwitchApiInteractionService> _twitchApiInteractionService;
+        private Mock<IDiscordHelperService> _discordHelperService;
+        private Mock<IConfigHelperService> _configHelperService;
 
         private StreamStatsService _streamStatsService;
 
@@ -65,7 +69,10 @@ namespace BreganTwitchBot.DomainTests.Twitch
             _twitchApiInteractionService.Setup(x => x.GetChannelSubscriberCount(It.IsAny<TwitchAPI>(), It.IsAny<string>()))
                 .ReturnsAsync(50);
 
-            _streamStatsService = new StreamStatsService(_serviceProvider, _twitchApiConnection.Object, _twitchApiInteractionService.Object);
+            _discordHelperService = new Mock<IDiscordHelperService>();
+            _configHelperService = new Mock<IConfigHelperService>();
+
+            _streamStatsService = new StreamStatsService(_serviceProvider, _twitchApiConnection.Object, _twitchApiInteractionService.Object, _discordHelperService.Object, _configHelperService.Object);
         }
 
         [TearDown]
@@ -309,6 +316,79 @@ namespace BreganTwitchBot.DomainTests.Twitch
             _streamStatsService.UpdateStreamStat(ChannelId, StreamStatType.MessagesReceived);
 
             Assert.DoesNotThrowAsync(async () => await _streamStatsService.FlushStats());
+            Assert.DoesNotThrowAsync(async () => await _streamStatsService.FlushStats());
+        }
+
+        [Test]
+        public async Task SampleViewerCounts_OnlyRecordsForLiveChannels()
+        {
+            _twitchApiConnection.Setup(x => x.GetAllChannels())
+                .Returns([new TwitchApiConnection.ChannelDetails(1, ChannelId, DatabaseSeedHelper.Channel1BroadcasterTwitchChannelName)]);
+
+            // not live
+            _twitchApiInteractionService.Setup(x => x.GetStreams(It.IsAny<TwitchAPI>(), It.IsAny<string>()))
+                .ReturnsAsync((Domain.DTOs.Twitch.Api.GetStreamsResponse?)null);
+
+            await _streamStatsService.StartNewStream(ChannelId);
+            await _streamStatsService.SampleViewerCounts();
+
+            using var scope = _serviceProvider.CreateScope();
+            var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+            var channel = await context.Channels.FirstAsync(x => x.BroadcasterTwitchChannelId == ChannelId);
+
+            Assert.That(await context.StreamViewCounts.CountAsync(x => x.ChannelId == channel.Id), Is.EqualTo(0));
+        }
+
+        [Test]
+        public async Task SampleViewerCounts_RecordsTheViewerCountWhenLive()
+        {
+            _twitchApiConnection.Setup(x => x.GetAllChannels())
+                .Returns([new TwitchApiConnection.ChannelDetails(1, ChannelId, DatabaseSeedHelper.Channel1BroadcasterTwitchChannelName)]);
+
+            _twitchApiInteractionService.Setup(x => x.GetStreams(It.IsAny<TwitchAPI>(), It.IsAny<string>()))
+                .ReturnsAsync(new Domain.DTOs.Twitch.Api.GetStreamsResponse
+                {
+                    GameId = "1",
+                    GameName = "Just Chatting",
+                    ViewerCount = 42,
+                    StartedAt = DateTime.UtcNow
+                });
+
+            await _streamStatsService.StartNewStream(ChannelId);
+            await _streamStatsService.SampleViewerCounts();
+
+            using var scope = _serviceProvider.CreateScope();
+            var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+            var channel = await context.Channels.FirstAsync(x => x.BroadcasterTwitchChannelId == ChannelId);
+
+            var sample = await context.StreamViewCounts.FirstAsync(x => x.ChannelId == channel.Id);
+            Assert.That(sample.ViewCount, Is.EqualTo(42));
+        }
+
+        [Test]
+        public async Task ReportFollowerChanges_FirstRunOnlyRecordsTheBaseline()
+        {
+            _twitchApiConnection.Setup(x => x.GetAllChannels())
+                .Returns([new TwitchApiConnection.ChannelDetails(1, ChannelId, DatabaseSeedHelper.Channel1BroadcasterTwitchChannelName)]);
+            _configHelperService.Setup(x => x.IsDiscordEnabled(It.IsAny<string>())).Returns(true);
+
+            await _streamStatsService.ReportFollowerChanges();
+
+            // nothing to compare against yet, so no message
+            _discordHelperService.Verify(x => x.SendEmbedMessage(It.IsAny<ulong>(), It.IsAny<global::Discord.EmbedBuilder>()), Times.Never);
+        }
+
+        [Test]
+        public async Task ReportFollowerChanges_NoChange_SendsNothing()
+        {
+            _twitchApiConnection.Setup(x => x.GetAllChannels())
+                .Returns([new TwitchApiConnection.ChannelDetails(1, ChannelId, DatabaseSeedHelper.Channel1BroadcasterTwitchChannelName)]);
+            _configHelperService.Setup(x => x.IsDiscordEnabled(It.IsAny<string>())).Returns(true);
+
+            await _streamStatsService.ReportFollowerChanges();
+            await _streamStatsService.ReportFollowerChanges();
+
+            _discordHelperService.Verify(x => x.SendEmbedMessage(It.IsAny<ulong>(), It.IsAny<global::Discord.EmbedBuilder>()), Times.Never);
         }
     }
 }

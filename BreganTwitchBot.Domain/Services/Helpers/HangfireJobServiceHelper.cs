@@ -16,6 +16,7 @@ namespace BreganTwitchBot.Domain.Services.Helpers
         IGeneralCommandsData generalCommandsData,
         IDiscordDailyPointsData discordDailyPointsData,
         IStreamStatsService streamStatsService,
+        IDiscordStatusService discordStatusService,
         IMonthlyLeaderboardRoleService monthlyLeaderboardRoleService
         )
     {
@@ -30,6 +31,9 @@ namespace BreganTwitchBot.Domain.Services.Helpers
             RecurringJob.AddOrUpdate("RefreshApi", () => RefreshApi(), "45 * * * *");
             RecurringJob.AddOrUpdate("CheckBirthdays", () => CheckBirthdays(), "0 6 * * *");
             RecurringJob.AddOrUpdate("FlushStreamStats", () => FlushStreamStats(), "* * * * *");
+            RecurringJob.AddOrUpdate("SampleViewerCounts", () => SampleViewerCounts(), "* * * * *");
+            RecurringJob.AddOrUpdate("FollowerCheck", () => FollowerCheck(), "0 * * * *");
+            RecurringJob.AddOrUpdate("UpdateDiscordMemberCount", () => UpdateDiscordMemberCount(), "*/10 * * * *");
             RecurringJob.AddOrUpdate("ResetDiscordStreaks", () => ResetDiscordStreaks(), "0 0 * * *");
             RecurringJob.AddOrUpdate("UpdateMonthlyLeaderboardRoles", () => UpdateMonthlyLeaderboardRoles(), "0 1 * * *");
 
@@ -175,6 +179,30 @@ namespace BreganTwitchBot.Domain.Services.Helpers
         public async Task FlushStreamStats()
         {
             await streamStatsService.FlushStats();
+        }
+
+        /// <summary>
+        /// Samples each live channel's viewer count for the average and peak
+        /// </summary>
+        public async Task SampleViewerCounts()
+        {
+            await streamStatsService.SampleViewerCounts();
+        }
+
+        /// <summary>
+        /// Reports follower count changes to discord each hour
+        /// </summary>
+        public async Task FollowerCheck()
+        {
+            await streamStatsService.ReportFollowerChanges();
+        }
+
+        /// <summary>
+        /// Keeps the bot's discord presence showing the member count
+        /// </summary>
+        public async Task UpdateDiscordMemberCount()
+        {
+            await discordStatusService.UpdateMemberCountStatusAsync();
         }
 
         public async Task CheckBirthdays()

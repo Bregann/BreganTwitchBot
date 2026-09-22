@@ -1,4 +1,4 @@
-using BreganTwitchBot.Domain.Enums;
+﻿using BreganTwitchBot.Domain.Enums;
 
 namespace BreganTwitchBot.Domain.Interfaces.Twitch
 {
@@ -35,5 +35,15 @@ namespace BreganTwitchBot.Domain.Interfaces.Twitch
         /// Records the current viewer count for the channel, for the average and peak
         /// </summary>
         Task RecordViewerCount(string broadcasterChannelId, int viewerCount);
+
+        /// <summary>
+        /// Samples the current viewer count of every live channel, for the average and peak
+        /// </summary>
+        Task SampleViewerCounts();
+
+        /// <summary>
+        /// Reports any follower count change since the last check to the channel's discord
+        /// </summary>
+        Task ReportFollowerChanges();
     }
 }

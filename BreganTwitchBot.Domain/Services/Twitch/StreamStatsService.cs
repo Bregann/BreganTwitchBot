@@ -1,7 +1,10 @@
-using BreganTwitchBot.Domain.Database.Context;
+﻿using BreganTwitchBot.Domain.Database.Context;
 using BreganTwitchBot.Domain.Database.Models;
 using BreganTwitchBot.Domain.Enums;
+using BreganTwitchBot.Domain.Interfaces.Discord;
+using BreganTwitchBot.Domain.Interfaces.Helpers;
 using BreganTwitchBot.Domain.Interfaces.Twitch;
+using Discord;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Serilog;
@@ -17,10 +20,15 @@ namespace BreganTwitchBot.Domain.Services.Twitch
     /// which cannot work now one bot serves many channels, so everything here is keyed by
     /// broadcaster channel id.
     /// </summary>
-    public class StreamStatsService(IServiceProvider serviceProvider, ITwitchApiConnection twitchApiConnection, ITwitchApiInteractionService twitchApiInteractionService) : IStreamStatsService
+    public class StreamStatsService(IServiceProvider serviceProvider, ITwitchApiConnection twitchApiConnection, ITwitchApiInteractionService twitchApiInteractionService, IDiscordHelperService discordHelperService, IConfigHelperService configHelperService) : IStreamStatsService
     {
         private readonly ConcurrentDictionary<string, ConcurrentDictionary<StreamStatType, long>> _pendingStats = new();
         private readonly ConcurrentDictionary<string, ConcurrentDictionary<string, byte>> _uniqueViewers = new();
+
+        /// <summary>
+        /// Last known follower count per channel, so the hourly check can report the change
+        /// </summary>
+        private readonly ConcurrentDictionary<string, long> _lastFollowerCounts = new();
 
         public void UpdateStreamStat(string broadcasterChannelId, StreamStatType statType, long amount = 1)
         {
@@ -216,6 +224,101 @@ namespace BreganTwitchBot.Domain.Services.Twitch
             });
 
             await context.SaveChangesAsync();
+        }
+
+        public async Task SampleViewerCounts()
+        {
+            foreach (var channel in twitchApiConnection.GetAllChannels())
+            {
+                try
+                {
+                    var apiClient = twitchApiConnection.GetBroadcasterApiClientFromChannelName(channel.BroadcasterChannelName);
+
+                    if (apiClient == null)
+                    {
+                        continue;
+                    }
+
+                    var stream = await twitchApiInteractionService.GetStreams(apiClient.ApiClient, channel.BroadcasterChannelId);
+
+                    // not live, nothing to sample
+                    if (stream == null)
+                    {
+                        continue;
+                    }
+
+                    await RecordViewerCount(channel.BroadcasterChannelId, stream.ViewerCount);
+                }
+                catch (Exception ex)
+                {
+                    Log.Error(ex, $"[Stream Stats] Error sampling the viewer count for {channel.BroadcasterChannelName}");
+                }
+            }
+        }
+
+        public async Task ReportFollowerChanges()
+        {
+            foreach (var channel in twitchApiConnection.GetAllChannels())
+            {
+                try
+                {
+                    var apiClient = twitchApiConnection.GetBroadcasterApiClientFromChannelName(channel.BroadcasterChannelName);
+
+                    if (apiClient == null)
+                    {
+                        continue;
+                    }
+
+                    var followerCount = await twitchApiInteractionService.GetChannelFollowerCount(apiClient.ApiClient, channel.BroadcasterChannelId, apiClient.TwitchChannelClientId);
+
+                    // the first run of a session just records the baseline, as reporting a change
+                    // against zero would claim every follower was gained in the last hour
+                    if (!_lastFollowerCounts.TryGetValue(channel.BroadcasterChannelId, out var previousCount))
+                    {
+                        _lastFollowerCounts[channel.BroadcasterChannelId] = followerCount;
+                        continue;
+                    }
+
+                    _lastFollowerCounts[channel.BroadcasterChannelId] = followerCount;
+
+                    if (followerCount == previousCount)
+                    {
+                        Log.Information($"[Follower Check] No change for {channel.BroadcasterChannelName}, still {followerCount:N0}");
+                        continue;
+                    }
+
+                    if (!configHelperService.IsDiscordEnabled(channel.BroadcasterChannelId))
+                    {
+                        continue;
+                    }
+
+                    var discordConfig = configHelperService.GetDiscordConfig(channel.BroadcasterChannelId);
+
+                    if (discordConfig?.DiscordEventChannelId == null)
+                    {
+                        continue;
+                    }
+
+                    var change = followerCount - previousCount;
+
+                    var embed = new EmbedBuilder
+                    {
+                        Title = "Follow count",
+                        Timestamp = DateTime.Now,
+                        Color = new Color(0, 217, 22)
+                    };
+
+                    embed.AddField("Before", $"{previousCount:N0}", true);
+                    embed.AddField("Now", $"{followerCount:N0}", true);
+                    embed.AddField("Change", $"{(change > 0 ? "+" : "")}{change:N0}", true);
+
+                    await discordHelperService.SendEmbedMessage(discordConfig.DiscordEventChannelId.Value, embed);
+                }
+                catch (Exception ex)
+                {
+                    Log.Error(ex, $"[Follower Check] Error checking followers for {channel.BroadcasterChannelName}");
+                }
+            }
         }
 
         /// <summary>
