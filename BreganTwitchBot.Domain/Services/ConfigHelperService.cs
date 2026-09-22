@@ -194,6 +194,38 @@ namespace BreganTwitchBot.Domain.Services
             }
         }
 
+        public string GetPointsName(string broadcasterId)
+        {
+            var sanitisedBroadcasterId = broadcasterId.ToLower().Trim();
+
+            lock (GetLock(sanitisedBroadcasterId))
+            {
+                if (!_channelConfigs.TryGetValue(sanitisedBroadcasterId, out var config))
+                {
+                    Log.Warning($"No config found for broadcasterId {sanitisedBroadcasterId}, falling back to points");
+                    return "points";
+                }
+
+                return config.ChannelCurrencyName;
+            }
+        }
+
+        public string? GetPointsNameForGuild(ulong discordGuildId)
+        {
+            lock (GetDiscordLock(discordGuildId))
+            {
+                var config = _channelConfigs.Values.FirstOrDefault(x => x.DiscordGuildId == discordGuildId);
+
+                if (config == null)
+                {
+                    Log.Warning($"No config found for discord guild {discordGuildId}");
+                    return null;
+                }
+
+                return config.ChannelCurrencyName;
+            }
+        }
+
         public bool IsDiscordEnabled(string broadcasterId)
         {
             lock (GetLock(broadcasterId))
