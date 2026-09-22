@@ -15,6 +15,7 @@ namespace BreganTwitchBot.Domain.Services.Helpers
         IDailyPointsDataService dailyPointsDataService,
         IGeneralCommandsData generalCommandsData,
         IDiscordDailyPointsData discordDailyPointsData,
+        IStreamStatsService streamStatsService,
         IMonthlyLeaderboardRoleService monthlyLeaderboardRoleService
         )
     {
@@ -28,6 +29,7 @@ namespace BreganTwitchBot.Domain.Services.Helpers
             RecurringJob.AddOrUpdate("ResetTwitchStreaks", () => ResetTwitchStreaks(), "0 2 * * *");
             RecurringJob.AddOrUpdate("RefreshApi", () => RefreshApi(), "45 * * * *");
             RecurringJob.AddOrUpdate("CheckBirthdays", () => CheckBirthdays(), "0 6 * * *");
+            RecurringJob.AddOrUpdate("FlushStreamStats", () => FlushStreamStats(), "* * * * *");
             RecurringJob.AddOrUpdate("ResetDiscordStreaks", () => ResetDiscordStreaks(), "0 0 * * *");
             RecurringJob.AddOrUpdate("UpdateMonthlyLeaderboardRoles", () => UpdateMonthlyLeaderboardRoles(), "0 1 * * *");
 
@@ -165,6 +167,14 @@ namespace BreganTwitchBot.Domain.Services.Helpers
         public async Task RefreshApi()
         {
             await twitchApiConnection.RefreshAllApiKeys();
+        }
+
+        /// <summary>
+        /// Writes the in memory stream stat counters to the database
+        /// </summary>
+        public async Task FlushStreamStats()
+        {
+            await streamStatsService.FlushStats();
         }
 
         public async Task CheckBirthdays()

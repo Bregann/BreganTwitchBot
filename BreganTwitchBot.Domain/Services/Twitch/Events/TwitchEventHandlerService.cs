@@ -19,16 +19,22 @@ namespace BreganTwitchBot.Domain.Services.Twitch.Events
         ITwitchApiConnection twitchApiConnection,
         IConfigHelperService configHelperService,
         IDiscordHelperService discordHelperService,
-        IServiceProvider serviceProvider
+        IServiceProvider serviceProvider,
+        IStreamStatsService streamStatsService
         ) : ITwitchEventHandlerService
     {
         public async Task HandleChannelCheerEvent(BitsCheeredParams cheerParams)
         {
+            streamStatsService.UpdateStreamStat(cheerParams.BroadcasterChannelId, StreamStatType.BitsDonated, cheerParams.Amount);
+
             await twitchHelperService.SendTwitchMessageToChannel(cheerParams.BroadcasterChannelId, cheerParams.BroadcasterChannelName, $"Thank you for the {cheerParams.Amount} bits, {cheerParams.ChatterChannelName}! PogChamp");
 
-            // anonymous cheers have nobody to credit on the monthly leaderboard
+            // anonymous cheers have no user to credit the contribution to
             if (!cheerParams.IsAnonymous)
             {
+                await AddSubathonTime(x => x.AddBitsTime(cheerParams.BroadcasterChannelId, cheerParams.ChatterChannelId, cheerParams.Amount));
+                
+                // anonymous cheers have nobody to credit on the monthly leaderboard
                 await UpdateMonthlyTotals(cheerParams.BroadcasterChannelId, cheerParams.ChatterChannelId, bitsDonated: cheerParams.Amount, subsGifted: 0);
             }
         }
@@ -51,6 +57,8 @@ namespace BreganTwitchBot.Domain.Services.Twitch.Events
 
         public async Task HandleChannelGiftSubEvent(ChannelGiftSubParams giftSubParams)
         {
+            streamStatsService.UpdateStreamStat(giftSubParams.BroadcasterChannelId, StreamStatType.NewGiftedSubs, giftSubParams.Total);
+
             var pointsToAdd = giftSubParams.SubTier switch
             {
                 SubTierEnum.Tier1 => 20000,
@@ -61,6 +69,8 @@ namespace BreganTwitchBot.Domain.Services.Twitch.Events
             await twitchHelperService.AddPointsToUser(giftSubParams.BroadcasterChannelId, giftSubParams.ChatterChannelId, pointsToAdd, giftSubParams.BroadcasterChannelName, giftSubParams.ChatterChannelName);
             await twitchHelperService.SendTwitchMessageToChannel(giftSubParams.BroadcasterChannelId, giftSubParams.BroadcasterChannelName, $"Thank you to {giftSubParams.ChatterChannelName} for gifting {(giftSubParams.Total == 1 ? "a sub" : $"{giftSubParams.Total} subs")}! They have gifted {giftSubParams.CumulativeTotal} subs in total!");
 
+            await AddSubathonTime(x => x.AddSubTime(giftSubParams.BroadcasterChannelId, giftSubParams.ChatterChannelId, giftSubParams.SubTier, giftSubParams.Total));
+
             if (!giftSubParams.IsAnonymous)
             {
                 await UpdateMonthlyTotals(giftSubParams.BroadcasterChannelId, giftSubParams.ChatterChannelId, bitsDonated: 0, subsGifted: giftSubParams.Total);
@@ -69,6 +79,8 @@ namespace BreganTwitchBot.Domain.Services.Twitch.Events
 
         public async Task HandleChannelSubEvent(ChannelSubscribeParams subParams)
         {
+            streamStatsService.UpdateStreamStat(subParams.BroadcasterChannelId, StreamStatType.NewSubscribers);
+
             if (subParams.IsGift)
             {
                 Log.Information("Subscription is a gift, skipping points addition.");
@@ -146,35 +158,6 @@ namespace BreganTwitchBot.Domain.Services.Twitch.Events
                 {
                     await twitchApiInteractionService.ShoutoutChannel(channel.ApiClient, raidParams.BroadcasterChannelId, raidParams.RaidingChannelId, channel.TwitchChannelClientId);
                 }
-            }
-        }
-
-        /// <summary>
-        /// Keeps the monthly bits and gifted sub totals that drive the monthly leaderboard roles.
-        /// These columns existed but nothing was writing to them.
-        /// </summary>
-        private async Task UpdateMonthlyTotals(string broadcasterChannelId, string chatterChannelId, long bitsDonated, int subsGifted)
-        {
-            try
-            {
-                using var scope = serviceProvider.CreateScope();
-                var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-
-                var stats = await context.ChannelUserStats
-                    .FirstOrDefaultAsync(x => x.User.TwitchUserId == chatterChannelId && x.Channel.BroadcasterTwitchChannelId == broadcasterChannelId);
-
-                if (stats == null)
-                {
-                    return;
-                }
-
-                stats.BitsDonatedThisMonth += (int)bitsDonated;
-                stats.GiftedSubsThisMonth += subsGifted;
-                await context.SaveChangesAsync();
-            }
-            catch (Exception ex)
-            {
-                Log.Error(ex, "[Monthly Leaderboards] Error updating the monthly totals");
             }
         }
 

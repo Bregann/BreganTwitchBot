@@ -1,10 +1,6 @@
 using BreganTwitchBot.Domain.Database.Context;
 using BreganTwitchBot.Domain.Database.Models;
 using BreganTwitchBot.Domain.Enums;
-using BreganTwitchBot.Domain.Services.Helpers;
-using Discord;
-using BreganTwitchBot.Domain.Interfaces.Discord;
-using BreganTwitchBot.Domain.Interfaces.Helpers;
 using BreganTwitchBot.Domain.Interfaces.Twitch;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -21,7 +17,7 @@ namespace BreganTwitchBot.Domain.Services.Twitch
     /// which cannot work now one bot serves many channels, so everything here is keyed by
     /// broadcaster channel id.
     /// </summary>
-    public class StreamStatsService(IServiceProvider serviceProvider, ITwitchApiConnection twitchApiConnection, ITwitchApiInteractionService twitchApiInteractionService, IDiscordHelperService discordHelperService, IConfigHelperService configHelperService) : IStreamStatsService
+    public class StreamStatsService(IServiceProvider serviceProvider, ITwitchApiConnection twitchApiConnection, ITwitchApiInteractionService twitchApiInteractionService) : IStreamStatsService
     {
         private readonly ConcurrentDictionary<string, ConcurrentDictionary<StreamStatType, long>> _pendingStats = new();
         private readonly ConcurrentDictionary<string, ConcurrentDictionary<string, byte>> _uniqueViewers = new();
@@ -38,7 +34,7 @@ namespace BreganTwitchBot.Domain.Services.Twitch
             viewers.TryAdd(username.ToLower(), 0);
         }
 
-        public async Task FlushStatsAsync()
+        public async Task FlushStats()
         {
             using var scope = serviceProvider.CreateScope();
             var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
@@ -77,7 +73,7 @@ namespace BreganTwitchBot.Domain.Services.Twitch
             await FlushUniqueViewers(context);
         }
 
-        public async Task StartNewStreamAsync(string broadcasterChannelId)
+        public async Task StartNewStream(string broadcasterChannelId)
         {
             using var scope = serviceProvider.CreateScope();
             var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
@@ -157,9 +153,9 @@ namespace BreganTwitchBot.Domain.Services.Twitch
             Log.Information($"[Stream Stats] Started stream {lastStreamId + 1} for {channel.BroadcasterTwitchChannelName}");
         }
 
-        public async Task EndStreamAsync(string broadcasterChannelId)
+        public async Task EndStream(string broadcasterChannelId)
         {
-            await FlushStatsAsync();
+            await FlushStats();
 
             using var scope = serviceProvider.CreateScope();
             var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
@@ -198,11 +194,9 @@ namespace BreganTwitchBot.Domain.Services.Twitch
             await context.SaveChangesAsync();
 
             Log.Information($"[Stream Stats] Ended stream {stream.StreamId} for {channel.BroadcasterTwitchChannelName}");
-
-            await SendStreamSummaryToDiscord(broadcasterChannelId, stream);
         }
 
-        public async Task RecordViewerCountAsync(string broadcasterChannelId, int viewerCount)
+        public async Task RecordViewerCount(string broadcasterChannelId, int viewerCount)
         {
             using var scope = serviceProvider.CreateScope();
             var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
@@ -222,60 +216,6 @@ namespace BreganTwitchBot.Domain.Services.Twitch
             });
 
             await context.SaveChangesAsync();
-        }
-
-        /// <summary>
-        /// Posts the end of stream summary to the channel's discord event channel
-        /// </summary>
-        private async Task SendStreamSummaryToDiscord(string broadcasterChannelId, TwitchStreamStats stream)
-        {
-            try
-            {
-                if (!configHelperService.IsDiscordEnabled(broadcasterChannelId))
-                {
-                    return;
-                }
-
-                var discordConfig = configHelperService.GetDiscordConfig(broadcasterChannelId);
-
-                if (discordConfig?.DiscordEventChannelId == null)
-                {
-                    return;
-                }
-
-                // the old bot sent four separate messages, one per section
-                var embed = new EmbedBuilder
-                {
-                    Title = $"Stream #{stream.StreamId} stats",
-                    Color = new Color(238, 255, 46),
-                    Timestamp = DateTime.Now
-                };
-
-                embed.AddField("Uptime", DurationFormatHelper.Humanise(stream.Uptime), true);
-                embed.AddField("Unique people", $"{stream.UniquePeople:N0}", true);
-                embed.AddField("Average viewers", $"{stream.AvgViewCount:N0}", true);
-                embed.AddField("Peak viewers", $"{stream.PeakViewerCount:N0}", true);
-                embed.AddField("Messages", $"{stream.MessagesReceived:N0}", true);
-                embed.AddField("Commands", $"{stream.CommandsSent:N0}", true);
-
-                embed.AddField("Followers", $"{stream.StartingFollowerCount:N0} → {stream.EndingFollowerCount:N0} ({stream.NewFollowers:N0} new)", true);
-                embed.AddField("Subscribers", $"{stream.StartingSubscriberCount:N0} → {stream.EndingSubscriberCount:N0}", true);
-                embed.AddField("New subs / gifted", $"{stream.NewSubscribers:N0} / {stream.NewGiftedSubs:N0}", true);
-                embed.AddField("Bits donated", $"{stream.BitsDonated:N0}", true);
-
-                embed.AddField("Daily claims", $"{stream.TotalUsersClaimed:N0} users, {stream.TotalPointsClaimed:N0} points", true);
-                embed.AddField("Streaks lost", $"{stream.AmountOfUsersReset:N0}", true);
-                embed.AddField("Rewards redeemed", $"{stream.AmountOfRewardsRedeemed:N0} ({stream.RewardRedeemCost:N0} points)", true);
-                embed.AddField("Bans / timeouts", $"{stream.TotalBans:N0} / {stream.TotalTimeouts:N0}", true);
-                embed.AddField("Discord ranks earned", $"{stream.DiscordRanksEarnt:N0}", true);
-                embed.AddField("Discord joins", $"{stream.AmountOfDiscordUsersJoined:N0}", true);
-
-                await discordHelperService.SendEmbedMessage(discordConfig.DiscordEventChannelId.Value, embed);
-            }
-            catch (Exception ex)
-            {
-                Log.Error(ex, $"[Stream Stats] Error sending the stream summary for {broadcasterChannelId}");
-            }
         }
 
         /// <summary>
@@ -350,7 +290,7 @@ namespace BreganTwitchBot.Domain.Services.Twitch
 
             try
             {
-                followerCount = await twitchApiInteractionService.GetChannelFollowerCountAsync(apiClient.ApiClient, broadcasterChannelId, apiClient.TwitchChannelClientId);
+                followerCount = await twitchApiInteractionService.GetChannelFollowerCount(apiClient.ApiClient, broadcasterChannelId, apiClient.TwitchChannelClientId);
             }
             catch (Exception ex)
             {
@@ -359,7 +299,7 @@ namespace BreganTwitchBot.Domain.Services.Twitch
 
             try
             {
-                subCount = await twitchApiInteractionService.GetChannelSubscriberCountAsync(apiClient.ApiClient, broadcasterChannelId);
+                subCount = await twitchApiInteractionService.GetChannelSubscriberCount(apiClient.ApiClient, broadcasterChannelId);
             }
             catch (Exception ex)
             {

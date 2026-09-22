@@ -44,6 +44,11 @@ namespace BreganTwitchBot.Domain.Database.Models
         [Required]
         public required TimeSpan SubathonTime { get; set; }
 
+        /// <summary>
+        /// When the current subathon was started. Null when one has never been run.
+        /// </summary>
+        public DateTime? SubathonStartTime { get; set; } = null;
+
         [Required]
         public required bool BroadcasterLive { get; set; }
 
@@ -95,6 +100,12 @@ namespace BreganTwitchBot.Domain.Database.Models
         /// The ID of the Discord role that has moderator permissions.
         /// </summary>
         public ulong? DiscordModeratorRoleId { get; set; } = null;
+
+        /// <summary>
+        /// The role /mute applies. The old bot looked this up by the name "mute", which broke
+        /// if it was renamed and could not work across guilds.
+        /// </summary>
+        public ulong? DiscordMuteRoleId { get; set; } = null;
 
         /// <summary>
         /// The ID of the Discord channel where welcome messages are sent.
