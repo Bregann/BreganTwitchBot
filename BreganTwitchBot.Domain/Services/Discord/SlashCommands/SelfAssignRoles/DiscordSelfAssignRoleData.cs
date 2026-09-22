@@ -9,7 +9,7 @@ namespace BreganTwitchBot.Domain.Services.Discord.SlashCommands.SelfAssignRoles
 {
     public class DiscordSelfAssignRoleData(AppDbContext context, IDiscordClientProvider discordClientProvider) : IDiscordSelfAssignRoleData
     {
-        public async Task<List<DiscordSelfAssignRole>> GetRolesAsync(ulong guildId)
+        public async Task<List<DiscordSelfAssignRole>> GetRoles(ulong guildId)
         {
             var channel = await context.Channels.FirstOrDefaultAsync(x => x.ChannelConfig.DiscordGuildId == guildId);
 
@@ -24,7 +24,7 @@ namespace BreganTwitchBot.Domain.Services.Discord.SlashCommands.SelfAssignRoles
                 .ToListAsync();
         }
 
-        public async Task<(string Response, bool Ephemeral)> ToggleRoleAsync(ulong guildId, ulong userId, int roleConfigId)
+        public async Task<(string Response, bool Ephemeral)> ToggleRole(ulong guildId, ulong userId, int roleConfigId)
         {
             var roleConfig = await context.DiscordSelfAssignRoles
                 .FirstOrDefaultAsync(x => x.Id == roleConfigId && x.Channel.ChannelConfig.DiscordGuildId == guildId);

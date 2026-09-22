@@ -77,7 +77,7 @@ namespace BreganTwitchBot.DomainTests.Discord
         {
             await SeedRoles();
 
-            var roles = await _selfAssignRoleData.GetRolesAsync(DatabaseSeedHelper.DiscordGuildId);
+            var roles = await _selfAssignRoleData.GetRoles(DatabaseSeedHelper.DiscordGuildId);
 
             Assert.Multiple(() =>
             {
@@ -92,7 +92,7 @@ namespace BreganTwitchBot.DomainTests.Discord
         {
             await SeedRoles();
 
-            var roles = await _selfAssignRoleData.GetRolesAsync(99999999);
+            var roles = await _selfAssignRoleData.GetRoles(99999999);
 
             Assert.That(roles, Is.Empty);
         }
@@ -100,7 +100,7 @@ namespace BreganTwitchBot.DomainTests.Discord
         [Test]
         public async Task GetRoles_NoneConfigured_ReturnsEmpty()
         {
-            var roles = await _selfAssignRoleData.GetRolesAsync(DatabaseSeedHelper.DiscordGuildId);
+            var roles = await _selfAssignRoleData.GetRoles(DatabaseSeedHelper.DiscordGuildId);
 
             Assert.That(roles, Is.Empty);
         }
@@ -108,7 +108,7 @@ namespace BreganTwitchBot.DomainTests.Discord
         [Test]
         public async Task ToggleRole_UnknownRoleConfig_IsRejected()
         {
-            var (response, ephemeral) = await _selfAssignRoleData.ToggleRoleAsync(DatabaseSeedHelper.DiscordGuildId, DatabaseSeedHelper.DiscordUserId1, 99999);
+            var (response, ephemeral) = await _selfAssignRoleData.ToggleRole(DatabaseSeedHelper.DiscordGuildId, DatabaseSeedHelper.DiscordUserId1, 99999);
 
             Assert.Multiple(() =>
             {
@@ -124,7 +124,7 @@ namespace BreganTwitchBot.DomainTests.Discord
             var role = await _dbContext.DiscordSelfAssignRoles.FirstAsync();
 
             // the role belongs to this guild's channel, so asking as a different guild must fail
-            var (response, _) = await _selfAssignRoleData.ToggleRoleAsync(99999999, DatabaseSeedHelper.DiscordUserId1, role.Id);
+            var (response, _) = await _selfAssignRoleData.ToggleRole(99999999, DatabaseSeedHelper.DiscordUserId1, role.Id);
 
             Assert.That(response, Does.Contain("isn't available"));
         }

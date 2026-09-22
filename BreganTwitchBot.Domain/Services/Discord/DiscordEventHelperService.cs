@@ -171,7 +171,7 @@ namespace BreganTwitchBot.Domain.Services.Discord
             if (buttonPressedEvent.CustomId.StartsWith("selfrole-"))
             {
                 return int.TryParse(buttonPressedEvent.CustomId.Split('-')[1], out var roleConfigId)
-                    ? await discordSelfAssignRoleData.ToggleRoleAsync(buttonPressedEvent.GuildId, buttonPressedEvent.UserId, roleConfigId)
+                    ? await discordSelfAssignRoleData.ToggleRole(buttonPressedEvent.GuildId, buttonPressedEvent.UserId, roleConfigId)
                     : ("invalid button", true);
             }
 

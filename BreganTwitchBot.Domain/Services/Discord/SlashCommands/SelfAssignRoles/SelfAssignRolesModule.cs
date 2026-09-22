@@ -17,7 +17,7 @@ namespace BreganTwitchBot.Domain.Services.Discord.SlashCommands.SelfAssignRoles
                 return;
             }
 
-            var roles = await discordSelfAssignRoleData.GetRolesAsync(Context.Guild.Id);
+            var roles = await discordSelfAssignRoleData.GetRoles(Context.Guild.Id);
 
             if (roles.Count == 0)
             {
