@@ -33,7 +33,7 @@ namespace BreganTwitchBot.Domain.Services.Twitch.Events
             if (!cheerParams.IsAnonymous)
             {
                 await AddSubathonTime(x => x.AddBitsTime(cheerParams.BroadcasterChannelId, cheerParams.ChatterChannelId, cheerParams.Amount));
-                
+
                 // anonymous cheers have nobody to credit on the monthly leaderboard
                 await UpdateMonthlyTotals(cheerParams.BroadcasterChannelId, cheerParams.ChatterChannelId, bitsDonated: cheerParams.Amount, subsGifted: 0);
             }
