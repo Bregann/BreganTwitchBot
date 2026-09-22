@@ -149,6 +149,7 @@ builder.Services.AddSingleton<ITwitchApiInteractionService, TwitchApiInteraction
 builder.Services.AddSingleton<IConfigHelperService, ConfigHelperService>();
 
 builder.Services.AddSingleton<ITwitchEventHandlerService, TwitchEventHandlerService>();
+builder.Services.AddScoped<IMonthlyLeaderboardRoleService, MonthlyLeaderboardRoleService>();
 
 // Twitch commands
 builder.Services.AddSingleton<ICommandHandler, CommandHandler>();
