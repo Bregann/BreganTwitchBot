@@ -108,7 +108,7 @@ namespace BreganTwitchBot.DomainTests.Twitch
         {
             await AddMessage();
 
-            await _timedMessageService.SendDueMessagesAsync();
+            await _timedMessageService.SendDueMessages();
 
             VerifySent(Times.Once());
         }
@@ -118,7 +118,7 @@ namespace BreganTwitchBot.DomainTests.Twitch
         {
             await AddMessage(intervalMinutes: 30, lastSentAt: DateTime.UtcNow.AddMinutes(-5));
 
-            await _timedMessageService.SendDueMessagesAsync();
+            await _timedMessageService.SendDueMessages();
 
             VerifySent(Times.Never());
         }
@@ -128,7 +128,7 @@ namespace BreganTwitchBot.DomainTests.Twitch
         {
             await AddMessage(intervalMinutes: 30, lastSentAt: DateTime.UtcNow.AddMinutes(-31));
 
-            await _timedMessageService.SendDueMessagesAsync();
+            await _timedMessageService.SendDueMessages();
 
             VerifySent(Times.Once());
         }
@@ -138,7 +138,7 @@ namespace BreganTwitchBot.DomainTests.Twitch
         {
             await AddMessage(enabled: false);
 
-            await _timedMessageService.SendDueMessagesAsync();
+            await _timedMessageService.SendDueMessages();
 
             VerifySent(Times.Never());
         }
@@ -149,7 +149,7 @@ namespace BreganTwitchBot.DomainTests.Twitch
             _twitchHelperService.Setup(x => x.IsBroadcasterLive(It.IsAny<string>())).ReturnsAsync(false);
             await AddMessage(onlyWhenLive: true);
 
-            await _timedMessageService.SendDueMessagesAsync();
+            await _timedMessageService.SendDueMessages();
 
             VerifySent(Times.Never());
         }
@@ -160,7 +160,7 @@ namespace BreganTwitchBot.DomainTests.Twitch
             _twitchHelperService.Setup(x => x.IsBroadcasterLive(It.IsAny<string>())).ReturnsAsync(false);
             await AddMessage(onlyWhenLive: false);
 
-            await _timedMessageService.SendDueMessagesAsync();
+            await _timedMessageService.SendDueMessages();
 
             VerifySent(Times.Once());
         }
@@ -170,7 +170,7 @@ namespace BreganTwitchBot.DomainTests.Twitch
         {
             var message = await AddMessage();
 
-            await _timedMessageService.SendDueMessagesAsync();
+            await _timedMessageService.SendDueMessages();
 
             using var scope = _serviceProvider.CreateScope();
             var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
@@ -186,7 +186,7 @@ namespace BreganTwitchBot.DomainTests.Twitch
             _twitchHelperService.Setup(x => x.GetChatMessageCount(It.IsAny<string>())).Returns(2);
 
             await AddMessage(minimumChatMessages: 50);
-            await _timedMessageService.SendDueMessagesAsync();
+            await _timedMessageService.SendDueMessages();
             VerifySent(Times.Once());
 
             // second run: only two more messages have gone by, so it should hold
@@ -196,7 +196,7 @@ namespace BreganTwitchBot.DomainTests.Twitch
             message.LastSentAt = DateTime.UtcNow.AddHours(-1);
             await _dbContext.SaveChangesAsync();
 
-            await _timedMessageService.SendDueMessagesAsync();
+            await _timedMessageService.SendDueMessages();
             VerifySent(Times.Once());
         }
 
@@ -206,7 +206,7 @@ namespace BreganTwitchBot.DomainTests.Twitch
             _twitchHelperService.Setup(x => x.GetChatMessageCount(It.IsAny<string>())).Returns(0);
 
             await AddMessage(minimumChatMessages: 50);
-            await _timedMessageService.SendDueMessagesAsync();
+            await _timedMessageService.SendDueMessages();
             VerifySent(Times.Once());
 
             _twitchHelperService.Setup(x => x.GetChatMessageCount(It.IsAny<string>())).Returns(100);
@@ -215,7 +215,7 @@ namespace BreganTwitchBot.DomainTests.Twitch
             message.LastSentAt = DateTime.UtcNow.AddHours(-1);
             await _dbContext.SaveChangesAsync();
 
-            await _timedMessageService.SendDueMessagesAsync();
+            await _timedMessageService.SendDueMessages();
             VerifySent(Times.Exactly(2));
         }
 
@@ -224,7 +224,7 @@ namespace BreganTwitchBot.DomainTests.Twitch
         {
             await AddMessage();
 
-            await _timedMessageService.SendDueMessagesAsync();
+            await _timedMessageService.SendDueMessages();
 
             _twitchHelperService.Verify(x => x.SendTwitchMessageToChannel(
                 DatabaseSeedHelper.Channel2BroadcasterTwitchChannelId, It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string?>()),

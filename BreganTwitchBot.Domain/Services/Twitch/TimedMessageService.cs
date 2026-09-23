@@ -21,7 +21,7 @@ namespace BreganTwitchBot.Domain.Services.Twitch
         /// </summary>
         private readonly ConcurrentDictionary<int, int> _chatCountAtLastSend = new();
 
-        public async Task SendDueMessagesAsync()
+        public async Task SendDueMessages()
         {
             using var scope = serviceProvider.CreateScope();
             var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();

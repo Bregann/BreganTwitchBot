@@ -213,7 +213,7 @@ namespace BreganTwitchBot.Domain.Services.Helpers
         /// </summary>
         public async Task SendTimedMessages()
         {
-            await timedMessageService.SendDueMessagesAsync();
+            await timedMessageService.SendDueMessages();
         }
 
         public async Task CheckBirthdays()
