@@ -173,7 +173,7 @@ namespace BreganTwitchBot.DomainTests.Twitch.Commands
         public async Task HandleSpinCommand_Wins_ShowTheAmountPaidAndPayItOnce()
         {
             // the reels are random, so spin enough times that some wins are all but certain
-            // (roughly 1 in 15 spins wins, so none in 300 is around 1 in a billion)
+            // (roughly 1 in 21 spins wins, so none in 500 is well under 1 in a billion)
             _twitchHelperService.Setup(x => x.IsBroadcasterLive(It.IsAny<string>())).ReturnsAsync(true);
             _twitchHelperService.Setup(x => x.GetPointsForUser(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>())).ReturnsAsync(200);
 
@@ -184,7 +184,7 @@ namespace BreganTwitchBot.DomainTests.Twitch.Commands
 
             var wins = 0;
 
-            for (var i = 0; i < 300; i++)
+            for (var i = 0; i < 500; i++)
             {
                 payouts.Clear();
 
@@ -210,6 +210,28 @@ namespace BreganTwitchBot.DomainTests.Twitch.Commands
             }
 
             Assert.That(wins, Is.GreaterThan(0));
+        }
+
+        [Test]
+        public void GetReelEmote_EveryEmoteCanComeUp()
+        {
+            // the reels used to roll 1-12, which left both jackpots unwinnable
+            var reachable = Enumerable.Range(1, GamblingDataService.ReelPositions)
+                .Select(GamblingDataService.GetReelEmote)
+                .Distinct()
+                .ToList();
+
+            Assert.That(reachable, Is.EquivalentTo(new[] { "Kappa", "4Head", "📖", "LUL", "TriHard", "SMOrc" }));
+        }
+
+        [Test]
+        public void GetReelEmote_JackpotsHaveOnePositionEach()
+        {
+            Assert.Multiple(() =>
+            {
+                Assert.That(GamblingDataService.GetReelEmote(13), Is.EqualTo("TriHard"));
+                Assert.That(GamblingDataService.GetReelEmote(14), Is.EqualTo("SMOrc"));
+            });
         }
     }
 }

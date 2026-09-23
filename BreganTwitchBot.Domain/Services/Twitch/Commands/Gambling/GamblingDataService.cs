@@ -63,6 +63,29 @@ namespace BreganTwitchBot.Domain.Services.Twitch.Commands.Gambling
             return $"The current jackpot is {slotMachineDbData.JackpotAmount:N0} {pointsName}";
         }
 
+        /// <summary>
+        /// Each reel lands on one of these many positions. It used to roll 1-12, so the
+        /// TriHard (13) and SMOrc (14) positions could never come up and nobody could win
+        /// either jackpot.
+        /// </summary>
+        public const int ReelPositions = 14;
+
+        /// <summary>
+        /// The emote on a reel position. The odds are per reel, then for all three matching.
+        /// </summary>
+        public static string GetReelEmote(int position)
+        {
+            return position switch
+            {
+                <= 4 => "Kappa",    // 4/14, 1 in 43 to win
+                <= 7 => "4Head",    // 3/14, 1 in 102
+                <= 10 => "📖",      // 3/14, 1 in 102
+                <= 12 => "LUL",     // 2/14, 1 in 343
+                13 => "TriHard",    // 1/14, 1 in 2,744 - the jackpot
+                _ => "SMOrc"        // 1/14, 1 in 2,744 - the budget jackpot
+            };
+        }
+
         private async Task<string> SpinSlotMachine(long pointsGambled, string twitchUserId, string broadcasterId, string twitchUsername, string broadcasterUsername, string pointsName)
         {
             await twitchHelperService.RemovePointsFromUser(broadcasterId, twitchUserId, pointsGambled, broadcasterUsername, twitchUsername);
@@ -72,32 +95,7 @@ namespace BreganTwitchBot.Domain.Services.Twitch.Commands.Gambling
 
             for (var i = 0; i < 3; i++)
             {
-                var number = random.Next(1, 13); // 1 to 12
-
-                if (number <= 4) // 33.33% (1/27)
-                {
-                    emoteList.Add("Kappa");
-                }
-                else if (number <= 7) // 25.00% (1/64)
-                {
-                    emoteList.Add("4Head");
-                }
-                else if (number <= 10) // 25.00% (1/64)
-                {
-                    emoteList.Add("📖");
-                }
-                else if (number <= 12)  // 16.67% (1/216)
-                {
-                    emoteList.Add("LUL");
-                }
-                else if (number == 13) // 8.33% (1/1728)
-                {
-                    emoteList.Add("TriHard");
-                }
-                else // 8.33% (1/1728)
-                {
-                    emoteList.Add("SMOrc");
-                }
+                emoteList.Add(GetReelEmote(random.Next(1, ReelPositions + 1)));
             }
 
             var slotMachineDbData = await context.TwitchSlotMachineStats.FirstAsync(x => x.Channel.BroadcasterTwitchChannelId == broadcasterId);
