@@ -168,14 +168,15 @@ namespace BreganTwitchBot.Domain.Services.Twitch.Commands.Gambling
                                 break;
                         }
 
-                        // add the winnings to the user
-                        spinResultMessage = $"You have spun {emoteList[0]} | {emoteList[1]} | {emoteList[2]} . You have won {winAmount} {pointsName}!";
-                        await twitchHelperService.AddPointsToUser(broadcasterId, twitchUserId, winAmount, broadcasterUsername, twitchUsername);
+                        // the message has to be built after winAmount is set - it used to keep the
+                        // "won 0" message made before the spin. The winnings themselves are paid
+                        // once, below, along with every other win
+                        spinResultMessage = $"You have spun {emoteList[0]} | {emoteList[1]} | {emoteList[2]} . You have won {winAmount:N0} {pointsName}!";
 
                         // Gotta have some fun with the book emoji
                         if (firstEmote == "📖")
                         {
-                            spinResultMessage = $"BOOK BOOK BOOK 📖📖📖 You have spun {emoteList[0]} | {emoteList[1]} | {emoteList[2]} . You have won {winAmount} {pointsName}! 📖📖📖";
+                            spinResultMessage = $"BOOK BOOK BOOK 📖📖📖 You have spun {emoteList[0]} | {emoteList[1]} | {emoteList[2]} . You have won {winAmount:N0} {pointsName}! 📖📖📖";
                         }
                     }
                 }
