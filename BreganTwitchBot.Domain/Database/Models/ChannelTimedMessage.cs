@@ -43,5 +43,11 @@ namespace BreganTwitchBot.Domain.Database.Models
         public required bool OnlyWhenLive { get; set; }
 
         public DateTime? LastSentAt { get; set; }
+
+        /// <summary>
+        /// The channel's chat message count when it last posted, so the chat since can be
+        /// worked out. Null until it has posted
+        /// </summary>
+        public int? ChatCountAtLastSend { get; set; }
     }
 }

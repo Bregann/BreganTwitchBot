@@ -1,9 +1,7 @@
 using BreganTwitchBot.Domain.Database.Context;
 using BreganTwitchBot.Domain.Interfaces.Twitch;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
 using Serilog;
-using System.Collections.Concurrent;
 
 namespace BreganTwitchBot.Domain.Services.Twitch
 {
@@ -13,19 +11,10 @@ namespace BreganTwitchBot.Domain.Services.Twitch
     /// A message only goes out if enough chat has happened since it last did, so a quiet
     /// stream does not end up with the bot talking to itself.
     /// </summary>
-    public class TimedMessageService(IServiceProvider serviceProvider, ITwitchHelperService twitchHelperService) : ITimedMessageService
+    public class TimedMessageService(AppDbContext context, ITwitchHelperService twitchHelperService) : ITimedMessageService
     {
-        /// <summary>
-        /// Chat message count when each timed message last went out, so the gap since can be
-        /// worked out. Keyed by the timed message's id.
-        /// </summary>
-        private readonly ConcurrentDictionary<int, int> _chatCountAtLastSend = new();
-
         public async Task SendDueMessages()
         {
-            using var scope = serviceProvider.CreateScope();
-            var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-
             var messages = await context.ChannelTimedMessages
                 .Where(x => x.Enabled)
                 .Include(x => x.Channel)
@@ -35,7 +24,7 @@ namespace BreganTwitchBot.Domain.Services.Twitch
             {
                 try
                 {
-                    await TrySendAsync(context, message);
+                    await TrySendAsync(message);
                 }
                 catch (Exception ex)
                 {
@@ -43,10 +32,11 @@ namespace BreganTwitchBot.Domain.Services.Twitch
                 }
             }
 
+            // saved once after every message has been considered
             await context.SaveChangesAsync();
         }
 
-        private async Task TrySendAsync(AppDbContext context, Database.Models.ChannelTimedMessage message)
+        private async Task TrySendAsync(Database.Models.ChannelTimedMessage message)
         {
             var broadcasterId = message.Channel.BroadcasterTwitchChannelId;
 
@@ -66,10 +56,10 @@ namespace BreganTwitchBot.Domain.Services.Twitch
             // the gate only applies once the message has been sent at least once. Applying it
             // to the first send would hold a message back until chat had built up volume it
             // never had the chance to, which reads as the feature being broken
-            if (message.MinimumChatMessages > 0 && _chatCountAtLastSend.TryGetValue(message.Id, out var countAtLastSend))
+            if (message.MinimumChatMessages > 0 && message.ChatCountAtLastSend is int countAtLastSend)
             {
-                // the running count resets when a stream ends, so treat a count that has gone
-                // backwards as a fresh stream rather than holding the message forever
+                // the running count resets when a stream ends or the bot restarts, so treat a
+                // count that has gone backwards as a fresh start rather than holding the message forever
                 var messagesSince = chatCount >= countAtLastSend ? chatCount - countAtLastSend : chatCount;
 
                 if (messagesSince < message.MinimumChatMessages)
@@ -81,12 +71,9 @@ namespace BreganTwitchBot.Domain.Services.Twitch
             await twitchHelperService.SendTwitchMessageToChannel(broadcasterId, message.Channel.BroadcasterTwitchChannelName, message.Message);
 
             message.LastSentAt = DateTime.UtcNow;
-            _chatCountAtLastSend[message.Id] = chatCount;
+            message.ChatCountAtLastSend = chatCount;
 
             Log.Information($"[Timed Messages] Sent message {message.Id} in {message.Channel.BroadcasterTwitchChannelName}");
-
-            // the context is saved once by the caller after every message has been considered
-            await Task.CompletedTask;
         }
     }
 }

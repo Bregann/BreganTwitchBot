@@ -55,7 +55,7 @@ namespace BreganTwitchBot.DomainTests.Twitch
             _twitchHelperService.Setup(x => x.IsBroadcasterLive(It.IsAny<string>())).ReturnsAsync(true);
             _twitchHelperService.Setup(x => x.GetChatMessageCount(It.IsAny<string>())).Returns(1000);
 
-            _timedMessageService = new TimedMessageService(_serviceProvider, _twitchHelperService.Object);
+            _timedMessageService = new TimedMessageService(_dbContext, _twitchHelperService.Object);
         }
 
         [TearDown]
@@ -229,6 +229,32 @@ namespace BreganTwitchBot.DomainTests.Twitch
             _twitchHelperService.Verify(x => x.SendTwitchMessageToChannel(
                 DatabaseSeedHelper.Channel2BroadcasterTwitchChannelId, It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string?>()),
                 Times.Never());
+        }
+
+        [Test]
+        public async Task QuietChatGate_SurvivesANewServiceInstance()
+        {
+            // the service is scoped, so each job run gets a fresh one - the chat count at the
+            // last send has to come back from the database for the gate to hold
+            _twitchHelperService.Setup(x => x.GetChatMessageCount(It.IsAny<string>())).Returns(2);
+
+            var message = await AddMessage(minimumChatMessages: 50);
+            await _timedMessageService.SendDueMessages();
+            VerifySent(Times.Once());
+
+            _twitchHelperService.Setup(x => x.GetChatMessageCount(It.IsAny<string>())).Returns(4);
+
+            using var scope = _serviceProvider.CreateScope();
+            var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+            var reloaded = await context.ChannelTimedMessages.FirstAsync(x => x.Id == message.Id);
+            reloaded.LastSentAt = DateTime.UtcNow.AddHours(-1);
+            await context.SaveChangesAsync();
+
+            Assert.That(reloaded.ChatCountAtLastSend, Is.EqualTo(2));
+
+            var freshService = new TimedMessageService(context, _twitchHelperService.Object);
+            await freshService.SendDueMessages();
+            VerifySent(Times.Once());
         }
     }
 }
