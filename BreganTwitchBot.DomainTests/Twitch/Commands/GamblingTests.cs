@@ -1,10 +1,11 @@
-﻿using BreganTwitchBot.Domain.Database.Context;
+using BreganTwitchBot.Domain.Database.Context;
 using BreganTwitchBot.Domain.Exceptions;
 using BreganTwitchBot.Domain.Interfaces.Twitch;
 using BreganTwitchBot.Domain.Services.Twitch.Commands.Gambling;
 using BreganTwitchBot.DomainTests.Helpers;
 using Microsoft.EntityFrameworkCore;
 using Moq;
+using System.Text.RegularExpressions;
 using Testcontainers.PostgreSql;
 
 namespace BreganTwitchBot.DomainTests.Twitch.Commands
@@ -166,6 +167,71 @@ namespace BreganTwitchBot.DomainTests.Twitch.Commands
             var msgParams = MessageParamsHelper.CreateChatMessageParams("!jackpot", "123", ["!jackpot"]);
             var result = await _gamblingDataService.GetJackpotAmount(msgParams);
             Assert.That(result, Is.Not.Null);
+        }
+
+        [Test]
+        public async Task HandleSpinCommand_Wins_ShowTheAmountPaidAndPayItOnce()
+        {
+            // the reels are random, so spin enough times that some wins are all but certain
+            // (roughly 1 in 21 spins wins, so none in 500 is well under 1 in a billion)
+            _twitchHelperService.Setup(x => x.IsBroadcasterLive(It.IsAny<string>())).ReturnsAsync(true);
+            _twitchHelperService.Setup(x => x.GetPointsForUser(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>())).ReturnsAsync(200);
+
+            var payouts = new List<long>();
+            _twitchHelperService
+                .Setup(x => x.AddPointsToUser(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<long>(), It.IsAny<string>(), It.IsAny<string>()))
+                .Callback<string, string, long, string, string>((_, _, points, _, _) => payouts.Add(points));
+
+            var wins = 0;
+
+            for (var i = 0; i < 500; i++)
+            {
+                payouts.Clear();
+
+                var msgParams = MessageParamsHelper.CreateChatMessageParams("!spin 200", "123", ["!spin", "200"]);
+                var result = await _gamblingDataService.HandleSpinCommand(msgParams);
+
+                if (result.Contains("not lucky"))
+                {
+                    Assert.That(payouts, Is.Empty, "a loss paid out");
+                    continue;
+                }
+
+                wins++;
+
+                // the budget jackpot's message spells its 1 point out rather than using a number
+                var shownAmount = result.Contains("BUDGET JACKPOT") ? 1 : long.Parse(Regex.Match(result, @"won ([\d,]+)").Groups[1].Value.Replace(",", ""));
+
+                Assert.Multiple(() =>
+                {
+                    Assert.That(result, Does.Not.Contain("won 0 "));
+                    Assert.That(payouts, Is.EqualTo(new[] { shownAmount }), $"paid {string.Join(" + ", payouts)} for: {result}");
+                });
+            }
+
+            Assert.That(wins, Is.GreaterThan(0));
+        }
+
+        [Test]
+        public void GetReelEmote_EveryEmoteCanComeUp()
+        {
+            // the reels used to roll 1-12, which left both jackpots unwinnable
+            var reachable = Enumerable.Range(1, GamblingDataService.ReelPositions)
+                .Select(GamblingDataService.GetReelEmote)
+                .Distinct()
+                .ToList();
+
+            Assert.That(reachable, Is.EquivalentTo(new[] { "Kappa", "4Head", "📖", "LUL", "TriHard", "SMOrc" }));
+        }
+
+        [Test]
+        public void GetReelEmote_JackpotsHaveOnePositionEach()
+        {
+            Assert.Multiple(() =>
+            {
+                Assert.That(GamblingDataService.GetReelEmote(13), Is.EqualTo("TriHard"));
+                Assert.That(GamblingDataService.GetReelEmote(14), Is.EqualTo("SMOrc"));
+            });
         }
     }
 }

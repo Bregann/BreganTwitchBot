@@ -13,6 +13,25 @@ namespace BreganTwitchBot.Domain.Services.Discord.SlashCommands.GeneralCommands
     // TODO: test this class
     public class GeneralCommandsData(AppDbContext context, IConfigHelperService configHelper, IDiscordHelperService discordHelperService) : IGeneralCommandsData
     {
+        public async Task<string> RemoveUserBirthday(ulong guildId, ulong discordUserId)
+        {
+            var channel = await context.GetRequiredChannelForGuild(guildId);
+
+            // scoped to the caller's own row, so this cannot remove anybody else's birthday
+            var birthday = await context.Birthdays
+                .FirstOrDefaultAsync(x => x.User.DiscordUserId == discordUserId && x.ChannelId == channel.Id);
+
+            if (birthday == null)
+            {
+                return "You don't have a birthday set in this server!";
+            }
+
+            context.Birthdays.Remove(birthday);
+            await context.SaveChangesAsync();
+
+            return "Your birthday has been removed. You are now ageless :)";
+        }
+
         public async Task<string> AddUserBirthday(AddBirthdayCommand command)
         {
             // Check if the user has already added their birthday

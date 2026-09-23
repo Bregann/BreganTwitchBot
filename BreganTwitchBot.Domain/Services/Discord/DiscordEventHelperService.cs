@@ -63,16 +63,7 @@ namespace BreganTwitchBot.Domain.Services.Discord
             // check if the are linked, change the welcome message based on it
             if (discordConfig.DiscordWelcomeMessageChannelId != null)
             {
-                var message = string.Empty;
-
-                if (twitchUsername != null)
-                {
-                    message = $"Welcome <@{userJoined.UserId}> to the server! You are already linked to Twitch as {twitchUsername}! {(discordConfig.DiscordUserCommandsChannelId != null ? $"You can use commands in <#{discordConfig.DiscordUserCommandsChannelId.Value}> ! :D" : "")}";
-                }
-                else
-                {
-                    message = $"Welcome <@{userJoined.UserId}> to the server! {(discordConfig.DiscordUserCommandsChannelId != null ? $"To access awesome features head over to <#{discordConfig.DiscordUserCommandsChannelId.Value}> and use the command /link to link your Twitch account to the bot!! :D" : "")}";
-                }
+                var message = BuildWelcomeMessage(discordConfig, userJoined.UserId, twitchUsername);
 
                 await discordHelper.SendMessage(discordConfig.DiscordWelcomeMessageChannelId.Value, message);
             }
@@ -152,6 +143,39 @@ namespace BreganTwitchBot.Domain.Services.Discord
             }
         }
 
+        /// <summary>
+        /// The welcome message for a new member.
+        ///
+        /// A server can set its own wording in config, with {user}, {twitchusername} and
+        /// {commandschannel} filled in. Without one the built in wording is used, so a server
+        /// that has not configured anything still gets a sensible welcome.
+        /// </summary>
+        private static string BuildWelcomeMessage(DTOs.Helpers.DiscordConfig discordConfig, ulong userId, string? twitchUsername)
+        {
+            var commandsChannel = discordConfig.DiscordUserCommandsChannelId != null
+                ? $"<#{discordConfig.DiscordUserCommandsChannelId.Value}>"
+                : "";
+
+            var template = twitchUsername != null
+                ? discordConfig.DiscordWelcomeMessageLinked
+                : discordConfig.DiscordWelcomeMessageUnlinked;
+
+            if (!string.IsNullOrWhiteSpace(template))
+            {
+                return template
+                    .Replace("{user}", $"<@{userId}>")
+                    .Replace("{twitchusername}", twitchUsername ?? "")
+                    .Replace("{commandschannel}", commandsChannel);
+            }
+
+            if (twitchUsername != null)
+            {
+                return $"Welcome <@{userId}> to the server! You are already linked to Twitch as {twitchUsername}! {(discordConfig.DiscordUserCommandsChannelId != null ? $"You can use commands in {commandsChannel} ! :D" : "")}";
+            }
+
+            return $"Welcome <@{userId}> to the server! {(discordConfig.DiscordUserCommandsChannelId != null ? $"To access awesome features head over to {commandsChannel} and use the command /link to link your Twitch account to the bot!! :D" : "")}";
+        }
+
         public async Task HandleMessageReceivedEvent(MessageReceivedEvent messageReceivedEvent)
         {
             // moderation runs first - a message that gets somebody muted should not also
@@ -198,69 +222,52 @@ namespace BreganTwitchBot.Domain.Services.Discord
 
         public async Task<(string MessageToSend, bool Ephemeral)> HandleButtonPressEvent(ButtonPressedEvent buttonPressedEvent, DiscordSocketClient client)
         {
-            var emojiToAdd = "";
-
-            switch (buttonPressedEvent.CustomId)
+            // giveaway buttons carry the giveaway id, so they're matched by prefix
+            if (buttonPressedEvent.CustomId.StartsWith("giveaway-"))
             {
-                case "christmas-snowman":
-                    emojiToAdd = "⛄";
-                    break;
-                case "christmas-gift":
-                    emojiToAdd = "🎁";
-                    break;
-                case "christmas-tree":
-                    emojiToAdd = "🎄";
-                    break;
-                case "christmas-santa":
-                    emojiToAdd = "🎅";
-                    break;
-                case "christmas-mrsanta":
-                    emojiToAdd = "🤶";
-                    break;
-                case "christmas-star":
-                    emojiToAdd = "🌟";
-                    break;
-                case "christmas-socks":
-                    emojiToAdd = "🧦";
-                    break;
-                case "christmas-bell":
-                    emojiToAdd = "🔔";
-                    break;
-                case "christmas-deer":
-                    emojiToAdd = "🦌";
-                    break;
-                case "christmas-resetusername":
-                    emojiToAdd = "";
-                    break;
-                default:
-                    return ("invalid button", true);
+                return await HandleGiveawayButton(buttonPressedEvent);
+            }
+
+            // self assign role buttons carry the configured role's id
+            if (buttonPressedEvent.CustomId.StartsWith("selfrole-"))
+            {
+                return int.TryParse(buttonPressedEvent.CustomId.Split('-')[1], out var roleConfigId)
+                    ? await discordSelfAssignRoleData.ToggleRole(buttonPressedEvent.GuildId, buttonPressedEvent.UserId, roleConfigId)
+                    : ("invalid button", true);
+            }
+
+            var season = SeasonalNicknameHelper.GetSeason(buttonPressedEvent.CustomId);
+
+            if (season == null)
+            {
+                return ("invalid button", true);
             }
 
             var guild = client.GetGuild(buttonPressedEvent.GuildId);
             var user = guild.GetUser(buttonPressedEvent.UserId);
 
-            if (emojiToAdd == "")
+            if (SeasonalNicknameHelper.IsReset(buttonPressedEvent.CustomId))
             {
-                var nickNameToSet = user.Nickname.Replace("⛄", "").Replace("🎁", "").Replace("🎄", "").Replace("🎅", "").Replace("🤶", "").Replace("🌟", "").Replace("🧦", "").Replace("🔔", "").Replace("🦌", "");
-                await user.ModifyAsync(user => user.Nickname = nickNameToSet);
+                // without a nickname there are no emojis to take off
+                if (user.Nickname != null)
+                {
+                    var clearedNickname = SeasonalNicknameHelper.RemoveEmojis(user.Nickname, season);
+                    await user.ModifyAsync(user => user.Nickname = clearedNickname);
+                }
+
                 return ("Your nickname has been cleared!", true);
             }
-            else
+
+            var emojiToAdd = SeasonalNicknameHelper.GetEmoji(season, buttonPressedEvent.CustomId);
+
+            if (emojiToAdd == null)
             {
-                var nickNameToSet = "";
-
-                if (user.DisplayName != null)
-                {
-                    nickNameToSet = emojiToAdd + user.DisplayName + emojiToAdd;
-                }
-                else
-                {
-                    nickNameToSet = emojiToAdd + user.Username + emojiToAdd;
-                }
-
-                await user.ModifyAsync(user => user.Nickname = nickNameToSet);
-                return ("Your nickname has been set! Woooo", true);
+                return ("invalid button", true);
             }
+
+            var nickNameToSet = SeasonalNicknameHelper.AddEmoji(user.DisplayName ?? user.Username, emojiToAdd);
+            await user.ModifyAsync(user => user.Nickname = nickNameToSet);
+            return ("Your nickname has been set! Woooo", true);
         }
 
         /// <summary>

@@ -4,6 +4,7 @@ using BreganTwitchBot.Domain.DTOs.Discord.Commands;
 using BreganTwitchBot.Domain.Enums;
 using BreganTwitchBot.Domain.Interfaces.Discord;
 using BreganTwitchBot.Domain.Interfaces.Discord.Commands;
+using BreganTwitchBot.Domain.Interfaces.Helpers;
 using BreganTwitchBot.Domain.Services.Helpers;
 using Discord;
 using Microsoft.EntityFrameworkCore;
@@ -11,7 +12,7 @@ using Microsoft.EntityFrameworkCore;
 namespace BreganTwitchBot.Domain.Services.Discord.SlashCommands.Gambling
 {
     //TODO: Test this class
-    public class DiscordGamblingData(AppDbContext context, IDiscordHelperService discordHelperService) : IDiscordGamblingData
+    public class DiscordGamblingData(AppDbContext context, IDiscordHelperService discordHelperService, IConfigHelperService configHelperService) : IDiscordGamblingData
     {
         public async Task<DiscordEmbedData> HandleSpinCommand(DiscordCommand command)
         {
@@ -168,6 +169,10 @@ namespace BreganTwitchBot.Domain.Services.Discord.SlashCommands.Gambling
 
         private async Task<DiscordEmbedData> SpinPoints(long pointsGambled, ulong discordId, ulong discordChannelId, ulong guildId)
         {
+            // the channel decides what its currency is called, so the messages use that
+            // rather than a hardcoded word
+            var pointsName = configHelperService.GetPointsNameForGuild(guildId) ?? "points";
+
             var random = new Random();
             var emoteList = new List<string>();
 
@@ -205,7 +210,7 @@ namespace BreganTwitchBot.Domain.Services.Discord.SlashCommands.Gambling
 
                         pointsWon = pointsGambled * 350;
                         discordXpToAdd = 300;
-                        fields.Add("Winnings", $"You won {pointsWon:N0} points!");
+                        fields.Add("Winnings", $"You won {pointsWon:N0} {pointsName}!");
                         await AddWin(guildId, DiscordGambleWinType.EggplantWins);
                         break;
                     }
@@ -224,7 +229,7 @@ namespace BreganTwitchBot.Domain.Services.Discord.SlashCommands.Gambling
 
                     pointsWon = pointsGambled * 80;
                     discordXpToAdd = 100;
-                    fields.Add("Winnings", $"You won {pointsWon:N0} points!");
+                    fields.Add("Winnings", $"You won {pointsWon:N0} {pointsName}!");
                     await AddWin(guildId, DiscordGambleWinType.CucumberWins);
                     break;
                 case <= 150:
@@ -243,7 +248,7 @@ namespace BreganTwitchBot.Domain.Services.Discord.SlashCommands.Gambling
                         description = description.Replace("EMOTE", ":pineapple:").Replace("RESULT", "WON");
                         pointsWon = pointsGambled * 30;
                         discordXpToAdd = 80;
-                        fields.Add("Winnings", $"You won {pointsWon:N0} points!");
+                        fields.Add("Winnings", $"You won {pointsWon:N0} {pointsName}!");
                         await AddWin(guildId, DiscordGambleWinType.PineappleWins);
                         break;
                     }
@@ -253,7 +258,7 @@ namespace BreganTwitchBot.Domain.Services.Discord.SlashCommands.Gambling
 
                     pointsWon = pointsGambled * 15;
                     discordXpToAdd = 30;
-                    fields.Add("Winnings", $"You won {pointsWon:N0} points!");
+                    fields.Add("Winnings", $"You won {pointsWon:N0} {pointsName}!");
                     await AddWin(guildId, DiscordGambleWinType.GrapesWins);
                     break;
                 default:
@@ -281,7 +286,7 @@ namespace BreganTwitchBot.Domain.Services.Discord.SlashCommands.Gambling
                                         **─ YOU LOST ─**";
 
                     discordXpToAdd = 10;
-                    fields.Add("Points Lost", $"You lost {pointsGambled:N0} points!");
+                    fields.Add("Points Lost", $"You lost {pointsGambled:N0} {pointsName}!");
                     break;
             }
 

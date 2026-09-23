@@ -1,6 +1,7 @@
 ﻿using BreganTwitchBot.Domain.DTOs.Discord.Commands;
 using BreganTwitchBot.Domain.Interfaces.Discord;
 using BreganTwitchBot.Domain.Interfaces.Discord.Commands;
+using BreganTwitchBot.Domain.Services.Helpers;
 using Discord;
 using Discord.Interactions;
 using System.Diagnostics;
@@ -21,45 +22,35 @@ namespace BreganTwitchBot.Domain.Services.Discord.SlashCommands.GeneralCommands
         [SlashCommand("christmas", "get yourself some Christmas emojis for your name")]
         public async Task ChristmasName()
         {
-            var builder = new ComponentBuilder()
-                .WithButton(" ", "christmas-snowman", ButtonStyle.Danger, new Emoji("⛄"))
-                .WithButton(" ", "christmas-gift", ButtonStyle.Success, new Emoji("🎁"))
-                .WithButton(" ", "christmas-tree", ButtonStyle.Danger, new Emoji("🎄"))
-                .WithButton(" ", "christmas-santa", ButtonStyle.Success, new Emoji("🎅"))
-                .WithButton(" ", "christmas-mrsanta", ButtonStyle.Danger, new Emoji("🤶"))
-                .WithButton(" ", "christmas-star", ButtonStyle.Success, new Emoji("🌟"))
-                .WithButton(" ", "christmas-socks", ButtonStyle.Danger, new Emoji("🧦"))
-                .WithButton(" ", "christmas-bell", ButtonStyle.Success, new Emoji("🔔"))
-                .WithButton(" ", "christmas-deer", ButtonStyle.Danger, new Emoji("🦌"))
-                .WithButton(" ", "christmas-resetusername", ButtonStyle.Success, new Emoji("♻️"));
-
-            await RespondAsync("Click the buttons to add a christmas emoji onto your name!", components: builder.Build());
+            await RespondAsync("Click the buttons to add a christmas emoji onto your name!", components: BuildSeasonalButtons(SeasonalNicknameHelper.ChristmasEmojis, SeasonalNicknameHelper.ChristmasPrefix));
         }
 
-        [SlashCommand("spook", "Give yourself a pumpkin AND spooky ghost")]
+        [SlashCommand("spook", "get yourself some spooky emojis for your name")]
         public async Task SpookyName()
         {
             if (DateTime.UtcNow.Month != 10)
             {
                 await RespondAsync("You silly pumpkin it's not October!");
+                return;
             }
 
-            var guild = discordClient.Client.GetGuild(Context.Guild.Id);
-            var user = guild.GetUser(Context.User.Id);
+            await RespondAsync("Click the buttons to add a spooky emoji onto your name!", components: BuildSeasonalButtons(SeasonalNicknameHelper.SpookyEmojis, SeasonalNicknameHelper.SpookyPrefix));
+        }
 
-            string nickNameToSet = "";
+        /// <summary>
+        /// One button per emoji alternating red and green, then a reset button on the end
+        /// </summary>
+        private static MessageComponent BuildSeasonalButtons(IReadOnlyList<(string ButtonId, string Emoji)> season, string prefix)
+        {
+            var builder = new ComponentBuilder();
 
-            if (user.Nickname != null)
+            for (var i = 0; i < season.Count; i++)
             {
-                nickNameToSet = "🎃" + user.Nickname + "👻";
-            }
-            else
-            {
-                nickNameToSet = "🎃" + user.Username + "👻";
+                builder.WithButton(" ", season[i].ButtonId, i % 2 == 0 ? ButtonStyle.Danger : ButtonStyle.Success, new Emoji(season[i].Emoji));
             }
 
-            await user.ModifyAsync(user => user.Nickname = nickNameToSet);
-            await RespondAsync("Your nickname has been set!");
+            builder.WithButton(" ", $"{prefix}resetusername", ButtonStyle.Secondary, new Emoji("♻️"));
+            return builder.Build();
         }
 
         [SlashCommand("firework", "Give yourself some fireworks to celebrate fireworks night!")]
@@ -68,6 +59,7 @@ namespace BreganTwitchBot.Domain.Services.Discord.SlashCommands.GeneralCommands
             if (DateTime.UtcNow.Month != 11)
             {
                 await RespondAsync("You silly firework it's not November!");
+                return;
             }
 
             var guild = discordClient.Client.GetGuild(Context.Guild.Id);
@@ -96,7 +88,7 @@ namespace BreganTwitchBot.Domain.Services.Discord.SlashCommands.GeneralCommands
 
             if (user.Nickname != null)
             {
-                nickNameToSet = user.Nickname.Replace("🎃", "").Replace("👻", "");
+                nickNameToSet = SeasonalNicknameHelper.RemoveEmojis(user.Nickname, SeasonalNicknameHelper.SpookyEmojis);
                 await user.ModifyAsync(user => user.Nickname = nickNameToSet);
             }
 
@@ -134,5 +126,14 @@ namespace BreganTwitchBot.Domain.Services.Discord.SlashCommands.GeneralCommands
             var response = await generalCommandsData.AddUserBirthday(command);
             await RespondAsync(response);
         }
+        [SlashCommand("unbirthday", "[SERVER SPECIFIC!!] Remove your birthday from THE CURRENT SERVER")]
+        public async Task UnBirthday()
+        {
+            await DeferAsync(ephemeral: true);
+
+            var response = await generalCommandsData.RemoveUserBirthday(Context.Guild.Id, Context.User.Id);
+            await FollowupAsync(response, ephemeral: true);
+        }
+
     }
 }

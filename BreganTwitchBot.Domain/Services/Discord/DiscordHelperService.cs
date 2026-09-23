@@ -71,7 +71,9 @@ namespace BreganTwitchBot.Domain.Services.Discord
 
                 if (user != null)
                 {
-                    user.DiscordXp += baseXpToAdd;
+                    // higher levels need a lot more xp per level, so a message is worth a
+                    // little more the further up somebody is
+                    user.DiscordXp += DiscordLevelHelper.ScaleXpForLevel(baseXpToAdd, user.DiscordLevel);
                     await context.SaveChangesAsync();
 
                     var userLevelledUp = false;
@@ -107,7 +109,7 @@ namespace BreganTwitchBot.Domain.Services.Discord
                         }
 
                         var config = configHelperService.GetDiscordConfig(guildId);
-                        await SendMessage(channelId, $"**GG** <@{user.User.DiscordUserId}> you have levelled up to level **{user.DiscordLevel}**! You have gained **{user.DiscordLevel * 2000:N0}** pooants! (you can disable level up messages by doing /togglelevelups in <#{config.DiscordUserCommandsChannelId}>");
+                        await SendMessage(channelId, $"**GG** <@{user.User.DiscordUserId}> you have levelled up to level **{user.DiscordLevel}**! You have gained **{user.DiscordLevel * 2000:N0}** {configHelperService.GetPointsNameForGuild(guildId) ?? "points"}! (you can disable level up messages by doing /togglelevelups in <#{config.DiscordUserCommandsChannelId}>");
                     }
                 }
             }

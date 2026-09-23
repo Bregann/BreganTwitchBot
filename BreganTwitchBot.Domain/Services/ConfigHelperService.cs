@@ -159,6 +159,8 @@ namespace BreganTwitchBot.Domain.Services
                     DiscordModeratorRoleId = config.DiscordModeratorRoleId,
                     DiscordMuteRoleId = config.DiscordMuteRoleId,
                     DiscordWelcomeMessageChannelId = config.DiscordWelcomeMessageChannelId,
+                    DiscordWelcomeMessageLinked = config.DiscordWelcomeMessageLinked,
+                    DiscordWelcomeMessageUnlinked = config.DiscordWelcomeMessageUnlinked,
                     DiscordGeneralChannelId = config.DiscordGeneralChannelId,
                     DiscordGuildId = config.DiscordGuildId
                 };
@@ -188,9 +190,43 @@ namespace BreganTwitchBot.Domain.Services
                     DiscordModeratorRoleId = config.DiscordModeratorRoleId,
                     DiscordMuteRoleId = config.DiscordMuteRoleId,
                     DiscordWelcomeMessageChannelId = config.DiscordWelcomeMessageChannelId,
+                    DiscordWelcomeMessageLinked = config.DiscordWelcomeMessageLinked,
+                    DiscordWelcomeMessageUnlinked = config.DiscordWelcomeMessageUnlinked,
                     DiscordGeneralChannelId = config.DiscordGeneralChannelId,
                     DiscordGuildId = config.DiscordGuildId
                 };
+            }
+        }
+
+        public string GetPointsName(string broadcasterId)
+        {
+            var sanitisedBroadcasterId = broadcasterId.ToLower().Trim();
+
+            lock (GetLock(sanitisedBroadcasterId))
+            {
+                if (!_channelConfigs.TryGetValue(sanitisedBroadcasterId, out var config))
+                {
+                    Log.Warning($"No config found for broadcasterId {sanitisedBroadcasterId}, falling back to points");
+                    return "points";
+                }
+
+                return config.ChannelCurrencyName;
+            }
+        }
+
+        public string? GetPointsNameForGuild(ulong discordGuildId)
+        {
+            lock (GetDiscordLock(discordGuildId))
+            {
+                var config = _channelConfigs.Values.FirstOrDefault(x => x.DiscordGuildId == discordGuildId);
+
+                if (config == null)
+                {
+                    Log.Warning($"No config found for discord guild {discordGuildId}");
+                    return null;
+                }
+
+                return config.ChannelCurrencyName;
             }
         }
 

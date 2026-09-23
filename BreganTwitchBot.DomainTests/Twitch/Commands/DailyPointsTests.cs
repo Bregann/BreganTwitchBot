@@ -103,6 +103,56 @@ namespace BreganTwitchBot.DomainTests.Twitch.Commands
         }
 
         [Test]
+        public async Task AllowDailyPointsCollecting_LostStreaksMessage_ShowsTheStreaksBeforeTheyWereReset()
+        {
+            // the message used to be built from the rows after they'd been zeroed, so every
+            // lost streak showed as 0
+            var lostStreaks = await _dbContext.TwitchDailyPoints
+                .Where(x => x.Channel.BroadcasterTwitchChannelId == DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId && x.PointsClaimType == PointsClaimType.Daily && !x.PointsClaimed && x.CurrentStreak > 0)
+                .Select(x => new { x.User.TwitchUsername, x.CurrentStreak })
+                .ToListAsync();
+
+            Assert.That(lostStreaks, Is.Not.Empty, "the seed data needs a streak to lose");
+
+            string? message = null;
+            _twitchHelperService
+                .Setup(x => x.SendTwitchMessageToChannel(It.IsAny<string>(), It.IsAny<string>(), It.Is<string>(msg => msg.StartsWith("Top 5 lost streaks")), It.IsAny<string?>()))
+                .Callback<string, string, string, string?>((_, _, msg, _) => message = msg)
+                .Returns(Task.CompletedTask);
+
+            await _dailyPointsDataService.AllowDailyPointsCollecting(DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId);
+
+            Assert.Multiple(() =>
+            {
+                Assert.That(message, Is.Not.Null);
+                Assert.That(message, Does.Not.Contain(" - 0"));
+
+                foreach (var lost in lostStreaks)
+                {
+                    Assert.That(message, Does.Contain($"{lost.TwitchUsername} - {lost.CurrentStreak}"));
+                }
+            });
+        }
+
+        [Test]
+        public async Task AllowDailyPointsCollecting_NoStreaksLost_DoesNotSendTheLostStreaksMessage()
+        {
+            await _dbContext.TwitchDailyPoints.ExecuteUpdateAsync(x => x.SetProperty(y => y.CurrentStreak, 0));
+
+            // the seeded rows are still tracked with their old streaks, which the bulk update skips
+            _dbContext.ChangeTracker.Clear();
+
+            await _dailyPointsDataService.AllowDailyPointsCollecting(DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId);
+
+            _twitchHelperService.Verify(x => x.SendTwitchMessageToChannel(
+                It.IsAny<string>(),
+                It.IsAny<string>(),
+                It.Is<string>(msg => msg.Contains("Top 5 lost streaks")),
+                It.IsAny<string?>()),
+                Times.Never);
+        }
+
+        [Test]
         public async Task AllowDailyPointsCollecting_ShouldNotResetStreaksWhenStreamToday_StreaksNotReset()
         {
             _configHelper.Setup(x => x.GetDailyPointsStatus(DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId))
