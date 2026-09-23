@@ -16,62 +16,21 @@ namespace BreganTwitchBot.Domain.Services.Helpers
         public const int MaxGuesses = 6;
 
         /// <summary>
-        /// Everyday words only, so nobody loses on something they've never heard of
+        /// The words that can be the answer: the most common everyday words from Wordle's
+        /// guess list, without plurals, past tenses, names, slang or anything unpleasant
         /// </summary>
-        public static readonly IReadOnlyList<string> Answers =
-        [
-            "about", "above", "actor", "acute", "adopt", "adult", "after", "again", "agent", "agree",
-            "ahead", "alarm", "album", "alert", "alike", "alive", "allow", "alone", "along", "alter",
-            "amber", "among", "angel", "anger", "angle", "angry", "apple", "apply", "arena", "argue",
-            "arise", "armor", "aside", "audio", "avoid", "award", "aware", "bacon", "badge", "baker",
-            "basic", "beach", "beard", "beast", "begin", "being", "below", "bench", "berry", "birth",
-            "black", "blade", "blame", "blank", "blast", "blend", "bless", "blind", "block", "bloom",
-            "board", "boast", "bonus", "boost", "booth", "brain", "brave", "bread", "break", "brick",
-            "bride", "brief", "bring", "broad", "brown", "brush", "build", "bunch", "burst", "cabin",
-            "cable", "camel", "candy", "canoe", "cargo", "carry", "catch", "cause", "chain", "chair",
-            "chalk", "charm", "chart", "chase", "cheap", "check", "cheek", "cheer", "chess", "chest",
-            "chief", "child", "chill", "choir", "civic", "claim", "class", "clean", "clear", "clerk",
-            "click", "cliff", "climb", "clock", "close", "cloud", "coach", "coast", "cocoa", "color",
-            "coral", "couch", "count", "court", "cover", "crack", "craft", "crane", "crash", "crawl",
-            "crazy", "cream", "crisp", "crowd", "crown", "crumb", "crust", "cycle", "daily", "dairy",
-            "dance", "delay", "depth", "diary", "dirty", "dizzy", "dough", "draft", "drain", "drama",
-            "dream", "dress", "drift", "drink", "drive", "eager", "eagle", "early", "earth", "eight",
-            "elbow", "elder", "empty", "enjoy", "enter", "entry", "equal", "error", "event", "exact",
-            "extra", "fable", "faint", "fairy", "faith", "false", "fancy", "feast", "fence", "ferry",
-            "fever", "field", "fifty", "final", "flame", "flash", "fleet", "float", "flock", "flood",
-            "floor", "flour", "fluid", "focus", "force", "forge", "forum", "found", "frame", "fresh",
-            "front", "frost", "fruit", "funny", "ghost", "giant", "given", "glass", "globe", "glove",
-            "grace", "grade", "grain", "grand", "grape", "grass", "great", "green", "greet", "grill",
-            "group", "guard", "guess", "guest", "guide", "habit", "happy", "heart", "heavy", "hello",
-            "hobby", "honey", "horse", "hotel", "house", "human", "humor", "ideal", "image", "index",
-            "inner", "input", "issue", "jelly", "jewel", "joint", "judge", "juice", "knife", "knock",
-            "label", "lemon", "level", "light", "limit", "linen", "lodge", "logic", "loyal", "lucky",
-            "lunch", "magic", "major", "maple", "march", "match", "mayor", "medal", "melon", "mercy",
-            "metal", "model", "money", "month", "moral", "motor", "mouse", "mouth", "movie", "music",
-            "nerve", "never", "night", "noble", "noise", "north", "novel", "nurse", "ocean", "offer",
-            "often", "olive", "onion", "opera", "orbit", "order", "other", "otter", "owner", "paint",
-            "panel", "paper", "party", "pasta", "patch", "peace", "peach", "pearl", "pedal", "penny",
-            "phone", "photo", "piano", "piece", "pilot", "pitch", "pizza", "place", "plain", "plane",
-            "plant", "plate", "point", "polar", "porch", "pound", "power", "press", "price", "pride",
-            "prize", "proof", "proud", "puppy", "queen", "quest", "quick", "quiet", "quilt", "quite",
-            "radio", "raise", "rally", "ranch", "range", "rapid", "raven", "reach", "ready", "relax",
-            "reply", "ridge", "right", "river", "roast", "robin", "robot", "rocky", "round", "route",
-            "royal", "rugby", "ruler", "salad", "sauce", "scale", "scarf", "scene", "scout", "seven",
-            "shade", "shape", "share", "shark", "sharp", "sheep", "shelf", "shell", "shine", "shirt",
-            "shock", "shore", "short", "shout", "skate", "skill", "skirt", "skull", "sleep", "slice",
-            "slide", "smart", "smile", "smoke", "snack", "snail", "snake", "solar", "solid", "sound",
-            "south", "space", "spare", "spark", "speak", "speed", "spell", "spend", "spice", "spike",
-            "spoon", "sport", "spray", "squad", "stack", "staff", "stage", "stair", "stamp", "stand",
-            "start", "steam", "steel", "stick", "still", "stone", "storm", "story", "stove", "straw",
-            "study", "style", "sugar", "sunny", "super", "swamp", "sweet", "swing", "sword", "table",
-            "taste", "teach", "thank", "theme", "thick", "thing", "think", "three", "throw", "thumb",
-            "tiger", "toast", "today", "tooth", "topic", "torch", "total", "touch", "tower", "track",
-            "trade", "trail", "train", "treat", "trend", "trial", "tribe", "trick", "truck", "trust",
-            "truth", "tulip", "twist", "uncle", "under", "unity", "upper", "upset", "urban", "usual",
-            "valid", "value", "video", "visit", "vital", "vivid", "vocal", "voice", "wagon", "waste",
-            "watch", "water", "whale", "wheat", "wheel", "white", "whole", "world", "worry", "wrist",
-            "write", "young", "youth", "zebra"
-        ];
+        public static readonly IReadOnlyList<string> Answers = LoadWords("wordle-answers.txt");
+
+        /// <summary>
+        /// Every word Wordle accepts as a guess, so a guess has to be a real word
+        /// </summary>
+        public static readonly IReadOnlySet<string> ValidGuesses = LoadWords("wordle-guesses.txt").ToHashSet();
+
+        /// <summary>
+        /// Extra points for each day of a streak after the first, up to the cap
+        /// </summary>
+        public const long StreakBonusPerDay = 500;
+        public const long MaxStreakBonus = 10_000;
 
         /// <summary>
         /// Points for solving in 1, 2, 3... guesses. Failing earns nothing.
@@ -88,9 +47,17 @@ namespace BreganTwitchBot.Domain.Services.Helpers
             return Answers[index];
         }
 
-        public static bool IsValidGuess(string guess)
+        /// <summary>
+        /// Five lowercase letters, before checking it's actually a word
+        /// </summary>
+        public static bool IsWellFormedGuess(string guess)
         {
             return guess.Length == WordLength && guess.All(char.IsAsciiLetterLower);
+        }
+
+        public static bool IsValidGuess(string guess)
+        {
+            return IsWellFormedGuess(guess) && ValidGuesses.Contains(guess);
         }
 
         /// <summary>
@@ -135,6 +102,24 @@ namespace BreganTwitchBot.Domain.Services.Helpers
         public static long GetPointsForGuesses(int guessesUsed)
         {
             return guessesUsed >= 1 && guessesUsed <= PointsByGuesses.Length ? PointsByGuesses[guessesUsed - 1] : 0;
+        }
+
+        /// <summary>
+        /// The bonus for a win that makes the streak this long. A first win has no streak to reward yet.
+        /// </summary>
+        public static long GetStreakBonus(int streak)
+        {
+            return Math.Min(Math.Max(streak - 1, 0) * StreakBonusPerDay, MaxStreakBonus);
+        }
+
+        private static string[] LoadWords(string resourceName)
+        {
+            using var stream = typeof(WordleHelper).Assembly.GetManifestResourceStream(resourceName)
+                ?? throw new InvalidOperationException($"The Wordle word list {resourceName} isn't embedded in the assembly");
+            using var reader = new StreamReader(stream);
+
+            return reader.ReadToEnd()
+                .Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
         }
 
         /// <summary>

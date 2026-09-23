@@ -23,9 +23,14 @@ namespace BreganTwitchBot.Domain.Services.Discord.SlashCommands.Wordle
             guess = guess.Trim().ToLower();
 
             // an invalid guess isn't saved, so it doesn't cost one of the six
-            if (!WordleHelper.IsValidGuess(guess))
+            if (!WordleHelper.IsWellFormedGuess(guess))
             {
                 return new WordleResponse($"Your guess needs to be {WordleHelper.WordLength} letters, no numbers or spaces", true);
+            }
+
+            if (!WordleHelper.IsValidGuess(guess))
+            {
+                return new WordleResponse($"**{guess.ToUpper()}** isn't in the word list, try another word", true);
             }
 
             var today = DateOnly.FromDateTime(DateTime.UtcNow);
@@ -46,22 +51,28 @@ namespace BreganTwitchBot.Domain.Services.Discord.SlashCommands.Wordle
             game.Guesses = [.. game.Guesses, guess];
             game.Solved = guess == answer;
 
-            if (game.Solved)
-            {
-                game.PointsAwarded = await AwardPoints(guildId, userId, game.Guesses.Count);
-            }
-
             await context.SaveChangesAsync();
 
             if (IsFinished(game))
             {
+                // worked out after saving so today's game counts towards the streak
                 var stats = await CalculateStats(channel.Id, userId, today);
+                var result = $"Unlucky! The word was **{answer.ToUpper()}**";
 
-                var result = game.Solved
-                    ? $"You got it in **{game.Guesses.Count}/{WordleHelper.MaxGuesses}**!" + (game.PointsAwarded > 0
-                        ? $" You've earned **{game.PointsAwarded:N0}** points!"
-                        : " Link your Twitch account to earn points for solving it.")
-                    : $"Unlucky! The word was **{answer.ToUpper()}**";
+                if (game.Solved)
+                {
+                    var basePoints = WordleHelper.GetPointsForGuesses(game.Guesses.Count);
+                    var streakBonus = WordleHelper.GetStreakBonus(stats.CurrentStreak);
+
+                    game.PointsAwarded = await AwardPoints(guildId, userId, basePoints + streakBonus);
+                    await context.SaveChangesAsync();
+
+                    var streakText = streakBonus > 0 ? $" (**{basePoints:N0}** + **{streakBonus:N0}** for your {stats.CurrentStreak} day streak)" : "";
+
+                    result = $"You got it in **{game.Guesses.Count}/{WordleHelper.MaxGuesses}**!" + (game.PointsAwarded > 0
+                        ? $" You've earned **{game.PointsAwarded:N0}** points{streakText}!"
+                        : " Link your Twitch account to earn points for solving it.");
+                }
 
                 return new WordleResponse($"{result}\n\n{BuildBoard(game, answer)}\n\n{WordleHelper.RenderStats(stats)}", false,
                     BuildPublicMessage(userId, game, answer, stats));
@@ -144,7 +155,7 @@ namespace BreganTwitchBot.Domain.Services.Discord.SlashCommands.Wordle
         /// <summary>
         /// Only linked users have a points balance to pay into
         /// </summary>
-        private async Task<long> AwardPoints(ulong guildId, ulong userId, int guessesUsed)
+        private async Task<long> AwardPoints(ulong guildId, ulong userId, long points)
         {
             var isLinked = await context.ChannelUsers.AnyAsync(x => x.DiscordUserId == userId);
 
@@ -153,10 +164,9 @@ namespace BreganTwitchBot.Domain.Services.Discord.SlashCommands.Wordle
                 return 0;
             }
 
-            var points = WordleHelper.GetPointsForGuesses(guessesUsed);
             await discordHelperService.AddPointsToUser(guildId, userId, points);
 
-            Log.Information($"[Discord Wordle] {userId} solved in {guessesUsed} and earned {points} points");
+            Log.Information($"[Discord Wordle] {userId} solved it and earned {points} points");
             return points;
         }
 
@@ -186,7 +196,8 @@ namespace BreganTwitchBot.Domain.Services.Discord.SlashCommands.Wordle
                 ? $"🔥 {stats.CurrentStreak} day streak"
                 : stats.MaxStreak > 0 ? $"Streak reset (best is {stats.MaxStreak})" : "";
 
-            var summary = $"{streak}{(streak == "" ? "" : " · ")}{stats.WinPercentage}% won from {stats.Played} played";
+            var earned = game.PointsAwarded > 0 ? $" · earned {game.PointsAwarded:N0} points" : "";
+            var summary = $"{streak}{(streak == "" ? "" : " · ")}{stats.WinPercentage}% won from {stats.Played} played{earned}";
 
             return $"{headline}\n{WordleHelper.RenderBoard(game.Guesses, answer, showLetters: false)}\n{summary}";
         }

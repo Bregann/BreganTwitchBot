@@ -18,6 +18,37 @@ namespace BreganTwitchBot.DomainTests.Discord
         }
 
         [Test]
+        public void WordLists_Load()
+        {
+            Assert.Multiple(() =>
+            {
+                Assert.That(WordleHelper.Answers, Has.Count.GreaterThan(1500));
+                Assert.That(WordleHelper.ValidGuesses, Has.Count.GreaterThan(WordleHelper.Answers.Count));
+            });
+        }
+
+        [Test]
+        public void IsWellFormedGuess_DoesNotNeedARealWord()
+        {
+            Assert.Multiple(() =>
+            {
+                Assert.That(WordleHelper.IsWellFormedGuess("zzzzz"), Is.True);
+                Assert.That(WordleHelper.IsValidGuess("zzzzz"), Is.False);
+            });
+        }
+
+        [TestCase(0, 0)]
+        [TestCase(1, 0)]
+        [TestCase(2, 500)]
+        [TestCase(5, 2000)]
+        [TestCase(21, 10000)]
+        [TestCase(100, 10000)]
+        public void GetStreakBonus_GrowsEachDayUpToTheCap(int streak, long expected)
+        {
+            Assert.That(WordleHelper.GetStreakBonus(streak), Is.EqualTo(expected));
+        }
+
+        [Test]
         public void Score_ExactMatch_IsAllCorrect()
         {
             Assert.That(WordleHelper.Score("crane", "crane"), Is.EqualTo(new[] { Correct, Correct, Correct, Correct, Correct }));
@@ -66,6 +97,7 @@ namespace BreganTwitchBot.DomainTests.Discord
         }
 
         [TestCase("crane", true)]
+        [TestCase("zzzzz", false)]
         [TestCase("cran", false)]
         [TestCase("cranes", false)]
         [TestCase("cr4ne", false)]

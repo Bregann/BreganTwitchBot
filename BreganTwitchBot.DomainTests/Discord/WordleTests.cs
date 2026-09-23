@@ -126,6 +126,19 @@ namespace BreganTwitchBot.DomainTests.Discord
         }
 
         [Test]
+        public async Task NotAWord_DoesNotUseAGuess()
+        {
+            var result = await _wordleData.Guess(DatabaseSeedHelper.DiscordGuildId, LinkedUserId, "zzzzz");
+
+            Assert.Multiple(async () =>
+            {
+                Assert.That(result.Response, Does.Contain("isn't in the word list"));
+                Assert.That(result.CanGuess, Is.True);
+                Assert.That(await _dbContext.DiscordWordleGames.AnyAsync(), Is.False);
+            });
+        }
+
+        [Test]
         public async Task RepeatedGuess_DoesNotUseAGuess()
         {
             await _wordleData.Guess(DatabaseSeedHelper.DiscordGuildId, LinkedUserId, WrongWord());
@@ -309,6 +322,38 @@ namespace BreganTwitchBot.DomainTests.Discord
         public async Task GetStats_UnlinkedServer_IsNull()
         {
             Assert.That(await _wordleData.GetStats(424242, LinkedUserId), Is.Null);
+        }
+
+        [Test]
+        public async Task SolvingOnAStreak_PaysTheStreakBonus()
+        {
+            await SeedPastGames(LinkedUserId, (3, true), (2, true), (1, true));
+
+            var result = await _wordleData.Guess(DatabaseSeedHelper.DiscordGuildId, LinkedUserId, Answer);
+
+            // today makes it a 4 day streak
+            var expected = WordleHelper.GetPointsForGuesses(1) + WordleHelper.GetStreakBonus(4);
+
+            Assert.Multiple(async () =>
+            {
+                Assert.That(result.Response, Does.Contain($"You've earned **{expected:N0}** points"));
+                Assert.That(result.Response, Does.Contain("4 day streak"));
+                Assert.That(result.PublicMessage, Does.Contain($"earned {expected:N0} points"));
+                Assert.That((await _dbContext.DiscordWordleGames.SingleAsync(x => x.Solved && x.Guesses.Count == 1)).PointsAwarded, Is.EqualTo(expected));
+            });
+
+            _discordHelperService.Verify(x => x.AddPointsToUser(DatabaseSeedHelper.DiscordGuildId, LinkedUserId, expected), Times.Once());
+        }
+
+        [Test]
+        public async Task SolvingAfterABrokenStreak_PaysNoBonus()
+        {
+            // a win two days ago with nothing yesterday doesn't carry on
+            await SeedPastGames(LinkedUserId, (2, true));
+
+            await _wordleData.Guess(DatabaseSeedHelper.DiscordGuildId, LinkedUserId, Answer);
+
+            _discordHelperService.Verify(x => x.AddPointsToUser(DatabaseSeedHelper.DiscordGuildId, LinkedUserId, WordleHelper.GetPointsForGuesses(1)), Times.Once());
         }
     }
 }
