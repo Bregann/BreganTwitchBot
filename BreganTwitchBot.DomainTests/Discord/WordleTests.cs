@@ -2,11 +2,11 @@ using BreganTwitchBot.Domain.Database.Context;
 using BreganTwitchBot.Domain.DTOs.Discord.Commands;
 using BreganTwitchBot.Domain.Interfaces.Discord;
 using BreganTwitchBot.Domain.Services.Discord.SlashCommands.Wordle;
-using WordleHelper = BreganTwitchBot.Domain.Services.Helpers.WordleHelper;
 using BreganTwitchBot.DomainTests.Helpers;
 using Microsoft.EntityFrameworkCore;
 using Moq;
 using Testcontainers.PostgreSql;
+using WordleHelper = BreganTwitchBot.Domain.Services.Helpers.WordleHelper;
 
 namespace BreganTwitchBot.DomainTests.Discord
 {

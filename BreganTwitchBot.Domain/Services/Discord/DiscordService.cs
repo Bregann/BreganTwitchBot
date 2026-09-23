@@ -2,8 +2,8 @@
 using BreganTwitchBot.Domain.Enums;
 using BreganTwitchBot.Domain.Interfaces.Discord;
 using BreganTwitchBot.Domain.Interfaces.Discord.Commands;
-using BreganTwitchBot.Domain.Services.Discord.SlashCommands.Wordle;
 using BreganTwitchBot.Domain.Interfaces.Helpers;
+using BreganTwitchBot.Domain.Services.Discord.SlashCommands.Wordle;
 using Discord;
 using Discord.Interactions;
 using Discord.WebSocket;
