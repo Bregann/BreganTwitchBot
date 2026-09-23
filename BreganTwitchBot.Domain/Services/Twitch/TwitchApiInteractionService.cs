@@ -157,6 +157,18 @@ namespace BreganTwitchBot.Domain.Services.Twitch
             await apiClient.Helix.Chat.SendShoutoutAsync(broadcasterChannelId, shoutoutChannelId, moderatorId);
         }
 
+        public async Task<string?> CreateClip(TwitchAPI apiClient, string broadcasterId)
+        {
+            var res = await apiClient.Helix.Clips.CreateClipAsync(broadcasterId);
+
+            if (res?.CreatedClips == null || res.CreatedClips.Length == 0)
+            {
+                return null;
+            }
+
+            return res.CreatedClips[0].Id;
+        }
+
         public async Task WarnUser(TwitchAPI apiClient, string broadcasterChannelId, string moderatorId, string userId, string message)
         {
             var warn = new WarnChatUserRequest

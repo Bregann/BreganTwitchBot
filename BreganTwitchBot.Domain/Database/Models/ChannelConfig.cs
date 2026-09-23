@@ -117,5 +117,18 @@ namespace BreganTwitchBot.Domain.Database.Models
         /// The ID of the Discord channel where welcome messages are sent.
         /// </summary>
         public ulong? DiscordWelcomeMessageChannelId { get; set; } = null;
+
+        /// <summary>
+        /// The welcome message for somebody who has already linked their Twitch account.
+        /// {user} is the new member, {twitchusername} their linked name and {commandschannel}
+        /// the commands channel. Null falls back to the built in wording.
+        /// </summary>
+        public string? DiscordWelcomeMessageLinked { get; set; } = null;
+
+        /// <summary>
+        /// The welcome message for somebody who has not linked their Twitch account.
+        /// {user} and {commandschannel} are replaced. Null falls back to the built in wording.
+        /// </summary>
+        public string? DiscordWelcomeMessageUnlinked { get; set; } = null;
     }
 }

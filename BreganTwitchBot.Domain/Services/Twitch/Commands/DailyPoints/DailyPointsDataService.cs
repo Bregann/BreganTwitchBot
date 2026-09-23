@@ -57,16 +57,18 @@ namespace BreganTwitchBot.Domain.Services.Twitch.Commands.DailyPoints
                 return;
             }
 
-            var usersTest = await context.TwitchDailyPoints.ToListAsync();
-
             // reset streaks
             var usersToReset = await context.TwitchDailyPoints
                 .Where(x => x.Channel.BroadcasterTwitchChannelId == broadcasterId && x.PointsClaimType == PointsClaimType.Daily && x.PointsClaimed == false)
                 .ToListAsync();
 
+            // copied out rather than kept as the tracked rows, as the rows are zeroed just below
+            // and the message would otherwise show every lost streak as 0
             var top5LostStreaks = usersToReset
+                .Where(x => x.CurrentStreak > 0)
                 .OrderByDescending(x => x.CurrentStreak)
                 .Take(5)
+                .Select(x => $"{x.User.TwitchUsername} - {x.CurrentStreak:N0}")
                 .ToList();
 
             foreach (var user in usersToReset)
@@ -88,7 +90,11 @@ namespace BreganTwitchBot.Domain.Services.Twitch.Commands.DailyPoints
             // allow the point collecting and let the users know
             await configHelper.UpdateDailyPointsStatus(broadcasterId, true);
             await twitchHelperService.SendAnnouncementMessageToChannel(broadcasterId, channelName!, $"Don't forget to claim your daily, weekly, monthly and yearly {await twitchHelperService.GetPointsName(broadcasterId, channelName!)} with !daily, !weekly, !monthly and !yearly PogChamp KEKW");
-            await twitchHelperService.SendTwitchMessageToChannel(broadcasterId, channelName!, $"Top 5 lost streaks: {string.Join(", ", top5LostStreaks.Select(x => $"{x.User.TwitchUsername} - {x.CurrentStreak}"))}");
+
+            if (top5LostStreaks.Count > 0)
+            {
+                await twitchHelperService.SendTwitchMessageToChannel(broadcasterId, channelName!, $"Top 5 lost streaks: {string.Join(", ", top5LostStreaks)}");
+            }
 
             // send announcement message to the channel that points are allowed
             await AnnouncePointsReminder(broadcasterId);

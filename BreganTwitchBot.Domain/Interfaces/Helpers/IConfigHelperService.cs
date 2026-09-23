@@ -10,10 +10,8 @@ namespace BreganTwitchBot.Domain.Interfaces.Helpers
         DiscordConfig? GetDiscordConfig(ulong discordGuildId);
         DiscordConfig? GetDiscordConfig(string broadcasterId);
         bool IsDiscordEnabled(string broadcasterId);
-
-        /// <summary>
-        /// The least viewers a raid must bring before the raider is shouted out automatically
-        /// </summary>
         int GetAutoShoutoutMinimumViewers(string broadcasterId);
+        string GetPointsName(string broadcasterId);
+        string? GetPointsNameForGuild(ulong discordGuildId);
     }
 }
