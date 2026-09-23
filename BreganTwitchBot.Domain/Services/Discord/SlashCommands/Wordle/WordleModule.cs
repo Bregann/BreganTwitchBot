@@ -1,29 +1,49 @@
 using BreganTwitchBot.Domain.Interfaces.Discord.Commands;
+using BreganTwitchBot.Domain.Services.Helpers;
+using Discord;
 using Discord.Interactions;
 
 namespace BreganTwitchBot.Domain.Services.Discord.SlashCommands.Wordle
 {
+    /// <summary>
+    /// Guesses are typed into a pop up rather than passed as a slash command option, so the word
+    /// is never shown as "used /wordle guess: crane" - not in the channel, and not on the
+    /// player's own screen if they're streaming or screenshotting it.
+    /// The button and pop up are handled in DiscordService, as buttons are dispatched there.
+    /// </summary>
     public class WordleModule(IDiscordWordleData discordWordleData) : InteractionModuleBase<SocketInteractionContext>
     {
+        public const string GuessButtonId = "wordle-guess";
+        public const string GuessModalId = "wordle-modal";
+        public const string GuessInputId = "wordle-guess-input";
+
         [SlashCommand("wordle", "Guess today's word. Everyone gets the same one, and six tries")]
-        public async Task Wordle([Summary("guess", "Your five letter guess. Leave out to see your board")] string? guess = null)
+        public async Task Wordle()
         {
-            // guesses are private so nobody can copy somebody else's board
+            // the board is private so nobody can copy somebody else's guesses
             await DeferAsync(ephemeral: true);
 
-            if (string.IsNullOrWhiteSpace(guess))
-            {
-                await FollowupAsync(await discordWordleData.GetBoard(Context.Guild.Id, Context.User.Id), ephemeral: true);
-                return;
-            }
+            var board = await discordWordleData.GetBoard(Context.Guild.Id, Context.User.Id);
+            await FollowupAsync(board.Response, ephemeral: true, components: BuildGuessButton(board.CanGuess));
+        }
 
-            var (response, publicMessage) = await discordWordleData.Guess(Context.Guild.Id, Context.User.Id, guess);
-            await FollowupAsync(response, ephemeral: true);
+        /// <summary>
+        /// The button that opens the guess pop up, or nothing once the game is over
+        /// </summary>
+        public static MessageComponent? BuildGuessButton(bool canGuess)
+        {
+            return canGuess
+                ? new ComponentBuilder().WithButton("Guess", GuessButtonId, ButtonStyle.Primary, new Emoji("🔤")).Build()
+                : null;
+        }
 
-            if (publicMessage != null)
-            {
-                await Context.Channel.SendMessageAsync(publicMessage);
-            }
+        public static Modal BuildGuessModal()
+        {
+            return new ModalBuilder()
+                .WithTitle("Wordle")
+                .WithCustomId(GuessModalId)
+                .AddTextInput("Your guess", GuessInputId, TextInputStyle.Short, "five letters", WordleHelper.WordLength, WordleHelper.WordLength, required: true)
+                .Build();
         }
     }
 }

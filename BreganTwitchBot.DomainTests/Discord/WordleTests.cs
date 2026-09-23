@@ -1,4 +1,5 @@
 using BreganTwitchBot.Domain.Database.Context;
+using BreganTwitchBot.Domain.DTOs.Discord.Commands;
 using BreganTwitchBot.Domain.Interfaces.Discord;
 using BreganTwitchBot.Domain.Services.Discord.SlashCommands.Wordle;
 using WordleHelper = BreganTwitchBot.Domain.Services.Helpers.WordleHelper;
@@ -74,13 +75,14 @@ namespace BreganTwitchBot.DomainTests.Discord
         [Test]
         public async Task CorrectGuess_SolvesAndAwardsPoints()
         {
-            var (response, publicMessage) = await _wordleData.Guess(DatabaseSeedHelper.DiscordGuildId, LinkedUserId, Answer);
+            var result = await _wordleData.Guess(DatabaseSeedHelper.DiscordGuildId, LinkedUserId, Answer);
 
             Assert.Multiple(() =>
             {
-                Assert.That(response, Does.Contain("1/6"));
-                Assert.That(publicMessage, Is.Not.Null);
-                Assert.That(publicMessage, Does.Not.Contain(Answer.ToUpper()));
+                Assert.That(result.Response, Does.Contain("1/6"));
+                Assert.That(result.CanGuess, Is.False);
+                Assert.That(result.PublicMessage, Is.Not.Null);
+                Assert.That(result.PublicMessage, Does.Not.Contain(Answer.ToUpper()));
             });
 
             _discordHelperService.Verify(x => x.AddPointsToUser(DatabaseSeedHelper.DiscordGuildId, LinkedUserId, WordleHelper.GetPointsForGuesses(1)), Times.Once());
@@ -89,12 +91,13 @@ namespace BreganTwitchBot.DomainTests.Discord
         [Test]
         public async Task WrongGuess_UsesAGuessAndShowsTheBoard()
         {
-            var (response, publicMessage) = await _wordleData.Guess(DatabaseSeedHelper.DiscordGuildId, LinkedUserId, WrongWord());
+            var result = await _wordleData.Guess(DatabaseSeedHelper.DiscordGuildId, LinkedUserId, WrongWord());
 
             Assert.Multiple(() =>
             {
-                Assert.That(response, Does.Contain("5 guesses left"));
-                Assert.That(publicMessage, Is.Null);
+                Assert.That(result.Response, Does.Contain("5 guesses left"));
+                Assert.That(result.CanGuess, Is.True);
+                Assert.That(result.PublicMessage, Is.Null);
             });
 
             var game = await _dbContext.DiscordWordleGames.SingleAsync();
@@ -104,19 +107,20 @@ namespace BreganTwitchBot.DomainTests.Discord
         [Test]
         public async Task GuessesAreCaseInsensitive()
         {
-            var (response, _) = await _wordleData.Guess(DatabaseSeedHelper.DiscordGuildId, LinkedUserId, $"  {Answer.ToUpper()} ");
+            var result = await _wordleData.Guess(DatabaseSeedHelper.DiscordGuildId, LinkedUserId, $"  {Answer.ToUpper()} ");
 
-            Assert.That(response, Does.Contain("You got it"));
+            Assert.That(result.Response, Does.Contain("You got it"));
         }
 
         [Test]
         public async Task InvalidGuess_DoesNotUseAGuess()
         {
-            var (response, _) = await _wordleData.Guess(DatabaseSeedHelper.DiscordGuildId, LinkedUserId, "toolong");
+            var result = await _wordleData.Guess(DatabaseSeedHelper.DiscordGuildId, LinkedUserId, "toolong");
 
             Assert.Multiple(async () =>
             {
-                Assert.That(response, Does.Contain("5 letters"));
+                Assert.That(result.Response, Does.Contain("5 letters"));
+                Assert.That(result.CanGuess, Is.True);
                 Assert.That(await _dbContext.DiscordWordleGames.AnyAsync(), Is.False);
             });
         }
@@ -125,9 +129,9 @@ namespace BreganTwitchBot.DomainTests.Discord
         public async Task RepeatedGuess_DoesNotUseAGuess()
         {
             await _wordleData.Guess(DatabaseSeedHelper.DiscordGuildId, LinkedUserId, WrongWord());
-            var (response, _) = await _wordleData.Guess(DatabaseSeedHelper.DiscordGuildId, LinkedUserId, WrongWord());
+            var result = await _wordleData.Guess(DatabaseSeedHelper.DiscordGuildId, LinkedUserId, WrongWord());
 
-            Assert.That(response, Does.Contain("already guessed"));
+            Assert.That(result.Response, Does.Contain("already guessed"));
 
             var game = await _dbContext.DiscordWordleGames.SingleAsync();
             Assert.That(game.Guesses, Has.Count.EqualTo(1));
@@ -136,18 +140,18 @@ namespace BreganTwitchBot.DomainTests.Discord
         [Test]
         public async Task SixWrongGuesses_EndsTheGameAndRevealsTheWord()
         {
-            string response = "";
-            string? publicMessage = null;
+            WordleResponse result = null!;
 
             for (var i = 0; i < WordleHelper.MaxGuesses; i++)
             {
-                (response, publicMessage) = await _wordleData.Guess(DatabaseSeedHelper.DiscordGuildId, LinkedUserId, WrongWord(i));
+                result = await _wordleData.Guess(DatabaseSeedHelper.DiscordGuildId, LinkedUserId, WrongWord(i));
             }
 
             Assert.Multiple(() =>
             {
-                Assert.That(response, Does.Contain(Answer.ToUpper()));
-                Assert.That(publicMessage, Does.Contain("X/6"));
+                Assert.That(result.Response, Does.Contain(Answer.ToUpper()));
+                Assert.That(result.CanGuess, Is.False);
+                Assert.That(result.PublicMessage, Does.Contain("X/6"));
             });
 
             _discordHelperService.Verify(x => x.AddPointsToUser(It.IsAny<ulong>(), It.IsAny<ulong>(), It.IsAny<long>()), Times.Never());
@@ -157,12 +161,13 @@ namespace BreganTwitchBot.DomainTests.Discord
         public async Task FinishedGame_CannotBePlayedAgainToday()
         {
             await _wordleData.Guess(DatabaseSeedHelper.DiscordGuildId, LinkedUserId, Answer);
-            var (response, publicMessage) = await _wordleData.Guess(DatabaseSeedHelper.DiscordGuildId, LinkedUserId, Answer);
+            var result = await _wordleData.Guess(DatabaseSeedHelper.DiscordGuildId, LinkedUserId, Answer);
 
             Assert.Multiple(() =>
             {
-                Assert.That(response, Does.Contain("already finished"));
-                Assert.That(publicMessage, Is.Null);
+                Assert.That(result.Response, Does.Contain("already finished"));
+                Assert.That(result.CanGuess, Is.False);
+                Assert.That(result.PublicMessage, Is.Null);
             });
 
             // points only once
@@ -172,9 +177,9 @@ namespace BreganTwitchBot.DomainTests.Discord
         [Test]
         public async Task UnlinkedUser_CanPlayButEarnsNoPoints()
         {
-            var (response, _) = await _wordleData.Guess(DatabaseSeedHelper.DiscordGuildId, UnlinkedUserId, Answer);
+            var result = await _wordleData.Guess(DatabaseSeedHelper.DiscordGuildId, UnlinkedUserId, Answer);
 
-            Assert.That(response, Does.Contain("Link your Twitch account"));
+            Assert.That(result.Response, Does.Contain("Link your Twitch account"));
             _discordHelperService.Verify(x => x.AddPointsToUser(It.IsAny<ulong>(), It.IsAny<ulong>(), It.IsAny<long>()), Times.Never());
         }
 
@@ -185,7 +190,11 @@ namespace BreganTwitchBot.DomainTests.Discord
 
             var board = await _wordleData.GetBoard(DatabaseSeedHelper.DiscordGuildId, DatabaseSeedHelper.DiscordUserId2);
 
-            Assert.That(board, Does.Contain("haven't guessed yet"));
+            Assert.Multiple(() =>
+            {
+                Assert.That(board.Response, Does.Contain("haven't guessed yet"));
+                Assert.That(board.CanGuess, Is.True);
+            });
         }
 
         [Test]
@@ -195,15 +204,29 @@ namespace BreganTwitchBot.DomainTests.Discord
 
             var board = await _wordleData.GetBoard(DatabaseSeedHelper.DiscordGuildId, LinkedUserId);
 
-            Assert.That(board, Does.Contain(WrongWord().ToUpper()));
+            Assert.That(board.Response, Does.Contain(WrongWord().ToUpper()));
+        }
+
+        [Test]
+        public async Task GetBoard_AfterFinishing_DoesNotOfferAnotherGuess()
+        {
+            await _wordleData.Guess(DatabaseSeedHelper.DiscordGuildId, LinkedUserId, Answer);
+
+            var board = await _wordleData.GetBoard(DatabaseSeedHelper.DiscordGuildId, LinkedUserId);
+
+            Assert.Multiple(() =>
+            {
+                Assert.That(board.Response, Does.Contain("Come back tomorrow"));
+                Assert.That(board.CanGuess, Is.False);
+            });
         }
 
         [Test]
         public async Task UnlinkedServer_IsRejected()
         {
-            var (response, _) = await _wordleData.Guess(424242, LinkedUserId, Answer);
+            var result = await _wordleData.Guess(424242, LinkedUserId, Answer);
 
-            Assert.That(response, Does.Contain("isn't linked"));
+            Assert.That(result.Response, Does.Contain("isn't linked"));
         }
     }
 }

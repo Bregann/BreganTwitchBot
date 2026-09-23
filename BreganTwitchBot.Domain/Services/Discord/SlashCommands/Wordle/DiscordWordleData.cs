@@ -1,5 +1,6 @@
 using BreganTwitchBot.Domain.Database.Context;
 using BreganTwitchBot.Domain.Database.Models;
+using BreganTwitchBot.Domain.DTOs.Discord.Commands;
 using BreganTwitchBot.Domain.Interfaces.Discord;
 using BreganTwitchBot.Domain.Interfaces.Discord.Commands;
 using BreganTwitchBot.Domain.Services.Helpers;
@@ -10,13 +11,13 @@ namespace BreganTwitchBot.Domain.Services.Discord.SlashCommands.Wordle
 {
     public class DiscordWordleData(AppDbContext context, IDiscordHelperService discordHelperService) : IDiscordWordleData
     {
-        public async Task<(string Response, string? PublicMessage)> Guess(ulong guildId, ulong userId, string guess)
+        public async Task<WordleResponse> Guess(ulong guildId, ulong userId, string guess)
         {
             var channel = await context.GetChannelForGuild(guildId);
 
             if (channel == null)
             {
-                return ("This server isn't linked to a channel", null);
+                return new WordleResponse("This server isn't linked to a channel", false);
             }
 
             guess = guess.Trim().ToLower();
@@ -24,7 +25,7 @@ namespace BreganTwitchBot.Domain.Services.Discord.SlashCommands.Wordle
             // an invalid guess isn't saved, so it doesn't cost one of the six
             if (!WordleHelper.IsValidGuess(guess))
             {
-                return ($"Your guess needs to be {WordleHelper.WordLength} letters, no numbers or spaces", null);
+                return new WordleResponse($"Your guess needs to be {WordleHelper.WordLength} letters, no numbers or spaces", true);
             }
 
             var today = DateOnly.FromDateTime(DateTime.UtcNow);
@@ -33,12 +34,12 @@ namespace BreganTwitchBot.Domain.Services.Discord.SlashCommands.Wordle
 
             if (IsFinished(game))
             {
-                return ($"You've already finished today's Wordle! Come back tomorrow\n\n{BuildBoard(game, answer)}", null);
+                return new WordleResponse($"You've already finished today's Wordle! Come back tomorrow\n\n{BuildBoard(game, answer)}", false);
             }
 
             if (game.Guesses.Contains(guess))
             {
-                return ($"You've already guessed **{guess.ToUpper()}**\n\n{BuildBoard(game, answer)}", null);
+                return new WordleResponse($"You've already guessed **{guess.ToUpper()}**\n\n{BuildBoard(game, answer)}", true);
             }
 
             // reassigned rather than added to so EF sees the array column has changed
@@ -58,26 +59,26 @@ namespace BreganTwitchBot.Domain.Services.Discord.SlashCommands.Wordle
                     ? $" You've earned **{game.PointsAwarded:N0}** points!"
                     : " Link your Twitch account to earn points for solving it.";
 
-                return ($"You got it in **{game.Guesses.Count}/{WordleHelper.MaxGuesses}**!{pointsText}\n\n{BuildBoard(game, answer)}",
+                return new WordleResponse($"You got it in **{game.Guesses.Count}/{WordleHelper.MaxGuesses}**!{pointsText}\n\n{BuildBoard(game, answer)}", false,
                     BuildPublicMessage(userId, game, answer));
             }
 
             if (IsFinished(game))
             {
-                return ($"Unlucky! The word was **{answer.ToUpper()}**\n\n{BuildBoard(game, answer)}",
+                return new WordleResponse($"Unlucky! The word was **{answer.ToUpper()}**\n\n{BuildBoard(game, answer)}", false,
                     BuildPublicMessage(userId, game, answer));
             }
 
-            return ($"{BuildBoard(game, answer)}\n\n{WordleHelper.MaxGuesses - game.Guesses.Count} guesses left", null);
+            return new WordleResponse($"{BuildBoard(game, answer)}\n\n{WordleHelper.MaxGuesses - game.Guesses.Count} guesses left", true);
         }
 
-        public async Task<string> GetBoard(ulong guildId, ulong userId)
+        public async Task<WordleResponse> GetBoard(ulong guildId, ulong userId)
         {
             var channel = await context.GetChannelForGuild(guildId);
 
             if (channel == null)
             {
-                return "This server isn't linked to a channel";
+                return new WordleResponse("This server isn't linked to a channel", false);
             }
 
             var today = DateOnly.FromDateTime(DateTime.UtcNow);
@@ -85,10 +86,15 @@ namespace BreganTwitchBot.Domain.Services.Discord.SlashCommands.Wordle
 
             if (game == null || game.Guesses.Count == 0)
             {
-                return $"You haven't guessed yet today. Use `/wordle guess:` with a {WordleHelper.WordLength} letter word, you get {WordleHelper.MaxGuesses} tries";
+                return new WordleResponse($"You haven't guessed yet today. Press the button to guess a {WordleHelper.WordLength} letter word, you get {WordleHelper.MaxGuesses} tries", true);
             }
 
-            return BuildBoard(game, WordleHelper.GetWordForDate(today));
+            var answer = WordleHelper.GetWordForDate(today);
+            var board = BuildBoard(game, answer);
+
+            return IsFinished(game)
+                ? new WordleResponse($"You've finished today's Wordle! Come back tomorrow\n\n{board}", false)
+                : new WordleResponse($"{board}\n\n{WordleHelper.MaxGuesses - game.Guesses.Count} guesses left", true);
         }
 
         private async Task<DiscordWordleGame> GetOrCreateGame(int channelId, ulong userId, DateOnly date)
