@@ -29,7 +29,15 @@ namespace BreganTwitchBot.DomainTests.Twitch.Commands
                 .Returns(Task.CompletedTask);
 
             var mockBackgroundJobClient = new Mock<IBackgroundJobClient>();
-            _twitchBossesDataService = new TwitchBossesDataService(_twitchHelperService.Object, mockBackgroundJobClient.Object);
+
+            // the boss texts are read through a scope, which these tests never reach as no
+            // fight gets far enough to need them
+            var mockServiceProvider = new Mock<IServiceProvider>();
+
+            _twitchBossesDataService = new TwitchBossesDataService(
+                _twitchHelperService.Object,
+                mockBackgroundJobClient.Object,
+                mockServiceProvider.Object);
         }
 
         [Test]
