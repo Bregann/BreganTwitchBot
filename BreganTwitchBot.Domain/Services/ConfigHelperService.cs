@@ -198,6 +198,20 @@ namespace BreganTwitchBot.Domain.Services
             }
         }
 
+        public int GetAutoShoutoutMinimumViewers(string broadcasterId)
+        {
+            lock (GetLock(broadcasterId))
+            {
+                if (!_channelConfigs.TryGetValue(broadcasterId, out var config))
+                {
+                    Log.Warning($"No config found for broadcasterId {broadcasterId}, using the default shoutout minimum");
+                    return 5;
+                }
+
+                return config.AutoShoutoutMinimumViewers;
+            }
+        }
+
         public string GetPointsName(string broadcasterId)
         {
             var sanitisedBroadcasterId = broadcasterId.ToLower().Trim();

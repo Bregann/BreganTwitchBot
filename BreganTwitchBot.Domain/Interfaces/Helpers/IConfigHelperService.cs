@@ -10,16 +10,8 @@ namespace BreganTwitchBot.Domain.Interfaces.Helpers
         DiscordConfig? GetDiscordConfig(ulong discordGuildId);
         DiscordConfig? GetDiscordConfig(string broadcasterId);
         bool IsDiscordEnabled(string broadcasterId);
-
-        /// <summary>
-        /// The channel's currency name. Served from the config cache, so the Discord side can
-        /// use it without going through the Twitch helper service.
-        /// </summary>
+        int GetAutoShoutoutMinimumViewers(string broadcasterId);
         string GetPointsName(string broadcasterId);
-
-        /// <summary>
-        /// The currency name for the channel linked to a Discord guild
-        /// </summary>
         string? GetPointsNameForGuild(ulong discordGuildId);
     }
 }
