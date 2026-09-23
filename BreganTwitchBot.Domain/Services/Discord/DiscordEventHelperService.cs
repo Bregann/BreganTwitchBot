@@ -236,69 +236,38 @@ namespace BreganTwitchBot.Domain.Services.Discord
                     : ("invalid button", true);
             }
 
-            var emojiToAdd = "";
+            var season = SeasonalNicknameHelper.GetSeason(buttonPressedEvent.CustomId);
 
-            switch (buttonPressedEvent.CustomId)
+            if (season == null)
             {
-                case "christmas-snowman":
-                    emojiToAdd = "⛄";
-                    break;
-                case "christmas-gift":
-                    emojiToAdd = "🎁";
-                    break;
-                case "christmas-tree":
-                    emojiToAdd = "🎄";
-                    break;
-                case "christmas-santa":
-                    emojiToAdd = "🎅";
-                    break;
-                case "christmas-mrsanta":
-                    emojiToAdd = "🤶";
-                    break;
-                case "christmas-star":
-                    emojiToAdd = "🌟";
-                    break;
-                case "christmas-socks":
-                    emojiToAdd = "🧦";
-                    break;
-                case "christmas-bell":
-                    emojiToAdd = "🔔";
-                    break;
-                case "christmas-deer":
-                    emojiToAdd = "🦌";
-                    break;
-                case "christmas-resetusername":
-                    emojiToAdd = "";
-                    break;
-                default:
-                    return ("invalid button", true);
+                return ("invalid button", true);
             }
 
             var guild = client.GetGuild(buttonPressedEvent.GuildId);
             var user = guild.GetUser(buttonPressedEvent.UserId);
 
-            if (emojiToAdd == "")
+            if (SeasonalNicknameHelper.IsReset(buttonPressedEvent.CustomId))
             {
-                var nickNameToSet = user.Nickname.Replace("⛄", "").Replace("🎁", "").Replace("🎄", "").Replace("🎅", "").Replace("🤶", "").Replace("🌟", "").Replace("🧦", "").Replace("🔔", "").Replace("🦌", "");
-                await user.ModifyAsync(user => user.Nickname = nickNameToSet);
+                // without a nickname there are no emojis to take off
+                if (user.Nickname != null)
+                {
+                    var clearedNickname = SeasonalNicknameHelper.RemoveEmojis(user.Nickname, season);
+                    await user.ModifyAsync(user => user.Nickname = clearedNickname);
+                }
+
                 return ("Your nickname has been cleared!", true);
             }
-            else
+
+            var emojiToAdd = SeasonalNicknameHelper.GetEmoji(season, buttonPressedEvent.CustomId);
+
+            if (emojiToAdd == null)
             {
-                var nickNameToSet = "";
-
-                if (user.DisplayName != null)
-                {
-                    nickNameToSet = emojiToAdd + user.DisplayName + emojiToAdd;
-                }
-                else
-                {
-                    nickNameToSet = emojiToAdd + user.Username + emojiToAdd;
-                }
-
-                await user.ModifyAsync(user => user.Nickname = nickNameToSet);
-                return ("Your nickname has been set! Woooo", true);
+                return ("invalid button", true);
             }
+
+            var nickNameToSet = SeasonalNicknameHelper.AddEmoji(user.DisplayName ?? user.Username, emojiToAdd);
+            await user.ModifyAsync(user => user.Nickname = nickNameToSet);
+            return ("Your nickname has been set! Woooo", true);
         }
 
         /// <summary>
