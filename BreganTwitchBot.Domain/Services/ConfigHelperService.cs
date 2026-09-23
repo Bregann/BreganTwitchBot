@@ -211,7 +211,7 @@ namespace BreganTwitchBot.Domain.Services
                 return config.AutoShoutoutMinimumViewers;
             }
         }
-        
+
         public string GetPointsName(string broadcasterId)
         {
             var sanitisedBroadcasterId = broadcasterId.ToLower().Trim();
