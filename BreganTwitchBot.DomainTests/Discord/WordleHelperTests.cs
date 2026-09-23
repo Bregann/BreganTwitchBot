@@ -1,3 +1,4 @@
+using BreganTwitchBot.Domain.DTOs.Discord.Commands;
 using BreganTwitchBot.Domain.Services.Helpers;
 using static BreganTwitchBot.Domain.Services.Helpers.WordleLetterResult;
 
@@ -92,6 +93,132 @@ namespace BreganTwitchBot.DomainTests.Discord
         public void GetRuledOutLetters_ListsGuessedLettersNotInTheWord()
         {
             Assert.That(WordleHelper.GetRuledOutLetters(["crabs", "about"], "cider"), Is.EqualTo("A B O S T U"));
+        }
+
+        // stats and streaks
+
+        private static readonly DateOnly Today = new(2026, 9, 23);
+
+        private static WordleGameSummary Won(int daysAgo, int guesses = 3) => new(Today.AddDays(-daysAgo), guesses, true);
+        private static WordleGameSummary Lost(int daysAgo) => new(Today.AddDays(-daysAgo), WordleHelper.MaxGuesses, false);
+
+        [Test]
+        public void Stats_NoGames_AreAllZero()
+        {
+            var stats = WordleHelper.CalculateStats([], Today);
+
+            Assert.Multiple(() =>
+            {
+                Assert.That(stats.Played, Is.Zero);
+                Assert.That(stats.WinPercentage, Is.Zero);
+                Assert.That(stats.CurrentStreak, Is.Zero);
+                Assert.That(stats.GuessDistribution, Is.EqualTo(new int[6]));
+            });
+        }
+
+        [Test]
+        public void Stats_ConsecutiveWins_BuildAStreak()
+        {
+            var stats = WordleHelper.CalculateStats([Won(2), Won(1), Won(0)], Today);
+
+            Assert.Multiple(() =>
+            {
+                Assert.That(stats.CurrentStreak, Is.EqualTo(3));
+                Assert.That(stats.MaxStreak, Is.EqualTo(3));
+            });
+        }
+
+        [Test]
+        public void Stats_ALoss_ResetsTheStreakButKeepsTheBest()
+        {
+            var stats = WordleHelper.CalculateStats([Won(3), Won(2), Lost(1), Won(0)], Today);
+
+            Assert.Multiple(() =>
+            {
+                Assert.That(stats.CurrentStreak, Is.EqualTo(1));
+                Assert.That(stats.MaxStreak, Is.EqualTo(2));
+            });
+        }
+
+        [Test]
+        public void Stats_ASkippedDay_ResetsTheStreak()
+        {
+            var stats = WordleHelper.CalculateStats([Won(4), Won(3), Won(1), Won(0)], Today);
+
+            Assert.That(stats.CurrentStreak, Is.EqualTo(2));
+        }
+
+        [Test]
+        public void Stats_NotPlayedYetToday_KeepsYesterdaysStreak()
+        {
+            var stats = WordleHelper.CalculateStats([Won(2), Won(1)], Today);
+
+            Assert.That(stats.CurrentStreak, Is.EqualTo(2));
+        }
+
+        [Test]
+        public void Stats_TodayInProgress_DoesNotCountOrBreakTheStreak()
+        {
+            var stats = WordleHelper.CalculateStats([Won(1), new WordleGameSummary(Today, 2, false)], Today);
+
+            Assert.Multiple(() =>
+            {
+                Assert.That(stats.Played, Is.EqualTo(1));
+                Assert.That(stats.CurrentStreak, Is.EqualTo(1));
+            });
+        }
+
+        [Test]
+        public void Stats_LastWinTwoDaysAgo_HasNoCurrentStreak()
+        {
+            var stats = WordleHelper.CalculateStats([Won(3), Won(2)], Today);
+
+            Assert.Multiple(() =>
+            {
+                Assert.That(stats.CurrentStreak, Is.Zero);
+                Assert.That(stats.MaxStreak, Is.EqualTo(2));
+            });
+        }
+
+        [Test]
+        public void Stats_AnAbandonedEarlierGame_CountsAsALoss()
+        {
+            var stats = WordleHelper.CalculateStats([Won(2), new WordleGameSummary(Today.AddDays(-1), 2, false), Won(0)], Today);
+
+            Assert.Multiple(() =>
+            {
+                Assert.That(stats.Played, Is.EqualTo(3));
+                Assert.That(stats.Won, Is.EqualTo(2));
+                Assert.That(stats.CurrentStreak, Is.EqualTo(1));
+            });
+        }
+
+        [Test]
+        public void Stats_CountWinsByGuesses()
+        {
+            var stats = WordleHelper.CalculateStats([Won(4, 1), Won(3, 3), Won(2, 3), Lost(1), Won(0, 6)], Today);
+
+            Assert.Multiple(() =>
+            {
+                Assert.That(stats.GuessDistribution, Is.EqualTo(new[] { 1, 0, 2, 0, 0, 1 }));
+                Assert.That(stats.Played, Is.EqualTo(5));
+                Assert.That(stats.WinPercentage, Is.EqualTo(80));
+            });
+        }
+
+        [Test]
+        public void RenderStats_ShowsEveryGuessCount()
+        {
+            var text = WordleHelper.RenderStats(WordleHelper.CalculateStats([Won(1, 2), Won(0, 4)], Today));
+
+            Assert.Multiple(() =>
+            {
+                Assert.That(text, Does.Contain("**Streak** 2"));
+                for (var guesses = 1; guesses <= WordleHelper.MaxGuesses; guesses++)
+                {
+                    Assert.That(text, Does.Contain($"`{guesses}`"));
+                }
+            });
         }
     }
 }

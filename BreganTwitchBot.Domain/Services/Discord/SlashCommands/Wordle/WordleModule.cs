@@ -27,6 +27,29 @@ namespace BreganTwitchBot.Domain.Services.Discord.SlashCommands.Wordle
             await FollowupAsync(board.Response, ephemeral: true, components: BuildGuessButton(board.CanGuess));
         }
 
+        [SlashCommand("wordlestats", "See Wordle stats for you or someone else")]
+        public async Task WordleStats([Summary("user", "Whose stats to see. Leave out for your own")] IUser? user = null)
+        {
+            await DeferAsync();
+
+            user ??= Context.User;
+            var stats = await discordWordleData.GetStats(Context.Guild.Id, user.Id);
+
+            if (stats == null)
+            {
+                await FollowupAsync("This server isn't linked to a channel");
+                return;
+            }
+
+            if (stats.Played == 0)
+            {
+                await FollowupAsync($"{user.Username} hasn't played Wordle yet! Use `/wordle` to start");
+                return;
+            }
+
+            await FollowupAsync($"**Wordle stats for {user.Username}**\n{WordleHelper.RenderStats(stats)}", allowedMentions: AllowedMentions.None);
+        }
+
         /// <summary>
         /// The button that opens the guess pop up, or nothing once the game is over
         /// </summary>

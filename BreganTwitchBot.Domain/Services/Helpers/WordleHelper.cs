@@ -1,3 +1,4 @@
+using BreganTwitchBot.Domain.DTOs.Discord.Commands;
 using System.Text;
 
 namespace BreganTwitchBot.Domain.Services.Helpers
@@ -176,6 +177,69 @@ namespace BreganTwitchBot.Domain.Services.Helpers
             }
 
             return board.ToString().TrimEnd();
+        }
+
+        /// <summary>
+        /// Works the stats out from the games themselves rather than keeping running totals,
+        /// so they can never drift from what was actually played.
+        /// A streak is consecutive days won, like Wordle: a loss or a skipped day ends it, but
+        /// a game still being played today doesn't end yesterday's streak.
+        /// </summary>
+        public static WordleStats CalculateStats(IEnumerable<WordleGameSummary> games, DateOnly today)
+        {
+            // a game from an earlier day that was left unfinished counts as a loss
+            var counted = games
+                .Where(x => x.GuessCount > 0 && (x.Solved || x.GuessCount >= MaxGuesses || x.Date < today))
+                .OrderBy(x => x.Date)
+                .ToList();
+
+            var distribution = new int[MaxGuesses];
+            var run = 0;
+            var maxStreak = 0;
+            DateOnly? previousDate = null;
+
+            foreach (var game in counted)
+            {
+                if (game.Solved)
+                {
+                    run = previousDate == game.Date.AddDays(-1) ? run + 1 : 1;
+                    distribution[Math.Clamp(game.GuessCount, 1, MaxGuesses) - 1]++;
+                }
+                else
+                {
+                    run = 0;
+                }
+
+                maxStreak = Math.Max(maxStreak, run);
+                previousDate = game.Date;
+            }
+
+            // the streak is only still alive if the last win was today or yesterday
+            var last = counted.LastOrDefault();
+            var currentStreak = last != null && last.Solved && last.Date >= today.AddDays(-1) ? run : 0;
+
+            return new WordleStats(counted.Count, counted.Count(x => x.Solved), currentStreak, maxStreak, distribution);
+        }
+
+        public static string RenderStats(WordleStats stats)
+        {
+            var text = new StringBuilder();
+            text.AppendLine($"**Played** {stats.Played} · **Win %** {stats.WinPercentage} · **Streak** {stats.CurrentStreak} · **Best streak** {stats.MaxStreak}");
+
+            var mostWins = stats.GuessDistribution.Max();
+
+            for (var i = 0; i < stats.GuessDistribution.Length; i++)
+            {
+                var wins = stats.GuessDistribution[i];
+
+                // scaled so the most common result is 8 squares, with at least one for any win
+                var barLength = wins == 0 ? 0 : Math.Max(1, (int)Math.Round(wins * 8.0 / mostWins));
+                var bar = wins == 0 ? "▫️" : string.Concat(Enumerable.Repeat("🟩", barLength));
+
+                text.AppendLine($"`{i + 1}` {bar} {wins}");
+            }
+
+            return text.ToString().TrimEnd();
         }
     }
 }

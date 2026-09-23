@@ -228,5 +228,87 @@ namespace BreganTwitchBot.DomainTests.Discord
 
             Assert.That(result.Response, Does.Contain("isn't linked"));
         }
+
+        /// <summary>
+        /// Adds finished games for earlier days, straight into the table
+        /// </summary>
+        private async Task SeedPastGames(ulong userId, params (int DaysAgo, bool Solved)[] games)
+        {
+            var channel = await _dbContext.Channels.FirstAsync(x => x.BroadcasterTwitchChannelId == DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId);
+            var today = DateOnly.FromDateTime(DateTime.UtcNow);
+
+            foreach (var (daysAgo, solved) in games)
+            {
+                await _dbContext.DiscordWordleGames.AddAsync(new Domain.Database.Models.DiscordWordleGame
+                {
+                    ChannelId = channel.Id,
+                    DiscordUserId = userId,
+                    Date = today.AddDays(-daysAgo),
+                    Guesses = solved ? ["crane", "about"] : ["crane", "about", "other", "fable", "ghost", "house"],
+                    Solved = solved,
+                    PointsAwarded = 0
+                });
+            }
+
+            await _dbContext.SaveChangesAsync();
+        }
+
+        [Test]
+        public async Task Solving_SharesTheStreakInTheChannel()
+        {
+            await SeedPastGames(LinkedUserId, (2, true), (1, true));
+
+            var result = await _wordleData.Guess(DatabaseSeedHelper.DiscordGuildId, LinkedUserId, Answer);
+
+            Assert.Multiple(() =>
+            {
+                Assert.That(result.PublicMessage, Does.Contain("solved today's Wordle in **1/6**"));
+                Assert.That(result.PublicMessage, Does.Contain("3 day streak"));
+                Assert.That(result.Response, Does.Contain("**Best streak** 3"));
+            });
+        }
+
+        [Test]
+        public async Task Missing_SharesTheResetStreakInTheChannel()
+        {
+            await SeedPastGames(LinkedUserId, (2, true), (1, true));
+
+            WordleResponse result = null!;
+
+            for (var i = 0; i < WordleHelper.MaxGuesses; i++)
+            {
+                result = await _wordleData.Guess(DatabaseSeedHelper.DiscordGuildId, LinkedUserId, WrongWord(i));
+            }
+
+            Assert.Multiple(() =>
+            {
+                Assert.That(result.PublicMessage, Does.Contain("missed today's Wordle"));
+                Assert.That(result.PublicMessage, Does.Contain("Streak reset (best is 2)"));
+                Assert.That(result.PublicMessage, Does.Not.Contain(Answer.ToUpper()));
+            });
+        }
+
+        [Test]
+        public async Task GetStats_CountsOnlyThatUsersGames()
+        {
+            await SeedPastGames(LinkedUserId, (3, true), (2, false), (1, true));
+            await SeedPastGames(DatabaseSeedHelper.DiscordUserId2, (1, true));
+
+            var stats = await _wordleData.GetStats(DatabaseSeedHelper.DiscordGuildId, LinkedUserId);
+
+            Assert.Multiple(() =>
+            {
+                Assert.That(stats!.Played, Is.EqualTo(3));
+                Assert.That(stats.Won, Is.EqualTo(2));
+                Assert.That(stats.CurrentStreak, Is.EqualTo(1));
+                Assert.That(stats.GuessDistribution[1], Is.EqualTo(2));
+            });
+        }
+
+        [Test]
+        public async Task GetStats_UnlinkedServer_IsNull()
+        {
+            Assert.That(await _wordleData.GetStats(424242, LinkedUserId), Is.Null);
+        }
     }
 }

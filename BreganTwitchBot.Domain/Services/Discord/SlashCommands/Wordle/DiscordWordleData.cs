@@ -53,20 +53,18 @@ namespace BreganTwitchBot.Domain.Services.Discord.SlashCommands.Wordle
 
             await context.SaveChangesAsync();
 
-            if (game.Solved)
-            {
-                var pointsText = game.PointsAwarded > 0
-                    ? $" You've earned **{game.PointsAwarded:N0}** points!"
-                    : " Link your Twitch account to earn points for solving it.";
-
-                return new WordleResponse($"You got it in **{game.Guesses.Count}/{WordleHelper.MaxGuesses}**!{pointsText}\n\n{BuildBoard(game, answer)}", false,
-                    BuildPublicMessage(userId, game, answer));
-            }
-
             if (IsFinished(game))
             {
-                return new WordleResponse($"Unlucky! The word was **{answer.ToUpper()}**\n\n{BuildBoard(game, answer)}", false,
-                    BuildPublicMessage(userId, game, answer));
+                var stats = await CalculateStats(channel.Id, userId, today);
+
+                var result = game.Solved
+                    ? $"You got it in **{game.Guesses.Count}/{WordleHelper.MaxGuesses}**!" + (game.PointsAwarded > 0
+                        ? $" You've earned **{game.PointsAwarded:N0}** points!"
+                        : " Link your Twitch account to earn points for solving it.")
+                    : $"Unlucky! The word was **{answer.ToUpper()}**";
+
+                return new WordleResponse($"{result}\n\n{BuildBoard(game, answer)}\n\n{WordleHelper.RenderStats(stats)}", false,
+                    BuildPublicMessage(userId, game, answer, stats));
             }
 
             return new WordleResponse($"{BuildBoard(game, answer)}\n\n{WordleHelper.MaxGuesses - game.Guesses.Count} guesses left", true);
@@ -95,6 +93,29 @@ namespace BreganTwitchBot.Domain.Services.Discord.SlashCommands.Wordle
             return IsFinished(game)
                 ? new WordleResponse($"You've finished today's Wordle! Come back tomorrow\n\n{board}", false)
                 : new WordleResponse($"{board}\n\n{WordleHelper.MaxGuesses - game.Guesses.Count} guesses left", true);
+        }
+
+        public async Task<WordleStats?> GetStats(ulong guildId, ulong userId)
+        {
+            var channel = await context.GetChannelForGuild(guildId);
+
+            if (channel == null)
+            {
+                return null;
+            }
+
+            return await CalculateStats(channel.Id, userId, DateOnly.FromDateTime(DateTime.UtcNow));
+        }
+
+        private async Task<WordleStats> CalculateStats(int channelId, ulong userId, DateOnly today)
+        {
+            // one row per day played, so this stays small even for a regular player
+            var games = await context.DiscordWordleGames
+                .Where(x => x.ChannelId == channelId && x.DiscordUserId == userId)
+                .Select(x => new WordleGameSummary(x.Date, x.Guesses.Count, x.Solved))
+                .ToListAsync();
+
+            return WordleHelper.CalculateStats(games, today);
         }
 
         private async Task<DiscordWordleGame> GetOrCreateGame(int channelId, ulong userId, DateOnly date)
@@ -155,10 +176,19 @@ namespace BreganTwitchBot.Domain.Services.Discord.SlashCommands.Wordle
         /// <summary>
         /// Squares only, so it can be posted in the channel without giving the word away
         /// </summary>
-        private static string BuildPublicMessage(ulong userId, DiscordWordleGame game, string answer)
+        private static string BuildPublicMessage(ulong userId, DiscordWordleGame game, string answer, WordleStats stats)
         {
-            var score = game.Solved ? $"{game.Guesses.Count}/{WordleHelper.MaxGuesses}" : $"X/{WordleHelper.MaxGuesses}";
-            return $"<@{userId}> played today's Wordle **{score}**\n{WordleHelper.RenderBoard(game.Guesses, answer, showLetters: false)}";
+            var headline = game.Solved
+                ? $"<@{userId}> solved today's Wordle in **{game.Guesses.Count}/{WordleHelper.MaxGuesses}**!"
+                : $"<@{userId}> missed today's Wordle **X/{WordleHelper.MaxGuesses}**";
+
+            var streak = game.Solved
+                ? $"🔥 {stats.CurrentStreak} day streak"
+                : stats.MaxStreak > 0 ? $"Streak reset (best is {stats.MaxStreak})" : "";
+
+            var summary = $"{streak}{(streak == "" ? "" : " · ")}{stats.WinPercentage}% won from {stats.Played} played";
+
+            return $"{headline}\n{WordleHelper.RenderBoard(game.Guesses, answer, showLetters: false)}\n{summary}";
         }
     }
 }
