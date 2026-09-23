@@ -47,8 +47,11 @@ namespace BreganTwitchBot.DomainTests.Discord
         [Test]
         public void GetWordForDate_IsTheSameForTheSameDay()
         {
-            var date = new DateOnly(2026, 10, 31);
-            Assert.That(WordleHelper.GetWordForDate(date), Is.EqualTo(WordleHelper.GetWordForDate(date)));
+            // separate calls, as nothing is stored between them and the word must come from the date alone
+            var first = WordleHelper.GetWordForDate(new DateOnly(2026, 10, 31));
+            var second = WordleHelper.GetWordForDate(new DateOnly(2026, 10, 31));
+
+            Assert.That(second, Is.EqualTo(first));
         }
 
         [Test]
