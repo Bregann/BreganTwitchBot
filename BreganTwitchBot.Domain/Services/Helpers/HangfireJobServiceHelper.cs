@@ -17,7 +17,8 @@ namespace BreganTwitchBot.Domain.Services.Helpers
         IDiscordDailyPointsData discordDailyPointsData,
         IStreamStatsService streamStatsService,
         IDiscordStatusService discordStatusService,
-        IMonthlyLeaderboardRoleService monthlyLeaderboardRoleService
+        IMonthlyLeaderboardRoleService monthlyLeaderboardRoleService,
+        ITimedMessageService timedMessageService
         )
     {
         public void SetupHangfireJobs()
@@ -31,6 +32,7 @@ namespace BreganTwitchBot.Domain.Services.Helpers
             RecurringJob.AddOrUpdate("RefreshApi", () => RefreshApi(), "45 * * * *");
             RecurringJob.AddOrUpdate("CheckBirthdays", () => CheckBirthdays(), "0 6 * * *");
             RecurringJob.AddOrUpdate("FlushStreamStats", () => FlushStreamStats(), "* * * * *");
+            RecurringJob.AddOrUpdate("SendTimedMessages", () => SendTimedMessages(), "* * * * *");
             RecurringJob.AddOrUpdate("SampleViewerCounts", () => SampleViewerCounts(), "* * * * *");
             RecurringJob.AddOrUpdate("FollowerCheck", () => FollowerCheck(), "0 * * * *");
             RecurringJob.AddOrUpdate("UpdateDiscordMemberCount", () => UpdateDiscordMemberCount(), "*/10 * * * *");
@@ -203,6 +205,15 @@ namespace BreganTwitchBot.Domain.Services.Helpers
         public async Task UpdateDiscordMemberCount()
         {
             await discordStatusService.UpdateMemberCountStatusAsync();
+        }
+
+        /// <summary>
+        /// Posts any channel timed messages that are due. Runs every minute so a channel can
+        /// set any interval it likes without needing its own job.
+        /// </summary>
+        public async Task SendTimedMessages()
+        {
+            await timedMessageService.SendDueMessages();
         }
 
         public async Task CheckBirthdays()

@@ -3,6 +3,7 @@ using System;
 using BreganTwitchBot.Domain.Database.Context;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace BreganTwitchBot.Domain.Database.Migrations.Postgresql
 {
     [DbContext(typeof(PostgresqlContext))]
-    partial class PostgresqlContextModelSnapshot : ModelSnapshot
+    [Migration("20260922202838_AddChannelTimedMessages")]
+    partial class AddChannelTimedMessages
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -133,31 +136,6 @@ namespace BreganTwitchBot.Domain.Database.Migrations.Postgresql
                     b.ToTable("Channels");
                 });
 
-            modelBuilder.Entity("BreganTwitchBot.Domain.Database.Models.ChannelBossText", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("ChannelId")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("Text")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<int>("TextType")
-                        .HasColumnType("integer");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ChannelId");
-
-                    b.ToTable("ChannelBossTexts");
-                });
-
             modelBuilder.Entity("BreganTwitchBot.Domain.Database.Models.ChannelConfig", b =>
                 {
                     b.Property<int>("Id")
@@ -165,9 +143,6 @@ namespace BreganTwitchBot.Domain.Database.Migrations.Postgresql
                         .HasColumnType("integer");
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("AutoShoutoutMinimumViewers")
-                        .HasColumnType("integer");
 
                     b.Property<bool>("BroadcasterLive")
                         .HasColumnType("boolean");
@@ -220,12 +195,6 @@ namespace BreganTwitchBot.Domain.Database.Migrations.Postgresql
 
                     b.Property<decimal?>("DiscordWelcomeMessageChannelId")
                         .HasColumnType("numeric(20,0)");
-
-                    b.Property<string>("DiscordWelcomeMessageLinked")
-                        .HasColumnType("text");
-
-                    b.Property<string>("DiscordWelcomeMessageUnlinked")
-                        .HasColumnType("text");
 
                     b.Property<DateTime>("LastDailyPointsAllowed")
                         .HasColumnType("timestamp with time zone");
@@ -357,9 +326,6 @@ namespace BreganTwitchBot.Domain.Database.Migrations.Postgresql
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<int>("ChannelId")
-                        .HasColumnType("integer");
-
-                    b.Property<int?>("ChatCountAtLastSend")
                         .HasColumnType("integer");
 
                     b.Property<bool>("Enabled")
@@ -1405,17 +1371,6 @@ namespace BreganTwitchBot.Domain.Database.Migrations.Postgresql
                     b.Navigation("Channel");
                 });
 
-            modelBuilder.Entity("BreganTwitchBot.Domain.Database.Models.ChannelBossText", b =>
-                {
-                    b.HasOne("BreganTwitchBot.Domain.Database.Models.Channel", "Channel")
-                        .WithMany("ChannelBossTexts")
-                        .HasForeignKey("ChannelId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Channel");
-                });
-
             modelBuilder.Entity("BreganTwitchBot.Domain.Database.Models.ChannelConfig", b =>
                 {
                     b.HasOne("BreganTwitchBot.Domain.Database.Models.Channel", "Channel")
@@ -1801,8 +1756,6 @@ namespace BreganTwitchBot.Domain.Database.Migrations.Postgresql
 
             modelBuilder.Entity("BreganTwitchBot.Domain.Database.Models.Channel", b =>
                 {
-                    b.Navigation("ChannelBossTexts");
-
                     b.Navigation("ChannelConfig")
                         .IsRequired();
 
