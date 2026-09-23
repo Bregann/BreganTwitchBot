@@ -24,6 +24,7 @@ using BreganTwitchBot.Domain.Services.Helpers;
 using BreganTwitchBot.Domain.Services.Twitch;
 using BreganTwitchBot.Domain.Services.Twitch.Commands;
 using BreganTwitchBot.Domain.Services.Twitch.Commands._8Ball;
+using BreganTwitchBot.Domain.Services.Twitch.Commands.Clip;
 using BreganTwitchBot.Domain.Services.Twitch.Commands.CustomCommands;
 using BreganTwitchBot.Domain.Services.Twitch.Commands.DadJoke;
 using BreganTwitchBot.Domain.Services.Twitch.Commands.DailyPoints;
@@ -195,6 +196,9 @@ builder.Services.AddScoped<IStreamInfoDataService, StreamInfoDataService>();
 
 builder.Services.AddScoped<UptimeCommandService>();
 builder.Services.AddScoped<IUptimeDataService, UptimeDataService>();
+
+builder.Services.AddScoped<ClipCommandService>();
+builder.Services.AddScoped<IClipDataService, ClipDataService>();
 
 builder.Services.AddScoped<SubathonCommandService>();
 builder.Services.AddScoped<ISubathonDataService, SubathonDataService>();
