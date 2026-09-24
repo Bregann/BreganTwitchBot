@@ -30,5 +30,11 @@ namespace BreganTwitchBot.Domain.Interfaces.Twitch
         Task<GetChannelInformationResponse?> GetChannelInformation(TwitchAPI apiClient, string broadcasterId);
         Task ModifyChannelInformation(TwitchAPI apiClient, string broadcasterId, string title, string gameId);
         Task<(string Id, string Name)?> GetGameByName(TwitchAPI apiClient, string gameName);
+
+        /// <summary>
+        /// Clips the last few seconds of a live stream. The clip is credited to whoever owns the token.
+        /// </summary>
+        /// <returns>The clip id, or null if twitch did not create one</returns>
+        Task<string?> CreateClip(TwitchAPI apiClient, string broadcasterId);
     }
 }

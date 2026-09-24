@@ -52,6 +52,12 @@ namespace BreganTwitchBot.Domain.Database.Models
         [Required]
         public required bool BroadcasterLive { get; set; }
 
+        /// <summary>
+        /// The least viewers a raid must bring before the raider is automatically shouted out,
+        /// so a troll raid of two people does not earn one. Zero shouts out every raid.
+        /// </summary>
+        public int AutoShoutoutMinimumViewers { get; set; } = 5;
+
         public required bool DiscordEnabled { get; set; } = false;
 
         // Discord related properties
@@ -111,5 +117,18 @@ namespace BreganTwitchBot.Domain.Database.Models
         /// The ID of the Discord channel where welcome messages are sent.
         /// </summary>
         public ulong? DiscordWelcomeMessageChannelId { get; set; } = null;
+
+        /// <summary>
+        /// The welcome message for somebody who has already linked their Twitch account.
+        /// {user} is the new member, {twitchusername} their linked name and {commandschannel}
+        /// the commands channel. Null falls back to the built in wording.
+        /// </summary>
+        public string? DiscordWelcomeMessageLinked { get; set; } = null;
+
+        /// <summary>
+        /// The welcome message for somebody who has not linked their Twitch account.
+        /// {user} and {commandschannel} are replaced. Null falls back to the built in wording.
+        /// </summary>
+        public string? DiscordWelcomeMessageUnlinked { get; set; } = null;
     }
 }

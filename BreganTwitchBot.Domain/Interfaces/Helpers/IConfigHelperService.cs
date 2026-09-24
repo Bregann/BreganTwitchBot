@@ -10,5 +10,8 @@ namespace BreganTwitchBot.Domain.Interfaces.Helpers
         DiscordConfig? GetDiscordConfig(ulong discordGuildId);
         DiscordConfig? GetDiscordConfig(string broadcasterId);
         bool IsDiscordEnabled(string broadcasterId);
+        int GetAutoShoutoutMinimumViewers(string broadcasterId);
+        string GetPointsName(string broadcasterId);
+        string? GetPointsNameForGuild(ulong discordGuildId);
     }
 }

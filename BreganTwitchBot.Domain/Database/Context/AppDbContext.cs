@@ -19,6 +19,8 @@ namespace BreganTwitchBot.Domain.Database.Context
         public DbSet<ChannelUserStats> ChannelUserStats { get; set; }
         public DbSet<ChannelUserWatchtime> ChannelUserWatchtime { get; set; }
         public DbSet<CustomCommand> CustomCommands { get; set; }
+        public DbSet<ChannelTimedMessage> ChannelTimedMessages { get; set; }
+        public DbSet<ChannelBossText> ChannelBossTexts { get; set; }
         public DbSet<ChannelPermissionGrant> ChannelPermissionGrants { get; set; }
         public DbSet<SubathonRate> SubathonRates { get; set; }
         public DbSet<ChannelPointReward> ChannelPointRewards { get; set; }
@@ -31,6 +33,7 @@ namespace BreganTwitchBot.Domain.Database.Context
         public DbSet<DiscordLinkRequests> DiscordLinkRequests { get; set; }
         public DbSet<DiscordSpinStats> DiscordSpinStats { get; set; }
         public DbSet<DiscordUserStats> DiscordUserStats { get; set; }
+        public DbSet<DiscordWordleGame> DiscordWordleGames { get; set; }
         public DbSet<StreamViewCount> StreamViewCounts { get; set; }
         public DbSet<Subathon> Subathons { get; set; }
         public DbSet<TwitchDailyPoints> TwitchDailyPoints { get; set; }

@@ -20,10 +20,12 @@ using BreganTwitchBot.Domain.Services.Discord.SlashCommands.Leaderboards;
 using BreganTwitchBot.Domain.Services.Discord.SlashCommands.Levelling;
 using BreganTwitchBot.Domain.Services.Discord.SlashCommands.Linking;
 using BreganTwitchBot.Domain.Services.Discord.SlashCommands.SelfAssignRoles;
+using BreganTwitchBot.Domain.Services.Discord.SlashCommands.Wordle;
 using BreganTwitchBot.Domain.Services.Helpers;
 using BreganTwitchBot.Domain.Services.Twitch;
 using BreganTwitchBot.Domain.Services.Twitch.Commands;
 using BreganTwitchBot.Domain.Services.Twitch.Commands._8Ball;
+using BreganTwitchBot.Domain.Services.Twitch.Commands.Clip;
 using BreganTwitchBot.Domain.Services.Twitch.Commands.CustomCommands;
 using BreganTwitchBot.Domain.Services.Twitch.Commands.DadJoke;
 using BreganTwitchBot.Domain.Services.Twitch.Commands.DailyPoints;
@@ -163,6 +165,7 @@ builder.Services.AddTwitchLibEventSubWebsockets();
 builder.Services.AddHostedService<WebsocketHostedService>();
 builder.Services.AddSingleton<ITwitchHelperService, TwitchHelperService>();
 builder.Services.AddSingleton<IStreamStatsService, StreamStatsService>();
+builder.Services.AddScoped<ITimedMessageService, TimedMessageService>();
 builder.Services.AddSingleton<ITwitchApiInteractionService, TwitchApiInteractionService>();
 builder.Services.AddSingleton<IConfigHelperService, ConfigHelperService>();
 
@@ -214,6 +217,9 @@ builder.Services.AddScoped<IStreamInfoDataService, StreamInfoDataService>();
 builder.Services.AddScoped<UptimeCommandService>();
 builder.Services.AddScoped<IUptimeDataService, UptimeDataService>();
 
+builder.Services.AddScoped<ClipCommandService>();
+builder.Services.AddScoped<IClipDataService, ClipDataService>();
+
 builder.Services.AddScoped<SubathonCommandService>();
 builder.Services.AddScoped<ISubathonDataService, SubathonDataService>();
 
@@ -253,9 +259,10 @@ builder.Services.AddScoped<IDiscordLevellingData, DiscordLevellingData>();
 builder.Services.AddScoped<IDiscordLinkingData, DiscordLinkingData>();
 builder.Services.AddScoped<IDiscordBookRecsData, DiscordBookRecsData>();
 builder.Services.AddScoped<IDiscordGiveawayData, DiscordGiveawayData>();
+builder.Services.AddScoped<IDiscordWordleData, DiscordWordleData>();
 builder.Services.AddScoped<IDiscordHoursPointsData, DiscordHoursPointsData>();
 builder.Services.AddScoped<IDiscordLeaderboardsData, DiscordLeaderboardsData>();
-
+builder.Services.AddScoped<IDiscordGeneralCommandsData, DiscordGeneralCommandsData>();
 // api
 builder.Services.AddScoped<IApiDataService, ApiDataService>();
 

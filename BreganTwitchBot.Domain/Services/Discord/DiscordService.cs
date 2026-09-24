@@ -1,7 +1,9 @@
 ﻿using BreganTwitchBot.Domain.DTOs.Discord.Events;
 using BreganTwitchBot.Domain.Enums;
 using BreganTwitchBot.Domain.Interfaces.Discord;
+using BreganTwitchBot.Domain.Interfaces.Discord.Commands;
 using BreganTwitchBot.Domain.Interfaces.Helpers;
+using BreganTwitchBot.Domain.Services.Discord.SlashCommands.Wordle;
 using Discord;
 using Discord.Interactions;
 using Discord.WebSocket;
@@ -63,6 +65,7 @@ namespace BreganTwitchBot.Domain.Services.Discord
             Client.UserIsTyping += UserIsTyping;
             Client.MessageDeleted += MessageDeleted;
             Client.ButtonExecuted += ButtonExecuted;
+            Client.ModalSubmitted += ModalSubmitted;
             Client.PresenceUpdated += PresenceUpdated;
 
             await Client.LoginAsync(TokenType.Bot, token);
@@ -98,6 +101,14 @@ namespace BreganTwitchBot.Domain.Services.Discord
         private async Task ButtonExecuted(SocketMessageComponent arg)
         {
             Log.Information($"[Discord Button Pressed] Sender: {arg.User.Username} \n Button: {arg.Data.CustomId} \n Channel: {arg.Channel.Name} \n ChannelId: {arg.Channel.Id}");
+
+            // a pop up has to be the first response to the press, so this can't be deferred like the rest
+            if (arg.Data.CustomId == WordleModule.GuessButtonId)
+            {
+                await arg.RespondWithModalAsync(WordleModule.BuildGuessModal());
+                return;
+            }
+
             await arg.DeferAsync();
 
             using (var scope = _services.CreateScope())
@@ -114,6 +125,31 @@ namespace BreganTwitchBot.Domain.Services.Discord
                 Client);
 
                 await arg.FollowupAsync(res.MessageToSend, ephemeral: res.Ephemeral);
+            }
+        }
+
+        private async Task ModalSubmitted(SocketModal modal)
+        {
+            if (modal.Data.CustomId != WordleModule.GuessModalId)
+            {
+                return;
+            }
+
+            await modal.DeferAsync(ephemeral: true);
+
+            var guess = modal.Data.Components.FirstOrDefault(x => x.CustomId == WordleModule.GuessInputId)?.Value ?? "";
+
+            using (var scope = _services.CreateScope())
+            {
+                var wordleData = scope.ServiceProvider.GetRequiredService<IDiscordWordleData>();
+                var result = await wordleData.Guess(modal.GuildId ?? 0, modal.User.Id, guess);
+
+                await modal.FollowupAsync(result.Response, ephemeral: true, components: WordleModule.BuildGuessButton(result.CanGuess));
+
+                if (result.PublicMessage != null)
+                {
+                    await modal.Channel.SendMessageAsync(result.PublicMessage);
+                }
             }
         }
 
