@@ -1,4 +1,4 @@
-using BreganTwitchBot.Domain.Database.Context;
+﻿using BreganTwitchBot.Domain.Database.Context;
 using BreganTwitchBot.Domain.DTOs.Api;
 using BreganTwitchBot.Domain.Enums;
 using BreganTwitchBot.Domain.Interfaces.Api;
@@ -99,6 +99,57 @@ namespace BreganTwitchBot.Domain.Services.Api
                 StartedAt = config.SubathonStartTime,
                 EndsAt = endsAt
             };
+        }
+
+        public async Task<GetChannelSummaryResponse?> GetChannelSummaryAsync(string broadcasterChannelName)
+        {
+            var channel = await context.Channels.FirstOrDefaultAsync(x => x.BroadcasterTwitchChannelName.ToLower() == broadcasterChannelName.ToLower());
+
+            if (channel == null)
+            {
+                return null;
+            }
+
+            return new GetChannelSummaryResponse
+            {
+                BroadcasterChannelName = channel.BroadcasterTwitchChannelName,
+                IsLive = channel.ChannelConfig.BroadcasterLive,
+                PointsName = channel.ChannelConfig.ChannelCurrencyName,
+                SubathonActive = channel.ChannelConfig.SubathonActive,
+                TrackedViewers = await context.ChannelUserData.CountAsync(x => x.ChannelId == channel.Id),
+                TotalStreams = await context.TwitchStreamStats.CountAsync(x => x.ChannelId == channel.Id)
+            };
+        }
+
+        public async Task<List<GetStreamHistoryResponse>?> GetStreamHistoryAsync(string broadcasterChannelName, int take = 30)
+        {
+            var channel = await context.Channels.FirstOrDefaultAsync(x => x.BroadcasterTwitchChannelName.ToLower() == broadcasterChannelName.ToLower());
+
+            if (channel == null)
+            {
+                return null;
+            }
+
+            var streams = await context.TwitchStreamStats
+                .Where(x => x.ChannelId == channel.Id)
+                .OrderByDescending(x => x.StreamId)
+                .Take(take)
+                .ToListAsync();
+
+            return streams.Select(x => new GetStreamHistoryResponse
+            {
+                StreamId = x.StreamId,
+                StreamStarted = x.StreamStarted,
+                StreamEnded = x.StreamEnded == default ? null : x.StreamEnded,
+                AvgViewCount = x.AvgViewCount,
+                PeakViewerCount = x.PeakViewerCount,
+                MessagesReceived = x.MessagesReceived,
+                NewFollowers = x.NewFollowers,
+                NewSubscribers = x.NewSubscribers,
+                BitsDonated = x.BitsDonated,
+                UniquePeople = x.UniquePeople,
+                Uptime = DurationFormatHelper.Humanise(x.Uptime)
+            }).ToList();
         }
 
         public async Task<GetSubathonLeaderboardResponse?> GetSubathonLeaderboardAsync(string broadcasterChannelName, int take = 10)

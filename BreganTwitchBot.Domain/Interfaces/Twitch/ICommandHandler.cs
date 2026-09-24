@@ -10,5 +10,11 @@ namespace BreganTwitchBot.Domain.Interfaces.Twitch
         bool IsSystemCommand(string commandName);
         bool RemoveCustomCommand(string commandName, string broadcasterId);
         void AddCustomCommand(string commandName, string broadcasterId);
+
+        /// <summary>
+        /// Every built in command with its aliases, so the website can list them from
+        /// the live registry rather than a hardcoded page that goes stale
+        /// </summary>
+        IReadOnlyList<(string CommandName, string[] Aliases)> GetRegisteredCommands();
     }
 }

@@ -29,9 +29,7 @@ namespace BreganTwitchBot.Domain.Database.Models
         public virtual ICollection<CustomCommand> CustomCommands { get; set; } = null!;
         public virtual ICollection<ChannelTimedMessage> ChannelTimedMessages { get; set; } = null!;
         public virtual ICollection<ChannelBossText> ChannelBossTexts { get; set; } = null!;
-        public virtual ICollection<ChannelPointReward> ChannelPointRewards { get; set; } = null!;
-        public virtual ICollection<DiscordGiveaway> DiscordGiveaways { get; set; } = null!;
-        public virtual DiscordGiveawayConfig DiscordGiveawayConfig { get; set; } = null!;
+        public virtual ICollection<ChannelPermissionGrant> ChannelPermissionGrants { get; set; } = null!;
         public virtual ICollection<MonthlyLeaderboardRole> MonthlyLeaderboardRoles { get; set; } = null!;
         public virtual ICollection<DiscordSelfAssignRole> DiscordSelfAssignRoles { get; set; } = null!;
         public virtual DiscordSpinStats DiscordSpinStats { get; set; } = null!;
@@ -41,5 +39,8 @@ namespace BreganTwitchBot.Domain.Database.Models
         public virtual ICollection<UniqueViewers> UniqueViewers { get; set; } = null!;
         public virtual ICollection<Subathon> Subathons { get; set; } = null!;
         public virtual ICollection<SubathonRate> SubathonRates { get; set; } = null!;
+        public virtual ICollection<ChannelPointReward> ChannelPointRewards { get; set; } = null!;
+        public virtual ICollection<DiscordGiveaway> DiscordGiveaways { get; set; } = null!;
+        public virtual DiscordGiveawayConfig DiscordGiveawayConfig { get; set; } = null!;
     }
 }

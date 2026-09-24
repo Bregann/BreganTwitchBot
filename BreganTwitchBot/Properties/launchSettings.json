@@ -1,5 +1,19 @@
 {
   "profiles": {
+    "API only (no bot)": {
+      "commandName": "Project",
+      "launchBrowser": true,
+      "launchUrl": "swagger",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "RunBotServices": "false",
+        "JwtValidIssuer": "http://192.168.1.1:5053",
+        "JwtValidAudience": "twitchbot",
+        "JwtKey": "tilly123123123123123123123123123123123123123123123123123123123123123123123123123213123"
+      },
+      "dotnetRunMessages": true,
+      "applicationUrl": "http://localhost:5053"
+    },
     "http": {
       "commandName": "Project",
       "launchBrowser": true,

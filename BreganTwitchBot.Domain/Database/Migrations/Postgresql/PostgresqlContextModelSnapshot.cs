@@ -286,6 +286,39 @@ namespace BreganTwitchBot.Domain.Database.Migrations.Postgresql
                     b.ToTable("ChannelMessages");
                 });
 
+            modelBuilder.Entity("BreganTwitchBot.Domain.Database.Models.ChannelPermissionGrant", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("ChannelId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("ChannelUserId")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("GrantedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("GrantedByTwitchUserId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("Permission")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ChannelId");
+
+                    b.HasIndex("ChannelUserId");
+
+                    b.ToTable("ChannelPermissionGrants");
+                });
+
             modelBuilder.Entity("BreganTwitchBot.Domain.Database.Models.ChannelPointReward", b =>
                 {
                     b.Property<int>("Id")
@@ -1350,19 +1383,23 @@ namespace BreganTwitchBot.Domain.Database.Migrations.Postgresql
                         .ValueGeneratedOnAdd()
                         .HasColumnType("text");
 
-                    b.Property<string>("Email")
+                    b.Property<DateTime>("FirstLoggedInAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime>("LastLoggedInAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("ProfileImageUrl")
+                        .HasColumnType("text");
+
+                    b.Property<string>("TwitchDisplayName")
+                        .HasColumnType("text");
+
+                    b.Property<string>("TwitchUserId")
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<string>("FirstName")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("PasswordHash")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("Username")
+                    b.Property<string>("TwitchUsername")
                         .IsRequired()
                         .HasColumnType("text");
 
@@ -1472,6 +1509,25 @@ namespace BreganTwitchBot.Domain.Database.Migrations.Postgresql
                         .IsRequired();
 
                     b.Navigation("Channel");
+                });
+
+            modelBuilder.Entity("BreganTwitchBot.Domain.Database.Models.ChannelPermissionGrant", b =>
+                {
+                    b.HasOne("BreganTwitchBot.Domain.Database.Models.Channel", "Channel")
+                        .WithMany("ChannelPermissionGrants")
+                        .HasForeignKey("ChannelId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("BreganTwitchBot.Domain.Database.Models.ChannelUser", "ChannelUser")
+                        .WithMany()
+                        .HasForeignKey("ChannelUserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Channel");
+
+                    b.Navigation("ChannelUser");
                 });
 
             modelBuilder.Entity("BreganTwitchBot.Domain.Database.Models.ChannelPointReward", b =>
@@ -1852,6 +1908,8 @@ namespace BreganTwitchBot.Domain.Database.Migrations.Postgresql
 
                     b.Navigation("ChannelConfig")
                         .IsRequired();
+
+                    b.Navigation("ChannelPermissionGrants");
 
                     b.Navigation("ChannelPointRewards");
 

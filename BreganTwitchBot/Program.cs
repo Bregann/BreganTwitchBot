@@ -66,6 +66,16 @@ Log.Information("Logger Setup");
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Set RunBotServices=false (see the "API only (no bot)" launch profile) to run just the web api
+// for development. The services are still registered so the controllers resolve, but nothing
+// connects out to twitch or discord and no scheduled jobs run.
+var runBotServices = builder.Configuration.GetValue("RunBotServices", true);
+
+if (!runBotServices)
+{
+    Log.Warning("[Startup] RunBotServices is false - running the web api only. Twitch, discord and the scheduled jobs are disabled");
+}
+
 // Add services to the container.
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
@@ -140,6 +150,14 @@ builder.Services.AddHangfire(configuration => configuration
 builder.Services.AddSingleton<ITwitchApiConnection, TwitchApiConnection>();
 
 // Helper bits
+builder.Services.AddHttpClient();
+builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IApiDataService, ApiDataService>();
+builder.Services.AddScoped<IMeDataService, MeDataService>();
+builder.Services.AddScoped<IPermissionService, PermissionService>();
+builder.Services.AddScoped<IAdminDataService, AdminDataService>();
+builder.Services.AddScoped<IDiscordLeaderboardsData, DiscordLeaderboardsData>();
+
 builder.Services.AddSingleton<IConfigHelperService, ConfigHelperService>();
 
 // Twitch events
@@ -249,7 +267,11 @@ builder.Services.AddScoped<IDiscordGeneralCommandsData, DiscordGeneralCommandsDa
 builder.Services.AddScoped<IApiDataService, ApiDataService>();
 
 // hangfire
-builder.Services.AddHangfireServer(options => options.SchedulePollingInterval = TimeSpan.FromSeconds(10));
+// the dashboard still works without the server, the jobs just don't execute
+if (runBotServices)
+{
+    builder.Services.AddHangfireServer(options => options.SchedulePollingInterval = TimeSpan.FromSeconds(10));
+}
 
 builder.Services.AddScoped<HangfireJobServiceHelper>();
 
@@ -264,10 +286,11 @@ using (var scope = app.Services.CreateScope())
     var dbContext = scope.ServiceProvider.GetService<AppDbContext>()!;
     var settingsHelper = scope.ServiceProvider.GetRequiredService<IEnvironmentalSettingHelper>();
 
+    // migrate before seeding, as the seed writes to tables the migrations create
     if (dbContext.Database.GetPendingMigrations().Any())
     {
-        await DatabaseSeedHelper.SeedDatabase(dbContext, settingsHelper, scope.ServiceProvider);
         await dbContext.Database.MigrateAsync();
+        await DatabaseSeedHelper.SeedDatabase(dbContext, settingsHelper, scope.ServiceProvider);
     }
 }
 #endif
@@ -276,11 +299,14 @@ var environmentalSettingHelper = app.Services.GetService<IEnvironmentalSettingHe
 await environmentalSettingHelper.LoadEnvironmentalSettings();
 
 // start everything
-var twitchApi = app.Services.GetRequiredService<ITwitchApiConnection>();
-await twitchApi.InitialiseConnectionsAsync();
+if (runBotServices)
+{
+    var twitchApi = app.Services.GetRequiredService<ITwitchApiConnection>();
+    await twitchApi.InitialiseConnectionsAsync();
 
-var discordService = app.Services.GetService<IDiscordService>()!;
-await discordService.StartAsync();
+    var discordService = app.Services.GetService<IDiscordService>()!;
+    await discordService.StartAsync();
+}
 
 // Configure the HTTP request pipeline.
 app.UseSwagger();
@@ -313,8 +339,9 @@ app.MapHangfireDashboard("/hangfire", new DashboardOptions
     Authorization = auth
 }, JobStorage.Current);
 
-using (var scope = app.Services.CreateScope())
+if (runBotServices)
 {
+    using var scope = app.Services.CreateScope();
     var hangfireJobs = scope.ServiceProvider.GetRequiredService<HangfireJobServiceHelper>();
     hangfireJobs.SetupHangfireJobs();
 }

@@ -1,4 +1,4 @@
-﻿namespace BreganTwitchBot.Domain.Enums
+namespace BreganTwitchBot.Domain.Enums
 {
     public enum EnvironmentalSettingEnum
     {
@@ -14,6 +14,9 @@
         BotTwitchChannelId,
         BotTwitchChannelName,
         BotTwitchChannelOAuthToken,
-        BotTwitchChannelRefreshToken
+        BotTwitchChannelRefreshToken,
+
+        // Where Twitch sends a website visitor back to after they sign in
+        WebsiteTwitchOAuthRedirectUri
     }
 }

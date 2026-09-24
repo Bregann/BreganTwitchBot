@@ -1,4 +1,4 @@
-using BreganTwitchBot.Domain.DTOs.Api;
+﻿using BreganTwitchBot.Domain.DTOs.Api;
 using BreganTwitchBot.Domain.Enums;
 
 namespace BreganTwitchBot.Domain.Interfaces.Api
@@ -24,5 +24,15 @@ namespace BreganTwitchBot.Domain.Interfaces.Api
         /// Who has contributed most to a channel's subathon
         /// </summary>
         Task<GetSubathonLeaderboardResponse?> GetSubathonLeaderboardAsync(string broadcasterChannelName, int take = 10);
+
+        /// <summary>
+        /// A channel's headline numbers, for the channel home page
+        /// </summary>
+        Task<GetChannelSummaryResponse?> GetChannelSummaryAsync(string broadcasterChannelName);
+
+        /// <summary>
+        /// Past streams for a channel, most recent first
+        /// </summary>
+        Task<List<GetStreamHistoryResponse>?> GetStreamHistoryAsync(string broadcasterChannelName, int take = 30);
     }
 }

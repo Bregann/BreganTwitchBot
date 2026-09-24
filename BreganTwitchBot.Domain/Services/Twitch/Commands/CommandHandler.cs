@@ -14,6 +14,11 @@ namespace BreganTwitchBot.Domain.Services.Twitch.Commands
         private readonly IServiceProvider _serviceProvider;
         private readonly Dictionary<string, MethodInfo> _commands = new();
 
+        /// <summary>
+        /// Primary command name to its aliases, kept for listing them publicly
+        /// </summary>
+        private readonly Dictionary<string, string[]> _commandAliases = new();
+
         // Custom commands are stored in a list of tuples, where the first item is the command name and the second item is the broadcaster id
         // This is to prevent the need to query the database for every command, a dictionary would be better but it's not possible to have a dictionary with multiple keys
         // incase multiple broadcasters have the same command name
@@ -44,6 +49,7 @@ namespace BreganTwitchBot.Domain.Services.Twitch.Commands
                     if (attribute != null)
                     {
                         _commands["!" + attribute.CommandName.ToLower()] = method;
+                        _commandAliases[attribute.CommandName.ToLower()] = attribute.CommandAlias ?? [];
 
                         if (attribute.CommandAlias != null)
                         {
@@ -97,6 +103,14 @@ namespace BreganTwitchBot.Domain.Services.Twitch.Commands
                     await customCommandService.HandleCustomCommandAsync(command, msgParams);
                 }
             }
+        }
+
+        public IReadOnlyList<(string CommandName, string[] Aliases)> GetRegisteredCommands()
+        {
+            return _commandAliases
+                .OrderBy(x => x.Key)
+                .Select(x => (x.Key, x.Value))
+                .ToList();
         }
 
         public bool IsSystemCommand(string commandName)

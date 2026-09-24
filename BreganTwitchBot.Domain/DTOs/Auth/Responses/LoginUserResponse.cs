@@ -1,4 +1,4 @@
-﻿namespace BreganTwitchBot.Domain.DTOs.Auth.Responses
+namespace BreganTwitchBot.Domain.DTOs.Auth.Responses
 {
     public class LoginUserResponse
     {
