@@ -137,19 +137,75 @@ namespace BreganTwitchBot.Domain.Services.Helpers
             return showLetters ? $"{squares} `{guess.ToUpper()}`" : squares;
         }
 
-        /// <summary>
-        /// Letters that have been guessed and aren't anywhere in the word
-        /// </summary>
-        public static string GetRuledOutLetters(IEnumerable<string> guesses, string answer)
-        {
-            var ruledOut = guesses
-                .SelectMany(x => x)
-                .Where(x => !answer.Contains(x))
-                .Distinct()
-                .OrderBy(x => x)
-                .Select(x => char.ToUpper(x));
+        private static readonly string[] KeyboardRows = ["qwertyuiop", "asdfghjkl", "zxcvbnm"];
 
-            return string.Join(" ", ruledOut);
+        private const string AnsiReset = "\u001b[0m";
+        private const string AnsiGreen = "\u001b[1;32m";
+        private const string AnsiYellow = "\u001b[1;33m";
+        private const string AnsiGrey = "\u001b[0;30m";
+
+        /// <summary>
+        /// What's known about each guessed letter. A letter keeps its best result, so a repeated
+        /// letter scored absent in one spot doesn't hide that it's present or correct in another.
+        /// Letters not in the dictionary haven't been guessed yet.
+        /// </summary>
+        public static Dictionary<char, WordleLetterResult> GetLetterStates(IEnumerable<string> guesses, string answer)
+        {
+            var states = new Dictionary<char, WordleLetterResult>();
+
+            foreach (var guess in guesses)
+            {
+                var results = Score(guess, answer);
+
+                for (var i = 0; i < WordLength; i++)
+                {
+                    if (!states.TryGetValue(guess[i], out var known) || results[i] > known)
+                    {
+                        states[guess[i]] = results[i];
+                    }
+                }
+            }
+
+            return states;
+        }
+
+        /// <summary>
+        /// A QWERTY keyboard like Wordle's, coloured with Discord's ansi code blocks: green in the
+        /// right place, yellow in the word, and letters that aren't in the word swapped for a dot.
+        /// Clients that can't show the colours still get the dots, so the letters left to try
+        /// are always clear.
+        /// </summary>
+        public static string RenderKeyboard(IEnumerable<string> guesses, string answer)
+        {
+            var states = GetLetterStates(guesses, answer);
+            var keyboard = new StringBuilder("```ansi\n");
+
+            for (var row = 0; row < KeyboardRows.Length; row++)
+            {
+                // staggered like a real keyboard
+                keyboard.Append(new string(' ', row * 2));
+
+                var keys = KeyboardRows[row].Select(letter =>
+                {
+                    var key = char.ToUpper(letter);
+
+                    if (!states.TryGetValue(letter, out var state))
+                    {
+                        return key.ToString();
+                    }
+
+                    return state switch
+                    {
+                        WordleLetterResult.Correct => $"{AnsiGreen}{key}{AnsiReset}",
+                        WordleLetterResult.Present => $"{AnsiYellow}{key}{AnsiReset}",
+                        _ => $"{AnsiGrey}·{AnsiReset}"
+                    };
+                });
+
+                keyboard.AppendLine(string.Join(" ", keys));
+            }
+
+            return keyboard.Append("```").ToString();
         }
 
         public static string RenderBoard(IReadOnlyList<string> guesses, string answer, bool showLetters)

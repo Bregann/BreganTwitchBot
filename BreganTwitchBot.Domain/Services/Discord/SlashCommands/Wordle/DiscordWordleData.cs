@@ -178,9 +178,9 @@ namespace BreganTwitchBot.Domain.Services.Discord.SlashCommands.Wordle
         private static string BuildBoard(DiscordWordleGame game, string answer)
         {
             var board = WordleHelper.RenderBoard(game.Guesses, answer, showLetters: true);
-            var ruledOut = WordleHelper.GetRuledOutLetters(game.Guesses, answer);
 
-            return string.IsNullOrEmpty(ruledOut) || IsFinished(game) ? board : $"{board}\n\nNot in the word: {ruledOut}";
+            // the keyboard is only useful while there are guesses left to make
+            return game.Guesses.Count == 0 || IsFinished(game) ? board : $"{board}\n{WordleHelper.RenderKeyboard(game.Guesses, answer)}";
         }
 
         /// <summary>

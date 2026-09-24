@@ -125,9 +125,58 @@ namespace BreganTwitchBot.DomainTests.Discord
         }
 
         [Test]
-        public void GetRuledOutLetters_ListsGuessedLettersNotInTheWord()
+        public void GetLetterStates_KeepsEachLettersBestResult()
         {
-            Assert.That(WordleHelper.GetRuledOutLetters(["crabs", "about"], "cider"), Is.EqualTo("A B O S T U"));
+            // "geese" against "eagle": the middle e's are absent, but e is still present and correct
+            var states = WordleHelper.GetLetterStates(["geese", "crabs"], "eagle");
+
+            Assert.Multiple(() =>
+            {
+                Assert.That(states['e'], Is.EqualTo(Correct));
+                Assert.That(states['g'], Is.EqualTo(Present));
+                Assert.That(states['a'], Is.EqualTo(Present));
+                Assert.That(states['s'], Is.EqualTo(Absent));
+                Assert.That(states.ContainsKey('z'), Is.False);
+            });
+        }
+
+        [Test]
+        public void GetLetterStates_ALaterGuessCanUpgradeALetter()
+        {
+            // r is in the word but misplaced in "crabs", then in the right place in "cater"
+            var states = WordleHelper.GetLetterStates(["crabs", "cater"], "cider");
+
+            Assert.That(states['r'], Is.EqualTo(Correct));
+        }
+
+        private static string StripAnsi(string text) => System.Text.RegularExpressions.Regex.Replace(text, @"\u001b\[[0-9;]*m", "");
+
+        [Test]
+        public void RenderKeyboard_SwapsRuledOutLettersForDotsAndKeepsTheRest()
+        {
+            var keyboard = StripAnsi(WordleHelper.RenderKeyboard(["crabs"], "cider"));
+            var rows = keyboard.Split('\n');
+
+            Assert.Multiple(() =>
+            {
+                Assert.That(rows[0], Is.EqualTo("```ansi"));
+                Assert.That(rows[1], Is.EqualTo("Q W E R T Y U I O P"));
+                Assert.That(rows[2], Is.EqualTo("  · · D F G H J K L"));
+                Assert.That(rows[3], Is.EqualTo("    Z X C V · N M"));
+                Assert.That(rows[4], Is.EqualTo("```"));
+            });
+        }
+
+        [Test]
+        public void RenderKeyboard_ColoursCorrectAndPresentLetters()
+        {
+            var keyboard = WordleHelper.RenderKeyboard(["crabs"], "cider");
+
+            Assert.Multiple(() =>
+            {
+                Assert.That(keyboard, Does.Contain("\u001b[1;32mC"));
+                Assert.That(keyboard, Does.Contain("\u001b[1;33mR"));
+            });
         }
 
         // stats and streaks
