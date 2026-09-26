@@ -64,6 +64,9 @@ namespace BreganTwitchBot.DomainTests.Twitch.Commands
                 ))
                 .Returns(Task.CompletedTask);
 
+            // daily points only open while the stream is live
+            _twitchHelperService.Setup(x => x.IsBroadcasterLive(It.IsAny<string>())).ReturnsAsync(true);
+
             _twitchHelperService.Setup(x => x.GetPointsName(DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId, DatabaseSeedHelper.Channel1BroadcasterTwitchChannelName))
                 .ReturnsAsync(DatabaseSeedHelper.Channel1ChannelCurrencyName);
 
@@ -152,6 +155,43 @@ namespace BreganTwitchBot.DomainTests.Twitch.Commands
                 It.Is<string>(msg => msg.Contains("Top 5 lost streaks")),
                 It.IsAny<string?>()),
                 Times.Never);
+        }
+
+        [Test]
+        public async Task AllowDailyPointsCollecting_StreamNotLive_DoesNothing()
+        {
+            // a job scheduled for a stream that ended before the points were due to open
+            _twitchHelperService.Setup(x => x.IsBroadcasterLive(DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId)).ReturnsAsync(false);
+
+            await _dailyPointsDataService.AllowDailyPointsCollecting(DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId);
+
+            _configHelper.Verify(x => x.UpdateDailyPointsStatus(It.IsAny<string>(), It.IsAny<bool>()), Times.Never());
+            _twitchHelperService.Verify(x => x.SendTwitchMessageToChannel(It.IsAny<string>(), It.IsAny<string>(), It.Is<string>(msg => msg.Contains("Top 5 lost streaks")), It.IsAny<string?>()), Times.Never());
+        }
+
+        [Test]
+        public async Task AllowDailyPointsCollecting_AlreadyOpenedToday_KeepsEveryonesClaims()
+        {
+            // the stream dropping out and coming back, or a second stream the same day
+            _configHelper.Setup(x => x.GetDailyPointsStatus(DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId))
+                .Returns((false, DateTime.UtcNow, DateTime.UtcNow, false));
+
+            var claimed = await _dbContext.TwitchDailyPoints.FirstAsync(x => x.Channel.BroadcasterTwitchChannelId == DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId && x.PointsClaimType == PointsClaimType.Daily);
+            claimed.PointsClaimed = true;
+            claimed.CurrentStreak = 7;
+            await _dbContext.SaveChangesAsync();
+
+            await _dailyPointsDataService.AllowDailyPointsCollecting(DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId);
+
+            _dbContext.ChangeTracker.Clear();
+            var after = await _dbContext.TwitchDailyPoints.FirstAsync(x => x.Id == claimed.Id);
+
+            Assert.Multiple(() =>
+            {
+                Assert.That(after.PointsClaimed, Is.True, "they've claimed today so can't claim again");
+                Assert.That(after.CurrentStreak, Is.EqualTo(7));
+            });
+            _configHelper.Verify(x => x.UpdateDailyPointsStatus(DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId, true), Times.Once());
         }
 
         [Test]

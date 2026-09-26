@@ -122,20 +122,13 @@ namespace BreganTwitchBot.Domain.Services.Twitch
         private async Task OnStreamOffline(object sender, StreamOfflineArgs args)
         {
             Log.Information($"[Twitch Events] Stream offline: {args.Payload.Event.BroadcasterUserName} ({args.Payload.Event.BroadcasterUserId})");
-
-            await configHelperService.UpdateStreamLiveStatus(args.Payload.Event.BroadcasterUserId, false);
-            await configHelperService.UpdateDailyPointsStatus(args.Payload.Event.BroadcasterUserId, false);
-            twitchHelperService.ClearStreamChattersList(args.Payload.Event.BroadcasterUserId);
-            await streamStatsService.EndStream(args.Payload.Event.BroadcasterUserId);
+            await twitchEventHandlerService.HandleStreamOffline(args.Payload.Event.BroadcasterUserId, args.Payload.Event.BroadcasterUserName);
         }
 
         private async Task OnStreamOnline(object sender, StreamOnlineArgs args)
         {
             Log.Information($"[Twitch Events] Stream online: {args.Payload.Event.BroadcasterUserName} ({args.Payload.Event.BroadcasterUserId})");
-
-            twitchHelperService.ClearStreamChattersList(args.Payload.Event.BroadcasterUserId);
-            await streamStatsService.StartNewStream(args.Payload.Event.BroadcasterUserId);
-            await twitchEventHandlerService.HandleStreamOnline(args.Payload.Event.BroadcasterUserId, args.Payload.Event.BroadcasterUserName);
+            await twitchEventHandlerService.HandleStreamOnline(args.Payload.Event.BroadcasterUserId, args.Payload.Event.BroadcasterUserName, args.Payload.Event.Id, args.Payload.Event.StartedAt.UtcDateTime);
         }
 
         private async Task OnChannelBan(object sender, ChannelBanArgs args)
@@ -584,17 +577,13 @@ namespace BreganTwitchBot.Domain.Services.Twitch
                     await broadcasterWebSocket.ConnectAsync();
                 }
 
-                // check if the stream is already live. If it is then we need to fire the stream online event from the handler service
-                Log.Information($"[Twitch API Connection] Checking if stream is live for {apiClient.TwitchUsername}");
-                var response = await twitchApiInteractionService.GetStreams(apiClient.ApiClient, apiClient.TwitchChannelClientId);
+                // catch up on the stream starting or ending while the bot was down. This also runs every
+                // minute, for anything missed while the bot was disconnected from twitch
+                Log.Information($"[Twitch API Connection] Checking the stream status for {apiClient.TwitchUsername}");
+                var liveStream = await twitchApiInteractionService.GetStreams(apiClient.ApiClient, apiClient.TwitchChannelClientId);
+                var channelDetails = twitchApiConnection.GetChannelDetails(apiClient.TwitchChannelClientId);
 
-                if (response != null)
-                {
-                    Log.Information($"[Twitch API Connection] Stream is live for {apiClient.TwitchUsername}");
-
-                    var channelDetails = twitchApiConnection.GetChannelDetails(apiClient.TwitchChannelClientId);
-                    await twitchEventHandlerService.HandleStreamLiveOnStartup(apiClient.TwitchChannelClientId, channelDetails?.BroadcasterChannelName ?? apiClient.TwitchUsername, response.StartedAt);
-                }
+                await twitchEventHandlerService.CheckStreamStatus(apiClient.TwitchChannelClientId, channelDetails?.BroadcasterChannelName ?? apiClient.TwitchUsername, liveStream);
             }
         }
 
