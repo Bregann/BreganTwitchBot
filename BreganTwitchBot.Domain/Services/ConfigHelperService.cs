@@ -116,6 +116,64 @@ namespace BreganTwitchBot.Domain.Services
             }
         }
 
+        public async Task MarkStreamLive(string broadcasterId, string twitchStreamId, DateTime? newBroadcastStartedAt)
+        {
+            using (var scope = _serviceProvider.CreateScope())
+            {
+                var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+                var config = await context.ChannelConfig.FirstAsync(x => x.Channel.BroadcasterTwitchChannelId == broadcasterId);
+
+                config.BroadcasterLive = true;
+                config.StreamAnnounced = true;
+                config.StreamHappenedThisWeek = true;
+                config.CurrentTwitchStreamId = twitchStreamId;
+
+                if (newBroadcastStartedAt != null)
+                {
+                    config.LastStreamStartDate = newBroadcastStartedAt.Value;
+                }
+
+                await context.SaveChangesAsync();
+
+                lock (GetLock(broadcasterId))
+                {
+                    if (_channelConfigs.TryGetValue(broadcasterId, out var cached))
+                    {
+                        cached.BroadcasterLive = true;
+                        cached.StreamAnnounced = true;
+                        cached.StreamHappenedThisWeek = true;
+                        cached.CurrentTwitchStreamId = twitchStreamId;
+
+                        if (newBroadcastStartedAt != null)
+                        {
+                            cached.LastStreamStartDate = newBroadcastStartedAt.Value;
+                        }
+                    }
+                }
+
+                Log.Information($"Stream for {broadcasterId} marked live on twitch stream {twitchStreamId}" + (newBroadcastStartedAt != null ? $", a new broadcast started at {newBroadcastStartedAt}" : ", carrying on the same broadcast"));
+            }
+        }
+
+        public StreamState GetStreamState(string broadcasterId)
+        {
+            lock (GetLock(broadcasterId))
+            {
+                if (_channelConfigs.TryGetValue(broadcasterId, out var config))
+                {
+                    return new StreamState(
+                        config.BroadcasterLive,
+                        config.CurrentTwitchStreamId,
+                        config.LastStreamStartDate,
+                        config.LastStreamEndDate,
+                        config.DailyPointsCollectingAllowed,
+                        config.LastDailyPointsAllowed);
+                }
+
+                throw new KeyNotFoundException($"No config found for broadcasterId {broadcasterId}");
+            }
+        }
+
         public (bool DailyPointsAllowed, DateTime LastStreamDate, DateTime LastDailyPointedAllowedDate, bool StreamHappenedThisWeek) GetDailyPointsStatus(string broadcasterId)
         {
             lock (GetLock(broadcasterId))

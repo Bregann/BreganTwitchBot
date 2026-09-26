@@ -30,6 +30,7 @@ namespace BreganTwitchBot.DomainTests.Twitch.Commands
             _twitchApiInteractionService.Setup(x => x.GetStreams(It.IsAny<TwitchAPI>(), DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId))
                 .ReturnsAsync(new GetStreamsResponse
                 {
+                    Id = "streamid",
                     GameId = "1",
                     GameName = "Just Chatting",
                     ViewerCount = 10,

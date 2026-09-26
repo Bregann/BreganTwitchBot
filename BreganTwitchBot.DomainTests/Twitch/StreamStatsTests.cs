@@ -348,6 +348,7 @@ namespace BreganTwitchBot.DomainTests.Twitch
             _twitchApiInteractionService.Setup(x => x.GetStreams(It.IsAny<TwitchAPI>(), It.IsAny<string>()))
                 .ReturnsAsync(new Domain.DTOs.Twitch.Api.GetStreamsResponse
                 {
+                    Id = "streamid",
                     GameId = "1",
                     GameName = "Just Chatting",
                     ViewerCount = 42,

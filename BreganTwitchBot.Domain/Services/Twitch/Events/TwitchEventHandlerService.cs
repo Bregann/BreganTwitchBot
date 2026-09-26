@@ -1,4 +1,6 @@
 ﻿using BreganTwitchBot.Domain.Database.Context;
+using BreganTwitchBot.Domain.DTOs.Helpers;
+using BreganTwitchBot.Domain.DTOs.Twitch.Api;
 using BreganTwitchBot.Domain.DTOs.Twitch.EventSubEvents;
 using BreganTwitchBot.Domain.Enums;
 using BreganTwitchBot.Domain.Interfaces.Discord;
@@ -10,6 +12,7 @@ using Hangfire;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Serilog;
+using System.Collections.Concurrent;
 
 namespace BreganTwitchBot.Domain.Services.Twitch.Events
 {
@@ -253,12 +256,203 @@ namespace BreganTwitchBot.Domain.Services.Twitch.Events
             }
         }
 
-        public async Task HandleStreamOnline(string broadcasterId, string broadcasterName, bool allowCollectionInstantly = false)
-        {
-            await configHelperService.UpdateStreamLiveStatus(broadcasterId, true);
-            var discordEnabled = configHelperService.IsDiscordEnabled(broadcasterId);
+        /// <summary>
+        /// How long after going live the daily points open, so they're for people actually watching
+        /// </summary>
+        public static readonly TimeSpan DailyPointsDelay = TimeSpan.FromMinutes(30);
 
-            if (discordEnabled)
+        /// <summary>
+        /// A stream that comes back within this long of ending is the same broadcast dropping out
+        /// and reconnecting, not a new one
+        /// </summary>
+        public static readonly TimeSpan ReconnectWindow = TimeSpan.FromMinutes(10);
+
+        /// <summary>
+        /// Twitch's api can keep showing a stream as live for a little while after it ends, and
+        /// not show it yet just after it starts, so the checks against it allow for this long
+        /// </summary>
+        public static readonly TimeSpan ApiLag = TimeSpan.FromMinutes(10);
+
+        /// <summary>
+        /// Twitch has to say a stream isn't live this many checks in a row before the bot ends it,
+        /// so one failed call doesn't end a stream
+        /// </summary>
+        public const int OfflineChecksNeeded = 3;
+
+        private readonly ConcurrentDictionary<string, SemaphoreSlim> _streamLocks = new();
+        private readonly ConcurrentDictionary<string, int> _offlineChecks = new();
+
+        /// <summary>
+        /// The twitch event, startup and the regular check can all arrive together, so a channel's
+        /// stream changes happen one at a time
+        /// </summary>
+        private async Task<IDisposable> LockStream(string broadcasterId)
+        {
+            var streamLock = _streamLocks.GetOrAdd(broadcasterId, _ => new SemaphoreSlim(1, 1));
+            await streamLock.WaitAsync();
+            return new StreamLockRelease(streamLock);
+        }
+
+        private sealed class StreamLockRelease(SemaphoreSlim streamLock) : IDisposable
+        {
+            public void Dispose() => streamLock.Release();
+        }
+
+        public async Task HandleStreamOnline(string broadcasterId, string broadcasterName, string twitchStreamId, DateTime startedAt)
+        {
+            using var streamLock = await LockStream(broadcasterId);
+            _offlineChecks.TryRemove(broadcasterId, out _);
+
+            var state = configHelperService.GetStreamState(broadcasterId);
+
+            if (state.Live && state.TwitchStreamId == null)
+            {
+                // live from before stream ids were stored, e.g. the update adding them being deployed
+                // mid stream. It's the stream the bot already knew about, so it just takes the id
+                Log.Information($"[Stream] {broadcasterName} was live before stream ids were stored, taking twitch stream {twitchStreamId} as the current one");
+                await configHelperService.MarkStreamLive(broadcasterId, twitchStreamId, null);
+                await ResumeStream(broadcasterId, broadcasterName, state);
+                return;
+            }
+
+            if (state.TwitchStreamId == twitchStreamId)
+            {
+                if (state.Live)
+                {
+                    // the bot restarting mid stream, or hearing about the same stream twice
+                    await ResumeStream(broadcasterId, broadcasterName, state);
+                    return;
+                }
+
+                if (DateTime.UtcNow - state.LastStreamEnd < ApiLag)
+                {
+                    // twitch's api still showing the broadcast that just ended
+                    return;
+                }
+
+                // it was ended by mistake, most likely twitch's api failing for a few checks, and it never stopped
+                Log.Warning($"[Stream] {broadcasterName} was marked offline but twitch stream {twitchStreamId} is still going, carrying it on");
+                await ContinueBroadcast(broadcasterId, broadcasterName, twitchStreamId, state);
+                return;
+            }
+
+            if (state.Live)
+            {
+                // a new broadcast while the old one is still marked live means the bot missed it ending.
+                // There's no telling how long the gap was, so it counts as a new broadcast. Daily points
+                // won't reset streaks twice in a day either way
+                Log.Warning($"[Stream] {broadcasterName} went live on a new broadcast before the bot saw the last one end");
+                await streamStatsService.EndStream(broadcasterId);
+                await StartNewBroadcast(broadcasterId, broadcasterName, twitchStreamId, startedAt);
+                return;
+            }
+
+            if (startedAt - state.LastStreamEnd <= ReconnectWindow)
+            {
+                await ContinueBroadcast(broadcasterId, broadcasterName, twitchStreamId, state);
+                return;
+            }
+
+            await StartNewBroadcast(broadcasterId, broadcasterName, twitchStreamId, startedAt);
+        }
+
+        public async Task HandleStreamOffline(string broadcasterId, string broadcasterName)
+        {
+            using var streamLock = await LockStream(broadcasterId);
+            _offlineChecks.TryRemove(broadcasterId, out _);
+
+            var state = configHelperService.GetStreamState(broadcasterId);
+
+            if (!state.Live)
+            {
+                Log.Information($"[Stream] {broadcasterName} is already offline");
+                return;
+            }
+
+            Log.Information($"[Stream] {broadcasterName} has gone offline");
+
+            // daily point claims are kept, so if this is the stream dropping out the claims carry on
+            // when it comes back
+            await configHelperService.UpdateStreamLiveStatus(broadcasterId, false);
+            await configHelperService.UpdateDailyPointsStatus(broadcasterId, false);
+            twitchHelperService.ClearStreamChattersList(broadcasterId);
+            await streamStatsService.EndStream(broadcasterId);
+        }
+
+        public async Task CheckStreamStatus(string broadcasterId, string broadcasterName, GetStreamsResponse? liveStream)
+        {
+            if (liveStream != null)
+            {
+                await HandleStreamOnline(broadcasterId, broadcasterName, liveStream.Id, liveStream.StartedAt);
+                return;
+            }
+
+            var state = configHelperService.GetStreamState(broadcasterId);
+
+            if (!state.Live)
+            {
+                _offlineChecks.TryRemove(broadcasterId, out _);
+                return;
+            }
+
+            // twitch's api may not show a stream that's only just started
+            if (DateTime.UtcNow - state.LastStreamStart < ApiLag)
+            {
+                return;
+            }
+
+            var offlineChecks = _offlineChecks.AddOrUpdate(broadcasterId, 1, (_, checks) => checks + 1);
+
+            if (offlineChecks < OfflineChecksNeeded)
+            {
+                Log.Information($"[Stream] {broadcasterName} is marked live but twitch says it isn't ({offlineChecks}/{OfflineChecksNeeded})");
+                return;
+            }
+
+            // the stream ended without the bot hearing about it, e.g. it was down or disconnected
+            Log.Warning($"[Stream] {broadcasterName} ended without the bot hearing about it, ending it now");
+            await HandleStreamOffline(broadcasterId, broadcasterName);
+        }
+
+        /// <summary>
+        /// The bot already knew about this broadcast, so nothing about going live is redone
+        /// </summary>
+        private async Task ResumeStream(string broadcasterId, string broadcasterName, StreamState state)
+        {
+            if (state.DailyPointsAllowed)
+            {
+                return;
+            }
+
+            Log.Information($"[Stream] {broadcasterName} is still on the same broadcast, making sure the daily points open");
+            await OpenDailyPointsOnTime(broadcasterId, broadcasterName, state.LastStreamStart);
+        }
+
+        /// <summary>
+        /// The stream dropped and came back, so it carries on the same broadcast: no second
+        /// announcement, stream minutes, stats or boss countdown
+        /// </summary>
+        private async Task ContinueBroadcast(string broadcasterId, string broadcasterName, string twitchStreamId, StreamState state)
+        {
+            Log.Information($"[Stream] {broadcasterName} is back, carrying on the broadcast that started at {state.LastStreamStart}");
+
+            await configHelperService.MarkStreamLive(broadcasterId, twitchStreamId, null);
+            await OpenDailyPointsOnTime(broadcasterId, broadcasterName, state.LastStreamStart);
+        }
+
+        private async Task StartNewBroadcast(string broadcasterId, string broadcasterName, string twitchStreamId, DateTime startedAt)
+        {
+            Log.Information($"[Stream] {broadcasterName} has gone live on a new broadcast, started at {startedAt}");
+
+            await configHelperService.MarkStreamLive(broadcasterId, twitchStreamId, startedAt);
+
+            // closed until they open for this stream, in case the bot missed the last stream ending
+            await configHelperService.UpdateDailyPointsStatus(broadcasterId, false);
+
+            twitchHelperService.ClearStreamChattersList(broadcasterId);
+            await streamStatsService.StartNewStream(broadcasterId);
+
+            if (configHelperService.IsDiscordEnabled(broadcasterId))
             {
                 var discordConfig = configHelperService.GetDiscordConfig(broadcasterId);
                 if (discordConfig != null && discordConfig.DiscordStreamAnnouncementChannelId != null)
@@ -269,27 +463,41 @@ namespace BreganTwitchBot.Domain.Services.Twitch.Events
 
             using (var scope = serviceProvider.CreateScope())
             {
-                var dailyPointsDataService = scope.ServiceProvider.GetRequiredService<IDailyPointsDataService>();
-                var hoursDataService = scope.ServiceProvider.GetRequiredService<IHoursDataService>();
-
-                if (allowCollectionInstantly)
-                {
-                    Log.Information($"Allowing daily points collection instantly for {broadcasterName}");
-                    await dailyPointsDataService.AllowDailyPointsCollecting(broadcasterId);
-                }
-                else
-                {
-                    await hoursDataService.ResetStreamMinutesForBroadcaster(broadcasterId);
-                    await dailyPointsDataService.ScheduleDailyPointsCollection(broadcasterId);
-                }
-
-                BackgroundJob.Schedule<ITwitchBossesDataService>(svc =>
-                    svc.StartBossFightCountdown(
-                        broadcasterId,
-                        broadcasterName,
-                        null),
-                    TimeSpan.FromMinutes(45));
+                await scope.ServiceProvider.GetRequiredService<IHoursDataService>().ResetStreamMinutesForBroadcaster(broadcasterId);
             }
+
+            await OpenDailyPointsOnTime(broadcasterId, broadcasterName, startedAt);
+
+            // counted from the stream starting, in case the bot only noticed it late
+            var bossIn = startedAt + TimeSpan.FromMinutes(45) - DateTime.UtcNow;
+            BackgroundJob.Schedule<ITwitchBossesDataService>(svc =>
+                svc.StartBossFightCountdown(
+                    broadcasterId,
+                    broadcasterName,
+                    null),
+                bossIn > TimeSpan.FromMinutes(1) ? bossIn : TimeSpan.FromMinutes(1));
+        }
+
+        /// <summary>
+        /// Opens the daily points 30 minutes after the broadcast started, straight away if that's passed.
+        /// If they've already been opened today there's nothing to wait for, as they won't reset streaks
+        /// again and anyone who already claimed stays claimed.
+        /// Opening them twice does nothing, so a job left over from before a restart is harmless.
+        /// </summary>
+        private async Task OpenDailyPointsOnTime(string broadcasterId, string broadcasterName, DateTime broadcastStarted)
+        {
+            var state = configHelperService.GetStreamState(broadcasterId);
+            var opensIn = broadcastStarted + DailyPointsDelay - DateTime.UtcNow;
+
+            if (opensIn <= TimeSpan.Zero || state.LastDailyPointsAllowed.Date == DateTime.UtcNow.Date)
+            {
+                using var scope = serviceProvider.CreateScope();
+                await scope.ServiceProvider.GetRequiredService<IDailyPointsDataService>().AllowDailyPointsCollecting(broadcasterId);
+                return;
+            }
+
+            BackgroundJob.Schedule<IDailyPointsDataService>(svc => svc.AllowDailyPointsCollecting(broadcasterId), opensIn);
+            Log.Information($"[Stream] Daily points for {broadcasterName} will open in {opensIn.TotalMinutes:N0} minutes");
         }
     }
 }
