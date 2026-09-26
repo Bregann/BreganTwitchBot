@@ -1,4 +1,5 @@
-﻿using BreganTwitchBot.Domain.Database.Context;
+using BreganTwitchBot.Domain.Database.Context;
+using BreganTwitchBot.Domain.Database.Models;
 using BreganTwitchBot.Domain.DTOs.Twitch.Api;
 using BreganTwitchBot.Domain.Enums;
 using BreganTwitchBot.Domain.Exceptions;
@@ -282,6 +283,222 @@ namespace BreganTwitchBot.DomainTests.Twitch.Commands
 
             var userWatchtime = await _dbContext.ChannelUserWatchtime.FirstAsync(x => x.ChannelUser.TwitchUserId == DatabaseSeedHelper.Channel1User1TwitchUserId);
             Assert.That(userWatchtime.MinutesWatchedThisStream, Is.EqualTo(0));
+        }
+
+        // grouped rank up messages
+
+        /// <summary>
+        /// Adds users one minute off the seeded 10 minute "tilly" rank, and makes the stream live
+        /// with enough chat since the last rank up message
+        /// </summary>
+        private async Task<List<Chatters>> UsersAboutToRankUp(int count, int minutesInStream = 9, ulong discordUserId = 0)
+        {
+            var channel = await _dbContext.Channels.FirstAsync(c => c.BroadcasterTwitchChannelId == DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId);
+            channel.ChannelConfig.BroadcasterLive = true;
+
+            var chatters = new List<Chatters>();
+
+            for (var i = 0; i < count; i++)
+            {
+                var user = new ChannelUser
+                {
+                    AddedOn = DateTime.UtcNow,
+                    CanUseOpenAi = false,
+                    DiscordUserId = discordUserId == 0 ? 0 : discordUserId + (ulong)i,
+                    TwitchUserId = $"rankup{minutesInStream}-{i}",
+                    TwitchUsername = $"rankuser{minutesInStream}x{i}",
+                    LastSeen = DateTime.UtcNow
+                };
+
+                await _dbContext.ChannelUsers.AddAsync(user);
+                await _dbContext.SaveChangesAsync();
+
+                await _dbContext.ChannelUserData.AddAsync(new ChannelUserData { ChannelUserId = user.Id, ChannelId = channel.Id, Points = 0, InStream = true, IsSub = false, IsVip = false, IsSuperMod = false, TimeoutStrikes = 0, WarnStrikes = 0 });
+                await _dbContext.ChannelUserWatchtime.AddAsync(new ChannelUserWatchtime { ChannelUserId = user.Id, ChannelId = channel.Id, MinutesInStream = minutesInStream, MinutesWatchedThisStream = 0, MinutesWatchedThisWeek = 0, MinutesWatchedThisMonth = 0, MinutesWatchedThisYear = 0 });
+
+                chatters.Add(new Chatters { UserId = user.TwitchUserId, UserName = user.TwitchUsername });
+            }
+
+            await _dbContext.SaveChangesAsync();
+
+            _twitchHelperService.Setup(x => x.GetChatMessageCount(DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId)).Returns(10);
+            _twitchHelperService.Setup(x => x.HasUserChattedInCurrentStream(It.IsAny<string>(), It.IsAny<string>())).Returns(true);
+
+            return chatters;
+        }
+
+        private void ChattersAre(List<Chatters> chatters)
+        {
+            _twitchApiInteractionService.Setup(x => x.GetChatters(It.IsAny<TwitchAPI>(), It.IsAny<string>(), It.IsAny<string>()))
+                .ReturnsAsync(new GetChattersResponse { Chatters = chatters });
+        }
+
+        private List<string> RankUpMessagesSent()
+        {
+            return _twitchHelperService.Invocations
+                .Where(x => x.Method.Name == nameof(ITwitchHelperService.SendTwitchMessageToChannel))
+                .Select(x => (string)x.Arguments[2])
+                .Where(x => x.StartsWith("Congrats"))
+                .ToList();
+        }
+
+        [Test]
+        public async Task RankUps_ThreeAtOnce_AreOneMessage()
+        {
+            var users = await UsersAboutToRankUp(3);
+            ChattersAre(users);
+
+            await _hoursDataService.UpdateWatchtimeForChannel(DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId);
+
+            var messages = RankUpMessagesSent();
+            Assert.That(messages, Has.Count.EqualTo(1));
+            Assert.That(messages[0], Does.StartWith($"Congrats @{users[0].UserName}, @{users[1].UserName} and @{users[2].UserName}, you earned the tilly rank"));
+            _twitchHelperService.Verify(x => x.ResetChatMessageCount(DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId), Times.Once());
+        }
+
+        [Test]
+        public async Task RankUps_MoreThanThree_NamesThreeAndCountsTheRest()
+        {
+            var users = await UsersAboutToRankUp(7);
+            ChattersAre(users);
+
+            await _hoursDataService.UpdateWatchtimeForChannel(DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId);
+
+            var messages = RankUpMessagesSent();
+            Assert.That(messages, Has.Count.EqualTo(1));
+            Assert.Multiple(() =>
+            {
+                Assert.That(messages[0], Does.Contain("4 other people also earned it!"));
+                Assert.That(messages[0].Count(c => c == '@'), Is.EqualTo(3));
+            });
+
+            // everyone still got the rank
+            var ranked = await _dbContext.ChannelUserRankProgress.CountAsync(x => x.ChannelUser.TwitchUserId.StartsWith("rankup"));
+            Assert.That(ranked, Is.EqualTo(7));
+        }
+
+        [Test]
+        public async Task RankUps_PeopleWhoHaventChatted_AreCountedButNotPinged()
+        {
+            var users = await UsersAboutToRankUp(4);
+            ChattersAre(users);
+
+            _twitchHelperService.Setup(x => x.HasUserChattedInCurrentStream(It.IsAny<string>(), It.IsAny<string>())).Returns(false);
+            _twitchHelperService.Setup(x => x.HasUserChattedInCurrentStream(It.IsAny<string>(), users[1].UserId)).Returns(true);
+
+            await _hoursDataService.UpdateWatchtimeForChannel(DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId);
+
+            var messages = RankUpMessagesSent();
+            Assert.That(messages, Has.Count.EqualTo(1));
+            Assert.That(messages[0], Does.StartWith($"Congrats @{users[1].UserName}, you earned"));
+            Assert.That(messages[0], Does.Contain("3 other people also earned it!"));
+        }
+
+        [Test]
+        public async Task RankUps_NobodyHasChatted_NoMessage()
+        {
+            var users = await UsersAboutToRankUp(3);
+            ChattersAre(users);
+            _twitchHelperService.Setup(x => x.HasUserChattedInCurrentStream(It.IsAny<string>(), It.IsAny<string>())).Returns(false);
+
+            await _hoursDataService.UpdateWatchtimeForChannel(DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId);
+
+            Assert.That(RankUpMessagesSent(), Is.Empty);
+            _twitchHelperService.Verify(x => x.ResetChatMessageCount(It.IsAny<string>()), Times.Never());
+        }
+
+        [Test]
+        public async Task RankUps_QuietChat_NoMessage()
+        {
+            var users = await UsersAboutToRankUp(3);
+            ChattersAre(users);
+            _twitchHelperService.Setup(x => x.GetChatMessageCount(DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId)).Returns(HoursDataService.ChatMessagesBetweenRankUpMessages - 1);
+
+            await _hoursDataService.UpdateWatchtimeForChannel(DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId);
+
+            Assert.That(RankUpMessagesSent(), Is.Empty);
+        }
+
+        [Test]
+        public async Task RankUps_DifferentRanks_OneMessageEach()
+        {
+            var channel = await _dbContext.Channels.FirstAsync(c => c.BroadcasterTwitchChannelId == DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId);
+            await _dbContext.ChannelRanks.AddAsync(new ChannelRank { ChannelId = channel.Id, RankName = "gold", RankMinutesRequired = 20, BonusRankPointsEarned = 100 });
+            await _dbContext.SaveChangesAsync();
+
+            var tilly = await UsersAboutToRankUp(2, minutesInStream: 9);
+            var gold = await UsersAboutToRankUp(2, minutesInStream: 19);
+            ChattersAre([.. tilly, .. gold]);
+
+            await _hoursDataService.UpdateWatchtimeForChannel(DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId);
+
+            var messages = RankUpMessagesSent();
+            Assert.That(messages, Has.Count.EqualTo(2));
+            Assert.Multiple(() =>
+            {
+                Assert.That(messages[0], Does.Contain("the tilly rank").And.Contain(tilly[0].UserName).And.Contain(tilly[1].UserName));
+                Assert.That(messages[1], Does.Contain("the gold rank").And.Contain(gold[0].UserName).And.Contain(gold[1].UserName));
+            });
+        }
+
+        [Test]
+        public async Task RankUps_MoreRanksThanTheLimit_OnlySendsTheLimit()
+        {
+            var channel = await _dbContext.Channels.FirstAsync(c => c.BroadcasterTwitchChannelId == DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId);
+            await _dbContext.ChannelRanks.AddAsync(new ChannelRank { ChannelId = channel.Id, RankName = "gold", RankMinutesRequired = 20, BonusRankPointsEarned = 100 });
+            await _dbContext.ChannelRanks.AddAsync(new ChannelRank { ChannelId = channel.Id, RankName = "diamond", RankMinutesRequired = 30, BonusRankPointsEarned = 100 });
+            await _dbContext.SaveChangesAsync();
+
+            ChattersAre([.. await UsersAboutToRankUp(1, 9), .. await UsersAboutToRankUp(1, 19), .. await UsersAboutToRankUp(1, 29)]);
+
+            await _hoursDataService.UpdateWatchtimeForChannel(DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId);
+
+            Assert.That(RankUpMessagesSent(), Has.Count.EqualTo(HoursDataService.MaxRankUpMessagesPerMinute));
+        }
+
+        [Test]
+        public async Task RankUps_EveryLinkedUserGetsTheirRole_EvenWhenNotNamed()
+        {
+            _configHelperService.Setup(x => x.IsDiscordEnabled(DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId)).Returns(true);
+
+            var users = await UsersAboutToRankUp(5, discordUserId: 5000);
+            ChattersAre(users);
+
+            // no message goes out at all, which used to mean nobody got their role
+            _twitchHelperService.Setup(x => x.GetChatMessageCount(DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId)).Returns(0);
+
+            // the role is worked out from the saved ranks, so the new one has to be saved first
+            var rankSavedWhenApplied = new List<bool>();
+            _discordRoleManagerService.Setup(x => x.ApplyRoleOnDiscordWatchtimeRankup(It.IsAny<string>(), DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId))
+                .Callback<string, string>((twitchUserId, _) =>
+                {
+                    using var checkContext = new AppDbContext(new DbContextOptionsBuilder<AppDbContext>().UseNpgsql(_postgresContainer.GetConnectionString()).Options);
+                    rankSavedWhenApplied.Add(checkContext.ChannelUserRankProgress.Any(x => x.ChannelUser.TwitchUserId == twitchUserId));
+                })
+                .Returns(Task.CompletedTask);
+
+            await _hoursDataService.UpdateWatchtimeForChannel(DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId);
+
+            Assert.That(RankUpMessagesSent(), Is.Empty);
+            Assert.That(rankSavedWhenApplied, Has.Count.EqualTo(5).And.All.True);
+        }
+
+        [Test]
+        public async Task RankUps_ADiscordError_DoesNotLoseTheRank()
+        {
+            _configHelperService.Setup(x => x.IsDiscordEnabled(DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId)).Returns(true);
+            _discordRoleManagerService.Setup(x => x.ApplyRoleOnDiscordWatchtimeRankup(It.IsAny<string>(), It.IsAny<string>())).ThrowsAsync(new Exception("discord is down"));
+
+            var users = await UsersAboutToRankUp(2, discordUserId: 6000);
+            ChattersAre(users);
+
+            await _hoursDataService.UpdateWatchtimeForChannel(DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId);
+
+            Assert.Multiple(async () =>
+            {
+                Assert.That(await _dbContext.ChannelUserRankProgress.CountAsync(x => x.ChannelUser.TwitchUserId.StartsWith("rankup")), Is.EqualTo(2));
+                Assert.That(RankUpMessagesSent(), Has.Count.EqualTo(1));
+            });
         }
     }
 }
