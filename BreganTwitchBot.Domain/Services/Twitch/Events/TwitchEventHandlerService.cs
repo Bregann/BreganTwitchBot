@@ -253,9 +253,58 @@ namespace BreganTwitchBot.Domain.Services.Twitch.Events
             }
         }
 
+        /// <summary>
+        /// How long after going live the daily points open, so they're for people actually watching
+        /// </summary>
+        private static readonly TimeSpan DailyPointsDelay = TimeSpan.FromMinutes(30);
+
+        public async Task HandleStreamLiveOnStartup(string broadcasterId, string broadcasterName, DateTime streamStartedAt)
+        {
+            var dailyPointsStatus = configHelperService.GetDailyPointsStatus(broadcasterId);
+            var knownLive = await twitchHelperService.IsBroadcasterLive(broadcasterId);
+
+            // the recorded start is when the bot handled going live, so it's at or after twitch's
+            // start time for the same stream. An older one means a stream the bot missed, and the
+            // leeway covers the clocks disagreeing a little
+            var sameStream = knownLive && dailyPointsStatus.LastStreamDate >= streamStartedAt.AddMinutes(-5);
+
+            if (!sameStream)
+            {
+                await HandleStreamOnline(broadcasterId, broadcasterName, DateTime.UtcNow - streamStartedAt > DailyPointsDelay);
+                return;
+            }
+
+            // restarting mid stream mustn't redo going live: that wiped stream minutes, pinged
+            // @everyone again, started a second boss countdown and opened daily points early
+            Log.Information($"[Stream Startup] {broadcasterName} was already live before the bot restarted, carrying on the same stream");
+
+            if (dailyPointsStatus.DailyPointsAllowed)
+            {
+                return;
+            }
+
+            // pick the daily points back up from when the stream went live, in case the job
+            // scheduled before the restart has been lost. Opening them twice does nothing
+            var opensIn = dailyPointsStatus.LastStreamDate + DailyPointsDelay - DateTime.UtcNow;
+
+            if (opensIn <= TimeSpan.Zero)
+            {
+                using var scope = serviceProvider.CreateScope();
+                await scope.ServiceProvider.GetRequiredService<IDailyPointsDataService>().AllowDailyPointsCollecting(broadcasterId);
+            }
+            else
+            {
+                BackgroundJob.Schedule<IDailyPointsDataService>(svc => svc.AllowDailyPointsCollecting(broadcasterId), opensIn);
+                Log.Information($"[Stream Startup] Daily points for {broadcasterName} rescheduled to open in {opensIn.TotalMinutes:N0} minutes");
+            }
+        }
+
         public async Task HandleStreamOnline(string broadcasterId, string broadcasterName, bool allowCollectionInstantly = false)
         {
             await configHelperService.UpdateStreamLiveStatus(broadcasterId, true);
+
+            // closed until they open for this stream, in case the bot missed the last stream ending
+            await configHelperService.UpdateDailyPointsStatus(broadcasterId, false);
             var discordEnabled = configHelperService.IsDiscordEnabled(broadcasterId);
 
             if (discordEnabled)

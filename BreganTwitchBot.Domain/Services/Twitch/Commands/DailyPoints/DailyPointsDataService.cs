@@ -8,7 +8,6 @@ using BreganTwitchBot.Domain.Interfaces.Twitch.Commands;
 using Hangfire;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
-using System.Diagnostics;
 
 namespace BreganTwitchBot.Domain.Services.Twitch.Commands.DailyPoints
 {
@@ -22,11 +21,10 @@ namespace BreganTwitchBot.Domain.Services.Twitch.Commands.DailyPoints
         public async Task ScheduleDailyPointsCollection(string broadcasterId)
         {
             var dailyPointsStatus = configHelper.GetDailyPointsStatus(broadcasterId);
-            var botUptime = DateTime.UtcNow - Process.GetCurrentProcess().StartTime.ToUniversalTime();
 
-            // if it's within the last 20 minutes just allow collecting straight away as this could be due to a disconnection or something like that
-            // also allow straight away for bot uptime less than 60 seconds
-            if ((DateTime.UtcNow - dailyPointsStatus.LastStreamDate < TimeSpan.FromMinutes(20) && dailyPointsStatus.LastDailyPointedAllowedDate.Date == DateTime.UtcNow.Date) || botUptime.TotalSeconds < 60)
+            // if it's within the last 20 minutes just allow collecting straight away as this could be due to a disconnection or something like that.
+            // The bot restarting mid stream is handled on startup, so it no longer opens them early here
+            if (DateTime.UtcNow - dailyPointsStatus.LastStreamDate < TimeSpan.FromMinutes(20) && dailyPointsStatus.LastDailyPointedAllowedDate.Date == DateTime.UtcNow.Date)
             {
                 await AllowDailyPointsCollecting(broadcasterId);
                 return;
@@ -46,7 +44,16 @@ namespace BreganTwitchBot.Domain.Services.Twitch.Commands.DailyPoints
             Log.Information($"Allowing daily points collection for {broadcasterId}");
 
             var dailyPointsStatus = configHelper.GetDailyPointsStatus(broadcasterId);
-            var channelName = await twitchHelperService.GetTwitchUserIdFromUsername(broadcasterId);
+
+            // a job scheduled before a restart and one rescheduled after it can both fire, and the
+            // second mustn't announce again
+            if (dailyPointsStatus.DailyPointsAllowed)
+            {
+                Log.Information($"Daily points collection is already allowed for {broadcasterId}");
+                return;
+            }
+
+            var channelName = GetChannelName(broadcasterId);
 
             // don't reset streaks if there has been a stream today
             if (dailyPointsStatus.LastDailyPointedAllowedDate.Date == DateTime.UtcNow.Date)
@@ -89,7 +96,6 @@ namespace BreganTwitchBot.Domain.Services.Twitch.Commands.DailyPoints
 
             // allow the point collecting and let the users know
             await configHelper.UpdateDailyPointsStatus(broadcasterId, true);
-            await twitchHelperService.SendAnnouncementMessageToChannel(broadcasterId, channelName!, $"Don't forget to claim your daily, weekly, monthly and yearly {await twitchHelperService.GetPointsName(broadcasterId, channelName!)} with !daily, !weekly, !monthly and !yearly PogChamp KEKW");
 
             if (top5LostStreaks.Count > 0)
             {
@@ -100,10 +106,19 @@ namespace BreganTwitchBot.Domain.Services.Twitch.Commands.DailyPoints
             await AnnouncePointsReminder(broadcasterId);
         }
 
+        /// <summary>
+        /// This used to look the name up with GetTwitchUserIdFromUsername, passing it the id, so it
+        /// came back empty and the messages were logged as sent to a blank channel
+        /// </summary>
+        private string GetChannelName(string broadcasterId)
+        {
+            return twitchApiConnection.GetChannelDetails(broadcasterId)?.BroadcasterChannelName ?? broadcasterId;
+        }
+
         public async Task AnnouncePointsReminder(string broadcasterId)
         {
             var dailyPointsStatus = configHelper.GetDailyPointsStatus(broadcasterId);
-            var channelName = await twitchHelperService.GetTwitchUserIdFromUsername(broadcasterId);
+            var channelName = GetChannelName(broadcasterId);
 
             if (dailyPointsStatus.DailyPointsAllowed)
             {

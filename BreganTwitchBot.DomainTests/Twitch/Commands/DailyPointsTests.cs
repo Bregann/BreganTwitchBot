@@ -3,6 +3,7 @@ using BreganTwitchBot.Domain.Enums;
 using BreganTwitchBot.Domain.Exceptions;
 using BreganTwitchBot.Domain.Interfaces.Helpers;
 using BreganTwitchBot.Domain.Interfaces.Twitch;
+using BreganTwitchBot.Domain.Services.Twitch;
 using BreganTwitchBot.Domain.Services.Twitch.Commands.DailyPoints;
 using BreganTwitchBot.DomainTests.Helpers;
 using Hangfire;
@@ -19,6 +20,7 @@ namespace BreganTwitchBot.DomainTests.Twitch.Commands
         private AppDbContext _dbContext;
         private Mock<IConfigHelperService> _configHelper;
         private Mock<ITwitchHelperService> _twitchHelperService;
+        private Mock<ITwitchApiConnection> _twitchApiConnection;
 
         private DailyPointsDataService _dailyPointsDataService;
 
@@ -66,9 +68,9 @@ namespace BreganTwitchBot.DomainTests.Twitch.Commands
                 .ReturnsAsync(DatabaseSeedHelper.Channel1ChannelCurrencyName);
 
             var mockRecurringJobManager = new Mock<IRecurringJobManager>();
-            var mockTwitchApiService = new Mock<ITwitchApiConnection>();
+            _twitchApiConnection = new Mock<ITwitchApiConnection>();
 
-            _dailyPointsDataService = new DailyPointsDataService(_dbContext, _configHelper.Object, _twitchHelperService.Object, mockTwitchApiService.Object);
+            _dailyPointsDataService = new DailyPointsDataService(_dbContext, _configHelper.Object, _twitchHelperService.Object, _twitchApiConnection.Object);
         }
 
         [TearDown]
@@ -150,6 +152,47 @@ namespace BreganTwitchBot.DomainTests.Twitch.Commands
                 It.Is<string>(msg => msg.Contains("Top 5 lost streaks")),
                 It.IsAny<string?>()),
                 Times.Never);
+        }
+
+        [Test]
+        public async Task AllowDailyPointsCollecting_AlreadyAllowed_DoesNothing()
+        {
+            // a job from before a restart and one rescheduled after it can both fire
+            _configHelper.Setup(x => x.GetDailyPointsStatus(DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId))
+                .Returns((true, DateTime.UtcNow, DateTime.UtcNow.AddDays(-1), false));
+
+            var streakBefore = (await _dbContext.TwitchDailyPoints.FirstAsync(x => x.Channel.BroadcasterTwitchChannelId == DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId && x.PointsClaimType == PointsClaimType.Daily && x.CurrentStreak > 0)).CurrentStreak;
+
+            await _dailyPointsDataService.AllowDailyPointsCollecting(DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId);
+
+            _twitchHelperService.Verify(x => x.SendAnnouncementMessageToChannel(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()), Times.Never());
+            _configHelper.Verify(x => x.UpdateDailyPointsStatus(It.IsAny<string>(), It.IsAny<bool>()), Times.Never());
+
+            _dbContext.ChangeTracker.Clear();
+            var streakAfter = (await _dbContext.TwitchDailyPoints.FirstAsync(x => x.Channel.BroadcasterTwitchChannelId == DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId && x.PointsClaimType == PointsClaimType.Daily && x.CurrentStreak > 0)).CurrentStreak;
+            Assert.That(streakAfter, Is.EqualTo(streakBefore));
+        }
+
+        [Test]
+        public async Task AllowDailyPointsCollecting_ResettingStreaks_AnnouncesOnceToTheNamedChannel()
+        {
+            // it used to announce twice in the same second, which twitch rate limited, and looked
+            // the channel name up wrong so it came out blank
+            _twitchApiConnection.Setup(x => x.GetChannelDetails(DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId))
+                .Returns(new TwitchApiConnection.ChannelDetails(1, DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId, DatabaseSeedHelper.Channel1BroadcasterTwitchChannelName));
+
+            // closed when it's checked, then open once it's been allowed
+            _configHelper.SetupSequence(x => x.GetDailyPointsStatus(DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId))
+                .Returns((false, DateTime.UtcNow, DateTime.UtcNow.AddDays(-1), false))
+                .Returns((true, DateTime.UtcNow, DateTime.UtcNow, false));
+
+            await _dailyPointsDataService.AllowDailyPointsCollecting(DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId);
+
+            _twitchHelperService.Verify(x => x.SendAnnouncementMessageToChannel(
+                DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId,
+                DatabaseSeedHelper.Channel1BroadcasterTwitchChannelName,
+                It.Is<string>(msg => msg.Contains("Don't forget to claim"))),
+                Times.Once());
         }
 
         [Test]

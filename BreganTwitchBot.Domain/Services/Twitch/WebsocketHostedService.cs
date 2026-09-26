@@ -590,13 +590,10 @@ namespace BreganTwitchBot.Domain.Services.Twitch
 
                 if (response != null)
                 {
-                    Log.Information($"[Twitch API Connection] Stream is live for {apiClient.TwitchUsername}. Doing announcement stuff");
+                    Log.Information($"[Twitch API Connection] Stream is live for {apiClient.TwitchUsername}");
 
                     var channelDetails = twitchApiConnection.GetChannelDetails(apiClient.TwitchChannelClientId);
-
-                    // check if stream has been up for more than 30 mins
-                    var streamStartedMoreThan30MinsAgo = DateTime.UtcNow - response.StartedAt > TimeSpan.FromMinutes(30);
-                    await twitchEventHandlerService.HandleStreamOnline(apiClient.TwitchChannelClientId, channelDetails?.BroadcasterChannelName ?? apiClient.TwitchUsername, streamStartedMoreThan30MinsAgo);
+                    await twitchEventHandlerService.HandleStreamLiveOnStartup(apiClient.TwitchChannelClientId, channelDetails?.BroadcasterChannelName ?? apiClient.TwitchUsername, response.StartedAt);
                 }
             }
         }
