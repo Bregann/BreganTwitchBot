@@ -331,14 +331,14 @@ namespace BreganTwitchBot.DomainTests.Twitch.Commands
         [TestCase(PointsClaimType.Weekly)]
         [TestCase(PointsClaimType.Monthly)]
         [TestCase(PointsClaimType.Yearly)]
-        public void HandleStreakCheckCommand_CheckOtherUserInvalidUsername_CorrectExceptionThrown(PointsClaimType pointsClaimType)
+        public async Task HandleStreakCheckCommand_CheckOtherUserInvalidUsername_CorrectExceptionThrown(PointsClaimType pointsClaimType)
         {
             _twitchHelperService.Setup(x => x.GetTwitchUserIdFromUsername(It.IsAny<string>()))
                 .ReturnsAsync((string?)null);
 
             var msgParams = MessageParamsHelper.CreateChatMessageParams("!streak invalid", "123", new string[] { "!daily", "invalid" });
 
-            Assert.ThrowsAsync<TwitchUserNotFoundException>(() => _dailyPointsDataService.HandleStreakCheckCommand(msgParams, pointsClaimType));
+            await Assert.ThrowsAsync<TwitchUserNotFoundException>(() => _dailyPointsDataService.HandleStreakCheckCommand(msgParams, pointsClaimType));
         }
 
         [Test]

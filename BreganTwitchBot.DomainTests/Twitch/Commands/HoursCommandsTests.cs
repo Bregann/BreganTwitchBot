@@ -226,32 +226,32 @@ namespace BreganTwitchBot.DomainTests.Twitch.Commands
         }
 
         [Test]
-        public void GetHoursCommand_InvalidUser_ThrowsTwitchUserNotFoundException()
+        public async Task GetHoursCommand_InvalidUser_ThrowsTwitchUserNotFoundException()
         {
             var msgParams = MessageParamsHelper.CreateChatMessageParams("!hours invalid", "123", new string[] { "!hours", "invalid" });
 
             _twitchHelperService.Setup(x => x.GetTwitchUserIdFromUsername(It.IsAny<string>()))
                 .ReturnsAsync((string?)null);
 
-            var ex = Assert.ThrowsAsync<TwitchUserNotFoundException>(() => _hoursDataService.GetHoursCommand(msgParams, HoursWatchTypes.AllTime));
+            var ex = await Assert.ThrowsAsync<TwitchUserNotFoundException>(() => _hoursDataService.GetHoursCommand(msgParams, HoursWatchTypes.AllTime));
             Assert.That(ex.Message, Is.EqualTo("User not found!"));
         }
 
         [Test]
-        public void GetHoursCommand_UserWithNoWatchtime_ThrowsTwitchUserNotFoundException()
+        public async Task GetHoursCommand_UserWithNoWatchtime_ThrowsTwitchUserNotFoundException()
         {
             var msgParams = MessageParamsHelper.CreateChatMessageParams("!hours", "123", new string[] { "!hours" }, chatterChannelId: "invalid", chatterChannelName: "invalid");
 
-            var ex = Assert.ThrowsAsync<TwitchUserNotFoundException>(() => _hoursDataService.GetHoursCommand(msgParams, HoursWatchTypes.AllTime));
+            var ex = await Assert.ThrowsAsync<TwitchUserNotFoundException>(() => _hoursDataService.GetHoursCommand(msgParams, HoursWatchTypes.AllTime));
             Assert.That(ex.Message, Is.EqualTo("Oh dear this user doesn't have any watchtime in the channel!"));
         }
 
         [Test]
-        public void GetHoursCommand_InvalidHoursType_ThrowsArgumentOutOfRangeException()
+        public async Task GetHoursCommand_InvalidHoursType_ThrowsArgumentOutOfRangeException()
         {
             var msgParams = MessageParamsHelper.CreateChatMessageParams("!hours", "123", new string[] { "!hours" });
 
-            Assert.ThrowsAsync<ArgumentOutOfRangeException>(() => _hoursDataService.GetHoursCommand(msgParams, (HoursWatchTypes)999));
+            await Assert.ThrowsAsync<ArgumentOutOfRangeException>(() => _hoursDataService.GetHoursCommand(msgParams, (HoursWatchTypes)999));
         }
 
         [Test]

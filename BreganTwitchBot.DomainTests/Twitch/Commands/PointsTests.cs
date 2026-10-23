@@ -95,10 +95,10 @@ namespace BreganTwitchBot.DomainTests.Twitch.Commands
         }
 
         [Test]
-        public void AddPointsAsync_ProvideNoCommands_CorrectExceptionMessage()
+        public async Task AddPointsAsync_ProvideNoCommands_CorrectExceptionMessage()
         {
             var msgParams = MessageParamsHelper.CreateChatMessageParams("!addpoints", "123", new string[] { "!addpoints" }, chatterChannelId: DatabaseSeedHelper.Channel1SuperModUserTwitchUserId, chatterChannelName: DatabaseSeedHelper.Channel1SuperModUserTwitchUsername);
-            var ex = Assert.ThrowsAsync<InvalidCommandException>(async () =>
+            var ex = await Assert.ThrowsAsync<InvalidCommandException>(async () =>
             {
                 await _pointsDataService.AddPointsAsync(msgParams);
             });
@@ -107,10 +107,10 @@ namespace BreganTwitchBot.DomainTests.Twitch.Commands
         }
 
         [Test]
-        public void AddPointsAsync_ProvideNoPoints_CorrectExceptionMessage()
+        public async Task AddPointsAsync_ProvideNoPoints_CorrectExceptionMessage()
         {
             var msgParams = MessageParamsHelper.CreateChatMessageParams("!addpoints CoolUser1", "123", new string[] { "!addpoints", "CoolUser1" }, chatterChannelId: DatabaseSeedHelper.Channel1SuperModUserTwitchUserId, chatterChannelName: DatabaseSeedHelper.Channel1SuperModUserTwitchUsername);
-            var ex = Assert.ThrowsAsync<InvalidCommandException>(async () =>
+            var ex = await Assert.ThrowsAsync<InvalidCommandException>(async () =>
             {
                 await _pointsDataService.AddPointsAsync(msgParams);
             });
@@ -119,10 +119,10 @@ namespace BreganTwitchBot.DomainTests.Twitch.Commands
         }
 
         [Test]
-        public void AddPointsAsync_ProvideUserWithoutSuperMod_CorrectExceptionMessage()
+        public async Task AddPointsAsync_ProvideUserWithoutSuperMod_CorrectExceptionMessage()
         {
             var msgParams = MessageParamsHelper.CreateChatMessageParams("!addpoints CoolUser1 100", "123", new string[] { "!addpoints", "CoolUser1", "100" });
-            var ex = Assert.ThrowsAsync<InvalidCommandException>(async () =>
+            var ex = await Assert.ThrowsAsync<InvalidCommandException>(async () =>
             {
                 await _pointsDataService.AddPointsAsync(msgParams);
             });
@@ -134,10 +134,10 @@ namespace BreganTwitchBot.DomainTests.Twitch.Commands
         [TestCase("tilly")]
         [TestCase("999999999999999999999999999999999999999999999999999999999999999999999999999")]
         [TestCase("-300")]
-        public void AddPointAsync_ProvideInvalidPointsValue_CorrectExceptionMessage(string pointsValue)
+        public async Task AddPointAsync_ProvideInvalidPointsValue_CorrectExceptionMessage(string pointsValue)
         {
             var msgParams = MessageParamsHelper.CreateChatMessageParams($"!addpoints CoolUser1 {pointsValue}", "123", new string[] { "!addpoints", "CoolUser1", pointsValue }, chatterChannelId: DatabaseSeedHelper.Channel1SuperModUserTwitchUserId, chatterChannelName: DatabaseSeedHelper.Channel1SuperModUserTwitchUsername);
-            var ex = Assert.ThrowsAsync<InvalidCommandException>(async () =>
+            var ex = await Assert.ThrowsAsync<InvalidCommandException>(async () =>
             {
                 await _pointsDataService.AddPointsAsync(msgParams);
             });
@@ -146,10 +146,10 @@ namespace BreganTwitchBot.DomainTests.Twitch.Commands
         }
 
         [Test]
-        public void AddPointsAsync_ProvideInvalidUsername_CorrectExceptionMessage()
+        public async Task AddPointsAsync_ProvideInvalidUsername_CorrectExceptionMessage()
         {
             var msgParams = MessageParamsHelper.CreateChatMessageParams("!addpoints CoolUser3 100", "123", new string[] { "!addpoints", "CoolUser3", "100" }, chatterChannelId: DatabaseSeedHelper.Channel1SuperModUserTwitchUserId, chatterChannelName: DatabaseSeedHelper.Channel1SuperModUserTwitchUsername);
-            var ex = Assert.ThrowsAsync<TwitchUserNotFoundException>(async () =>
+            var ex = await Assert.ThrowsAsync<TwitchUserNotFoundException>(async () =>
             {
                 await _pointsDataService.AddPointsAsync(msgParams);
             });

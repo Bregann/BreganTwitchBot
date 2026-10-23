@@ -77,11 +77,11 @@ namespace BreganTwitchBot.DomainTests.Twitch.Commands
         }
 
         [Test]
-        public void HandleFollowCommandAsync_ProvideIncorrectBroadcasterChannelName_CorrectExceptionThrown()
+        public async Task HandleFollowCommandAsync_ProvideIncorrectBroadcasterChannelName_CorrectExceptionThrown()
         {
             var msgParams = MessageParamsHelper.CreateChatMessageParams("!followage", "123", new[] { "!followage" }, broadcasterChannelName: "invalid");
 
-            var ex = Assert.ThrowsAsync<ArgumentException>(async () =>
+            var ex = await Assert.ThrowsAsync<ArgumentException>(async () =>
             {
                 await _followAgeDataService.HandleFollowCommandAsync(msgParams, FollowCommandTypeEnum.FollowAge);
             });

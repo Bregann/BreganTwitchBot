@@ -77,44 +77,44 @@ namespace BreganTwitchBot.DomainTests.Twitch.Commands
         }
 
         [Test]
-        public void HandleSpinCommand_NoAmountSpecified_CorrectExceptionThrown()
+        public async Task HandleSpinCommand_NoAmountSpecified_CorrectExceptionThrown()
         {
             _twitchHelperService.Setup(x => x.IsBroadcasterLive(It.IsAny<string>())).ReturnsAsync(true);
             var msgParams = MessageParamsHelper.CreateChatMessageParams("!spin", "123", ["!spin"]);
 
-            var ex = Assert.ThrowsAsync<InvalidCommandException>(() => _gamblingDataService.HandleSpinCommand(msgParams));
+            var ex = await Assert.ThrowsAsync<InvalidCommandException>(() => _gamblingDataService.HandleSpinCommand(msgParams));
             Assert.That(ex.Message, Is.EqualTo("You need to specify an amount to gamble! Usage: !spin <amount> or if you are an absolute mad lad do !spin all"));
         }
 
         [Test]
-        public void HandleSpinCommand_InvalidAmount_CorrectExceptionThrown()
+        public async Task HandleSpinCommand_InvalidAmount_CorrectExceptionThrown()
         {
             _twitchHelperService.Setup(x => x.IsBroadcasterLive(It.IsAny<string>())).ReturnsAsync(true);
             var msgParams = MessageParamsHelper.CreateChatMessageParams("!spin abc", "123", ["!spin", "abc"]);
 
-            var ex = Assert.ThrowsAsync<InvalidCommandException>(() => _gamblingDataService.HandleSpinCommand(msgParams));
+            var ex = await Assert.ThrowsAsync<InvalidCommandException>(() => _gamblingDataService.HandleSpinCommand(msgParams));
             Assert.That(ex.Message, Is.EqualTo("You need to specify a valid amount to gamble! Usage: !spin <amount> or if you are an absolute mad lad do !spin all"));
         }
 
         [Test]
-        public void HandleSpinCommand_NotEnoughPoints_CorrectExceptionThrown()
+        public async Task HandleSpinCommand_NotEnoughPoints_CorrectExceptionThrown()
         {
             _twitchHelperService.Setup(x => x.IsBroadcasterLive(It.IsAny<string>())).ReturnsAsync(true);
             _twitchHelperService.Setup(x => x.GetPointsForUser(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>())).ReturnsAsync(100);
 
             var msgParams = MessageParamsHelper.CreateChatMessageParams("!spin 200", "123", ["!spin", "200"]);
-            var ex = Assert.ThrowsAsync<InvalidCommandException>(() => _gamblingDataService.HandleSpinCommand(msgParams));
+            var ex = await Assert.ThrowsAsync<InvalidCommandException>(() => _gamblingDataService.HandleSpinCommand(msgParams));
 
             Assert.That(ex.Message, Is.EqualTo("You do not have enough points to gamble that amount! You have 100 points"));
         }
 
         [Test]
-        public void HandleSpinCommand_TooLittlePointsGambled_CorrectExceptionThrown()
+        public async Task HandleSpinCommand_TooLittlePointsGambled_CorrectExceptionThrown()
         {
             _twitchHelperService.Setup(x => x.IsBroadcasterLive(It.IsAny<string>())).ReturnsAsync(true);
             var msgParams = MessageParamsHelper.CreateChatMessageParams("!spin 50", "123", ["!spin", "50"]);
 
-            var ex = Assert.ThrowsAsync<InvalidCommandException>(() => _gamblingDataService.HandleSpinCommand(msgParams));
+            var ex = await Assert.ThrowsAsync<InvalidCommandException>(() => _gamblingDataService.HandleSpinCommand(msgParams));
             Assert.That(ex.Message, Is.EqualTo("You have to gamble at least 100 points! Usage: !spin <amount> or if you are an absolute mad lad do !spin all"));
         }
 

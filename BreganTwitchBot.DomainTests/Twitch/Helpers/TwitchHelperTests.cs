@@ -143,7 +143,7 @@ namespace BreganTwitchBot.DomainTests.Twitch.Helpers
         }
 
         [Test]
-        public void EnsureUserHasModeratorPermissions_WhenUserIsBroadcaster_DoesNotThrowException()
+        public async Task EnsureUserHasModeratorPermissions_WhenUserIsBroadcaster_DoesNotThrowException()
         {
             var isMod = true;
             var isBroadcaster = true;
@@ -152,13 +152,13 @@ namespace BreganTwitchBot.DomainTests.Twitch.Helpers
             var broadcasterChannelId = DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId;
             var broadcasterChannelName = DatabaseSeedHelper.Channel1BroadcasterTwitchChannelName;
 
-            Assert.DoesNotThrowAsync(async () =>
+            await Assert.DoesNotThrowAsync(async () =>
                 await _twitchHelperService.EnsureUserHasModeratorPermissions(isMod, isBroadcaster, viewerUsername, viewerChannelId, broadcasterChannelId, broadcasterChannelName)
             );
         }
 
         [Test]
-        public void EnsureUserHasModeratorPermissions_WhenUserIsSuperMod_DoesNotThrowException()
+        public async Task EnsureUserHasModeratorPermissions_WhenUserIsSuperMod_DoesNotThrowException()
         {
             var isMod = true;
             var isBroadcaster = false;
@@ -167,13 +167,13 @@ namespace BreganTwitchBot.DomainTests.Twitch.Helpers
             var broadcasterChannelId = DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId;
             var broadcasterChannelName = DatabaseSeedHelper.Channel1BroadcasterTwitchChannelName;
 
-            Assert.DoesNotThrowAsync(async () =>
+            await Assert.DoesNotThrowAsync(async () =>
                 await _twitchHelperService.EnsureUserHasModeratorPermissions(isMod, isBroadcaster, viewerUsername, viewerChannelId, broadcasterChannelId, broadcasterChannelName)
             );
         }
 
         [Test]
-        public void EnsureUserHasModeratorPermissions_WhenUserIsMod_DoesNotThrowException()
+        public async Task EnsureUserHasModeratorPermissions_WhenUserIsMod_DoesNotThrowException()
         {
             var isMod = true;
             var isBroadcaster = false;
@@ -182,13 +182,13 @@ namespace BreganTwitchBot.DomainTests.Twitch.Helpers
             var broadcasterChannelId = DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId;
             var broadcasterChannelName = DatabaseSeedHelper.Channel1BroadcasterTwitchChannelName;
 
-            Assert.DoesNotThrowAsync(async () =>
+            await Assert.DoesNotThrowAsync(async () =>
                 await _twitchHelperService.EnsureUserHasModeratorPermissions(isMod, isBroadcaster, viewerUsername, viewerChannelId, broadcasterChannelId, broadcasterChannelName)
             );
         }
 
         [Test]
-        public void EnsureUserHasModeratorPermissions_WhenUserIsNotMod_ThrowsUnauthorizedAccessException()
+        public async Task EnsureUserHasModeratorPermissions_WhenUserIsNotMod_ThrowsUnauthorizedAccessException()
         {
             var isMod = false;
             var isBroadcaster = false;
@@ -197,7 +197,7 @@ namespace BreganTwitchBot.DomainTests.Twitch.Helpers
             var broadcasterChannelId = DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId;
             var broadcasterChannelName = DatabaseSeedHelper.Channel1BroadcasterTwitchChannelName;
 
-            Assert.ThrowsAsync<UnauthorizedAccessException>(async () =>
+            await Assert.ThrowsAsync<UnauthorizedAccessException>(async () =>
                 await _twitchHelperService.EnsureUserHasModeratorPermissions(isMod, isBroadcaster, viewerUsername, viewerChannelId, broadcasterChannelId, broadcasterChannelName)
             );
         }
@@ -217,19 +217,19 @@ namespace BreganTwitchBot.DomainTests.Twitch.Helpers
         }
 
         [Test]
-        public void AddPointsToUser_WhenUserDoesNotExist_ThrowsTwitchUserNotFoundException()
+        public async Task AddPointsToUser_WhenUserDoesNotExist_ThrowsTwitchUserNotFoundException()
         {
             var pointsToAdd = 100;
-            Assert.ThrowsAsync<TwitchUserNotFoundException>(async () =>
+            await Assert.ThrowsAsync<TwitchUserNotFoundException>(async () =>
                 await _twitchHelperService.AddPointsToUser(DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId, "nonexistentuser", pointsToAdd, "DoesntExist", DatabaseSeedHelper.Channel1User1TwitchUsername)
             );
         }
 
         [Test]
-        public void AddPointsToUser_WhenUserExistsAndPointsToAddIsNegative_ThrowsInvalidOperationException()
+        public async Task AddPointsToUser_WhenUserExistsAndPointsToAddIsNegative_ThrowsInvalidOperationException()
         {
             var pointsToAdd = -100;
-            Assert.ThrowsAsync<InvalidOperationException>(async () =>
+            await Assert.ThrowsAsync<InvalidOperationException>(async () =>
                 await _twitchHelperService.AddPointsToUser(DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId, DatabaseSeedHelper.Channel1User1TwitchUserId, pointsToAdd, DatabaseSeedHelper.Channel1BroadcasterTwitchChannelName, DatabaseSeedHelper.Channel1User1TwitchUsername)
             );
         }
@@ -263,19 +263,19 @@ namespace BreganTwitchBot.DomainTests.Twitch.Helpers
         }
 
         [Test]
-        public void RemovePointsFromUser_WhenUserDoesNotExist_ThrowsTwitchUserNotFoundException()
+        public async Task RemovePointsFromUser_WhenUserDoesNotExist_ThrowsTwitchUserNotFoundException()
         {
             var pointsToRemove = 50;
-            Assert.ThrowsAsync<TwitchUserNotFoundException>(async () =>
+            await Assert.ThrowsAsync<TwitchUserNotFoundException>(async () =>
                 await _twitchHelperService.RemovePointsFromUser(DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId, "nonexistentuser", pointsToRemove, "DoesntExist", DatabaseSeedHelper.Channel1User1TwitchUsername)
             );
         }
 
         [Test]
-        public void RemovePointsFromUser_WhenUserExistsAndPointsToRemoveIsNegative_ThrowsInvalidOperationException()
+        public async Task RemovePointsFromUser_WhenUserExistsAndPointsToRemoveIsNegative_ThrowsInvalidOperationException()
         {
             var pointsToRemove = -50;
-            Assert.ThrowsAsync<InvalidOperationException>(async () =>
+            await Assert.ThrowsAsync<InvalidOperationException>(async () =>
                 await _twitchHelperService.RemovePointsFromUser(DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId, DatabaseSeedHelper.Channel1User1TwitchUserId, pointsToRemove, DatabaseSeedHelper.Channel1BroadcasterTwitchChannelName, DatabaseSeedHelper.Channel1User1TwitchUsername)
             );
         }
@@ -302,9 +302,9 @@ namespace BreganTwitchBot.DomainTests.Twitch.Helpers
         }
 
         [Test]
-        public void GetPointsForUser_WhenUserDoesNotExist_ThrowsTwitchUserNotFoundException()
+        public async Task GetPointsForUser_WhenUserDoesNotExist_ThrowsTwitchUserNotFoundException()
         {
-            Assert.ThrowsAsync<TwitchUserNotFoundException>(async () =>
+            await Assert.ThrowsAsync<TwitchUserNotFoundException>(async () =>
                 await _twitchHelperService.GetPointsForUser(DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId, "nonexistentuser", DatabaseSeedHelper.Channel1BroadcasterTwitchChannelName, "DoesntExist")
             );
         }

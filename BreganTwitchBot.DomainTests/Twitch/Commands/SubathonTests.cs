@@ -318,11 +318,11 @@ namespace BreganTwitchBot.DomainTests.Twitch.Commands
         }
 
         [Test]
-        public void StartSubathon_AsNonMod_ThrowsUnauthorised()
+        public async Task StartSubathon_AsNonMod_ThrowsUnauthorised()
         {
             SetupPermissions(isSuperMod: false);
 
-            Assert.ThrowsAsync<UnauthorizedAccessException>(async () =>
+            await Assert.ThrowsAsync<UnauthorizedAccessException>(async () =>
                 await _subathonDataService.StartSubathon(CreateMsgParams("!startsubathon", isMod: false)));
         }
 
@@ -337,11 +337,11 @@ namespace BreganTwitchBot.DomainTests.Twitch.Commands
         }
 
         [Test]
-        public void StopSubathon_AsModButNotSuperMod_ThrowsUnauthorised()
+        public async Task StopSubathon_AsModButNotSuperMod_ThrowsUnauthorised()
         {
             SetupPermissions(isSuperMod: false);
 
-            Assert.ThrowsAsync<UnauthorizedAccessException>(async () =>
+            await Assert.ThrowsAsync<UnauthorizedAccessException>(async () =>
                 await _subathonDataService.StopSubathon(CreateMsgParams("!stopsubathon", isMod: true)));
         }
 
@@ -362,7 +362,7 @@ namespace BreganTwitchBot.DomainTests.Twitch.Commands
             SetupPermissions(isSuperMod: false);
             await StartSubathon(TimeSpan.FromHours(2));
 
-            Assert.ThrowsAsync<UnauthorizedAccessException>(async () =>
+            await Assert.ThrowsAsync<UnauthorizedAccessException>(async () =>
                 await _subathonDataService.StopSubathon(CreateMsgParams("!stopsubathon", isMod: true)));
 
             var config = await _dbContext.ChannelConfig.FirstAsync(x => x.Channel.BroadcasterTwitchChannelId == DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId);
@@ -396,16 +396,16 @@ namespace BreganTwitchBot.DomainTests.Twitch.Commands
         }
 
         [Test]
-        public void AddTimeManually_NoSeconds_ThrowsInvalidCommand()
+        public async Task AddTimeManually_NoSeconds_ThrowsInvalidCommand()
         {
-            Assert.ThrowsAsync<InvalidCommandException>(async () =>
+            await Assert.ThrowsAsync<InvalidCommandException>(async () =>
                 await _subathonDataService.AddTimeManually(CreateMsgParams("!addsubathontime")));
         }
 
         [Test]
-        public void AddTimeManually_NotANumber_ThrowsInvalidCommand()
+        public async Task AddTimeManually_NotANumber_ThrowsInvalidCommand()
         {
-            Assert.ThrowsAsync<InvalidCommandException>(async () =>
+            await Assert.ThrowsAsync<InvalidCommandException>(async () =>
                 await _subathonDataService.AddTimeManually(CreateMsgParams("!addsubathontime abc")));
         }
 
