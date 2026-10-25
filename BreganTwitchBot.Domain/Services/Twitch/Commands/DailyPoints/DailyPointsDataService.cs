@@ -8,7 +8,6 @@ using BreganTwitchBot.Domain.Interfaces.Twitch.Commands;
 using Hangfire;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
-using System.Diagnostics;
 
 namespace BreganTwitchBot.Domain.Services.Twitch.Commands.DailyPoints
 {
@@ -22,11 +21,11 @@ namespace BreganTwitchBot.Domain.Services.Twitch.Commands.DailyPoints
         public async Task ScheduleDailyPointsCollection(string broadcasterId)
         {
             var dailyPointsStatus = configHelper.GetDailyPointsStatus(broadcasterId);
-            var botUptime = DateTime.UtcNow - Process.GetCurrentProcess().StartTime.ToUniversalTime();
 
-            // if it's within the last 20 minutes just allow collecting straight away as this could be due to a disconnection or something like that
-            // also allow straight away for bot uptime less than 60 seconds
-            if ((DateTime.UtcNow - dailyPointsStatus.LastStreamDate < TimeSpan.FromMinutes(20) && dailyPointsStatus.LastDailyPointedAllowedDate.Date == DateTime.UtcNow.Date) || botUptime.TotalSeconds < 60)
+            // the last stream *ended* within 20 minutes and points were already allowed today - most likely the
+            // stream dropped and came back, so allow collecting straight away. Uses the end date as the start
+            // date has already been overwritten with this stream's start by now
+            if (DateTime.UtcNow - configHelper.GetLastStreamEndDate(broadcasterId) < TimeSpan.FromMinutes(20) && dailyPointsStatus.LastDailyPointedAllowedDate.Date == DateTime.UtcNow.Date)
             {
                 await AllowDailyPointsCollecting(broadcasterId);
                 return;
@@ -37,15 +36,66 @@ namespace BreganTwitchBot.Domain.Services.Twitch.Commands.DailyPoints
         }
 
         /// <summary>
+        /// Picks daily points back up for a stream that was already live when the bot started. Points
+        /// open 30 minutes after the stream's real start rather than 30 minutes after the reboot.
+        /// </summary>
+        public async Task ResumeDailyPointsCollection(string broadcasterId, DateTime streamStartedAt)
+        {
+            var dailyPointsStatus = configHelper.GetDailyPointsStatus(broadcasterId);
+
+            if (dailyPointsStatus.DailyPointsAllowed && dailyPointsStatus.LastDailyPointedAllowedDate >= streamStartedAt)
+            {
+                Log.Information($"Daily points already allowed for {broadcasterId} this stream, nothing to resume");
+                return;
+            }
+
+            var timeUntilAllowed = streamStartedAt.AddMinutes(30) - DateTime.UtcNow;
+
+            if (timeUntilAllowed <= TimeSpan.Zero)
+            {
+                await AllowDailyPointsCollecting(broadcasterId);
+                return;
+            }
+
+            // the job scheduled before the reboot may still fire too - AllowDailyPointsCollecting ignores the second one
+            BackgroundJob.Schedule(() => AllowDailyPointsCollecting(broadcasterId), timeUntilAllowed);
+            Log.Information($"Resumed daily points collection for {broadcasterId}. Allowing in {timeUntilAllowed.TotalMinutes:N0} minutes");
+        }
+
+        /// <summary>
         /// Allow daily points collecting for the broadcaster. Resets streaks that have been missed
         /// </summary>
         /// <param name="broadcasterId"></param>
         /// <returns></returns>
         public async Task AllowDailyPointsCollecting(string broadcasterId)
         {
-            Log.Information($"Allowing daily points collection for {broadcasterId}");
+            // two jobs can land at once (one scheduled before a reboot and one after). Running the reset twice
+            // would wipe the streak of everyone who claimed yesterday, so only let one through at a time
+            await _allowLock.WaitAsync();
 
+            try
+            {
+                await AllowDailyPointsCollectingLocked(broadcasterId);
+            }
+            finally
+            {
+                _allowLock.Release();
+            }
+        }
+
+        private static readonly SemaphoreSlim _allowLock = new(1, 1);
+
+        private async Task AllowDailyPointsCollectingLocked(string broadcasterId)
+        {
             var dailyPointsStatus = configHelper.GetDailyPointsStatus(broadcasterId);
+
+            if (dailyPointsStatus.DailyPointsAllowed && dailyPointsStatus.LastDailyPointedAllowedDate >= dailyPointsStatus.LastStreamDate)
+            {
+                Log.Information($"Daily points already allowed for {broadcasterId} this stream, skipping");
+                return;
+            }
+
+            Log.Information($"Allowing daily points collection for {broadcasterId}");
             var channelName = await twitchHelperService.GetTwitchUserIdFromUsername(broadcasterId);
 
             // don't reset streaks if there has been a stream today

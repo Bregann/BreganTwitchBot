@@ -253,8 +253,14 @@ namespace BreganTwitchBot.Domain.Services.Twitch.Events
             }
         }
 
-        public async Task HandleStreamOnline(string broadcasterId, string broadcasterName, bool allowCollectionInstantly = false)
+        public async Task HandleStreamOnline(string broadcasterId, string broadcasterName, DateTime? existingStreamStartedAt = null)
         {
+            if (existingStreamStartedAt != null)
+            {
+                await ResumeExistingStream(broadcasterId, broadcasterName, existingStreamStartedAt.Value);
+                return;
+            }
+
             await configHelperService.UpdateStreamLiveStatus(broadcasterId, true);
             var discordEnabled = configHelperService.IsDiscordEnabled(broadcasterId);
 
@@ -272,16 +278,8 @@ namespace BreganTwitchBot.Domain.Services.Twitch.Events
                 var dailyPointsDataService = scope.ServiceProvider.GetRequiredService<IDailyPointsDataService>();
                 var hoursDataService = scope.ServiceProvider.GetRequiredService<IHoursDataService>();
 
-                if (allowCollectionInstantly)
-                {
-                    Log.Information($"Allowing daily points collection instantly for {broadcasterName}");
-                    await dailyPointsDataService.AllowDailyPointsCollecting(broadcasterId);
-                }
-                else
-                {
-                    await hoursDataService.ResetStreamMinutesForBroadcaster(broadcasterId);
-                    await dailyPointsDataService.ScheduleDailyPointsCollection(broadcasterId);
-                }
+                await hoursDataService.ResetStreamMinutesForBroadcaster(broadcasterId);
+                await dailyPointsDataService.ScheduleDailyPointsCollection(broadcasterId);
 
                 BackgroundJob.Schedule<ITwitchBossesDataService>(svc =>
                     svc.StartBossFightCountdown(
@@ -289,6 +287,24 @@ namespace BreganTwitchBot.Domain.Services.Twitch.Events
                         broadcasterName,
                         null),
                     TimeSpan.FromMinutes(45));
+            }
+        }
+
+        /// <summary>
+        /// The bot has started while the stream was already live (e.g. a reboot). This is the same stream,
+        /// so the stream minutes, discord announcement and boss fight are left alone - the hangfire jobs
+        /// from the original stream start are still scheduled
+        /// </summary>
+        private async Task ResumeExistingStream(string broadcasterId, string broadcasterName, DateTime streamStartedAt)
+        {
+            Log.Information($"Resuming already live stream for {broadcasterName} which started at {streamStartedAt}");
+
+            await configHelperService.UpdateStreamLiveStatus(broadcasterId, true, streamStartedAt);
+
+            using (var scope = serviceProvider.CreateScope())
+            {
+                var dailyPointsDataService = scope.ServiceProvider.GetRequiredService<IDailyPointsDataService>();
+                await dailyPointsDataService.ResumeDailyPointsCollection(broadcasterId, streamStartedAt);
             }
         }
     }

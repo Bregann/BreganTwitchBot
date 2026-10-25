@@ -15,6 +15,10 @@ namespace BreganTwitchBot.Domain.Interfaces.Twitch.Events
         Task HandlePollEndEvent(ChannelPollEndParams channelPollEndParams);
         Task HandleRaidEvent(ChannelRaidParams raidParams);
         Task HandleChannelPointsRedeemedEvent(ChannelPointsRedeemedParams redeemedParams);
-        Task HandleStreamOnline(string broadcasterId, string broadcasterName, bool allowCollectionInstantly = false);
+        /// <summary>
+        /// Handles a stream going live. Pass <paramref name="existingStreamStartedAt"/> when picking up a stream
+        /// that was already live when the bot started, so it isn't treated as a brand new stream
+        /// </summary>
+        Task HandleStreamOnline(string broadcasterId, string broadcasterName, DateTime? existingStreamStartedAt = null);
     }
 }

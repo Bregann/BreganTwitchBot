@@ -103,6 +103,44 @@ namespace BreganTwitchBot.DomainTests.Twitch.Commands
         }
 
         [Test]
+        public async Task AllowDailyPointsCollecting_AlreadyAllowedThisStream_DoesNothing()
+        {
+            // a job scheduled before a reboot and one after can both fire - the second must not reset streaks again
+            _configHelper.Setup(x => x.GetDailyPointsStatus(DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId))
+                .Returns((true, DateTime.UtcNow.AddMinutes(-40), DateTime.UtcNow.AddMinutes(-10), false));
+
+            await _dailyPointsDataService.AllowDailyPointsCollecting(DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId);
+
+            _configHelper.Verify(x => x.UpdateDailyPointsStatus(It.IsAny<string>(), It.IsAny<bool>()), Times.Never);
+        }
+
+        [Test]
+        public async Task ResumeDailyPointsCollection_AlreadyAllowedThisStream_DoesNothing()
+        {
+            var streamStartedAt = DateTime.UtcNow.AddHours(-2);
+
+            _configHelper.Setup(x => x.GetDailyPointsStatus(DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId))
+                .Returns((true, streamStartedAt, streamStartedAt.AddMinutes(30), false));
+
+            await _dailyPointsDataService.ResumeDailyPointsCollection(DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId, streamStartedAt);
+
+            _configHelper.Verify(x => x.UpdateDailyPointsStatus(It.IsAny<string>(), It.IsAny<bool>()), Times.Never);
+        }
+
+        [Test]
+        public async Task ResumeDailyPointsCollection_StreamLiveForOver30Minutes_AllowsStraightAway()
+        {
+            var streamStartedAt = DateTime.UtcNow.AddMinutes(-45);
+
+            _configHelper.Setup(x => x.GetDailyPointsStatus(DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId))
+                .Returns((false, streamStartedAt, DateTime.UtcNow.AddDays(-1), false));
+
+            await _dailyPointsDataService.ResumeDailyPointsCollection(DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId, streamStartedAt);
+
+            _configHelper.Verify(x => x.UpdateDailyPointsStatus(DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId, true), Times.Once);
+        }
+
+        [Test]
         public async Task AllowDailyPointsCollecting_LostStreaksMessage_ShowsTheStreaksBeforeTheyWereReset()
         {
             // the message used to be built from the rows after they'd been zeroed, so every

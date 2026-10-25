@@ -75,12 +75,12 @@ namespace BreganTwitchBot.Domain.Services
             }
         }
 
-        public async Task UpdateStreamLiveStatus(string broadcasterId, bool status)
+        public async Task UpdateStreamLiveStatus(string broadcasterId, bool status, DateTime? streamStartedAt = null)
         {
             using (var scope = _serviceProvider.CreateScope())
             {
                 var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-                var now = DateTime.UtcNow;
+                var now = status && streamStartedAt != null ? streamStartedAt.Value : DateTime.UtcNow;
 
                 await context.ChannelConfig
                     .Where(x => x.Channel.BroadcasterTwitchChannelId == broadcasterId)
@@ -113,6 +113,19 @@ namespace BreganTwitchBot.Domain.Services
                 }
 
                 Log.Information($"Updated stream live status for {broadcasterId} to {status}");
+            }
+        }
+
+        public DateTime GetLastStreamEndDate(string broadcasterId)
+        {
+            lock (GetLock(broadcasterId))
+            {
+                if (_channelConfigs.TryGetValue(broadcasterId, out var config))
+                {
+                    return config.LastStreamEndDate;
+                }
+
+                throw new KeyNotFoundException($"No config found for broadcasterId {broadcasterId}");
             }
         }
 

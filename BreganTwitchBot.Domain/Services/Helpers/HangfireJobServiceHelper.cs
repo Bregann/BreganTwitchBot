@@ -18,7 +18,8 @@ namespace BreganTwitchBot.Domain.Services.Helpers
         IStreamStatsService streamStatsService,
         IDiscordStatusService discordStatusService,
         IMonthlyLeaderboardRoleService monthlyLeaderboardRoleService,
-        ITimedMessageService timedMessageService
+        ITimedMessageService timedMessageService,
+        IWebsocketHostedService websocketHostedService
         )
     {
         public void SetupHangfireJobs()
@@ -30,6 +31,7 @@ namespace BreganTwitchBot.Domain.Services.Helpers
             RecurringJob.AddOrUpdate("DailyPointsReminder", () => AnnouncePointsReminderMessage(), "*/45 * * * *");
             RecurringJob.AddOrUpdate("ResetTwitchStreaks", () => ResetTwitchStreaks(), "0 2 * * *");
             RecurringJob.AddOrUpdate("RefreshApi", () => RefreshApi(), "45 * * * *");
+            RecurringJob.AddOrUpdate("VerifyTwitchWebsockets", () => VerifyTwitchWebsockets(), "*/5 * * * *");
             RecurringJob.AddOrUpdate("CheckBirthdays", () => CheckBirthdays(), "0 6 * * *");
             RecurringJob.AddOrUpdate("FlushStreamStats", () => FlushStreamStats(), "* * * * *");
             RecurringJob.AddOrUpdate("SendTimedMessages", () => SendTimedMessages(), "* * * * *");
@@ -173,6 +175,14 @@ namespace BreganTwitchBot.Domain.Services.Helpers
         public async Task RefreshApi()
         {
             await twitchApiConnection.RefreshAllApiKeys();
+        }
+
+        /// <summary>
+        /// Resubscribes to anything Twitch has dropped and revives any dead websockets
+        /// </summary>
+        public async Task VerifyTwitchWebsockets()
+        {
+            await websocketHostedService.VerifyConnectionsAsync();
         }
 
         /// <summary>

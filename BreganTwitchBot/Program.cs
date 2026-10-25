@@ -59,7 +59,7 @@ Log.Logger = new LoggerConfiguration()
     .WriteTo.Async(x => x.File("/app/Logs/log.log", retainedFileCountLimit: null, rollingInterval: RollingInterval.Day))
     .WriteTo.Console()
     .Enrich.WithProperty("Application", "BreganTwitchBot-Api" + (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Development" ? "-Test" : ""))
-    .WriteTo.Seq("http://192.168.1.20:5341")
+    .WriteTo.Seq("http://192.168.1.100:82")
     .CreateLogger();
 
 Log.Information("Logger Setup");
@@ -144,7 +144,10 @@ builder.Services.AddSingleton<IConfigHelperService, ConfigHelperService>();
 
 // Twitch events
 builder.Services.AddTwitchLibEventSubWebsockets();
-builder.Services.AddHostedService<WebsocketHostedService>();
+// registered once so the hangfire health check talks to the same instance that owns the websockets
+builder.Services.AddSingleton<WebsocketHostedService>();
+builder.Services.AddSingleton<IWebsocketHostedService>(sp => sp.GetRequiredService<WebsocketHostedService>());
+builder.Services.AddHostedService(sp => sp.GetRequiredService<WebsocketHostedService>());
 builder.Services.AddSingleton<ITwitchHelperService, TwitchHelperService>();
 builder.Services.AddSingleton<IStreamStatsService, StreamStatsService>();
 builder.Services.AddScoped<ITimedMessageService, TimedMessageService>();
