@@ -143,7 +143,7 @@ namespace BreganTwitchBot.Domain.Services.Twitch
         /// <exception cref="UnauthorizedAccessException"></exception>
         public async Task EnsureUserHasModeratorPermissions(ChannelChatMessageReceivedParams msgParams)
         {
-            await EnsureUserHasModeratorPermissions(msgParams);
+            await EnsureUserHasModeratorPermissions(msgParams.IsMod, msgParams.IsBroadcaster, msgParams.ChatterChannelName, msgParams.ChatterChannelId, msgParams.BroadcasterChannelId, msgParams.BroadcasterChannelName);
         }
 
         /// <summary>
