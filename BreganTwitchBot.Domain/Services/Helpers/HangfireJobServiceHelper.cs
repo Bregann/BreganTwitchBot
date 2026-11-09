@@ -1,5 +1,6 @@
 ﻿using BreganTwitchBot.Domain.Interfaces.Discord;
 using BreganTwitchBot.Domain.Interfaces.Discord.Commands;
+using BreganTwitchBot.Domain.Interfaces.Helpers;
 using BreganTwitchBot.Domain.Interfaces.Twitch;
 using BreganTwitchBot.Domain.Interfaces.Twitch.Commands;
 using Hangfire;
@@ -24,6 +25,7 @@ namespace BreganTwitchBot.Domain.Services.Helpers
     {
         public void SetupHangfireJobs()
         {
+            RecurringJob.AddOrUpdate<IProjectMonitorClient>("ProjectMonitorHeartbeat", client => client.SendHeartbeat(), Cron.Minutely);
             RecurringJob.AddOrUpdate("BigBenBong", () => BigBenBong(), "0 * * * *");
             RecurringJob.AddOrUpdate("TimeTrackerHoursUpdate", () => TimeTrackerHoursUpdate(), "* * * * *");
             RecurringJob.AddOrUpdate("RemoveWarnedUsers", () => RemoveWarnedUsers(), "* * * * *");
