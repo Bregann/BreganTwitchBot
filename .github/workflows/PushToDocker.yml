@@ -10,7 +10,7 @@ jobs:
     runs-on: [self-hosted, unraid]
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Build Docker image
         run: docker build -f BreganTwitchBot/Dockerfile -t 192.168.1.100:5000/bregantwitchbotcore:latest .
