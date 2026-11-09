@@ -70,5 +70,7 @@
       "groupName": "Next.js",
       "automerge": false
     }
-  ]
+  ],
+  "prHourlyLimit": 0,
+  "prConcurrentLimit": 20
 }
