@@ -3,6 +3,7 @@ using BreganTwitchBot.Domain.Interfaces.Discord.Commands;
 using BreganTwitchBot.Domain.Interfaces.Helpers;
 using BreganTwitchBot.Domain.Interfaces.Twitch;
 using BreganTwitchBot.Domain.Interfaces.Twitch.Commands;
+using BreganTwitchBot.Domain.Interfaces.Twitch.Events;
 using Hangfire;
 using Serilog;
 
@@ -20,6 +21,8 @@ namespace BreganTwitchBot.Domain.Services.Helpers
         IDiscordStatusService discordStatusService,
         IMonthlyLeaderboardRoleService monthlyLeaderboardRoleService,
         ITimedMessageService timedMessageService,
+        ITwitchApiInteractionService twitchApiInteractionService,
+        ITwitchEventHandlerService twitchEventHandlerService,
         IWebsocketHostedService websocketHostedService
         )
     {
@@ -38,6 +41,7 @@ namespace BreganTwitchBot.Domain.Services.Helpers
             RecurringJob.AddOrUpdate("FlushStreamStats", () => FlushStreamStats(), "* * * * *");
             RecurringJob.AddOrUpdate("SendTimedMessages", () => SendTimedMessages(), "* * * * *");
             RecurringJob.AddOrUpdate("SampleViewerCounts", () => SampleViewerCounts(), "* * * * *");
+            RecurringJob.AddOrUpdate("CheckStreamStatus", () => CheckStreamStatus(), "* * * * *");
             RecurringJob.AddOrUpdate("FollowerCheck", () => FollowerCheck(), "0 * * * *");
             RecurringJob.AddOrUpdate("UpdateDiscordMemberCount", () => UpdateDiscordMemberCount(), "*/10 * * * *");
             RecurringJob.AddOrUpdate("ResetDiscordStreaks", () => ResetDiscordStreaks(), "0 0 * * *");
@@ -193,6 +197,33 @@ namespace BreganTwitchBot.Domain.Services.Helpers
         public async Task FlushStreamStats()
         {
             await streamStatsService.FlushStats();
+        }
+
+        /// <summary>
+        /// Catches the stream starting or ending while the bot was down or disconnected from twitch,
+        /// which it would otherwise never hear about
+        /// </summary>
+        public async Task CheckStreamStatus()
+        {
+            foreach (var channel in twitchApiConnection.GetAllChannels())
+            {
+                try
+                {
+                    var apiClient = twitchApiConnection.GetBroadcasterApiClientFromChannelName(channel.BroadcasterChannelName);
+
+                    if (apiClient == null)
+                    {
+                        continue;
+                    }
+
+                    var liveStream = await twitchApiInteractionService.GetStreams(apiClient.ApiClient, channel.BroadcasterChannelId);
+                    await twitchEventHandlerService.CheckStreamStatus(channel.BroadcasterChannelId, channel.BroadcasterChannelName, liveStream);
+                }
+                catch (Exception ex)
+                {
+                    Log.Error(ex, $"[Stream] Error checking the stream status for {channel.BroadcasterChannelName}");
+                }
+            }
         }
 
         /// <summary>

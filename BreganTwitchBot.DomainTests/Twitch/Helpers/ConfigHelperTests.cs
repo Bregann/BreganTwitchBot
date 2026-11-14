@@ -127,6 +127,47 @@ namespace BreganTwitchBot.DomainTests.Twitch.Helpers
         }
 
         [Test]
+        public async Task MarkStreamLive_NewBroadcast_StoresTheStreamAndItsStart()
+        {
+            var startedAt = DateTime.UtcNow.AddMinutes(-3);
+
+            await _configHelperService.MarkStreamLive(DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId, "stream1", startedAt);
+
+            var config = await _dbContext.ChannelConfig.FirstAsync(x => x.Channel.BroadcasterTwitchChannelId == DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId);
+            _dbContext.Entry(config).Reload();
+            var state = _configHelperService.GetStreamState(DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId);
+
+            Assert.Multiple(() =>
+            {
+                Assert.That(config.BroadcasterLive, Is.True);
+                Assert.That(config.CurrentTwitchStreamId, Is.EqualTo("stream1"));
+                Assert.That(config.LastStreamStartDate, Is.EqualTo(startedAt).Within(1).Seconds);
+                Assert.That(state.Live, Is.True);
+                Assert.That(state.TwitchStreamId, Is.EqualTo("stream1"));
+                Assert.That(state.LastStreamStart, Is.EqualTo(startedAt).Within(1).Seconds);
+            });
+        }
+
+        [Test]
+        public async Task MarkStreamLive_SameBroadcastCarryingOn_KeepsTheOriginalStart()
+        {
+            var startedAt = DateTime.UtcNow.AddHours(-1);
+            await _configHelperService.MarkStreamLive(DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId, "stream1", startedAt);
+
+            await _configHelperService.MarkStreamLive(DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId, "stream2", null);
+
+            var config = await _dbContext.ChannelConfig.FirstAsync(x => x.Channel.BroadcasterTwitchChannelId == DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId);
+            _dbContext.Entry(config).Reload();
+
+            Assert.Multiple(() =>
+            {
+                Assert.That(config.CurrentTwitchStreamId, Is.EqualTo("stream2"));
+                Assert.That(config.LastStreamStartDate, Is.EqualTo(startedAt).Within(1).Seconds);
+                Assert.That(_configHelperService.GetStreamState(DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId).LastStreamStart, Is.EqualTo(startedAt).Within(1).Seconds);
+            });
+        }
+
+        [Test]
         public async Task UpdateStreamLiveStatus_UpdateStreamLiveStatusToFalse_ValuesAreSet()
         {
             await _configHelperService.UpdateStreamLiveStatus(DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId, false);

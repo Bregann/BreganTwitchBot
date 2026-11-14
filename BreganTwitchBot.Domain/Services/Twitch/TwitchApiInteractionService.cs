@@ -215,6 +215,7 @@ namespace BreganTwitchBot.Domain.Services.Twitch
                         ? null
                         : new GetStreamsResponse
                         {
+                            Id = res.Streams[0].Id,
                             GameId = res.Streams[0].GameId,
                             GameName = res.Streams[0].GameName,
                             ViewerCount = res.Streams[0].ViewerCount,

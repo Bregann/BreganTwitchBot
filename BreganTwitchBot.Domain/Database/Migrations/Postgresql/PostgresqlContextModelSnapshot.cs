@@ -183,6 +183,9 @@ namespace BreganTwitchBot.Domain.Database.Migrations.Postgresql
                     b.Property<long>("CurrencyPointCap")
                         .HasColumnType("bigint");
 
+                    b.Property<string>("CurrentTwitchStreamId")
+                        .HasColumnType("text");
+
                     b.Property<bool>("DailyPointsCollectingAllowed")
                         .HasColumnType("boolean");
 

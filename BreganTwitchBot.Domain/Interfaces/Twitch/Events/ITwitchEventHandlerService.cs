@@ -1,4 +1,5 @@
-﻿using BreganTwitchBot.Domain.DTOs.Twitch.EventSubEvents;
+﻿using BreganTwitchBot.Domain.DTOs.Twitch.Api;
+using BreganTwitchBot.Domain.DTOs.Twitch.EventSubEvents;
 
 namespace BreganTwitchBot.Domain.Interfaces.Twitch.Events
 {
@@ -16,9 +17,19 @@ namespace BreganTwitchBot.Domain.Interfaces.Twitch.Events
         Task HandleRaidEvent(ChannelRaidParams raidParams);
         Task HandleChannelPointsRedeemedEvent(ChannelPointsRedeemedParams redeemedParams);
         /// <summary>
-        /// Handles a stream going live. Pass <paramref name="existingStreamStartedAt"/> when picking up a stream
-        /// that was already live when the bot started, so it isn't treated as a brand new stream
+        /// Twitch says the stream is live on this broadcast. Works out whether that's a new broadcast,
+        /// the same one dropping out and coming back, or one the bot already knew about from before
+        /// a restart, and only does what's needed for that
         /// </summary>
-        Task HandleStreamOnline(string broadcasterId, string broadcasterName, DateTime? existingStreamStartedAt = null);
+        Task HandleStreamOnline(string broadcasterId, string broadcasterName, string twitchStreamId, DateTime startedAt);
+
+        Task HandleStreamOffline(string broadcasterId, string broadcasterName);
+
+        /// <summary>
+        /// Brings the stored stream status in line with twitch's, for anything the bot missed while
+        /// it was down or disconnected. Called on startup and every minute
+        /// </summary>
+        /// <param name="liveStream">What twitch returned, or null if it isn't live</param>
+        Task CheckStreamStatus(string broadcasterId, string broadcasterName, GetStreamsResponse? liveStream);
     }
 }

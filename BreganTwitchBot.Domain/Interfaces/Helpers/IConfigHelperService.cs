@@ -6,13 +6,15 @@ namespace BreganTwitchBot.Domain.Interfaces.Helpers
     {
         Task UpdateDailyPointsStatus(string broadcasterId, bool status);
         (bool DailyPointsAllowed, DateTime LastStreamDate, DateTime LastDailyPointedAllowedDate, bool StreamHappenedThisWeek) GetDailyPointsStatus(string broadcasterId);
-        DateTime GetLastStreamEndDate(string broadcasterId);
+        Task UpdateStreamLiveStatus(string broadcasterId, bool status);
 
         /// <summary>
-        /// Sets the stream live/offline. <paramref name="streamStartedAt"/> is the real start time when
-        /// picking up a stream that was already live (e.g. after a reboot), otherwise now is used
+        /// Marks the stream live on this twitch broadcast. The stream start is only moved on for a
+        /// new broadcast, so one that drops and comes back keeps its original start.
         /// </summary>
-        Task UpdateStreamLiveStatus(string broadcasterId, bool status, DateTime? streamStartedAt = null);
+        Task MarkStreamLive(string broadcasterId, string twitchStreamId, DateTime? newBroadcastStartedAt);
+
+        StreamState GetStreamState(string broadcasterId);
         DiscordConfig? GetDiscordConfig(ulong discordGuildId);
         DiscordConfig? GetDiscordConfig(string broadcasterId);
         bool IsDiscordEnabled(string broadcasterId);

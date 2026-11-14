@@ -53,6 +53,13 @@ namespace BreganTwitchBot.Domain.Database.Models
         public required bool BroadcasterLive { get; set; }
 
         /// <summary>
+        /// Twitch's id for the broadcast the bot last saw go live. Every broadcast gets a new one,
+        /// including when a stream drops and comes back, so it tells a bot restart mid stream
+        /// apart from a new stream.
+        /// </summary>
+        public string? CurrentTwitchStreamId { get; set; }
+
+        /// <summary>
         /// The least viewers a raid must bring before the raider is automatically shouted out,
         /// so a troll raid of two people does not earn one. Zero shouts out every raid.
         /// </summary>

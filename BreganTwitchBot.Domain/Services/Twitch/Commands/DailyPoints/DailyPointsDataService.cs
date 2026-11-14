@@ -14,55 +14,6 @@ namespace BreganTwitchBot.Domain.Services.Twitch.Commands.DailyPoints
     public class DailyPointsDataService(AppDbContext context, IConfigHelperService configHelper, ITwitchHelperService twitchHelperService, ITwitchApiConnection twitchApiConnection) : IDailyPointsDataService
     {
         /// <summary>
-        /// Schedule daily points collection for the broadcaster. When the stream goes live a 30 minute timer is started to allow collecting points.
-        /// </summary>
-        /// <param name="broadcasterId"></param>
-        /// <returns></returns>
-        public async Task ScheduleDailyPointsCollection(string broadcasterId)
-        {
-            var dailyPointsStatus = configHelper.GetDailyPointsStatus(broadcasterId);
-
-            // the last stream *ended* within 20 minutes and points were already allowed today - most likely the
-            // stream dropped and came back, so allow collecting straight away. Uses the end date as the start
-            // date has already been overwritten with this stream's start by now
-            if (DateTime.UtcNow - configHelper.GetLastStreamEndDate(broadcasterId) < TimeSpan.FromMinutes(20) && dailyPointsStatus.LastDailyPointedAllowedDate.Date == DateTime.UtcNow.Date)
-            {
-                await AllowDailyPointsCollecting(broadcasterId);
-                return;
-            }
-
-            BackgroundJob.Schedule(() => AllowDailyPointsCollecting(broadcasterId), TimeSpan.FromMinutes(30));
-            Log.Information($"Scheduled daily points collection for {broadcasterId}");
-        }
-
-        /// <summary>
-        /// Picks daily points back up for a stream that was already live when the bot started. Points
-        /// open 30 minutes after the stream's real start rather than 30 minutes after the reboot.
-        /// </summary>
-        public async Task ResumeDailyPointsCollection(string broadcasterId, DateTime streamStartedAt)
-        {
-            var dailyPointsStatus = configHelper.GetDailyPointsStatus(broadcasterId);
-
-            if (dailyPointsStatus.DailyPointsAllowed && dailyPointsStatus.LastDailyPointedAllowedDate >= streamStartedAt)
-            {
-                Log.Information($"Daily points already allowed for {broadcasterId} this stream, nothing to resume");
-                return;
-            }
-
-            var timeUntilAllowed = streamStartedAt.AddMinutes(30) - DateTime.UtcNow;
-
-            if (timeUntilAllowed <= TimeSpan.Zero)
-            {
-                await AllowDailyPointsCollecting(broadcasterId);
-                return;
-            }
-
-            // the job scheduled before the reboot may still fire too - AllowDailyPointsCollecting ignores the second one
-            BackgroundJob.Schedule(() => AllowDailyPointsCollecting(broadcasterId), timeUntilAllowed);
-            Log.Information($"Resumed daily points collection for {broadcasterId}. Allowing in {timeUntilAllowed.TotalMinutes:N0} minutes");
-        }
-
-        /// <summary>
         /// Allow daily points collecting for the broadcaster. Resets streaks that have been missed
         /// </summary>
         /// <param name="broadcasterId"></param>
@@ -89,14 +40,24 @@ namespace BreganTwitchBot.Domain.Services.Twitch.Commands.DailyPoints
         {
             var dailyPointsStatus = configHelper.GetDailyPointsStatus(broadcasterId);
 
-            if (dailyPointsStatus.DailyPointsAllowed && dailyPointsStatus.LastDailyPointedAllowedDate >= dailyPointsStatus.LastStreamDate)
+            // a job scheduled before a restart and one rescheduled after it can both fire, and the
+            // second mustn't announce again
+            if (dailyPointsStatus.DailyPointsAllowed)
             {
-                Log.Information($"Daily points already allowed for {broadcasterId} this stream, skipping");
+                Log.Information($"Daily points collection is already allowed for {broadcasterId}");
+                return;
+            }
+
+            // a job scheduled for a stream that has since ended, or dropped out and not come back yet.
+            // If it comes back the points are scheduled again
+            if (!await twitchHelperService.IsBroadcasterLive(broadcasterId))
+            {
+                Log.Information($"Not allowing daily points collection for {broadcasterId} as the stream isn't live");
                 return;
             }
 
             Log.Information($"Allowing daily points collection for {broadcasterId}");
-            var channelName = await twitchHelperService.GetTwitchUserIdFromUsername(broadcasterId);
+            var channelName = GetChannelName(broadcasterId);
 
             // don't reset streaks if there has been a stream today
             if (dailyPointsStatus.LastDailyPointedAllowedDate.Date == DateTime.UtcNow.Date)
@@ -139,7 +100,6 @@ namespace BreganTwitchBot.Domain.Services.Twitch.Commands.DailyPoints
 
             // allow the point collecting and let the users know
             await configHelper.UpdateDailyPointsStatus(broadcasterId, true);
-            await twitchHelperService.SendAnnouncementMessageToChannel(broadcasterId, channelName!, $"Don't forget to claim your daily, weekly, monthly and yearly {await twitchHelperService.GetPointsName(broadcasterId, channelName!)} with !daily, !weekly, !monthly and !yearly PogChamp KEKW");
 
             if (top5LostStreaks.Count > 0)
             {
@@ -150,10 +110,19 @@ namespace BreganTwitchBot.Domain.Services.Twitch.Commands.DailyPoints
             await AnnouncePointsReminder(broadcasterId);
         }
 
+        /// <summary>
+        /// This used to look the name up with GetTwitchUserIdFromUsername, passing it the id, so it
+        /// came back empty and the messages were logged as sent to a blank channel
+        /// </summary>
+        private string GetChannelName(string broadcasterId)
+        {
+            return twitchApiConnection.GetChannelDetails(broadcasterId)?.BroadcasterChannelName ?? broadcasterId;
+        }
+
         public async Task AnnouncePointsReminder(string broadcasterId)
         {
             var dailyPointsStatus = configHelper.GetDailyPointsStatus(broadcasterId);
-            var channelName = await twitchHelperService.GetTwitchUserIdFromUsername(broadcasterId);
+            var channelName = GetChannelName(broadcasterId);
 
             if (dailyPointsStatus.DailyPointsAllowed)
             {
