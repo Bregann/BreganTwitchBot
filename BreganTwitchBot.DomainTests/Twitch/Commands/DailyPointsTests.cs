@@ -108,6 +108,18 @@ namespace BreganTwitchBot.DomainTests.Twitch.Commands
         }
 
         [Test]
+        public async Task AllowDailyPointsCollecting_AlreadyAllowedThisStream_DoesNothing()
+        {
+            // a job scheduled before a reboot and one after can both fire - the second must not reset streaks again
+            _configHelper.Setup(x => x.GetDailyPointsStatus(DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId))
+                .Returns((true, DateTime.UtcNow.AddMinutes(-40), DateTime.UtcNow.AddMinutes(-10), false));
+
+            await _dailyPointsDataService.AllowDailyPointsCollecting(DatabaseSeedHelper.Channel1BroadcasterTwitchChannelId);
+
+            _configHelper.Verify(x => x.UpdateDailyPointsStatus(It.IsAny<string>(), It.IsAny<bool>()), Times.Never);
+        }
+
+        [Test]
         public async Task AllowDailyPointsCollecting_LostStreaksMessage_ShowsTheStreaksBeforeTheyWereReset()
         {
             // the message used to be built from the rows after they'd been zeroed, so every
@@ -414,14 +426,14 @@ namespace BreganTwitchBot.DomainTests.Twitch.Commands
         [TestCase(PointsClaimType.Weekly)]
         [TestCase(PointsClaimType.Monthly)]
         [TestCase(PointsClaimType.Yearly)]
-        public void HandleStreakCheckCommand_CheckOtherUserInvalidUsername_CorrectExceptionThrown(PointsClaimType pointsClaimType)
+        public async Task HandleStreakCheckCommand_CheckOtherUserInvalidUsername_CorrectExceptionThrown(PointsClaimType pointsClaimType)
         {
             _twitchHelperService.Setup(x => x.GetTwitchUserIdFromUsername(It.IsAny<string>()))
                 .ReturnsAsync((string?)null);
 
             var msgParams = MessageParamsHelper.CreateChatMessageParams("!streak invalid", "123", new string[] { "!daily", "invalid" });
 
-            Assert.ThrowsAsync<TwitchUserNotFoundException>(() => _dailyPointsDataService.HandleStreakCheckCommand(msgParams, pointsClaimType));
+            await Assert.ThrowsAsync<TwitchUserNotFoundException>(() => _dailyPointsDataService.HandleStreakCheckCommand(msgParams, pointsClaimType));
         }
 
         [Test]

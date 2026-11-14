@@ -7,6 +7,7 @@ using BreganTwitchBot.Domain.Interfaces.Twitch.Events;
 using Microsoft.Extensions.Hosting;
 using Serilog;
 using TwitchLib.Api.Core.Enums;
+using TwitchLib.Api.Helix.Models.EventSub;
 using TwitchLib.EventSub.Core.EventArgs.Channel;
 using TwitchLib.EventSub.Core.EventArgs.Stream;
 using TwitchLib.EventSub.Websockets;
@@ -23,20 +24,25 @@ namespace BreganTwitchBot.Domain.Services.Twitch
         IWordBlacklistMonitorService wordBlacklistMonitorService,
         ITwitchApiInteractionService twitchApiInteractionService,
         IStreamStatsService streamStatsService
-    ) : IHostedService
+    ) : IHostedService, IWebsocketHostedService
     {
         /// <summary>
         /// The single websocket for the bot account. All chat/moderation events for every channel
         /// come down this one connection.
         /// </summary>
-        private EventSubWebsocketClient? _botConnection;
+        private TrackedConnection? _botConnection;
 
         /// <summary>
         /// One websocket per broadcaster, keyed by the broadcaster's channel name. These are kept
         /// per channel because subscriptions, cheers, follows, polls and predictions are only
         /// available to that channel's own broadcaster token.
         /// </summary>
-        private readonly Dictionary<string, EventSubWebsocketClient> _broadcasterConnections = [];
+        private readonly Dictionary<string, TrackedConnection> _broadcasterConnections = [];
+
+        /// <summary>
+        /// Cancelled when the bot is shutting down so any reconnect loops stop
+        /// </summary>
+        private readonly CancellationTokenSource _stoppingCts = new();
 
         private async Task OnChannelCheer(object sender, ChannelCheerArgs args)
         {
@@ -351,145 +357,380 @@ namespace BreganTwitchBot.Domain.Services.Twitch
             return Task.CompletedTask;
         }
 
-        private Task OnWebsocketReconnected(object sender, EventArgs args)
+        /// <summary>
+        /// Twitch asked us to move to a new server and the library handled it. Subscriptions carry
+        /// over to the new socket so there's nothing to do.
+        /// </summary>
+        private Task OnWebsocketReconnected(TrackedConnection connection)
         {
-            Log.Information("Websocket reconnected");
+            Log.Information($"[Twitch Events] Websocket for {connection.Name} reconnected at Twitch's request");
             return Task.CompletedTask;
         }
 
-        private async Task OnWebsocketDisconnected(object sender, EventArgs e, string twitchChannelName, EventSubWebsocketClient? userWebsocketConnection)
+        private Task OnWebsocketDisconnected(EventSubWebsocketClient client, TrackedConnection connection)
         {
-            if (userWebsocketConnection == null)
+            // an old client we've already replaced
+            if (client != connection.Client)
             {
-                Log.Fatal($"[Twitch Events] Websocket disconnected for {twitchChannelName} but no connection found");
-                return;
+                return Task.CompletedTask;
             }
 
-            const int maxRetries = 5;
-            int retryAttempt = 0;
-            var random = new Random();
+            Log.Warning($"[Twitch Events] Websocket disconnected for {connection.Name}");
 
-            while (retryAttempt < maxRetries)
-            {
-                Log.Warning($"[Twitch Events] Websocket disconnected for {twitchChannelName}. Attempting reconnect #{retryAttempt + 1}");
-
-                try
-                {
-                    bool reconnected = await userWebsocketConnection.ReconnectAsync();
-
-                    if (reconnected)
-                    {
-                        Log.Information($"[Twitch Events] Successfully reconnected websocket for {twitchChannelName} on attempt #{retryAttempt + 1}");
-                        return;
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Log.Error(ex, $"[Twitch Events] Reconnect attempt #{retryAttempt + 1} failed for {twitchChannelName}");
-                }
-
-                retryAttempt++;
-
-                // Exponential backoff with jitter
-                int delay = (int)(Math.Pow(2, retryAttempt) * 1000);
-                int jitter = random.Next(0, 1000);
-                int totalDelay = Math.Min(delay + jitter, 30000); // Cap at 30s
-
-                Log.Warning($"[Twitch Events] Waiting {totalDelay}ms before next reconnect attempt for {twitchChannelName} 💤");
-                await Task.Delay(totalDelay);
-            }
-
-            Log.Fatal($"[Twitch Events] Failed to reconnect websocket for {twitchChannelName} after {maxRetries} attempts 💀");
+            // don't hold up the library's connection check task with the reconnect loop
+            _ = Task.Run(() => ConnectWithRetryAsync(connection));
+            return Task.CompletedTask;
         }
 
-        /// <summary>
-        /// The bot has connected. Subscribe to the bot level events for every channel the bot is
-        /// active in - one websocket carries the chat and moderation events for all of them.
-        /// </summary>
-        private async Task OnBotWebsocketConnected(object sender, WebsocketConnectedArgs e)
+        private async Task OnWebsocketConnected(EventSubWebsocketClient client, WebsocketConnectedArgs e, TrackedConnection connection)
         {
-            if (e.IsRequestedReconnect)
+            if (client != connection.Client || e.IsRequestedReconnect)
             {
                 return;
             }
 
-            var botApiClient = twitchApiConnection.GetBotApiClient();
-
-            if (botApiClient == null || _botConnection == null)
-            {
-                Log.Fatal("[Twitch API Connection] Bot websocket connected but there is no bot api client");
-                return;
-            }
-
-            foreach (var channel in twitchApiConnection.GetAllChannels())
-            {
-                try
-                {
-                    // TODO: migrate to this when supported - channel.moderate
-                    // await botApiClient.ApiClient.Helix.EventSub.CreateEventSubSubscriptionAsync("channel.moderate", "2", new Dictionary<string, string>() { { "broadcaster_user_id", channel.BroadcasterChannelId }, { "moderator_user_id", botApiClient.TwitchChannelClientId } }, EventSubTransportMethod.Websocket, _botConnection.SessionId);
-
-                    // TODO: add unban requests when my PR is merged in
-                    await botApiClient.ApiClient.Helix.EventSub.CreateEventSubSubscriptionAsync("channel.chat.message", "1", new Dictionary<string, string> { { "broadcaster_user_id", channel.BroadcasterChannelId }, { "user_id", botApiClient.TwitchChannelClientId } }, EventSubTransportMethod.Websocket, _botConnection.SessionId);
-                    await botApiClient.ApiClient.Helix.EventSub.CreateEventSubSubscriptionAsync("channel.update", "2", new Dictionary<string, string> { { "broadcaster_user_id", channel.BroadcasterChannelId } }, EventSubTransportMethod.Websocket, _botConnection.SessionId);
-                    await botApiClient.ApiClient.Helix.EventSub.CreateEventSubSubscriptionAsync("channel.raid", "1", new Dictionary<string, string> { { "to_broadcaster_user_id", channel.BroadcasterChannelId } }, EventSubTransportMethod.Websocket, _botConnection.SessionId);
-                    await botApiClient.ApiClient.Helix.EventSub.CreateEventSubSubscriptionAsync("stream.online", "1", new Dictionary<string, string> { { "broadcaster_user_id", channel.BroadcasterChannelId } }, EventSubTransportMethod.Websocket, _botConnection.SessionId);
-                    await botApiClient.ApiClient.Helix.EventSub.CreateEventSubSubscriptionAsync("stream.offline", "1", new Dictionary<string, string> { { "broadcaster_user_id", channel.BroadcasterChannelId } }, EventSubTransportMethod.Websocket, _botConnection.SessionId);
-                    await botApiClient.ApiClient.Helix.EventSub.CreateEventSubSubscriptionAsync("channel.suspicious_user.message", "1", new Dictionary<string, string> { { "broadcaster_user_id", channel.BroadcasterChannelId }, { "moderator_user_id", botApiClient.TwitchChannelClientId } }, EventSubTransportMethod.Websocket, _botConnection.SessionId);
-
-                    Log.Information($"[Twitch API Connection] Subscribed to bot events in {channel.BroadcasterChannelName} as {botApiClient.TwitchUsername}");
-
-                    await twitchHelperService.SendTwitchMessageToChannel(channel.BroadcasterChannelId, channel.BroadcasterChannelName, "hello currys (successfully connected)", null);
-                }
-                catch (Exception ex)
-                {
-                    Log.Error(ex, $"Error subscribing to bot events in {channel.BroadcasterChannelName}");
-                }
-            }
-        }
-
-        /// <summary>
-        /// A broadcaster has connected. These subscriptions need the channel's own broadcaster
-        /// token as Twitch will not hand this data to the bot account.
-        /// </summary>
-        private async Task OnBroadcasterWebsocketConnected(object sender, WebsocketConnectedArgs e, string twitchChannelName)
-        {
-            if (e.IsRequestedReconnect)
-            {
-                return;
-            }
-
-            var apiClient = twitchApiConnection.GetBroadcasterApiClientFromChannelName(twitchChannelName);
-            var broadcasterWebsocketConnection = _broadcasterConnections.GetValueOrDefault(twitchChannelName);
-
-            if (apiClient == null || broadcasterWebsocketConnection == null)
-            {
-                return;
-            }
-
-            var broadcasterChannelId = apiClient.TwitchChannelClientId;
+            var activeSubscriptions = 0;
 
             try
             {
-                await apiClient.ApiClient.Helix.EventSub.CreateEventSubSubscriptionAsync("channel.follow", "2", new Dictionary<string, string> { { "broadcaster_user_id", broadcasterChannelId }, { "moderator_user_id", broadcasterChannelId } }, EventSubTransportMethod.Websocket, broadcasterWebsocketConnection.SessionId);
-                await apiClient.ApiClient.Helix.EventSub.CreateEventSubSubscriptionAsync("channel.subscribe", "1", new Dictionary<string, string> { { "broadcaster_user_id", broadcasterChannelId } }, EventSubTransportMethod.Websocket, broadcasterWebsocketConnection.SessionId);
-                await apiClient.ApiClient.Helix.EventSub.CreateEventSubSubscriptionAsync("channel.subscription.gift", "1", new Dictionary<string, string> { { "broadcaster_user_id", broadcasterChannelId } }, EventSubTransportMethod.Websocket, broadcasterWebsocketConnection.SessionId);
-                await apiClient.ApiClient.Helix.EventSub.CreateEventSubSubscriptionAsync("channel.subscription.message", "1", new Dictionary<string, string> { { "broadcaster_user_id", broadcasterChannelId } }, EventSubTransportMethod.Websocket, broadcasterWebsocketConnection.SessionId);
-                await apiClient.ApiClient.Helix.EventSub.CreateEventSubSubscriptionAsync("channel.cheer", "1", new Dictionary<string, string> { { "broadcaster_user_id", broadcasterChannelId } }, EventSubTransportMethod.Websocket, broadcasterWebsocketConnection.SessionId);
-                await apiClient.ApiClient.Helix.EventSub.CreateEventSubSubscriptionAsync("channel.ban", "1", new Dictionary<string, string>() { { "broadcaster_user_id", broadcasterChannelId } }, EventSubTransportMethod.Websocket, broadcasterWebsocketConnection.SessionId);
-                await apiClient.ApiClient.Helix.EventSub.CreateEventSubSubscriptionAsync("channel.unban", "1", new Dictionary<string, string>() { { "broadcaster_user_id", broadcasterChannelId } }, EventSubTransportMethod.Websocket, broadcasterWebsocketConnection.SessionId);
-                await apiClient.ApiClient.Helix.EventSub.CreateEventSubSubscriptionAsync("channel.channel_points_automatic_reward_redemption.add", "2", new Dictionary<string, string> { { "broadcaster_user_id", broadcasterChannelId } }, EventSubTransportMethod.Websocket, broadcasterWebsocketConnection.SessionId);
-                await apiClient.ApiClient.Helix.EventSub.CreateEventSubSubscriptionAsync("channel.channel_points_custom_reward_redemption.add", "1", new Dictionary<string, string> { { "broadcaster_user_id", broadcasterChannelId } }, EventSubTransportMethod.Websocket, broadcasterWebsocketConnection.SessionId);
-                await apiClient.ApiClient.Helix.EventSub.CreateEventSubSubscriptionAsync("channel.poll.begin", "1", new Dictionary<string, string> { { "broadcaster_user_id", broadcasterChannelId } }, EventSubTransportMethod.Websocket, broadcasterWebsocketConnection.SessionId);
-                await apiClient.ApiClient.Helix.EventSub.CreateEventSubSubscriptionAsync("channel.poll.end", "1", new Dictionary<string, string> { { "broadcaster_user_id", broadcasterChannelId } }, EventSubTransportMethod.Websocket, broadcasterWebsocketConnection.SessionId);
-                await apiClient.ApiClient.Helix.EventSub.CreateEventSubSubscriptionAsync("channel.prediction.begin", "1", new Dictionary<string, string> { { "broadcaster_user_id", broadcasterChannelId } }, EventSubTransportMethod.Websocket, broadcasterWebsocketConnection.SessionId);
-                await apiClient.ApiClient.Helix.EventSub.CreateEventSubSubscriptionAsync("channel.prediction.lock", "1", new Dictionary<string, string> { { "broadcaster_user_id", broadcasterChannelId } }, EventSubTransportMethod.Websocket, broadcasterWebsocketConnection.SessionId);
-                await apiClient.ApiClient.Helix.EventSub.CreateEventSubSubscriptionAsync("channel.prediction.end", "1", new Dictionary<string, string> { { "broadcaster_user_id", broadcasterChannelId } }, EventSubTransportMethod.Websocket, broadcasterWebsocketConnection.SessionId);
-
-                Log.Information($"[Twitch API Connection] Subscribed to broadcaster events for {apiClient.TwitchUsername}");
+                activeSubscriptions = await SyncSubscriptionsAsync(connection, client, isNewSession: true);
             }
             catch (Exception ex)
             {
-                Log.Error(ex, $"Error subscribing to events for {apiClient.TwitchUsername}");
+                Log.Error(ex, $"[Twitch Events] Error subscribing to events on the {connection.Name} websocket");
+            }
+
+            // twitch closes a websocket with no subscriptions after a few seconds, so count that as a failure
+            connection.Welcomed?.TrySetResult(activeSubscriptions > 0);
+        }
+
+        /// <summary>
+        /// Keeps trying to get a connection up until it works or the bot is stopping. Only one of
+        /// these runs per connection at a time - a dying socket can raise disconnected more than once.
+        /// </summary>
+        private async Task ConnectWithRetryAsync(TrackedConnection connection)
+        {
+            if (!await connection.ReconnectLock.WaitAsync(0))
+            {
+                return;
+            }
+
+            try
+            {
+                var attempt = 0;
+
+                while (!_stoppingCts.IsCancellationRequested)
+                {
+                    attempt++;
+                    Log.Information($"[Twitch Events] Connecting websocket for {connection.Name}. Attempt #{attempt}");
+
+                    try
+                    {
+                        if (await TryConnectAsync(connection))
+                        {
+                            Log.Information($"[Twitch Events] Websocket connected and subscribed for {connection.Name} on attempt #{attempt}");
+                            return;
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Log.Error(ex, $"[Twitch Events] Connect attempt #{attempt} failed for {connection.Name}");
+                    }
+
+                    // Exponential backoff with jitter, capped at 60s. Never give up - a long outage should still recover
+                    var delay = Math.Min(Math.Pow(2, Math.Min(attempt, 6)) * 1000, 60000) + Random.Shared.Next(0, 1000);
+
+                    Log.Warning($"[Twitch Events] Waiting {delay}ms before next connect attempt for {connection.Name} 💤");
+
+                    try
+                    {
+                        await Task.Delay(TimeSpan.FromMilliseconds(delay), _stoppingCts.Token);
+                    }
+                    catch (OperationCanceledException)
+                    {
+                        return;
+                    }
+                }
+            }
+            finally
+            {
+                connection.ReconnectLock.Release();
+            }
+        }
+
+        /// <summary>
+        /// Swaps in a brand new client rather than calling ReconnectAsync on the old one. The library
+        /// can be left stuck thinking a Twitch requested reconnect is in progress, which then stops
+        /// the new session from ever being subscribed to.
+        /// </summary>
+        private async Task<bool> TryConnectAsync(TrackedConnection connection)
+        {
+            var oldClient = connection.Client;
+            connection.Client = null;
+
+            if (oldClient != null)
+            {
+                try
+                {
+                    await oldClient.DisconnectAsync();
+                }
+                catch (Exception ex)
+                {
+                    Log.Warning(ex, $"[Twitch Events] Error disconnecting the old websocket for {connection.Name}");
+                }
+            }
+
+            var welcomed = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+            connection.Welcomed = welcomed;
+
+            var client = CreateClient(connection);
+            connection.Client = client;
+
+            if (!await client.ConnectAsync())
+            {
+                Log.Warning($"[Twitch Events] Websocket for {connection.Name} failed to open");
+                return false;
+            }
+
+            // the socket being open isn't enough - wait for twitch's welcome and the subscriptions to go in
+            var finished = await Task.WhenAny(welcomed.Task, Task.Delay(TimeSpan.FromSeconds(30), _stoppingCts.Token));
+
+            if (finished != welcomed.Task)
+            {
+                Log.Warning($"[Twitch Events] Websocket for {connection.Name} opened but was never welcomed by Twitch");
+                return false;
+            }
+
+            return welcomed.Task.Result;
+        }
+
+        private EventSubWebsocketClient CreateClient(TrackedConnection connection)
+        {
+            var client = new EventSubWebsocketClient();
+
+            if (connection.IsBot)
+            {
+                client.ChannelChatMessage += OnChannelChatMessageReceived;
+                client.ChannelUpdate += OnChannelUpdate;
+                client.ChannelRaid += OnChannelRaid;
+                client.StreamOnline += OnStreamOnline;
+                client.StreamOffline += OnStreamOffline;
+                client.ChannelSuspiciousUserMessage += OnSuspiciousUserMessage;
+            }
+            else
+            {
+                client.ChannelBan += OnChannelBan;
+                client.ChannelUnban += OnChannelUnban;
+                client.ChannelPointsAutomaticRewardRedemptionAdd += OnAutomaticRewardRedeemed;
+                client.ChannelPointsCustomRewardRedemptionAdd += OnCustomRewardRedeemed;
+                client.ChannelPollBegin += OnPollBegin;
+                client.ChannelPollEnd += OnPollEnd;
+                client.ChannelPredictionBegin += OnChannelPredictionBegin;
+                client.ChannelPredictionLock += OnChannelPredictionLock;
+                client.ChannelPredictionEnd += OnChannelPredictionEnd;
+                client.ChannelFollow += OnFollowReceived;
+                client.ChannelSubscribe += OnChannelSubcribe;
+                client.ChannelSubscriptionGift += OnChannelSubscriptionGift;
+                client.ChannelSubscriptionMessage += OnChannelResubscribe;
+                client.ChannelCheer += OnChannelCheer;
+            }
+
+            client.WebsocketConnected += (sender, e) => OnWebsocketConnected(client, e, connection);
+            client.WebsocketDisconnected += (sender, e) => OnWebsocketDisconnected(client, connection);
+            client.WebsocketReconnected += (sender, e) => OnWebsocketReconnected(connection);
+            client.ErrorOccurred += OnErrorOccurred;
+
+            return client;
+        }
+
+        /// <summary>
+        /// The bot level events for every channel the bot is active in - one websocket carries the
+        /// chat and moderation events for all of them.
+        /// </summary>
+        private List<DesiredSubscription> GetBotSubscriptions(TwitchApiConnection.TwitchAccount botApiClient)
+        {
+            var botUserId = botApiClient.TwitchChannelClientId;
+            var subscriptions = new List<DesiredSubscription>();
+
+            foreach (var channel in twitchApiConnection.GetAllChannels())
+            {
+                var name = channel.BroadcasterChannelName;
+                var id = channel.BroadcasterChannelId;
+
+                // TODO: migrate to this when supported - channel.moderate
+                // new(name, id, "channel.moderate", "2", new() { { "broadcaster_user_id", id }, { "moderator_user_id", botUserId } })
+
+                // TODO: add unban requests when my PR is merged in
+                subscriptions.AddRange(
+                [
+                    new(name, id, "channel.chat.message", "1", new() { { "broadcaster_user_id", id }, { "user_id", botUserId } }),
+                    new(name, id, "channel.update", "2", new() { { "broadcaster_user_id", id } }),
+                    new(name, id, "channel.raid", "1", new() { { "to_broadcaster_user_id", id } }),
+                    new(name, id, "stream.online", "1", new() { { "broadcaster_user_id", id } }),
+                    new(name, id, "stream.offline", "1", new() { { "broadcaster_user_id", id } }),
+                    new(name, id, "channel.suspicious_user.message", "1", new() { { "broadcaster_user_id", id }, { "moderator_user_id", botUserId } })
+                ]);
+            }
+
+            return subscriptions;
+        }
+
+        /// <summary>
+        /// These subscriptions need the channel's own broadcaster token as Twitch will not hand this
+        /// data to the bot account.
+        /// </summary>
+        private static List<DesiredSubscription> GetBroadcasterSubscriptions(TwitchApiConnection.TwitchAccount apiClient)
+        {
+            var name = apiClient.TwitchUsername;
+            var id = apiClient.TwitchChannelClientId;
+
+            return
+            [
+                new(name, id, "channel.follow", "2", new() { { "broadcaster_user_id", id }, { "moderator_user_id", id } }),
+                new(name, id, "channel.subscribe", "1", new() { { "broadcaster_user_id", id } }),
+                new(name, id, "channel.subscription.gift", "1", new() { { "broadcaster_user_id", id } }),
+                new(name, id, "channel.subscription.message", "1", new() { { "broadcaster_user_id", id } }),
+                new(name, id, "channel.cheer", "1", new() { { "broadcaster_user_id", id } }),
+                new(name, id, "channel.ban", "1", new() { { "broadcaster_user_id", id } }),
+                new(name, id, "channel.unban", "1", new() { { "broadcaster_user_id", id } }),
+                new(name, id, "channel.channel_points_automatic_reward_redemption.add", "2", new() { { "broadcaster_user_id", id } }),
+                new(name, id, "channel.channel_points_custom_reward_redemption.add", "1", new() { { "broadcaster_user_id", id } }),
+                new(name, id, "channel.poll.begin", "1", new() { { "broadcaster_user_id", id } }),
+                new(name, id, "channel.poll.end", "1", new() { { "broadcaster_user_id", id } }),
+                new(name, id, "channel.prediction.begin", "1", new() { { "broadcaster_user_id", id } }),
+                new(name, id, "channel.prediction.lock", "1", new() { { "broadcaster_user_id", id } }),
+                new(name, id, "channel.prediction.end", "1", new() { { "broadcaster_user_id", id } })
+            ];
+        }
+
+        /// <summary>
+        /// Creates any of the connection's subscriptions that Twitch doesn't have for the current
+        /// session. Each one is tried on its own so a single failure doesn't stop the rest.
+        /// Returns how many subscriptions are active once done.
+        /// </summary>
+        private async Task<int> SyncSubscriptionsAsync(TrackedConnection connection, EventSubWebsocketClient client, bool isNewSession)
+        {
+            var apiClient = connection.IsBot ? twitchApiConnection.GetBotApiClient() : twitchApiConnection.GetBroadcasterApiClientFromChannelName(connection.Name);
+
+            if (apiClient == null)
+            {
+                Log.Fatal($"[Twitch API Connection] Websocket for {connection.Name} connected but there is no api client");
+                return 0;
+            }
+
+            var sessionId = client.SessionId;
+            var desired = connection.IsBot ? GetBotSubscriptions(apiClient) : GetBroadcasterSubscriptions(apiClient);
+            var missing = desired;
+
+            // a brand new session never has any subscriptions, so only ask twitch when checking an existing one
+            if (!isNewSession)
+            {
+                var existing = await GetEnabledSubscriptionsAsync(apiClient, sessionId);
+                missing = desired.Where(x => !existing.Any(y => IsSameSubscription(x, y))).ToList();
+
+                if (missing.Count == 0)
+                {
+                    return desired.Count;
+                }
+
+                Log.Warning($"[Twitch Events] {missing.Count} subscription(s) missing on the {connection.Name} websocket, resubscribing");
+            }
+
+            var failed = new List<DesiredSubscription>();
+
+            foreach (var subscription in missing)
+            {
+                try
+                {
+                    await apiClient.ApiClient.Helix.EventSub.CreateEventSubSubscriptionAsync(subscription.Type, subscription.Version, subscription.Condition, EventSubTransportMethod.Websocket, sessionId);
+                }
+                catch (Exception ex)
+                {
+                    failed.Add(subscription);
+                    Log.Error(ex, $"[Twitch Events] Error subscribing to {subscription.Type} in {subscription.ChannelName} on the {connection.Name} websocket");
+                }
+            }
+
+            foreach (var channel in missing.GroupBy(x => (x.ChannelName, x.BroadcasterChannelId)))
+            {
+                var channelFailures = failed.Count(x => x.BroadcasterChannelId == channel.Key.BroadcasterChannelId);
+
+                Log.Information($"[Twitch API Connection] Subscribed to {channel.Count() - channelFailures}/{channel.Count()} events in {channel.Key.ChannelName} as {apiClient.TwitchUsername}");
+
+                if (isNewSession && connection.IsBot && channelFailures == 0)
+                {
+                    await twitchHelperService.SendTwitchMessageToChannel(channel.Key.BroadcasterChannelId, channel.Key.ChannelName, "hello currys (successfully connected)", null);
+                }
+            }
+
+            return desired.Count - failed.Count;
+        }
+
+        private static async Task<List<EventSubSubscription>> GetEnabledSubscriptionsAsync(TwitchApiConnection.TwitchAccount apiClient, string sessionId)
+        {
+            var subscriptions = new List<EventSubSubscription>();
+            string? after = null;
+
+            do
+            {
+                var response = await apiClient.ApiClient.Helix.EventSub.GetEventSubSubscriptionsAsync(status: "enabled", after: after);
+
+                subscriptions.AddRange(response.Subscriptions.Where(x => x.Transport?.SessionId == sessionId));
+                after = response.Pagination?.Cursor;
+            }
+            while (!string.IsNullOrEmpty(after));
+
+            return subscriptions;
+        }
+
+        private static bool IsSameSubscription(DesiredSubscription desired, EventSubSubscription existing)
+        {
+            return existing.Type == desired.Type && desired.Condition.All(x => existing.Condition != null && existing.Condition.TryGetValue(x.Key, out var value) && value == x.Value);
+        }
+
+        /// <summary>
+        /// Safety net run on a schedule. Recreates any subscriptions Twitch has lost or that failed
+        /// to go in, and reconnects any websocket that has died without us noticing.
+        /// </summary>
+        public async Task VerifyConnectionsAsync()
+        {
+            var connections = _broadcasterConnections.Values.ToList();
+
+            if (_botConnection != null)
+            {
+                connections.Insert(0, _botConnection);
+            }
+
+            foreach (var connection in connections)
+            {
+                // a connect is already running for this one
+                if (!await connection.ReconnectLock.WaitAsync(0))
+                {
+                    continue;
+                }
+
+                var needsReconnect = false;
+
+                try
+                {
+                    var client = connection.Client;
+
+                    needsReconnect = client == null || string.IsNullOrEmpty(client.SessionId) || await SyncSubscriptionsAsync(connection, client, isNewSession: false) == 0;
+                }
+                catch (Exception ex)
+                {
+                    Log.Error(ex, $"[Twitch Events] Error verifying the {connection.Name} websocket");
+                }
+                finally
+                {
+                    connection.ReconnectLock.Release();
+                }
+
+                if (needsReconnect)
+                {
+                    Log.Warning($"[Twitch Events] Websocket for {connection.Name} has no active subscriptions, reconnecting");
+                    _ = Task.Run(() => ConnectWithRetryAsync(connection));
+                }
             }
         }
 
@@ -499,14 +740,14 @@ namespace BreganTwitchBot.Domain.Services.Twitch
             await twitchApiConnection.RefreshAllApiKeys();
 #endif
 
-            await StartBotConnectionAsync();
+            StartBotConnection();
             await StartBroadcasterConnectionsAsync();
         }
 
         /// <summary>
         /// Opens the one and only bot websocket. Every channel's chat and moderation events arrive here.
         /// </summary>
-        private async Task StartBotConnectionAsync()
+        private void StartBotConnection()
         {
             var botApiClient = twitchApiConnection.GetBotApiClient();
 
@@ -521,21 +762,10 @@ namespace BreganTwitchBot.Domain.Services.Twitch
                 return;
             }
 
-            _botConnection = new EventSubWebsocketClient();
+            _botConnection = new TrackedConnection(botApiClient.TwitchUsername, isBot: true);
 
-            _botConnection.ChannelChatMessage += OnChannelChatMessageReceived;
-            _botConnection.ChannelUpdate += OnChannelUpdate;
-            _botConnection.ChannelRaid += OnChannelRaid;
-            _botConnection.StreamOnline += OnStreamOnline;
-            _botConnection.StreamOffline += OnStreamOffline;
-            _botConnection.ChannelSuspiciousUserMessage += OnSuspiciousUserMessage;
-
-            _botConnection.WebsocketConnected += OnBotWebsocketConnected;
-            _botConnection.WebsocketDisconnected += (sender, e) => OnWebsocketDisconnected(sender, e, botApiClient.TwitchUsername, _botConnection);
-            _botConnection.WebsocketReconnected += OnWebsocketReconnected;
-            _botConnection.ErrorOccurred += OnErrorOccurred;
-
-            await _botConnection.ConnectAsync();
+            // connects in the background so a twitch outage doesn't hold up the rest of the app starting
+            _ = Task.Run(() => ConnectWithRetryAsync(_botConnection));
 
             Log.Information($"[Twitch API Connection] Bot websocket connecting as {botApiClient.TwitchUsername}");
         }
@@ -551,30 +781,10 @@ namespace BreganTwitchBot.Domain.Services.Twitch
             {
                 if (!_broadcasterConnections.ContainsKey(apiClient.TwitchUsername))
                 {
-                    var broadcasterWebSocket = new EventSubWebsocketClient();
-                    _broadcasterConnections.Add(apiClient.TwitchUsername, broadcasterWebSocket);
+                    var connection = new TrackedConnection(apiClient.TwitchUsername, isBot: false);
+                    _broadcasterConnections.Add(apiClient.TwitchUsername, connection);
 
-                    broadcasterWebSocket.ChannelBan += OnChannelBan;
-                    broadcasterWebSocket.ChannelUnban += OnChannelUnban;
-                    broadcasterWebSocket.ChannelPointsAutomaticRewardRedemptionAdd += OnAutomaticRewardRedeemed;
-                    broadcasterWebSocket.ChannelPointsCustomRewardRedemptionAdd += OnCustomRewardRedeemed;
-                    broadcasterWebSocket.ChannelPollBegin += OnPollBegin;
-                    broadcasterWebSocket.ChannelPollEnd += OnPollEnd;
-                    broadcasterWebSocket.ChannelPredictionBegin += OnChannelPredictionBegin;
-                    broadcasterWebSocket.ChannelPredictionLock += OnChannelPredictionLock;
-                    broadcasterWebSocket.ChannelPredictionEnd += OnChannelPredictionEnd;
-                    broadcasterWebSocket.ChannelFollow += OnFollowReceived;
-                    broadcasterWebSocket.ChannelSubscribe += OnChannelSubcribe;
-                    broadcasterWebSocket.ChannelSubscriptionGift += OnChannelSubscriptionGift;
-                    broadcasterWebSocket.ChannelSubscriptionMessage += OnChannelResubscribe;
-                    broadcasterWebSocket.ChannelCheer += OnChannelCheer;
-
-                    broadcasterWebSocket.WebsocketConnected += (sender, e) => OnBroadcasterWebsocketConnected(sender, e, apiClient.TwitchUsername);
-                    broadcasterWebSocket.WebsocketDisconnected += (sender, e) => OnWebsocketDisconnected(sender, e, apiClient.TwitchUsername, broadcasterWebSocket);
-                    broadcasterWebSocket.WebsocketReconnected += OnWebsocketReconnected;
-                    broadcasterWebSocket.ErrorOccurred += OnErrorOccurred;
-
-                    await broadcasterWebSocket.ConnectAsync();
+                    _ = Task.Run(() => ConnectWithRetryAsync(connection));
                 }
 
                 // catch up on the stream starting or ending while the bot was down. This also runs every
@@ -589,15 +799,42 @@ namespace BreganTwitchBot.Domain.Services.Twitch
 
         public async Task StopAsync(CancellationToken cancellationToken)
         {
+            _stoppingCts.Cancel();
+
+            var connections = _broadcasterConnections.Values.ToList();
+
             if (_botConnection != null)
             {
-                await _botConnection.DisconnectAsync();
+                connections.Add(_botConnection);
             }
 
-            foreach (var broadcaster in _broadcasterConnections)
+            foreach (var connection in connections)
             {
-                await broadcaster.Value.DisconnectAsync();
+                if (connection.Client != null)
+                {
+                    await connection.Client.DisconnectAsync();
+                }
             }
+        }
+
+        private record DesiredSubscription(string ChannelName, string BroadcasterChannelId, string Type, string Version, Dictionary<string, string> Condition);
+
+        /// <summary>
+        /// A websocket we keep alive - either the bot's or a broadcaster's. The client inside gets
+        /// swapped for a fresh one on every reconnect.
+        /// </summary>
+        private sealed class TrackedConnection(string name, bool isBot)
+        {
+            public string Name { get; } = name;
+            public bool IsBot { get; } = isBot;
+            public EventSubWebsocketClient? Client { get; set; }
+
+            /// <summary>
+            /// Completed once Twitch has welcomed the current client and the subscriptions have gone in
+            /// </summary>
+            public TaskCompletionSource<bool>? Welcomed { get; set; }
+
+            public SemaphoreSlim ReconnectLock { get; } = new(1, 1);
         }
     }
 }

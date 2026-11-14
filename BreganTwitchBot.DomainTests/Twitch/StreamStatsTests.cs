@@ -315,8 +315,8 @@ namespace BreganTwitchBot.DomainTests.Twitch
         {
             _streamStatsService.UpdateStreamStat(ChannelId, StreamStatType.MessagesReceived);
 
-            Assert.DoesNotThrowAsync(async () => await _streamStatsService.FlushStats());
-            Assert.DoesNotThrowAsync(async () => await _streamStatsService.FlushStats());
+            await Assert.DoesNotThrowAsync(async () => await _streamStatsService.FlushStats());
+            await Assert.DoesNotThrowAsync(async () => await _streamStatsService.FlushStats());
         }
 
         [Test]

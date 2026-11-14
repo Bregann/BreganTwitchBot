@@ -146,7 +146,7 @@ namespace BreganTwitchBot.DomainTests.Twitch
                 .Setup(x => x.ShoutoutChannel(It.IsAny<TwitchAPI>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()))
                 .ThrowsAsync(new Exception("rate limited"));
 
-            Assert.DoesNotThrowAsync(async () => await RaidWith(viewers: 20, minimum: 5));
+            await Assert.DoesNotThrowAsync(async () => await RaidWith(viewers: 20, minimum: 5));
         }
     }
 }

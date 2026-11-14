@@ -76,7 +76,7 @@ namespace BreganTwitchBot.DomainTests.Twitch.Commands
         }
 
         [Test]
-        public void HandleAddWordCommand_UserIsNotBroadcasterOrSuperMod_ThrowsInvalidCommandException()
+        public async Task HandleAddWordCommand_UserIsNotBroadcasterOrSuperMod_ThrowsInvalidCommandException()
         {
             var msgParams = MessageParamsHelper.CreateChatMessageParams(
                 "!addword badword",
@@ -86,14 +86,14 @@ namespace BreganTwitchBot.DomainTests.Twitch.Commands
             );
             var wordType = WordType.PermBanWord;
 
-            var ex = Assert.ThrowsAsync<InvalidCommandException>(async () => await _wordBlacklistService.HandleAddWordCommand(msgParams, wordType));
+            var ex = await Assert.ThrowsAsync<InvalidCommandException>(async () => await _wordBlacklistService.HandleAddWordCommand(msgParams, wordType));
 
             Assert.That(ex.Message, Is.EqualTo("You do not have permission to use this command."));
             _wordBlacklistMonitorServiceMock.Verify(x => x.AddWordToBlacklist(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<WordType>()), Times.Never);
         }
 
         [Test]
-        public void HandleAddWordCommand_MessageHasLessThanTwoParts_ThrowsInvalidCommandException()
+        public async Task HandleAddWordCommand_MessageHasLessThanTwoParts_ThrowsInvalidCommandException()
         {
             var msgParams = MessageParamsHelper.CreateChatMessageParams(
                 "!addword",
@@ -103,7 +103,7 @@ namespace BreganTwitchBot.DomainTests.Twitch.Commands
             );
             var wordType = WordType.PermBanWord;
 
-            var ex = Assert.ThrowsAsync<InvalidCommandException>(async () => await _wordBlacklistService.HandleAddWordCommand(msgParams, wordType));
+            var ex = await Assert.ThrowsAsync<InvalidCommandException>(async () => await _wordBlacklistService.HandleAddWordCommand(msgParams, wordType));
             Assert.That(ex.Message, Is.EqualTo("You must specify a word to add. Duhhh"));
             _wordBlacklistMonitorServiceMock.Verify(x => x.AddWordToBlacklist(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<WordType>()), Times.Never);
         }
@@ -130,7 +130,7 @@ namespace BreganTwitchBot.DomainTests.Twitch.Commands
                 isBroadcaster: true
             );
 
-            var ex = Assert.ThrowsAsync<InvalidCommandException>(async () => await _wordBlacklistService.HandleAddWordCommand(msgParams, wordType));
+            var ex = await Assert.ThrowsAsync<InvalidCommandException>(async () => await _wordBlacklistService.HandleAddWordCommand(msgParams, wordType));
             Assert.That(ex.Message, Is.EqualTo($"The word is already in the blacklist!"));
             _wordBlacklistMonitorServiceMock.Verify(x => x.AddWordToBlacklist(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<WordType>()), Times.Never);
         }

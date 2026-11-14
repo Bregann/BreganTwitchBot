@@ -113,17 +113,17 @@ namespace BreganTwitchBot.DomainTests.Discord.Commands
         }
 
         [Test]
-        public void AddNewLikedItem_UserNotAllowed_ThrowsUnauthorizedAccessException()
+        public async Task AddNewLikedItem_UserNotAllowed_ThrowsUnauthorizedAccessException()
         {
-            Assert.ThrowsAsync<UnauthorizedAccessException>(async () =>
+            await Assert.ThrowsAsync<UnauthorizedAccessException>(async () =>
                 await _discordBookRecsDataService.AddNewLikedItem(DatabaseSeedHelper.DiscordUserId2, TestItemBook, AiType.Book),
                 "You are not allowed to use OpenAI features. Please contact the server administrator for assistance.");
         }
 
         [Test]
-        public void AddNewLikedItem_UserNotFoundInChannelUsers_ThrowsUnauthorizedAccessException()
+        public async Task AddNewLikedItem_UserNotFoundInChannelUsers_ThrowsUnauthorizedAccessException()
         {
-            Assert.ThrowsAsync<UnauthorizedAccessException>(async () =>
+            await Assert.ThrowsAsync<UnauthorizedAccessException>(async () =>
                  await _discordBookRecsDataService.AddNewLikedItem(DatabaseSeedHelper.DiscordUserNonExistentId, TestItemBook, AiType.Book)
             );
         }
@@ -172,25 +172,25 @@ namespace BreganTwitchBot.DomainTests.Discord.Commands
         }
 
         [Test]
-        public void RemoveLikedItem_UserAllowed_ItemNotFound_ThrowsInvalidOperationException()
+        public async Task RemoveLikedItem_UserAllowed_ItemNotFound_ThrowsInvalidOperationException()
         {
-            Assert.ThrowsAsync<InvalidOperationException>(async () =>
+            await Assert.ThrowsAsync<InvalidOperationException>(async () =>
                 await _discordBookRecsDataService.RemoveLikedItem(DatabaseSeedHelper.DiscordUserId1, "non existent book"),
                 "No matching liked item found to remove.");
         }
 
         [Test]
-        public void RemoveLikedItem_UserNotAllowed_ThrowsUnauthorizedAccessException()
+        public async Task RemoveLikedItem_UserNotAllowed_ThrowsUnauthorizedAccessException()
         {
-            Assert.ThrowsAsync<UnauthorizedAccessException>(async () =>
+            await Assert.ThrowsAsync<UnauthorizedAccessException>(async () =>
                 await _discordBookRecsDataService.RemoveLikedItem(DatabaseSeedHelper.DiscordUserId2, TestItemBook),
                 "You are not allowed to use OpenAI features. Please contact the server administrator for assistance.");
         }
 
         [Test]
-        public void RemoveLikedItem_UserNotFoundInChannelUsers_ThrowsUnauthorizedAccessException()
+        public async Task RemoveLikedItem_UserNotFoundInChannelUsers_ThrowsUnauthorizedAccessException()
         {
-            Assert.ThrowsAsync<UnauthorizedAccessException>(async () =>
+            await Assert.ThrowsAsync<UnauthorizedAccessException>(async () =>
                  await _discordBookRecsDataService.RemoveLikedItem(DatabaseSeedHelper.DiscordUserNonExistentId, TestItemBook)
             );
         }

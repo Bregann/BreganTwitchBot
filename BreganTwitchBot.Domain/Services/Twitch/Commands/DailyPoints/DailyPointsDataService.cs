@@ -14,19 +14,30 @@ namespace BreganTwitchBot.Domain.Services.Twitch.Commands.DailyPoints
     public class DailyPointsDataService(AppDbContext context, IConfigHelperService configHelper, ITwitchHelperService twitchHelperService, ITwitchApiConnection twitchApiConnection) : IDailyPointsDataService
     {
         /// <summary>
-        /// Schedule daily points collection for the broadcaster. When the stream goes live a 30 minute timer is started to allow collecting points.
-        /// </summary>
-        /// <param name="broadcasterId"></param>
-        /// <returns></returns>
-        /// <summary>
         /// Allow daily points collecting for the broadcaster. Resets streaks that have been missed
         /// </summary>
         /// <param name="broadcasterId"></param>
         /// <returns></returns>
         public async Task AllowDailyPointsCollecting(string broadcasterId)
         {
-            Log.Information($"Allowing daily points collection for {broadcasterId}");
+            // two jobs can land at once (one scheduled before a reboot and one after). Running the reset twice
+            // would wipe the streak of everyone who claimed yesterday, so only let one through at a time
+            await _allowLock.WaitAsync();
 
+            try
+            {
+                await AllowDailyPointsCollectingLocked(broadcasterId);
+            }
+            finally
+            {
+                _allowLock.Release();
+            }
+        }
+
+        private static readonly SemaphoreSlim _allowLock = new(1, 1);
+
+        private async Task AllowDailyPointsCollectingLocked(string broadcasterId)
+        {
             var dailyPointsStatus = configHelper.GetDailyPointsStatus(broadcasterId);
 
             // a job scheduled before a restart and one rescheduled after it can both fire, and the
@@ -45,6 +56,7 @@ namespace BreganTwitchBot.Domain.Services.Twitch.Commands.DailyPoints
                 return;
             }
 
+            Log.Information($"Allowing daily points collection for {broadcasterId}");
             var channelName = GetChannelName(broadcasterId);
 
             // don't reset streaks if there has been a stream today

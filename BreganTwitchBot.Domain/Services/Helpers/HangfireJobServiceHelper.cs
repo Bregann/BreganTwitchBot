@@ -1,5 +1,6 @@
 ﻿using BreganTwitchBot.Domain.Interfaces.Discord;
 using BreganTwitchBot.Domain.Interfaces.Discord.Commands;
+using BreganTwitchBot.Domain.Interfaces.Helpers;
 using BreganTwitchBot.Domain.Interfaces.Twitch;
 using BreganTwitchBot.Domain.Interfaces.Twitch.Commands;
 using BreganTwitchBot.Domain.Interfaces.Twitch.Events;
@@ -21,11 +22,13 @@ namespace BreganTwitchBot.Domain.Services.Helpers
         IMonthlyLeaderboardRoleService monthlyLeaderboardRoleService,
         ITimedMessageService timedMessageService,
         ITwitchApiInteractionService twitchApiInteractionService,
-        ITwitchEventHandlerService twitchEventHandlerService
+        ITwitchEventHandlerService twitchEventHandlerService,
+        IWebsocketHostedService websocketHostedService
         )
     {
         public void SetupHangfireJobs()
         {
+            RecurringJob.AddOrUpdate<IProjectMonitorClient>("ProjectMonitorHeartbeat", client => client.SendHeartbeat(), Cron.Minutely);
             RecurringJob.AddOrUpdate("BigBenBong", () => BigBenBong(), "0 * * * *");
             RecurringJob.AddOrUpdate("TimeTrackerHoursUpdate", () => TimeTrackerHoursUpdate(), "* * * * *");
             RecurringJob.AddOrUpdate("RemoveWarnedUsers", () => RemoveWarnedUsers(), "* * * * *");
@@ -33,6 +36,7 @@ namespace BreganTwitchBot.Domain.Services.Helpers
             RecurringJob.AddOrUpdate("DailyPointsReminder", () => AnnouncePointsReminderMessage(), "*/45 * * * *");
             RecurringJob.AddOrUpdate("ResetTwitchStreaks", () => ResetTwitchStreaks(), "0 2 * * *");
             RecurringJob.AddOrUpdate("RefreshApi", () => RefreshApi(), "45 * * * *");
+            RecurringJob.AddOrUpdate("VerifyTwitchWebsockets", () => VerifyTwitchWebsockets(), "*/5 * * * *");
             RecurringJob.AddOrUpdate("CheckBirthdays", () => CheckBirthdays(), "0 6 * * *");
             RecurringJob.AddOrUpdate("FlushStreamStats", () => FlushStreamStats(), "* * * * *");
             RecurringJob.AddOrUpdate("SendTimedMessages", () => SendTimedMessages(), "* * * * *");
@@ -180,6 +184,14 @@ namespace BreganTwitchBot.Domain.Services.Helpers
         }
 
         /// <summary>
+        /// Resubscribes to anything Twitch has dropped and revives any dead websockets
+        /// </summary>
+        public async Task VerifyTwitchWebsockets()
+        {
+            await websocketHostedService.VerifyConnectionsAsync();
+        }
+
+        /// <summary>
         /// Writes the in memory stream stat counters to the database
         /// </summary>
         public async Task FlushStreamStats()
@@ -187,9 +199,6 @@ namespace BreganTwitchBot.Domain.Services.Helpers
             await streamStatsService.FlushStats();
         }
 
-        /// <summary>
-        /// Samples each live channel's viewer count for the average and peak
-        /// </summary>
         /// <summary>
         /// Catches the stream starting or ending while the bot was down or disconnected from twitch,
         /// which it would otherwise never hear about
@@ -217,6 +226,9 @@ namespace BreganTwitchBot.Domain.Services.Helpers
             }
         }
 
+        /// <summary>
+        /// Samples each live channel's viewer count for the average and peak
+        /// </summary>
         public async Task SampleViewerCounts()
         {
             await streamStatsService.SampleViewerCounts();

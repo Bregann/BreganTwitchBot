@@ -118,26 +118,26 @@ namespace BreganTwitchBot.DomainTests.Twitch.Commands
         }
 
         [Test]
-        public void AddMarblesWin_NoUsernameSupplied_ThrowsInvalidCommand()
+        public async Task AddMarblesWin_NoUsernameSupplied_ThrowsInvalidCommand()
         {
             var msgParams = CreateMsgParams("!addmarbleswin");
 
-            Assert.ThrowsAsync<InvalidCommandException>(async () => await _marblesDataService.AddMarblesWin(msgParams));
+            await Assert.ThrowsAsync<InvalidCommandException>(async () => await _marblesDataService.AddMarblesWin(msgParams));
         }
 
         [Test]
-        public void AddMarblesWin_UnknownUsername_ThrowsUserNotFound()
+        public async Task AddMarblesWin_UnknownUsername_ThrowsUserNotFound()
         {
             _twitchHelperService.Setup(x => x.GetTwitchUserIdFromUsername("someonewhodoesnotexist"))
                 .ReturnsAsync((string?)null);
 
             var msgParams = CreateMsgParams("!addmarbleswin someonewhodoesnotexist");
 
-            Assert.ThrowsAsync<TwitchUserNotFoundException>(async () => await _marblesDataService.AddMarblesWin(msgParams));
+            await Assert.ThrowsAsync<TwitchUserNotFoundException>(async () => await _marblesDataService.AddMarblesWin(msgParams));
         }
 
         [Test]
-        public void AddMarblesWin_NotAMod_ThrowsUnauthorised()
+        public async Task AddMarblesWin_NotAMod_ThrowsUnauthorised()
         {
             _twitchHelperService
                 .Setup(x => x.EnsureUserHasModeratorPermissions(It.IsAny<ChannelChatMessageReceivedParams>()))
@@ -145,7 +145,7 @@ namespace BreganTwitchBot.DomainTests.Twitch.Commands
 
             var msgParams = CreateMsgParams($"!addmarbleswin {DatabaseSeedHelper.Channel1User1TwitchUsername}", isMod: false);
 
-            Assert.ThrowsAsync<UnauthorizedAccessException>(async () => await _marblesDataService.AddMarblesWin(msgParams));
+            await Assert.ThrowsAsync<UnauthorizedAccessException>(async () => await _marblesDataService.AddMarblesWin(msgParams));
         }
 
         [Test]
@@ -156,7 +156,7 @@ namespace BreganTwitchBot.DomainTests.Twitch.Commands
             msgParams.BroadcasterChannelId = DatabaseSeedHelper.Channel2BroadcasterTwitchChannelId;
             msgParams.BroadcasterChannelName = DatabaseSeedHelper.Channel2BroadcasterTwitchChannelName;
 
-            Assert.ThrowsAsync<TwitchUserNotFoundException>(async () => await _marblesDataService.AddMarblesWin(msgParams));
+            await Assert.ThrowsAsync<TwitchUserNotFoundException>(async () => await _marblesDataService.AddMarblesWin(msgParams));
 
             // the channel 1 total must be untouched
             var userStats = await _dbContext.ChannelUserStats
@@ -190,14 +190,14 @@ namespace BreganTwitchBot.DomainTests.Twitch.Commands
         }
 
         [Test]
-        public void GetMarblesWins_UnknownUsername_ThrowsUserNotFound()
+        public async Task GetMarblesWins_UnknownUsername_ThrowsUserNotFound()
         {
             _twitchHelperService.Setup(x => x.GetTwitchUserIdFromUsername("someonewhodoesnotexist"))
                 .ReturnsAsync((string?)null);
 
             var msgParams = CreateMsgParams("!marbles someonewhodoesnotexist");
 
-            Assert.ThrowsAsync<TwitchUserNotFoundException>(async () => await _marblesDataService.GetMarblesWins(msgParams));
+            await Assert.ThrowsAsync<TwitchUserNotFoundException>(async () => await _marblesDataService.GetMarblesWins(msgParams));
         }
     }
 }

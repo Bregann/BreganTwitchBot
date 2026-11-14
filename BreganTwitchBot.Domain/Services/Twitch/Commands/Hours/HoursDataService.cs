@@ -7,6 +7,7 @@ using BreganTwitchBot.Domain.Interfaces.Discord;
 using BreganTwitchBot.Domain.Interfaces.Helpers;
 using BreganTwitchBot.Domain.Interfaces.Twitch;
 using BreganTwitchBot.Domain.Interfaces.Twitch.Commands;
+using BreganTwitchBot.Domain.Services.Helpers;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
 
@@ -35,7 +36,8 @@ namespace BreganTwitchBot.Domain.Services.Twitch.Commands.Hours
             var chatters = await twitchApiInteractionService.GetChatters(apiClient.ApiClient, broadcasterId, apiClient.TwitchChannelClientId);
             var channelRanks = await context.ChannelRanks.Where(x => x.ChannelId == channel.Id).ToArrayAsync();
 
-            var rankups = 0;
+            var discordEnabled = configHelperService.IsDiscordEnabled(broadcasterId);
+            var rankUps = new List<RankUp>();
 
             foreach (var user in chatters.Chatters)
             {
@@ -80,46 +82,20 @@ namespace BreganTwitchBot.Domain.Services.Twitch.Commands.Hours
                             AchievedAt = DateTime.UtcNow
                         });
 
-                        var discordEnabled = configHelperService.IsDiscordEnabled(broadcasterId);
-
                         await twitchHelperService.AddPointsToUser(broadcasterId, dbUser.TwitchUserId, rankEarned.BonusRankPointsEarned, channel.BroadcasterTwitchChannelName, dbUser.TwitchUsername);
 
-                        // Only send a rank-up message if the user has actually chatted in the current stream
-                        // and we haven't already sent 2 rank-up messages this cycle
-                        // and at least 5 chat messages have been sent since the last rank-up message
-                        if (rankups >= 2)
-                        {
-                            Log.Information($"Rank up message limit reached for {broadcasterId} - {user.UserName}");
-                        }
-                        else if (!twitchHelperService.HasUserChattedInCurrentStream(broadcasterId, dbUser.TwitchUserId))
-                        {
-                            Log.Information($"Skipping rank up message for {broadcasterId} - {user.UserName} (user has not chatted in the current stream)");
-                        }
-                        else if (twitchHelperService.GetChatMessageCount(broadcasterId) < 5)
-                        {
-                            Log.Information($"Skipping rank up message for {broadcasterId} - {user.UserName} (fewer than 5 chat messages since the last rank-up message)");
-                        }
-                        else
-                        {
-                            if (!discordEnabled)
-                            {
-                                await twitchHelperService.SendTwitchMessageToChannel(broadcasterId, channel.BroadcasterTwitchChannelName, $"Congrats @{dbUser.TwitchUsername}, you earned the {rankEarned.RankName} rank by watching {rankEarned.RankMinutesRequired} minutes in the stream! Keep watching to earn a higher rank!");
-                            }
-                            else if (discordEnabled && dbUser.DiscordUserId == 0)
-                            {
-                                await twitchHelperService.SendTwitchMessageToChannel(broadcasterId, channel.BroadcasterTwitchChannelName, $"Congrats @{dbUser.TwitchUsername}, you earned the {rankEarned.RankName} rank by watching {rankEarned.RankMinutesRequired} minutes in the stream! Make sure to join the Discord and link your Twitch account to unlock your rank role!");
-                            }
-                            else
-                            {
-                                await discordRoleManagerService.ApplyRoleOnDiscordWatchtimeRankup(dbUser.TwitchUserId, broadcasterId);
-                                await twitchHelperService.SendTwitchMessageToChannel(broadcasterId, channel.BroadcasterTwitchChannelName, $"Congrats @{dbUser.TwitchUsername}, you earned {rankEarned.RankName} rank by watching {rankEarned.RankMinutesRequired} minutes in the stream! Your rank has been applied in the Discord");
-                            }
-
-                            rankups++;
-                        }
+                        rankUps.Add(new RankUp(dbUser.TwitchUsername, rankEarned, twitchHelperService.HasUserChattedInCurrentStream(broadcasterId, dbUser.TwitchUserId), discordEnabled && dbUser.DiscordUserId != 0));
                     }
 
                     await context.SaveChangesAsync();
+
+                    // everyone linked gets their role, whether or not they end up named in chat. It used to
+                    // only be applied along with a chat message, so anyone skipped missed out, and before the
+                    // new rank was saved, so the role it looks up from the saved ranks was never the new one
+                    if (rankEarned != null && discordEnabled && dbUser.DiscordUserId != 0)
+                    {
+                        await ApplyDiscordRole(dbUser.TwitchUserId, dbUser.TwitchUsername, broadcasterId);
+                    }
                 }
                 catch (Exception ex)
                 {
@@ -128,13 +104,82 @@ namespace BreganTwitchBot.Domain.Services.Twitch.Commands.Hours
                 }
             }
 
-            if (rankups > 0)
-            {
-                twitchHelperService.ResetChatMessageCount(broadcasterId);
-                Log.Information($"Reset chat message count for {broadcasterId} after sending {rankups} rank up messages");
-            }
+            await AnnounceRankUps(broadcasterId, channel.BroadcasterTwitchChannelName, rankUps, discordEnabled);
 
             Log.Information($"Watchtime update completed. {chatters.Chatters.Count} users updated");
+        }
+
+        /// <summary>
+        /// The most rank up messages sent in one minute, so a lot of different ranks at once can't flood chat
+        /// </summary>
+        public const int MaxRankUpMessagesPerMinute = 2;
+
+        /// <summary>
+        /// Chat messages there have to have been since the last rank up message, so they don't take over a quiet chat
+        /// </summary>
+        public const int ChatMessagesBetweenRankUpMessages = 5;
+
+        private async Task ApplyDiscordRole(string twitchUserId, string twitchUsername, string broadcasterId)
+        {
+            try
+            {
+                await discordRoleManagerService.ApplyRoleOnDiscordWatchtimeRankup(twitchUserId, broadcasterId);
+            }
+            catch (Exception ex)
+            {
+                // the rank and watchtime are already saved, so a discord problem shouldn't lose them
+                Log.Error(ex, $"Error applying the Discord rank role for {twitchUsername} in {broadcasterId}");
+            }
+        }
+
+        private record RankUp(string TwitchUsername, ChannelRank Rank, bool ChattedThisStream, bool DiscordLinked);
+
+        /// <summary>
+        /// One message per rank rather than per person. It names up to three people who've chatted
+        /// this stream and counts everyone else, so lurkers aren't pinged
+        /// </summary>
+        private async Task AnnounceRankUps(string broadcasterId, string channelName, List<RankUp> rankUps, bool discordEnabled)
+        {
+            if (rankUps.Count == 0)
+            {
+                return;
+            }
+
+            if (twitchHelperService.GetChatMessageCount(broadcasterId) < ChatMessagesBetweenRankUpMessages)
+            {
+                Log.Information($"Skipping {rankUps.Count} rank up messages for {broadcasterId} (fewer than {ChatMessagesBetweenRankUpMessages} chat messages since the last rank-up message)");
+                return;
+            }
+
+            var messagesSent = 0;
+
+            foreach (var rankGroup in rankUps.GroupBy(x => x.Rank.Id).OrderBy(x => x.First().Rank.RankMinutesRequired))
+            {
+                var rank = rankGroup.First().Rank;
+                var named = rankGroup.Where(x => x.ChattedThisStream).Take(RankUpMessageHelper.MaxNamedUsers).Select(x => x.TwitchUsername).ToList();
+
+                if (named.Count == 0)
+                {
+                    Log.Information($"Skipping the {rank.RankName} rank up message for {broadcasterId} (nobody who earned it has chatted in the current stream)");
+                    continue;
+                }
+
+                if (messagesSent >= MaxRankUpMessagesPerMinute)
+                {
+                    Log.Information($"Rank up message limit reached for {broadcasterId}, skipping the {rank.RankName} rank");
+                    continue;
+                }
+
+                var message = RankUpMessageHelper.BuildMessage(rank.RankName, rank.RankMinutesRequired, named, rankGroup.Count() - named.Count, discordEnabled, rankGroup.Count(x => x.DiscordLinked));
+                await twitchHelperService.SendTwitchMessageToChannel(broadcasterId, channelName, message);
+                messagesSent++;
+            }
+
+            if (messagesSent > 0)
+            {
+                twitchHelperService.ResetChatMessageCount(broadcasterId);
+                Log.Information($"Reset chat message count for {broadcasterId} after sending {messagesSent} rank up messages for {rankUps.Count} rank ups");
+            }
         }
 
         public async Task ResetMinutes()

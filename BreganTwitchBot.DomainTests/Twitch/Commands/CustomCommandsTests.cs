@@ -133,17 +133,17 @@ namespace BreganTwitchBot.DomainTests.Twitch.Commands
         }
 
         [Test]
-        public void AddNewCustomCommandAsync_CommandPartsLessThan3_ThrowsInvalidCommandException()
+        public async Task AddNewCustomCommandAsync_CommandPartsLessThan3_ThrowsInvalidCommandException()
         {
             _twitchHelperServiceMock.Setup(x => x.IsUserSuperModInChannel(It.IsAny<string>(), It.IsAny<string>())).ReturnsAsync(true);
 
             var msgParams = MessageParamsHelper.CreateChatMessageParams("!addcmd", "123", new string[] { "!addcmd" });
 
-            Assert.ThrowsAsync<InvalidCommandException>(async () => await _customCommandsDataService.AddNewCustomCommandAsync(msgParams));
+            await Assert.ThrowsAsync<InvalidCommandException>(async () => await _customCommandsDataService.AddNewCustomCommandAsync(msgParams));
         }
 
         [Test]
-        public void AddNewCustomCommandAsync_UserNotModOrBroadcaster_ThrowsUnauthorizedAccessException()
+        public async Task AddNewCustomCommandAsync_UserNotModOrBroadcaster_ThrowsUnauthorizedAccessException()
         {
             _twitchHelperServiceMock.Setup(x => x.IsUserSuperModInChannel(It.IsAny<string>(), It.IsAny<string>())).ReturnsAsync(false);
 
@@ -153,28 +153,28 @@ namespace BreganTwitchBot.DomainTests.Twitch.Commands
 
             var msgParams = MessageParamsHelper.CreateChatMessageParams("!addcmd !newcommand", "123", new string[] { "!addcmd", "!newcommand" });
 
-            Assert.ThrowsAsync<UnauthorizedAccessException>(async () => await _customCommandsDataService.AddNewCustomCommandAsync(msgParams));
+            await Assert.ThrowsAsync<UnauthorizedAccessException>(async () => await _customCommandsDataService.AddNewCustomCommandAsync(msgParams));
         }
 
         [Test]
-        public void AddNewCustomCommandAsync_CommandIsSystemCommand_ThrowsInvalidCommandException()
+        public async Task AddNewCustomCommandAsync_CommandIsSystemCommand_ThrowsInvalidCommandException()
         {
             _twitchHelperServiceMock.Setup(x => x.IsUserSuperModInChannel(It.IsAny<string>(), It.IsAny<string>())).ReturnsAsync(true);
             _commandHandlerMock.Setup(x => x.IsSystemCommand(It.IsAny<string>())).Returns(true);
 
             var msgParams = MessageParamsHelper.CreateChatMessageParams("!addcmd !systemcommand test", "123", new string[] { "!addcmd", "!systemcommand", "test" }, isMod: true);
 
-            Assert.ThrowsAsync<DuplicateNameException>(async () => await _customCommandsDataService.AddNewCustomCommandAsync(msgParams));
+            await Assert.ThrowsAsync<DuplicateNameException>(async () => await _customCommandsDataService.AddNewCustomCommandAsync(msgParams));
         }
 
         [Test]
-        public void AddNewCustomCommandAsync_CommandAlreadyExists_ThrowsDuplicateNameException()
+        public async Task AddNewCustomCommandAsync_CommandAlreadyExists_ThrowsDuplicateNameException()
         {
             _twitchHelperServiceMock.Setup(x => x.IsUserSuperModInChannel(It.IsAny<string>(), It.IsAny<string>())).ReturnsAsync(true);
 
             var msgParams = MessageParamsHelper.CreateChatMessageParams("!addcmd !readytouse test", "123", new string[] { "!addcmd", "!readytouse", "test" }, isMod: true);
 
-            Assert.ThrowsAsync<DuplicateNameException>(async () => await _customCommandsDataService.AddNewCustomCommandAsync(msgParams));
+            await Assert.ThrowsAsync<DuplicateNameException>(async () => await _customCommandsDataService.AddNewCustomCommandAsync(msgParams));
         }
 
         [Test]
@@ -235,23 +235,23 @@ namespace BreganTwitchBot.DomainTests.Twitch.Commands
         }
 
         [Test]
-        public void EditCustomCommandAsync_CommandNotFound_ThrowsCommandNotFoundException()
+        public async Task EditCustomCommandAsync_CommandNotFound_ThrowsCommandNotFoundException()
         {
             var msgParams = MessageParamsHelper.CreateChatMessageParams("!editcmd !unknown commandText", "123", new string[] { "!editcmd", "!unknown", "commandText" }, isMod: true);
 
-            Assert.ThrowsAsync<CommandNotFoundException>(async () => await _customCommandsDataService.EditCustomCommandAsync(msgParams));
+            await Assert.ThrowsAsync<CommandNotFoundException>(async () => await _customCommandsDataService.EditCustomCommandAsync(msgParams));
         }
 
         [Test]
-        public void EditCustomCommandAsync_CommandPartsLessThan3_ThrowsInvalidCommandException()
+        public async Task EditCustomCommandAsync_CommandPartsLessThan3_ThrowsInvalidCommandException()
         {
             var msgParams = MessageParamsHelper.CreateChatMessageParams("!editcmd !readytouse", "123", new string[] { "!editcmd", "!readytouse" }, isMod: true);
 
-            Assert.ThrowsAsync<InvalidCommandException>(async () => await _customCommandsDataService.EditCustomCommandAsync(msgParams));
+            await Assert.ThrowsAsync<InvalidCommandException>(async () => await _customCommandsDataService.EditCustomCommandAsync(msgParams));
         }
 
         [Test]
-        public void EditCustomCommandAsync_UserNotModOrBroadcaster_ThrowsUnauthorizedAccessException()
+        public async Task EditCustomCommandAsync_UserNotModOrBroadcaster_ThrowsUnauthorizedAccessException()
         {
             _twitchHelperServiceMock.Setup(x => x.IsUserSuperModInChannel(It.IsAny<string>(), It.IsAny<string>())).ReturnsAsync(false);
             _twitchHelperServiceMock
@@ -260,7 +260,7 @@ namespace BreganTwitchBot.DomainTests.Twitch.Commands
 
             var msgParams = MessageParamsHelper.CreateChatMessageParams("!editcmd !readytouse commandText", "123", new string[] { "!editcmd", "!readytouse", "commandText" });
 
-            Assert.ThrowsAsync<UnauthorizedAccessException>(async () => await _customCommandsDataService.EditCustomCommandAsync(msgParams));
+            await Assert.ThrowsAsync<UnauthorizedAccessException>(async () => await _customCommandsDataService.EditCustomCommandAsync(msgParams));
         }
 
         [Test]
@@ -282,15 +282,15 @@ namespace BreganTwitchBot.DomainTests.Twitch.Commands
         }
 
         [Test]
-        public void DeleteCustomCommandAsync_CommandNotFound_ThrowsCommandNotFoundException()
+        public async Task DeleteCustomCommandAsync_CommandNotFound_ThrowsCommandNotFoundException()
         {
             var msgParams = MessageParamsHelper.CreateChatMessageParams("!delcmd !unknown", "123", new string[] { "!delcmd", "!unknown" }, isMod: true);
 
-            Assert.ThrowsAsync<CommandNotFoundException>(async () => await _customCommandsDataService.DeleteCustomCommandAsync(msgParams));
+            await Assert.ThrowsAsync<CommandNotFoundException>(async () => await _customCommandsDataService.DeleteCustomCommandAsync(msgParams));
         }
 
         [Test]
-        public void DeleteCustomCommandAsync_UserNotModOrBroadcaster_ThrowsUnauthorizedAccessException()
+        public async Task DeleteCustomCommandAsync_UserNotModOrBroadcaster_ThrowsUnauthorizedAccessException()
         {
             _twitchHelperServiceMock.Setup(x => x.IsUserSuperModInChannel(It.IsAny<string>(), It.IsAny<string>())).ReturnsAsync(false);
             _twitchHelperServiceMock
@@ -299,7 +299,7 @@ namespace BreganTwitchBot.DomainTests.Twitch.Commands
 
             var msgParams = MessageParamsHelper.CreateChatMessageParams("!delcmd !readytouse", "123", new string[] { "!delcmd", "!readytouse" });
 
-            Assert.ThrowsAsync<UnauthorizedAccessException>(async () => await _customCommandsDataService.DeleteCustomCommandAsync(msgParams));
+            await Assert.ThrowsAsync<UnauthorizedAccessException>(async () => await _customCommandsDataService.DeleteCustomCommandAsync(msgParams));
         }
 
         [Test]

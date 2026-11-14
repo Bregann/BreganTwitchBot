@@ -4,14 +4,9 @@ using Discord.Interactions;
 using Newtonsoft.Json;
 using RestSharp;
 using Serilog;
-using SixLabors.ImageSharp;
-using SixLabors.ImageSharp.Drawing.Processing;
-using SixLabors.ImageSharp.PixelFormats;
-using SixLabors.ImageSharp.Processing;
+using SkiaSharp;
 using System.Text;
-using Color = System.Drawing.Color;
 using DiscordColor = Discord.Color;
-using Image = SixLabors.ImageSharp.Image;
 
 namespace BreganTwitchBot.Domain.Services.Discord.SlashCommands.BlocksSocks
 {
@@ -134,46 +129,36 @@ namespace BreganTwitchBot.Domain.Services.Discord.SlashCommands.BlocksSocks
                 }
 
                 //check if right size
-                var bmp = Image.Load($"Skins/{uuid}.png");
-
-                if (bmp.Width != 64 || bmp.Height != 64)
+                using (var bmp = SKBitmap.Decode($"Skins/{uuid}.png"))
                 {
-                    embedBuilder.Title = "Your skin appears not to be 64x64 - this only supports 64x64 skins";
-                    embedBuilder.Color = new DiscordColor(255, 17, 0);
-                    await FollowupAsync(embed: embedBuilder.Build());
-                    return;
+                    if (bmp == null || bmp.Width != 64 || bmp.Height != 64)
+                    {
+                        embedBuilder.Title = "Your skin appears not to be 64x64 - this only supports 64x64 skins";
+                        embedBuilder.Color = new DiscordColor(255, 17, 0);
+                        await FollowupAsync(embed: embedBuilder.Build());
+                        return;
+                    }
+
+                    using var socks = SKBitmap.Decode("Skins/socks.png");
+
+                    using (var canvas = new SKCanvas(bmp))
+                    {
+                        //draw socks over the skin
+                        using var socksImage = SKImage.FromBitmap(socks);
+                        canvas.DrawImage(socksImage, 0, 0, new SKSamplingOptions(SKFilterMode.Nearest));
+
+                        //wipe the second-layer left leg area (0,32 16x32) to fully transparent
+                        canvas.Save();
+                        canvas.ClipRect(SKRect.Create(0, 32, 16, 32));
+                        canvas.Clear(SKColors.Transparent);
+                        canvas.Restore();
+                    }
+
+                    using var image = SKImage.FromBitmap(bmp);
+                    using var png = image.Encode(SKEncodedImageFormat.Png, 100);
+                    using var outFs = File.Create($"Skins/{uuid}-socks.png");
+                    png.SaveTo(outFs);
                 }
-
-                //create colour and load socks
-                var funnyColour = Color.FromArgb(0, 255, 255, 255);
-                var socks = Image.Load("Skins/socks.png");
-
-                //draw socks
-                bmp.Mutate(x => x.DrawImage(socks, new Point(0, 0), 1));
-
-                var graphicsOptions = new GraphicsOptions
-                {
-                    AlphaCompositionMode = PixelAlphaCompositionMode.Clear
-                };
-
-                var rec = new RectangleF(0, 32, 16, 32);
-                bmp.Mutate(x => x.Clear(SixLabors.ImageSharp.Color.FromRgba(0, 0, 0, 0), rec));
-
-                //g.Clip = new Region(new Rectangle(0, 32, 16, 32));
-                //g.Clear(Color.FromArgb(0, Color.White));
-
-                // no anti-aliased pixels and put rectangle
-                //g.SmoothingMode = SmoothingMode.None;
-                //var solidBrush = new SolidBrush(funnyColour);
-                //g.FillRectangle(solidBrush, new Rectangle(0, 32, 16, 32));
-
-                //make the rectangle transparent
-                //bmp.MakeTransparent(funnyColour);
-
-                bmp.SaveAsPng($"Skins/{uuid}-socks.png");
-
-                bmp.Dispose();
-                socks.Dispose();
 
                 using (var socksFs = new FileStream($"Skins/{uuid}-socks.png", FileMode.Open))
                 {

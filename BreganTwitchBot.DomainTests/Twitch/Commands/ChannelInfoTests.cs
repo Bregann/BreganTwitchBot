@@ -121,20 +121,20 @@ namespace BreganTwitchBot.DomainTests.Twitch.Commands
         }
 
         [Test]
-        public void SetTitle_AsNonMod_ThrowsUnauthorised()
+        public async Task SetTitle_AsNonMod_ThrowsUnauthorised()
         {
             MakeCallerNonMod();
 
-            Assert.ThrowsAsync<UnauthorizedAccessException>(async () =>
+            await Assert.ThrowsAsync<UnauthorizedAccessException>(async () =>
                 await _channelInfoDataService.SetTitle(CreateMsgParams("!title nope", isMod: false), "nope"));
         }
 
         [Test]
-        public void SetTitle_AsNonMod_DoesNotCallTheApi()
+        public async Task SetTitle_AsNonMod_DoesNotCallTheApi()
         {
             MakeCallerNonMod();
 
-            Assert.ThrowsAsync<UnauthorizedAccessException>(async () =>
+            await Assert.ThrowsAsync<UnauthorizedAccessException>(async () =>
                 await _channelInfoDataService.SetTitle(CreateMsgParams("!title nope", isMod: false), "nope"));
 
             _twitchApiInteractionService.Verify(x => x.ModifyChannelInformation(It.IsAny<TwitchAPI>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()), Times.Never);
@@ -171,11 +171,11 @@ namespace BreganTwitchBot.DomainTests.Twitch.Commands
         }
 
         [Test]
-        public void SetGame_AsNonMod_ThrowsUnauthorised()
+        public async Task SetGame_AsNonMod_ThrowsUnauthorised()
         {
             MakeCallerNonMod();
 
-            Assert.ThrowsAsync<UnauthorizedAccessException>(async () =>
+            await Assert.ThrowsAsync<UnauthorizedAccessException>(async () =>
                 await _channelInfoDataService.SetGame(CreateMsgParams("!game nope", isMod: false), "nope"));
         }
 
